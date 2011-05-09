@@ -1,0 +1,27 @@
+To build and run the hand CO version:
+   make lbm_cilk_co_novec.exe
+   BIN/lbm_cilk_co_novec.exe 130 reference.dat 0 1 100_100_130_cf_a.of
+
+
+To build and run the PoChoir version:
+   make lbm_xo_novec.exe
+   BIN/lbm_xo_novec.exe 130 reference.dat 0 1 100_100_130_cf_a.of
+
+
+Performance Results
+===================
+Using the reference data set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+On Octave:
+
+   serial (no vec) = 255.24s
+   serial (vec) = 297.28s
+
+   omp (no vec) = 240.74s
+   omp (vec) = 216.12s
+
+   cilk cache-oblivious (no vec) = 107.6s
+   cilk cache-oblivious (vec) = 101.75
+
+   pochoir (including copying time) = 104.5s
+   pochoir (excluding copying time) = 103.3s
