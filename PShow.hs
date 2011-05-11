@@ -294,28 +294,137 @@ pShowCachingKernel l_name l_kernel =
         pShowDeltaT ++ breakline ++ pShowLocalCache l_arrays ++ breakline ++ 
         pShowRankAttr l_rank "slope" l_arrays ++ breakline ++
         pShowLocalCacheAttr l_rank l_arrays ++ breakline ++ 
+        "/* copy in */" ++ breakline ++ 
+        pShowLocalCopyIn l_rank l_arrays ++ breakline ++ 
         "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
         pShowPointerSet l_iter (kParams l_kernel)++
         breakline ++ pShowPointerForHeader l_rank l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
         pShowObaseTail l_rank ++ breakline ++ "};\n"
 
+pShowLocalCopyIn :: Int -> [PArray] -> String
+pShowLocalCopyIn l_rank l_arrays =
+    (intercalate breakline $ map pShowLocalInAddr l_arrays) ++ breakline ++
+    (intercalate breakline $ map pShowGlobalInAddr l_arrays) ++ breakline ++
+    (intercalate breakline $ map (pShowCopyInLoop l_rank) l_arrays) ++ breakline
+
+pShowCopyInLoop :: Int -> PArray -> String
+pShowCopyInLoop l_rank l_array =
+    let l_forHead = pShowLocalForHeader l_rank l_array
+        l_forTail = pShowLocalForTail l_rank
+        l_body = pShowLocalCopy l_rank l_array
+    in  l_forHead ++ l_body ++ l_forTail
+
+pShowLocalForHeader :: Int -> PArray -> String
+pShowLocalForHeader 1 l_array =
+    let l_loopVar = "__i" ++ show 0 ++ "__"
+        l_begin = show 0
+        l_end = "lc_" ++ aName l_array ++ "_size_" ++ show 0
+    in  "for (int " ++ l_loopVar ++ " = " ++ l_begin ++ "; " ++ l_loopVar ++ " < " ++ l_end ++ "; " ++ "++" ++ l_loopVar ++ breakline
+pShowLocalForHeader n l_array =
+    let l_loopVar = "__i" ++ show (n-1) ++ "__"
+        l_begin = show 0 
+        l_end = "lc_" ++ aName l_array ++ "_size_" ++ show (n-1)
+    in  "for (int " ++ l_loopVar ++ " = " ++ l_begin ++ "; " ++ l_loopVar ++ " < " ++ l_end ++ "; " ++ "++" ++ l_loopVar ++ breakline ++ pShowLocalForHeader (n-1) l_array
+
+pShowLocalForTail :: Int -> String
+pShowLocalForTail 1 = "}" ++ breakline
+pShowLocalForTail n = "}" ++ breakline ++ pShowLocalForTail (n-1)
+
+pShowGlobalInAddr :: PArray -> String
+pShowGlobalInAddr l_array =
+    let l_toggle = aToggle l_array
+        l_rank = aRank l_array
+        l_offset = pShowLocalOffset l_rank l_array
+    in  pShowGlobalInAddrTerm l_toggle l_offset l_array
+    
+pShowLocalOffset :: Int -> PArray -> String
+pShowLocalOffset 1 l_array =
+    let l_a = aName l_array
+        l_dim = show (1-1)
+        l_begin = "lc_" ++ l_a ++ "_begin_" ++ l_dim
+        l_stride = "l_stride_" ++ l_a ++ "_" ++ l_dim
+    in  l_begin ++ " * " ++ l_stride 
+pShowLocalOffset l_rank l_array =
+    let l_a = aName l_array
+        l_dim = show (l_rank-1)
+        l_begin = "lc_" ++ l_a ++ "_begin_" ++ l_dim
+        l_stride = "l_stride_" ++ l_a ++ "_" ++ l_dim
+    in  l_begin ++ " * " ++ l_stride ++ " + " ++ pShowLocalOffset (l_rank-1) l_array
+
+pShowGlobalInAddrTerm :: Int -> String -> PArray -> String
+pShowGlobalInAddrTerm 1 l_offset l_array =
+    let l_type = show $ aType l_array
+        l_a = aName l_array
+        l_dim = show (1 - 1)
+        l_var = l_a ++ "_in_" ++ l_dim
+        l_base = l_a ++ "_base"
+        l_totalSize = "l_" ++ l_a ++ "_total_size"
+    in  l_type ++ " * " ++ l_var ++ " = " ++ l_base ++ " + " ++ l_offset ++ ";" 
+pShowGlobalInAddrTerm 2 l_offset l_array =
+    let l_type = show $ aType l_array
+        l_a = aName l_array
+        l_dim = show (2 - 1)
+        l_var = l_a ++ "_in_" ++ l_dim
+        l_base = l_a ++ "_base"
+        l_totalSize = "l_" ++ l_a ++ "_total_size"
+    in  l_type ++ " * " ++ l_var ++ " = " ++ l_base ++ " + " ++ l_totalSize ++ " + " ++ l_offset ++ ";" ++ breakline ++ pShowGlobalInAddrTerm 1 l_offset l_array
+pShowGlobalInAddrTerm l_toggle l_offset l_array =
+    let l_type = show $ aType l_array
+        l_a = aName l_array
+        l_dim = show (l_toggle - 1)
+        l_var = l_a ++ "_in_" ++ l_dim
+        l_base = l_a ++ "_base"
+        l_totalSize = "l_" ++ l_a ++ "_total_size"
+    in  l_type ++ " * " ++ l_var ++ " = " ++ l_base ++ " + " ++ l_dim ++ " * " ++ l_totalSize ++ " + " ++ l_offset ++ ";" ++ breakline ++ pShowGlobalInAddrTerm (l_toggle-1) l_offset l_array
+
+pShowLocalInAddr :: PArray -> String
+pShowLocalInAddr l_array =
+    let l_toggle = aToggle l_array
+    in  pShowLocalInAddrTerm l_toggle l_array
+    
+pShowLocalInAddrTerm :: Int -> PArray -> String
+pShowLocalInAddrTerm 1 l_array =
+    let l_type = show $ aType l_array
+        l_a = aName l_array
+        l_dim = show (1 - 1)
+        l_var = "lc_" ++ l_a ++ "_in_" ++ l_dim
+        l_base = "lc_" ++ l_a
+        l_localTotalSize = "lc_" ++ l_a ++ "_total_size"
+    in  l_type ++ " * " ++ l_var ++ " = " ++ l_base ++ ";" 
+pShowLocalInAddrTerm 2 l_array =
+    let l_type = show $ aType l_array
+        l_a = aName l_array
+        l_dim = show (2 - 1)
+        l_var = "lc_" ++ l_a ++ "_in_" ++ l_dim
+        l_base = "lc_" ++ l_a
+        l_localTotalSize = "lc_" ++ l_a ++ "_total_size"
+    in  l_type ++ " * " ++ l_var ++ " = " ++ l_base ++ " + " ++ l_localTotalSize ++ ";" ++ breakline ++ pShowLocalInAddrTerm 1 l_array
+pShowLocalInAddrTerm l_toggle l_array =
+    let l_type = show $ aType l_array
+        l_a = aName l_array
+        l_dim = show (l_toggle - 1)
+        l_var = "lc_" ++ l_a ++ "_in_" ++ l_dim
+        l_base = "lc_" ++ l_a
+        l_localTotalSize = "lc_" ++ l_a ++ "_total_size"
+    in  l_type ++ " * " ++ l_var ++ " = " ++ l_base ++ " + " ++ l_dim ++ " * " ++ l_localTotalSize ++ ";" ++ breakline ++ pShowLocalInAddrTerm (l_toggle-1) l_array
+
 pShowDeltaT :: String
 pShowDeltaT = "const int lt = t1 - t0;"
 
 pShowLocalCache :: [PArray] -> String
-pShowLocalCache l_arrays = concatMap pShowLocalCacheItem l_arrays
+pShowLocalCache l_arrays = intercalate breakline $ map pShowLocalCacheItem l_arrays
     where pShowLocalCacheItem l_array = (show $ aType l_array) ++ 
             " lc_" ++ aName l_array ++ "[2*120*120];" ++ breakline
 
 pShowLocalCacheAttr :: Int -> [PArray] -> String
 pShowLocalCacheAttr l_rank l_arrays = 
     pShowColor l_rank ++ breakline ++ 
-    concatMap (pShowEndIndex l_rank 0) l_arrays ++ breakline ++ 
-    concatMap (pShowEndIndex l_rank 1) l_arrays ++ breakline ++
-    concatMap (pShowLocalArraySize l_rank) l_arrays ++ breakline ++
+    (intercalate breakline $ map (pShowEndIndex l_rank 0) l_arrays) ++ breakline ++ 
+    (intercalate breakline $ map (pShowEndIndex l_rank 1) l_arrays) ++ breakline ++
+    (intercalate breakline $ map (pShowLocalArraySize l_rank) l_arrays) ++ breakline ++
     (intercalate breakline $ map (pShowLocalStride l_rank) l_arrays) ++ breakline ++
-    (intercalate breakline $ map (pShowLocalTotalSize l_rank) l_arrays) ++ breakline
+    (intercalate breakline $ map (pShowLocalTotalSize l_rank) l_arrays) ++ breakline 
 
 pShowLocalTotalSize :: Int -> PArray -> String
 pShowLocalTotalSize  l_rank l_array =
@@ -361,14 +470,14 @@ pShowLocalArraySize 1 l_array =
         l_var = "lc_" ++ l_a ++ "_size_" ++ l_dim
         l_end = "lc_" ++ l_a ++ "_end_" ++ l_dim
         l_begin = "lc_" ++ l_a ++ "_begin_" ++ l_dim
-    in  "const int " ++ l_var ++ " = " ++ l_end ++ " - " ++ l_end ++ ";"
+    in  "const int " ++ l_var ++ " = " ++ l_end ++ " - " ++ l_begin ++ ";"
 pShowLocalArraySize n l_array =
     let l_a = aName l_array
         l_dim = show (n-1) 
         l_var = "lc_" ++ l_a ++ "_size_" ++ l_dim
         l_end = "lc_" ++ l_a ++ "_end_" ++ l_dim
         l_begin = "lc_" ++ l_a ++ "_begin_" ++ l_dim
-    in  "const int " ++ l_var ++ " = " ++ l_end ++ " - " ++ l_end ++ ";" ++ 
+    in  "const int " ++ l_var ++ " = " ++ l_end ++ " - " ++ l_begin ++ ";" ++ 
         breakline ++ pShowLocalArraySize (n-1) l_array
 
 pShowColor :: Int -> String
@@ -501,10 +610,10 @@ pShowArrayInfo [] = ""
 pShowArrayInfo arrayInUse = foldr pShowArrayInfoItem "" arrayInUse
     where pShowArrayInfoItem l_arrayItem str =
             let l_type = aType l_arrayItem
-                l_name = aName l_arrayItem
-            in  str ++ breakline ++ show l_type ++ " * " ++ l_name ++ "_base"  ++ 
-                " = " ++ l_name ++ ".data();" ++ breakline ++
-                "const int " ++ "l_" ++ l_name ++ "_total_size = " ++ l_name ++
+                l_a = aName l_arrayItem
+            in  str ++ breakline ++ show l_type ++ " * " ++ l_a ++ "_base"  ++ 
+                " = " ++ l_a ++ ".data();" ++ breakline ++
+                "const int " ++ "l_" ++ l_a ++ "_total_size = " ++ l_a ++
                 ".total_size();" ++ breakline
 
 pShowRankAttr :: Int -> String -> [PArray] -> String
