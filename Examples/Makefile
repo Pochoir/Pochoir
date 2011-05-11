@@ -6,13 +6,13 @@ POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x
 ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x
 heat_1D_NP : tb_heat_1D_NP.cpp
 #   Phase-II compilation
-	${CC} -o tb_heat_1D_NP_pochoir ${OPT_FLAGS} tb_heat_1D_NP.cpp
+	${CC} -o tb_heat_1D_NP_pochoir ${OPT_FLAGS} -split-caching tb_heat_1D_NP.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_1D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_1D_NP.cpp
 
 heat_NP : tb_heat_2D_NP.cpp
 #   Phase-II compilation
-	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} tb_heat_2D_NP.cpp
+	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} -split-caching tb_heat_2D_NP.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_2D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_NP.cpp
 

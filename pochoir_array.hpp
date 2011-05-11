@@ -539,6 +539,9 @@ class Pochoir_Array {
 		/* return stride */
 		int stride (int _dim) const { return stride_[_dim]; }
 
+        /* return slope */
+        int slope (int _dim) const { return slope_[_dim]; }
+
         inline bool check_boundary(size_info const & _idx) const {
             bool touch_boundary = false;
             for (int i = 0; i < N_RANK; ++i) {
@@ -549,57 +552,57 @@ class Pochoir_Array {
         }
 
 #define check_boundary1(_idx1, _idx0) \
-            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0]) \
+            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0]) \
         
 
 #define check_boundary2(_idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
-                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1])
+            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
+                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1])
 
 #define check_boundary3(_idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
-                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1] \
-                 | _idx2 < logic_start_[2] | _idx2 >= logic_end_[2])
+            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
+                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
+                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2])
 
 #define check_boundary4(_idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
-                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1] \
-                 | _idx2 < logic_start_[2] | _idx2 >= logic_end_[2] \
-                 | _idx3 < logic_start_[3] | _idx3 >= logic_end_[3])
+            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
+                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
+                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
+                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3])
 
 #define check_boundary5(_idx5, _idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
-                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1] \
-                 | _idx2 < logic_start_[2] | _idx2 >= logic_end_[2] \
-                 | _idx3 < logic_start_[3] | _idx3 >= logic_end_[3] \
-                 | _idx4 < logic_start_[4] | _idx4 >= logic_end_[4])
+            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
+                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
+                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
+                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] \
+                 || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4])
 
 #define check_boundary6(_idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
-                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1] \
-                 | _idx2 < logic_start_[2] | _idx2 >= logic_end_[2] \
-                 | _idx3 < logic_start_[3] | _idx3 >= logic_end_[3] \
-                 | _idx4 < logic_start_[4] | _idx4 >= logic_end_[4] \
-                 | _idx5 < logic_start_[5] | _idx5 >= logic_end_[5])
+            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
+                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
+                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
+                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] \
+                 || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] \
+                 || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5])
 
 #define check_boundary7(_idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
-                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1] \
-                 | _idx2 < logic_start_[2] | _idx2 >= logic_end_[2] \
-                 | _idx3 < logic_start_[3] | _idx3 >= logic_end_[3] \
-                 | _idx4 < logic_start_[4] | _idx4 >= logic_end_[4] \
-                 | _idx5 < logic_start_[5] | _idx5 >= logic_end_[5] \
-                 | _idx6 < logic_start_[6] | _idx5 >= logic_end_[6])
+            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
+                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
+                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
+                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] \
+                 || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] \
+                 || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5] \
+                 || _idx6 < logic_start_[6] || _idx5 >= logic_end_[6])
 
 #define check_boundary8(_idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
-                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1] \
-                 | _idx2 < logic_start_[2] | _idx2 >= logic_end_[2] \
-                 | _idx3 < logic_start_[3] | _idx3 >= logic_end_[3] \
-                 | _idx4 < logic_start_[4] | _idx4 >= logic_end_[4] \
-                 | _idx5 < logic_start_[5] | _idx5 >= logic_end_[5] \
-                 | _idx6 < logic_start_[6] | _idx5 >= logic_end_[6] \
-                 | _idx7 < logic_start_[7] | _idx5 >= logic_end_[7])
+            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
+                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
+                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
+                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] \
+                 || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] \
+                 || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5] \
+                 || _idx6 < logic_start_[6] || _idx5 >= logic_end_[6] \
+                 || _idx7 < logic_start_[7] || _idx5 >= logic_end_[7])
         /* 
          * orig_value() is reserved for "ostream" : cout << Pochoir_Array
          */

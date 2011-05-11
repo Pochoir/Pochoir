@@ -193,6 +193,11 @@ ppStencil l_id l_state =
                                           ("Opt_Pointer_", l_id, l_tstep, l_revKernel, 
                                             l_newStencil) 
                                           pShowOptPointerKernel
+                                    PCaching -> 
+                                         pSplitObase 
+                                          ("Caching_", l_id, l_tstep, l_revKernel, 
+                                            l_newStencil) 
+                                          pShowCachingKernel
                                     PCPointer -> 
                                          pSplitObase 
                                           ("C_Pointer_", l_id, l_tstep, l_revKernel, 
@@ -217,6 +222,9 @@ transKernel l_kernel l_stencil l_mode =
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_exprStmts
                        POptPointer -> getFromStmts getIter 
+                                    (transArrayMap $ sArrayInUse l_stencil) 
+                                    l_exprStmts 
+                       PCaching -> getFromStmts (getPointer $ l_kernelParams) 
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_exprStmts 
                        PDefault -> let l_get = 

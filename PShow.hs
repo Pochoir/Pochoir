@@ -254,7 +254,7 @@ pShowObaseKernel l_name l_kernel =
         "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowIters l_iter ++ pShowArrayGaps l_rank l_array ++
-        breakline ++ pShowStrides l_rank l_array ++ breakline ++
+        breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
         "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
         pShowIterSet l_iter (kParams l_kernel)++
         breakline ++ pShowObaseForHeader l_rank l_iter (tail $ kParams l_kernel) ++
@@ -272,12 +272,133 @@ pShowPointerKernel l_name l_kernel =
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowPointers l_iter ++ breakline ++ 
         pShowArrayInfo l_array ++ pShowArrayGaps l_rank l_array ++
-        breakline ++ pShowStrides l_rank l_array ++ breakline ++
+        breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
         "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
         pShowPointerSet l_iter (kParams l_kernel)++
         breakline ++ pShowPointerForHeader l_rank l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
         pShowObaseTail l_rank ++ breakline ++ "};\n"
+
+pShowCachingKernel :: String -> PKernel -> String
+pShowCachingKernel l_name l_kernel = 
+    let l_rank = length (kParams l_kernel) - 1
+        l_iter = kIter l_kernel
+        l_arrays = unionArrayIter l_iter
+        l_t = head $ kParams l_kernel
+    in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
+        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
+        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        pShowPointers l_iter ++ breakline ++ 
+        pShowArrayInfo l_arrays ++ pShowArrayGaps l_rank l_arrays ++
+        breakline ++ pShowRankAttr l_rank "stride" l_arrays ++ breakline ++
+        pShowDeltaT ++ breakline ++ pShowLocalCache l_arrays ++ breakline ++ 
+        pShowRankAttr l_rank "slope" l_arrays ++ breakline ++
+        pShowLocalCacheAttr l_rank l_arrays ++ breakline ++ 
+        "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
+        pShowPointerSet l_iter (kParams l_kernel)++
+        breakline ++ pShowPointerForHeader l_rank l_iter (tail $ kParams l_kernel) ++
+        breakline ++ pShowPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
+        pShowObaseTail l_rank ++ breakline ++ "};\n"
+
+pShowDeltaT :: String
+pShowDeltaT = "const int lt = t1 - t0;"
+
+pShowLocalCache :: [PArray] -> String
+pShowLocalCache l_arrays = concatMap pShowLocalCacheItem l_arrays
+    where pShowLocalCacheItem l_array = (show $ aType l_array) ++ 
+            " lc_" ++ aName l_array ++ "[2*120*120];" ++ breakline
+
+pShowLocalCacheAttr :: Int -> [PArray] -> String
+pShowLocalCacheAttr l_rank l_arrays = 
+    pShowColor l_rank ++ breakline ++ 
+    concatMap (pShowEndIndex l_rank 0) l_arrays ++ breakline ++ 
+    concatMap (pShowEndIndex l_rank 1) l_arrays ++ breakline ++
+    concatMap (pShowLocalArraySize l_rank) l_arrays ++ breakline ++
+    (intercalate breakline $ map (pShowLocalStride l_rank) l_arrays) ++ breakline ++
+    (intercalate breakline $ map (pShowLocalTotalSize l_rank) l_arrays) ++ breakline
+
+pShowLocalTotalSize :: Int -> PArray -> String
+pShowLocalTotalSize  l_rank l_array =
+    let l_a = aName l_array
+        l_var = "lc_" ++ l_a ++ "_total_size" 
+        l_total_size = pShowSizeSum "lc" l_rank l_array
+    in  "const int " ++ l_var ++ " = " ++ l_total_size ++ ";"
+
+pShowLocalStride :: Int -> PArray -> String
+pShowLocalStride l_rank l_array = 
+    "const int " ++ pShowLocalStrideTerm l_rank l_array
+
+pShowLocalStrideTerm :: Int -> PArray -> String
+pShowLocalStrideTerm 1 l_array = 
+    let l_a = aName l_array
+        l_dim = show 0
+        l_strideName = "lc_" ++ l_a ++ "_stride_" ++ l_dim
+        l_size = show 1
+    in  l_strideName ++ " = " ++ l_size ++ ";"
+pShowLocalStrideTerm n l_array =
+    let l_a = aName l_array
+        l_dim = show (n-1)
+        l_strideName = "lc_" ++ l_a ++ "_stride_" ++ l_dim
+        l_size = pShowSizeSum "lc" (n-1) l_array
+    in  l_strideName ++ " = " ++ l_size ++ ", " ++ pShowLocalStrideTerm (n-1) l_array
+
+pShowSizeSum :: String -> Int -> PArray -> String
+pShowSizeSum pre 1 l_array =
+    let l_a = aName l_array
+        l_dim = show 0
+        l_size = pre ++ "_" ++ l_a ++ "_size_" ++ l_dim
+    in  l_size 
+pShowSizeSum pre n l_array =
+    let l_a = aName l_array
+        l_dim = show (n-1) 
+        l_size = pre ++ "_" ++ l_a ++ "_size_" ++ l_dim
+    in  l_size ++ " * " ++ pShowSizeSum pre (n-1) l_array 
+
+pShowLocalArraySize :: Int -> PArray -> String
+pShowLocalArraySize 1 l_array =
+    let l_a = aName l_array
+        l_dim = show 0
+        l_var = "lc_" ++ l_a ++ "_size_" ++ l_dim
+        l_end = "lc_" ++ l_a ++ "_end_" ++ l_dim
+        l_begin = "lc_" ++ l_a ++ "_begin_" ++ l_dim
+    in  "const int " ++ l_var ++ " = " ++ l_end ++ " - " ++ l_end ++ ";"
+pShowLocalArraySize n l_array =
+    let l_a = aName l_array
+        l_dim = show (n-1) 
+        l_var = "lc_" ++ l_a ++ "_size_" ++ l_dim
+        l_end = "lc_" ++ l_a ++ "_end_" ++ l_dim
+        l_begin = "lc_" ++ l_a ++ "_begin_" ++ l_dim
+    in  "const int " ++ l_var ++ " = " ++ l_end ++ " - " ++ l_end ++ ";" ++ 
+        breakline ++ pShowLocalArraySize (n-1) l_array
+
+pShowColor :: Int -> String
+pShowColor 1 = "const bool black_0 = (grid.dx0[0] >= 0 & grid.dx1[0] <= 0);"
+pShowColor n = 
+    let l_dim = show (n - 1)
+        l_begin_slope = "grid.dx0[" ++ l_dim ++ "]"
+        l_end_slope = "grid.dx1[" ++ l_dim ++ "]"
+        l_var = "black_" ++ l_dim
+    in  "const bool " ++ l_var ++ " = (" ++ l_begin_slope ++ " >= 0 & " ++
+        l_end_slope ++ " <= 0);" ++ breakline ++ pShowColor (n-1)
+
+pShowEndIndex :: Int -> Int -> PArray -> String
+pShowEndIndex 1 l_endCoding l_array = 
+    let l_a = aName l_array
+        l_end = if l_endCoding == 0 then "0" else "1"
+        l_endVar = if l_endCoding == 0 then "lc_" ++ l_a ++ "_begin_0"
+                                       else "lc_" ++ l_a ++ "_end_0" 
+    in  "const int " ++ l_endVar ++ " = black_0 ? grid.x" ++ l_end ++ 
+        "[0] : grid.x" ++ l_end ++ "[0] + grid.dx" ++ l_end ++ "[0] * lt;"
+pShowEndIndex n l_endCoding l_array =
+    let l_a = aName l_array
+        l_dim = show (n - 1)
+        l_end = if l_endCoding == 0 then "0" else "1"
+        l_endVar = if l_endCoding == 0 then "lc_" ++ l_a ++ "_begin_" ++ l_dim
+                                       else "lc_" ++ l_a ++ "_end_" ++ l_dim
+    in  "const int " ++ l_endVar ++ " = black_" ++ l_dim ++
+        " ? grid.x" ++ l_end ++ "[" ++ l_dim ++ "] : grid.x" ++ l_end ++ "[" ++ 
+        l_dim ++ "] + grid.dx" ++ l_end ++ "[" ++ l_dim ++ "] * lt;" ++ breakline ++ 
+        pShowEndIndex (n-1) l_endCoding l_array
 
 pShowOptPointerKernel :: String -> PKernel -> String
 pShowOptPointerKernel l_name l_kernel = 
@@ -290,7 +411,7 @@ pShowOptPointerKernel l_name l_kernel =
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowPointers l_iter ++ breakline ++ 
         pShowArrayInfo l_array ++ pShowArrayGaps l_rank l_array ++
-        breakline ++ pShowStrides l_rank l_array ++ breakline ++
+        breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
         "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
         pShowOptPointerSet l_iter (kParams l_kernel)++
         breakline ++ pShowPointerForHeader l_rank l_iter (tail $ kParams l_kernel) ++
@@ -307,7 +428,7 @@ pShowCPointerKernel l_name l_kernel =
         "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayInfo l_array ++ 
-        breakline ++ pShowStrides l_rank l_array ++ breakline ++
+        breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
         pShowRefMacro (kParams l_kernel) l_array ++
         "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
         breakline ++ pShowRawForHeader (tail $ kParams l_kernel) ++
@@ -386,17 +507,18 @@ pShowArrayInfo arrayInUse = foldr pShowArrayInfoItem "" arrayInUse
                 "const int " ++ "l_" ++ l_name ++ "_total_size = " ++ l_name ++
                 ".total_size();" ++ breakline
 
-pShowStrides :: Int -> [PArray] -> String
-pShowStrides n [] = ""
-pShowStrides n aL@(a:as) = "const int " ++ getStrides n aL ++ ";\n"
-    where getStrides n aL@(a:as) = intercalate ", " $ concat $ map (getStride n) aL
-          getStride 1 a = let r = 0 
-                          in  ["l_stride_" ++ (aName a) ++ "_" ++ show r ++
-                              " = " ++ (aName a) ++ ".stride(" ++ show r ++ ")"]
-          getStride n a = let r = n-1
-                          in  ["l_stride_" ++ (aName a) ++ "_" ++ show r ++
-                              " = " ++ (aName a) ++ ".stride(" ++ show r ++ ")"] ++
-                              getStride (n-1) a
+pShowRankAttr :: Int -> String -> [PArray] -> String
+pShowRankAttr n _ [] = ""
+pShowRankAttr n attr aL@(a:as) = "const int " ++ getAttrs n aL ++ ";\n"
+    where getAttrs n aL@(a:as) = intercalate ", " $ concat $ map (getAttr n) aL
+          getAttr 1 a = let r = 0 
+                        in  ["l_" ++ attr ++ "_" ++ (aName a) ++ "_" ++ 
+                             show r ++ " = " ++ (aName a) ++ "." ++ attr ++ 
+                             "(" ++ show r ++ ")"]
+          getAttr n a = let r = n-1
+                        in  ["l_" ++ attr ++ "_" ++ (aName a) ++ "_" ++ 
+                             show r ++ " = " ++ (aName a) ++ "." ++ attr ++
+                             "(" ++ show r ++ ")"] ++ getAttr (n-1) a
 
 pShowPointers :: [Iter] -> String
 pShowPointers [] = ""
@@ -664,7 +786,6 @@ pShowForHeader i aL pL =
     in  adjustGap i aL ++ "for (int " ++ idx ++ 
         " = l_grid.x0[" ++ l_rank ++
         "]; " ++ idx ++ " < l_grid.x1[" ++ l_rank ++ "]; ++" ++ idx 
---        "]; " ++ idx ++ " < l_grid.x1[" ++ l_rank ++ "]; " ++ idx ++ "+=1"
                     
 adjustGap :: Int -> [PArray] -> String
 adjustGap i [] = ""
