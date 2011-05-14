@@ -297,16 +297,148 @@ pShowCachingKernel l_name l_kernel =
         "/* copy in */" ++ breakline ++ 
         pShowLocalCopyIn l_rank (tail $ kParams l_kernel) l_arrays ++ breakline ++ 
         "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
-        pShowPointerSet l_iter (kParams l_kernel)++
+        pShowPointerSetLocal l_iter (kParams l_kernel)++
         breakline ++ pShowPointerForHeader l_rank l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
         pShowObaseTail l_rank ++ breakline ++ 
         pShowLocalCopyOut l_rank (tail $ kParams l_kernel) l_arrays ++ breakline ++ "};\n"
+        --
+-- PName : list of kernel parameters
+-- bookmark
+pShowPointerSetLocal :: [Iter] -> [PName] -> String
+pShowPointerSetLocal [] _ = ""
+pShowPointerSetLocal iL@(i:is) l_kernelParams = concatMap pShowPointerSetLocalTerm iL
+    where pShowPointerSetLocalTerm (iterName, array, dim) = 
+            let l_arrayName = aName array
+                l_arrayBaseName = "lc_" ++ l_arrayName
+                l_arrayTotalSize = "lc_" ++ l_arrayName ++ "_total_size"
+                l_arrayStrideList = 
+                    pGenRankList ("lc_" ++ l_arrayName ++ "_stride_") (length l_kernelParams - 1) 
+                l_transDimList = tail $ pShowTransDim dim l_kernelParams
+                l_arraySpaceOffset = 
+                    intercalate " + " $ zipWith pCombineDim l_transDimList l_arrayStrideList
+                l_arrayTimeOffset = (pGetTimeOffset (aToggle array) (head dim)) ++ 
+                                    " * " ++ l_arrayTotalSize
+            in  breakline ++ iterName ++ " = " ++ l_arrayBaseName ++ " + " ++ 
+                l_arrayTimeOffset ++ " + " ++ l_arraySpaceOffset ++ ";" 
 
-        -- bookmark
+
 pShowLocalCopyOut :: Int -> [PName] -> [PArray] -> String
 pShowLocalCopyOut l_rank l_kSpatialParams l_arrays =
-    (intercalate breakline $ map pShowLocalOutAddr l_arrays) ++ breakline
+    breakline ++ "/* copy out */" ++ breakline ++ 
+    (intercalate breakline $ map pShowLocalOutAddr l_arrays) ++ breakline ++
+    (intercalate breakline $ map pShowGlobalOutAddr l_arrays) ++ breakline ++
+    (intercalate breakline $ map (pShowCopyOutLoop l_rank l_kSpatialParams) l_arrays) ++ breakline
+
+pShowCopyOutLoop :: Int -> [PName] -> PArray -> String
+pShowCopyOutLoop l_rank l_kSpatialParams l_array =
+    let l_forHead = pShowLocalCopyOutForHeader l_rank l_kSpatialParams l_array
+        l_forTail = pShowLocalForTail l_rank
+        l_toggle = aToggle l_array
+        l_body = pShowLocalCopyOutBody l_toggle l_kSpatialParams l_array
+    in  l_forHead ++ l_body ++ l_forTail
+
+pShowLocalCopyOutForHeader :: Int -> [PName] -> PArray -> String
+pShowLocalCopyOutForHeader 1 l_kSpatialParams l_array =
+    let l_loopVar = head l_kSpatialParams
+        l_begin = show 0
+        l_size = "lc_" ++ aName l_array ++ "_size_" ++ show 0
+        l_slope = "grid.dx0[" ++ show 0 ++ "]"
+        l_end = l_size ++ " - 2 * " ++ l_slope
+    in  "for (int " ++ l_loopVar ++ " = " ++ l_begin ++ "; " ++ 
+        l_loopVar ++ " < " ++ l_end ++ "; " ++ "++" ++ l_loopVar ++ ") {" ++ 
+        breakline
+pShowLocalCopyOutForHeader l_rank l_kSpatialParams l_array =
+    let l_loopVar = head l_kSpatialParams
+        l_begin = show 0 
+        l_size = "lc_" ++ aName l_array ++ "_size_" ++ show (l_rank-1)
+        l_slope = "grid.dx0[" ++ show (l_rank-1) ++ "]"
+        l_end = l_size ++ " - 2 * " ++ l_slope
+    in  "for (int " ++ l_loopVar ++ " = " ++ l_begin ++ "; " ++ 
+        l_loopVar ++ " < " ++ l_end ++ "; " ++ "++" ++ l_loopVar ++ ") {" ++ 
+        breakline ++ pShowLocalCopyOutForHeader (l_rank-1) (tail l_kSpatialParams) l_array
+
+pShowLocalCopyOutBody :: Int -> [PName] -> PArray -> String
+pShowLocalCopyOutBody 1 l_kSpatialParams l_array =
+    let l_a = aName l_array
+        l_rank = aRank l_array
+        l_local_addr = "lc_" ++ l_a ++ "_out_" ++ show 0
+        l_global_addr = "l_" ++ l_a ++ "_out_" ++ show 0
+        l_local_offset = intercalate " + " $ zipWith (pIns " * ") l_kSpatialParams (pGenRankList ("lc_" ++ l_a ++ "_stride_") l_rank)
+        l_global_offset = intercalate " + " $ zipWith (pIns " * ") l_kSpatialParams (pGenRankList ("l_" ++ l_a ++ "_stride_") l_rank)
+    in  l_global_addr ++ "[" ++ l_global_offset ++ "] = " ++ l_local_addr ++ "[" ++ l_local_offset ++ "];" ++ breakline
+pShowLocalCopyOutBody l_toggle l_kSpatialParams l_array =
+    let l_a = aName l_array
+        l_rank = aRank l_array
+        l_local_addr = "lc_" ++ l_a ++ "_out_" ++ show (l_toggle-1)
+        l_global_addr = "l_" ++ l_a ++ "_out_" ++ show (l_toggle-1)
+        l_local_offset = intercalate " + " $ zipWith (pIns " * ") l_kSpatialParams (pGenRankList ("lc_" ++ l_a ++ "_stride_") l_rank)
+        l_global_offset = intercalate " + " $ zipWith (pIns " * ") l_kSpatialParams (pGenRankList ("l_" ++ l_a ++ "_stride_") l_rank)
+    in  l_global_addr ++ "[" ++ l_global_offset ++ "] = " ++ l_local_addr ++ "[" ++ l_local_offset ++ "];" ++ breakline ++ pShowLocalCopyOutBody (l_toggle-1) l_kSpatialParams l_array
+
+pShowGlobalOutAddr :: PArray -> String
+pShowGlobalOutAddr l_array =
+    let l_toggle = aToggle l_array
+    in  pShowGlobalOutAddrTerm l_toggle l_array
+
+pShowGlobalOutAddrTerm :: Int -> PArray -> String
+pShowGlobalOutAddrTerm 1 l_array =
+    let l_a = aName l_array
+        l_rank = aRank l_array
+        l_showType = (show $ aType l_array) ++ " * "
+        l_base = l_a ++ "_base"
+        l_out = "l_" ++ l_a ++ "_out_" ++ show (1-1)
+        l_slopes = pGenRankListFull "grid.dx0[" l_rank "]"
+        l_begins = pGenRankList ("lc_" ++ l_a ++ "_begin_") l_rank
+        l_beginOffsets = zipWith (pInsParens " + ") l_begins l_slopes
+        l_strides = pGenRankList ("l_" ++ l_a ++ "_stride_") l_rank
+    in  l_showType ++ l_out ++ " = " ++ l_base ++ " + " ++ 
+        (intercalate " + " $ zipWith (pIns " * ") l_beginOffsets l_strides) ++ ";" 
+pShowGlobalOutAddrTerm l_toggle l_array =
+    let l_a = aName l_array
+        l_rank = aRank l_array
+        l_showType = (show $ aType l_array) ++ " * "
+        l_base = l_a ++ "_base"
+        l_out = "l_" ++ l_a ++ "_out_" ++ show (l_toggle-1)
+        l_local_total_size = "l_" ++ l_a ++ "_total_size"
+        l_slopes = pGenRankListFull "grid.dx0[" l_rank "]"
+        l_begins = pGenRankList ("lc_" ++ l_a ++ "_begin_") l_rank
+        l_beginOffsets = zipWith (pInsParens " + ") l_begins l_slopes
+        l_strides = pGenRankList ("l_" ++ l_a ++ "_stride_") l_rank
+    in  l_showType ++ l_out ++ " = " ++ l_base ++ " + " ++
+        show (l_toggle-1) ++ " * " ++ l_local_total_size ++ " + " ++ 
+        (intercalate " + " $ zipWith (pIns " * ") l_beginOffsets l_strides) ++ ";" ++ 
+        breakline ++ pShowGlobalOutAddrTerm (l_toggle-1) l_array
+
+pShowLocalOutAddr :: PArray -> String
+pShowLocalOutAddr l_array =
+    let l_toggle = aToggle l_array
+    in  pShowLocalOutAddrTerm l_toggle l_array
+
+pShowLocalOutAddrTerm :: Int -> PArray -> String
+pShowLocalOutAddrTerm 1 l_array =
+    let l_a = aName l_array
+        l_rank = aRank l_array
+        l_showType = (show $ aType l_array) ++ " * "
+        l_base = "lc_" ++ l_a
+        l_out = "lc_" ++ l_a ++ "_out_" ++ show (1-1)
+        l_slopes = pGenRankListFull "grid.dx0[" l_rank "]"
+        l_strides = pGenRankList ("lc_" ++ l_a ++ "_stride_") l_rank
+    in  l_showType ++ l_out ++ " = " ++ l_base ++ " + " ++ 
+        (intercalate " + " $ zipWith (pIns " * ") l_slopes l_strides) ++ ";" 
+pShowLocalOutAddrTerm l_toggle l_array =
+    let l_a = aName l_array
+        l_rank = aRank l_array
+        l_showType = (show $ aType l_array) ++ " * "
+        l_base = "lc_" ++ l_a
+        l_out = "lc_" ++ l_a ++ "_out_" ++ show (l_toggle-1)
+        l_local_total_size = "lc_" ++ l_a ++ "_total_size"
+        l_slopes = pGenRankListFull "grid.dx0[" l_rank "]"
+        l_strides = pGenRankList ("lc_" ++ l_a ++ "_stride_") l_rank
+    in  l_showType ++ l_out ++ " = " ++ l_base ++ " + " ++
+        show (l_toggle-1) ++ " * " ++ l_local_total_size ++ " + " ++ 
+        (intercalate " + " $ zipWith (pIns " * ") l_slopes l_strides) ++ ";" ++ 
+        breakline ++ pShowLocalOutAddrTerm (l_toggle-1) l_array
 
 pShowLocalCopyIn :: Int -> [PName] -> [PArray] -> String
 pShowLocalCopyIn l_rank l_kSpatialParams l_arrays =
@@ -319,33 +451,41 @@ pShowCopyInLoop l_rank l_kSpatialParams l_array =
     let l_forHead = pShowLocalForHeader l_rank l_kSpatialParams l_array
         l_forTail = pShowLocalForTail l_rank
         l_toggle = aToggle l_array
-        l_body = pShowLocalCopy True l_toggle l_kSpatialParams l_array
+        l_body = pShowLocalCopyInBody l_toggle l_kSpatialParams l_array
     in  l_forHead ++ l_body ++ l_forTail
 
-pShowLocalCopy :: Bool -> Int -> [PName] -> PArray -> String
-pShowLocalCopy True 1 l_kSpatialParams l_array =
+pShowLocalCopyInBody :: Int -> [PName] -> PArray -> String
+pShowLocalCopyInBody 1 l_kSpatialParams l_array =
     let l_a = aName l_array
         l_rank = aRank l_array
-        l_left = "lc_" ++ l_a ++ "_in_" ++ show 0
-        l_right = "l_" ++ l_a ++ "_in_" ++ show 0
+        l_local_addr = "lc_" ++ l_a ++ "_in_" ++ show 0
+        l_global_addr = "l_" ++ l_a ++ "_in_" ++ show 0
         l_local_offset = intercalate " + " $ zipWith (pIns " * ") l_kSpatialParams (pGenRankList ("lc_" ++ l_a ++ "_stride_") l_rank)
         l_global_offset = intercalate " + " $ zipWith (pIns " * ") l_kSpatialParams (pGenRankList ("l_" ++ l_a ++ "_stride_") l_rank)
-    in  l_left ++ "[" ++ l_local_offset ++ "] = " ++ l_right ++ "[" ++ l_global_offset ++ "];" ++ breakline
-pShowLocalCopy True l_toggle l_kSpatialParams l_array =
+    in  l_local_addr ++ "[" ++ l_local_offset ++ "] = " ++ l_global_addr ++ "[" ++ l_global_offset ++ "];" ++ breakline
+pShowLocalCopyInBody l_toggle l_kSpatialParams l_array =
     let l_a = aName l_array
         l_rank = aRank l_array
-        l_left = "lc_" ++ l_a ++ "_in_" ++ show (l_toggle-1)
-        l_right = "l_" ++ l_a ++ "_in_" ++ show (l_toggle-1)
+        l_local_addr = "lc_" ++ l_a ++ "_in_" ++ show (l_toggle-1)
+        l_global_addr = "l_" ++ l_a ++ "_in_" ++ show (l_toggle-1)
         l_local_offset = intercalate " + " $ zipWith (pIns " * ") l_kSpatialParams (pGenRankList ("lc_" ++ l_a ++ "_stride_") l_rank)
         l_global_offset = intercalate " + " $ zipWith (pIns " * ") l_kSpatialParams (pGenRankList ("l_" ++ l_a ++ "_stride_") l_rank)
-    in  l_left ++ "[" ++ l_local_offset ++ "] = " ++ l_right ++ "[" ++ l_global_offset ++ "];" ++ breakline ++ pShowLocalCopy True (l_toggle-1) l_kSpatialParams l_array
+    in  l_local_addr ++ "[" ++ l_local_offset ++ "] = " ++ l_global_addr ++ "[" ++ l_global_offset ++ "];" ++ breakline ++ pShowLocalCopyInBody (l_toggle-1) l_kSpatialParams l_array
 
 pIns :: String -> String -> String -> String
 pIns mid a b = a ++ mid ++ b
 
+pInsParens :: String -> String -> String -> String
+pInsParens mid a b = "(" ++ a ++ mid ++ b ++ ")"
+
 pGenRankList :: String -> Int -> [String]
 pGenRankList pre 1 = [pre ++ show 0]
 pGenRankList pre l_rank = [pre ++ show (l_rank-1)] ++ pGenRankList pre (l_rank-1)
+
+pGenRankListFull :: String -> Int -> String -> [String]
+pGenRankListFull pre 1 suf = [pre ++ show 0 ++ suf]
+pGenRankListFull pre l_rank suf = [pre ++ show (l_rank-1) ++ suf] ++ 
+                                  pGenRankListFull pre (l_rank-1) suf
 
 pShowLocalForHeader :: Int -> [PName] -> PArray -> String
 pShowLocalForHeader 1 l_kSpatialParams l_array =
@@ -530,19 +670,22 @@ pShowEndIndex :: Int -> Int -> PArray -> String
 pShowEndIndex 1 l_endCoding l_array = 
     let l_a = aName l_array
         l_end = if l_endCoding == 0 then "0" else "1"
+        l_x = "grid.x" ++ l_end ++ "[0]"
+        l_dx = "grid.dx" ++ l_end ++ "[0]"
         l_endVar = if l_endCoding == 0 then "lc_" ++ l_a ++ "_begin_0"
                                        else "lc_" ++ l_a ++ "_end_0" 
-    in  "const int " ++ l_endVar ++ " = black_0 ? grid.x" ++ l_end ++ 
-        "[0] : grid.x" ++ l_end ++ "[0] + grid.dx" ++ l_end ++ "[0] * lt;"
+    in  "const int " ++ l_endVar ++ " = black_0 ? " ++ l_x ++ 
+        " : " ++ l_x ++ " + " ++ l_dx ++ " * (lt + 1);"
 pShowEndIndex n l_endCoding l_array =
     let l_a = aName l_array
         l_dim = show (n - 1)
         l_end = if l_endCoding == 0 then "0" else "1"
+        l_x = "grid.x" ++ l_end ++ "[" ++ l_dim ++ "]"
+        l_dx = "grid.dx" ++ l_end ++ "[" ++ l_dim ++ "]"
         l_endVar = if l_endCoding == 0 then "lc_" ++ l_a ++ "_begin_" ++ l_dim
                                        else "lc_" ++ l_a ++ "_end_" ++ l_dim
     in  "const int " ++ l_endVar ++ " = black_" ++ l_dim ++
-        " ? grid.x" ++ l_end ++ "[" ++ l_dim ++ "] : grid.x" ++ l_end ++ "[" ++ 
-        l_dim ++ "] + grid.dx" ++ l_end ++ "[" ++ l_dim ++ "] * lt;" ++ breakline ++ 
+        " ? " ++ l_x ++ " : " ++ l_x ++ " + " ++ l_dx ++ " * (lt + 1);" ++ breakline ++ 
         pShowEndIndex (n-1) l_endCoding l_array
 
 pShowOptPointerKernel :: String -> PKernel -> String
