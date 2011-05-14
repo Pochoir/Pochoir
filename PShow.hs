@@ -275,8 +275,8 @@ pShowPointerKernel l_name l_kernel =
         breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
         "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
         pShowPointerSet l_iter (kParams l_kernel)++
-        breakline ++ pShowPointerForHeader l_rank l_iter (tail $ kParams l_kernel) ++
-        breakline ++ pShowPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
+        breakline ++ pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
+        breakline ++ pShowPointerStmt True l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
         pShowObaseTail l_rank ++ breakline ++ "};\n"
 
 pShowCachingKernel :: String -> PKernel -> String
@@ -292,36 +292,36 @@ pShowCachingKernel l_name l_kernel =
         pShowArrayInfo l_arrays ++ pShowArrayGaps l_rank l_arrays ++
         breakline ++ pShowRankAttr l_rank "stride" l_arrays ++ breakline ++
         pShowDeltaT ++ breakline ++ pShowLocalCache l_arrays ++ breakline ++ 
-        pShowRankAttr l_rank "slope" l_arrays ++ breakline ++
+        -- pShowRankAttr l_rank "slope" l_arrays ++ breakline ++
         pShowLocalCacheAttr l_rank l_arrays ++ breakline ++ 
         "/* copy in */" ++ breakline ++ 
         pShowLocalCopyIn l_rank (tail $ kParams l_kernel) l_arrays ++ breakline ++ 
         "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
         pShowPointerSetLocal l_iter (kParams l_kernel)++
-        breakline ++ pShowPointerForHeader l_rank l_iter (tail $ kParams l_kernel) ++
-        breakline ++ pShowPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
+        breakline ++ pShowPointerForHeader l_rank False l_iter (tail $ kParams l_kernel) ++
+        breakline ++ pShowPointerStmt False l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
         pShowObaseTail l_rank ++ breakline ++ 
         pShowLocalCopyOut l_rank (tail $ kParams l_kernel) l_arrays ++ breakline ++ "};\n"
-        --
+
 -- PName : list of kernel parameters
--- bookmark
 pShowPointerSetLocal :: [Iter] -> [PName] -> String
 pShowPointerSetLocal [] _ = ""
 pShowPointerSetLocal iL@(i:is) l_kernelParams = concatMap pShowPointerSetLocalTerm iL
     where pShowPointerSetLocalTerm (iterName, array, dim) = 
             let l_arrayName = aName array
+                l_rank = length l_kernelParams - 1
                 l_arrayBaseName = "lc_" ++ l_arrayName
                 l_arrayTotalSize = "lc_" ++ l_arrayName ++ "_total_size"
-                l_arrayStrideList = 
-                    pGenRankList ("lc_" ++ l_arrayName ++ "_stride_") (length l_kernelParams - 1) 
+                l_arrayStrideList = pGenRankList ("lc_" ++ l_arrayName ++ "_stride_") l_rank 
                 l_transDimList = tail $ pShowTransDim dim l_kernelParams
+                l_begins = pGenRankList ("lc_" ++ l_arrayName ++ "_begin_") l_rank
+                l_offsets = zipWith (pInsParens " - ") (map show l_transDimList) l_begins
                 l_arraySpaceOffset = 
-                    intercalate " + " $ zipWith pCombineDim l_transDimList l_arrayStrideList
+                    intercalate " + " $ zipWith (pIns " * ") l_offsets l_arrayStrideList
                 l_arrayTimeOffset = (pGetTimeOffset (aToggle array) (head dim)) ++ 
                                     " * " ++ l_arrayTotalSize
             in  breakline ++ iterName ++ " = " ++ l_arrayBaseName ++ " + " ++ 
                 l_arrayTimeOffset ++ " + " ++ l_arraySpaceOffset ++ ";" 
-
 
 pShowLocalCopyOut :: Int -> [PName] -> [PArray] -> String
 pShowLocalCopyOut l_rank l_kSpatialParams l_arrays =
@@ -702,7 +702,7 @@ pShowOptPointerKernel l_name l_kernel =
         breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
         "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
         pShowOptPointerSet l_iter (kParams l_kernel)++
-        breakline ++ pShowPointerForHeader l_rank l_iter (tail $ kParams l_kernel) ++
+        breakline ++ pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowOptPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
         pShowObaseTail l_rank ++ breakline ++ "};\n"
 
@@ -810,11 +810,11 @@ pShowPointers iL@(i:is) = foldr pShowPointer "" iL
     where pShowPointer (nameIter, arrayInUse, dL) str =
                 str ++ breakline ++ (show $ aType arrayInUse) ++ " * " ++ nameIter ++ ";"
 
-pShowPointerStmt :: PKernel -> String
-pShowPointerStmt l_kernel = 
+pShowPointerStmt :: Bool -> PKernel -> String
+pShowPointerStmt global l_kernel = 
     let oldStmts = kStmt l_kernel
         l_iter = kIter l_kernel
-        obaseStmts = transStmts oldStmts $ transPointer l_iter
+        obaseStmts = transStmts oldStmts $ transPointer global l_iter
     in show obaseStmts
 
 pShowObaseStmt :: PKernel -> String
@@ -838,17 +838,18 @@ transOptPointer l_iters (PVAR q v dL) =
         Just iterName -> VAR q $ "(*" ++ iterName ++ ")"
 transOptPointer l_iters e = e
 
-transPointer :: [Iter] -> Expr -> Expr
-transPointer l_iters (PVAR q v dL) =
-    case pPointerLookup (v, dL) l_iters of
-        Nothing -> PVAR q v dL
-        Just (iterName, arrayInUse, des) -> 
-            BVAR iterName de
-                where de = simplifyDimExpr naive_de
-                      naive_de = foldr plusCombDimExpr x $ zipWith mulDimExpr strideL $ tail $ excludeDimExpr dL des 
-                      strideL = pGenRankList ("l_" ++ aName arrayInUse ++ "_stride_") (aRank arrayInUse) 
-                      x = (DimINT 0)
-transPointer l_iters e = e
+transPointer :: Bool -> [Iter] -> Expr -> Expr
+transPointer global l_iters (PVAR q v dL) =
+    let pre = if global == True then "l_" else "lc_"
+    in  case pPointerLookup (v, dL) l_iters of
+            Nothing -> PVAR q v dL
+            Just (iterName, arrayInUse, des) -> 
+                BVAR iterName de
+                    where de = simplifyDimExpr naive_de
+                          naive_de = foldr plusCombDimExpr x $ zipWith mulDimExpr strideL $ tail $ excludeDimExpr dL des 
+                          strideL = pGenRankList (pre ++ aName arrayInUse ++ "_stride_") (aRank arrayInUse) 
+                          x = (DimINT 0)
+transPointer _ _ e = e
 
 plusCombDimExpr :: DimExpr -> DimExpr -> DimExpr
 plusCombDimExpr e1 e2 = DimDuo "+" e1 e2
@@ -939,7 +940,7 @@ excludeBaseDim (DimParen e) b = DimParen (excludeBaseDim e b)
 -- PName : list of kernel parameters
 pShowPointerSet :: [Iter] -> [PName] -> String
 pShowPointerSet [] _ = ""
-pShowPointerSet iL@(i:is) l_kernelParams = concat $ map pShowPointerSetTerm iL
+pShowPointerSet iL@(i:is) l_kernelParams = concatMap pShowPointerSetTerm iL
     where pShowPointerSetTerm (iterName, array, dim) = 
             let l_arrayName = aName array
                 l_arrayBaseName = l_arrayName ++ "_base"
@@ -1018,12 +1019,12 @@ pShowObaseTail n =
 pShowObaseForHeader :: Int -> [Iter] -> [PName] -> String
 pShowObaseForHeader _ _ [] = ""
 pShowObaseForHeader 1 iL pL = 
-                           breakline ++ pShowForHeader 0 (unionArrayIter iL) pL ++ 
+                           breakline ++ pShowForHeader 0 True (unionArrayIter iL) pL ++ 
                            pShowIterComma iL ++
                            breakline ++ intercalate (", " ++ breakline) 
                                         (map ((++) "++" . getIterName) iL) ++ ") {"
 pShowObaseForHeader n iL pL = 
-                           breakline ++ pShowForHeader (n-1) (unionArrayIter iL) pL ++ 
+                           breakline ++ pShowForHeader (n-1) True (unionArrayIter iL) pL ++ 
                            pShowIterComma iL ++
                            breakline ++ intercalate (", " ++ breakline) 
                                      (zipWith wrapIterInc
@@ -1033,52 +1034,59 @@ pShowObaseForHeader n iL pL =
     where wrapIterInc gap iter = iter ++ ".inc(" ++ gap ++ ")"
 
 -- pL is the parameter list of original user supplied computing kernel
-pShowPointerForHeader :: Int -> [Iter] -> [PName] -> String
-pShowPointerForHeader _ _ [] = ""
-pShowPointerForHeader 1 iL pL = 
+pShowPointerForHeader :: Int -> Bool -> [Iter] -> [PName] -> String
+pShowPointerForHeader _ _ _ [] = ""
+pShowPointerForHeader 1 global iL pL = 
                            breakline ++ pShowPragma ++
-                           breakline ++ pShowForHeader 0 (unionArrayIter iL) pL ++  
+                           breakline ++ pShowForHeader 0 global (unionArrayIter iL) pL ++  
                            pShowIterComma iL ++
                            breakline ++ intercalate (", " ++ breakline) 
                                         (map ((++) "++" . getIterName) iL) ++ ") {"
 --                                        (map ((flip (++) "+=1") . getIterName) iL) ++ ") {"
 
-pShowPointerForHeader n iL pL = 
-                           breakline ++ pShowForHeader (n-1) (unionArrayIter iL) pL ++ 
+pShowPointerForHeader n global iL pL = 
+                           breakline ++ 
+                           pShowForHeader (n-1) global (unionArrayIter iL) pL ++ 
                            pShowIterComma iL ++
                            breakline ++ intercalate (", " ++ breakline) 
                                      (zipWith wrapIterInc
                                         (map (getArrayGap (n-1)) (getArrayIter iL))
                                         (map getIterName iL)) ++ 
-                           ") {" ++ pShowPointerForHeader (n-1) iL pL
+                           ") {" ++ pShowPointerForHeader (n-1) global iL pL
     where wrapIterInc gap iter = iter ++ " += " ++ gap 
 
 pShowIterComma :: [Iter] -> String
 pShowIterComma [] = ""
 pShowIterComma iL@(i:is) = ", "
 
-pShowForHeader :: Int -> [PArray] -> [PName] -> String
-pShowForHeader i _ [] = ""
-pShowForHeader i aL pL = 
+pShowForHeader :: Int -> Bool -> [PArray] -> [PName] -> String
+pShowForHeader _ _ _ [] = ""
+pShowForHeader i global aL pL = 
     let len_pL = length pL
-        idx = pL !! (len_pL - 1 - i)
+        l_var = pL !! (len_pL - 1 - i)
         l_rank = show i
-    in  adjustGap i aL ++ "for (int " ++ idx ++ 
-        " = l_grid.x0[" ++ l_rank ++
-        "]; " ++ idx ++ " < l_grid.x1[" ++ l_rank ++ "]; ++" ++ idx 
+        l_begin = "l_grid.x0[" ++ l_rank ++ "]"
+        l_end = "l_grid.x1[" ++ l_rank ++ "]"
+    in  adjustGap i global aL ++ "for (int " ++ l_var ++ 
+        " = " ++ l_begin ++ "; " ++ l_var ++ " < " ++ l_end ++ "; ++" ++ l_var
                     
-adjustGap :: Int -> [PArray] -> String
-adjustGap i [] = ""
-adjustGap i aL@(a:as) = 
-    if i > 0 then pShowAdjustGap i aL
+adjustGap :: Int -> Bool -> [PArray] -> String
+adjustGap l_rank _ [] = ""
+adjustGap l_rank global aL@(a:as) = 
+    if l_rank > 0 then pShowAdjustGap l_rank aL
              else ""
-    where pShowAdjustGap i [] = ""
-          pShowAdjustGap i aL@(a:as) = concatMap (pShowAdjustGapTerm i) aL
-          pShowAdjustGapTerm i a = "gap_" ++ (aName a) ++ "_" ++ show i ++ " = " ++
-                                   "l_" ++ (aName a) ++ "_stride_" ++ show i ++ 
-                                   " + (l_grid.x0[" ++ show (i-1) ++ "] - l_grid.x1[" ++
-                                   show (i-1) ++ "]) * l_" ++ (aName a) ++ "_stride_" ++ 
-                                   show (i-1) ++ ";" ++ breakline
+    where pShowAdjustGap l_rank [] = ""
+          pShowAdjustGap l_rank aL@(a:as) = concatMap (pShowAdjustGapTerm l_rank) aL
+          pShowAdjustGapTerm l_rank a = 
+            let l_a = aName a
+                l_gap = "gap_" ++ l_a ++ "_" ++ show l_rank
+                pre = if global == True then "l_" else "lc_"
+                l_stride = pre ++ l_a ++ "_stride_" ++ show l_rank 
+                l_pre_stride = pre ++ l_a ++ "_stride_" ++ show (l_rank - 1)
+                l_begin = "l_grid.x0[" ++ show (l_rank-1) ++ "]"
+                l_end = "l_grid.x1[" ++ show (l_rank-1) ++ "]"
+            in  l_gap ++ " = " ++ l_stride ++ " + (" ++ l_begin ++ " - " ++ l_end ++ 
+                ") * " ++ l_pre_stride ++ ";" ++ breakline
           
 getIterName :: Iter -> String
 getIterName (name, _, _) = name
