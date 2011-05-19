@@ -114,14 +114,15 @@ class Pochoir {
 template <int N_RANK>
 void Pochoir<N_RANK>::checkFlag(bool flag, char const * str) {
     if (!flag) {
-        printf("\n<%s:%s:%d> :\nYou forgot register %s!\n", __FILE__, __FUNCTION__, __LINE__, str);
+        printf("\nPochoir registration error:\n");
+        printf("You forgot to register %s.\n", str);
         exit(1);
     }
 }
 
 template <int N_RANK>
 void Pochoir<N_RANK>::checkFlags(void) {
-    checkFlag(regArrayFlag, "Pochoir_Array");
+    checkFlag(regArrayFlag, "Pochoir array");
     checkFlag(regLogicDomainFlag, "Logic Domain");
     checkFlag(regPhysDomainFlag, "Physical Domain");
     checkFlag(regShapeFlag, "Shape");
@@ -148,7 +149,8 @@ void Pochoir<N_RANK>::cmpPhysDomainFromArray(T_Array & arr) {
     /* check the consistency of all engaged Pochoir_Array */
     for (int j = 0; j < N_RANK; ++j) {
         if (arr.size(j) != phys_grid_.x1[j]) {
-            printf("Size Mismatch in registered Pochoir_Array(s)!\n");
+            printf("Pochoir array size mismatch error:\n");
+            printf("Registered Pochoir arrays have different sizes!\n");
             exit(1);
         }
     }
@@ -167,12 +169,7 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & arr) {
 #if DEBUG
         printf("arr_type_size = %d\n", arr_type_size_);
 #endif
-    } else {
-        if (sizeof(T) != arr_type_size_) {
-            printf("Type Mismatch in registered Pochoir_Array(s)!\n");
-            exit(1);
-        }
-    }
+    } 
     if (!regPhysDomainFlag) {
         getPhysDomainFromArray(arr);
     } else {

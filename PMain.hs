@@ -45,7 +45,7 @@ main = do args <- getArgs
           let (inFiles, inDirs, mode, debug, showFile, userArgs) 
                 = parseArgs ([], [], PDefault, False, True, []) args
           whilst (mode == PHelp) $ do
-             printUsage
+             printOptions
              exitFailure
           whilst (mode /= PNoPP) $ do
              ppopp (mode, debug, showFile, userArgs) (zip inFiles inDirs)
@@ -67,7 +67,8 @@ ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) =
     do putStrLn ("pochoir called with mode =" ++ show mode)
        pochoirLibPath <- catch (getEnv "POCHOIR_LIB_PATH")(\e -> return "EnvError")
        whilst (pochoirLibPath == "EnvError") $ do
-          putStrLn ("Environment variable POCHOIR_LIB_PATH is NOT set")
+          putStrLn ("Pochoir environment variable not set:")
+          putStrLn ("POCHOIR_LIB_PATH")
           exitFailure
 {-
        cilkStubPath <- catch (getEnv "CILK_HEADER_PATH")(\e -> return "EnvError")
@@ -135,9 +136,17 @@ iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x"]
 
 parseArgs :: ([String], [String], PMode, Bool, Bool, [String]) -> [String] -> ([String], [String], PMode, Bool, Bool, [String])
 parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL 
-    | elem "-help" aL =
+    | elem "--help" aL =
         let l_mode = PHelp
-            aL' = delete "-help" aL
+            aL' = delete "--help" aL
+        in  (inFiles, inDirs, l_mode, debug, showFile, aL')
+    | elem "-h" aL =
+        let l_mode = PHelp
+            aL' = delete "-h" aL
+        in  (inFiles, inDirs, l_mode, debug, showFile, aL')
+    | elem "-auto-optimize" aL =
+        let l_mode = PDefault
+            aL' = delete "-auto-optimize" aL
         in  (inFiles, inDirs, l_mode, debug, showFile, aL')
     | elem "-split-caching" aL =
         let l_mode = PCaching
@@ -195,14 +204,18 @@ findCPP (a:as) (l_files, l_dirs, l_mode, l_al)
     | otherwise = findCPP as (l_files, l_dirs, l_mode, l_al)
 
 printUsage :: IO ()
-printUsage = 
-    do putStrLn ("Usage: ")
-       putStrLn ("pochoir $filename : " ++ breakline ++ "Let the Pochoir compiler automatically choose the best optimizing level for you!")
-       putStrLn ("pochoir -split-macro-shadow $filename : " ++ breakline ++ 
+printUsage =
+    do putStrLn ("Usage: pochoir [OPTION] [filename]")
+       putStrLn ("Try `pochoir --help' for more options.")
+
+printOptions :: IO ()
+printOptions = 
+    do putStrLn ("Usage: pochoir [OPTION] [filename]")
+       putStrLn ("Run the Pochoir stencil compiler on [filename].")
+       putStrLn ("-auto-optimize : " ++ breakline ++ "Let the Pochoir compiler automatically choose the best optimizing level for you! (default)")
+       putStrLn ("-split-macro-shadow $filename : " ++ breakline ++ 
                "using macro tricks to split the interior and boundary regions")
-       putStrLn ("pochoir -split-opt-pointer $filename : " ++ breakline ++ 
-               "split the interior and boundary region, and using optimized C-style pointer to optimize the base case")
-       putStrLn ("pochoir -split-pointer $filename : " ++ breakline ++ 
+       putStrLn ("-split-pointer $filename : " ++ breakline ++ 
                "Default Mode : split the interior and boundary region, and using C-style pointer to optimize the base case")
 
 pProcess :: PMode -> Handle -> Handle -> IO ()

@@ -539,9 +539,6 @@ class Pochoir_Array {
 		/* return stride */
 		int stride (int _dim) const { return stride_[_dim]; }
 
-        /* return slope */
-        int slope (int _dim) const { return slope_[_dim]; }
-
         inline bool check_boundary(size_info const & _idx) const {
             bool touch_boundary = false;
             for (int i = 0; i < N_RANK; ++i) {
@@ -552,57 +549,57 @@ class Pochoir_Array {
         }
 
 #define check_boundary1(_idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0]) \
+            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0]) \
         
 
 #define check_boundary2(_idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1])
+            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
+                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1])
 
 #define check_boundary3(_idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
-                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2])
+            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
+                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1] \
+                 | _idx2 < logic_start_[2] | _idx2 >= logic_end_[2])
 
 #define check_boundary4(_idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
-                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
-                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3])
+            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
+                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1] \
+                 | _idx2 < logic_start_[2] | _idx2 >= logic_end_[2] \
+                 | _idx3 < logic_start_[3] | _idx3 >= logic_end_[3])
 
 #define check_boundary5(_idx5, _idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
-                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
-                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] \
-                 || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4])
+            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
+                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1] \
+                 | _idx2 < logic_start_[2] | _idx2 >= logic_end_[2] \
+                 | _idx3 < logic_start_[3] | _idx3 >= logic_end_[3] \
+                 | _idx4 < logic_start_[4] | _idx4 >= logic_end_[4])
 
 #define check_boundary6(_idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
-                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
-                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] \
-                 || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] \
-                 || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5])
+            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
+                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1] \
+                 | _idx2 < logic_start_[2] | _idx2 >= logic_end_[2] \
+                 | _idx3 < logic_start_[3] | _idx3 >= logic_end_[3] \
+                 | _idx4 < logic_start_[4] | _idx4 >= logic_end_[4] \
+                 | _idx5 < logic_start_[5] | _idx5 >= logic_end_[5])
 
 #define check_boundary7(_idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
-                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
-                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] \
-                 || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] \
-                 || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5] \
-                 || _idx6 < logic_start_[6] || _idx5 >= logic_end_[6])
+            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
+                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1] \
+                 | _idx2 < logic_start_[2] | _idx2 >= logic_end_[2] \
+                 | _idx3 < logic_start_[3] | _idx3 >= logic_end_[3] \
+                 | _idx4 < logic_start_[4] | _idx4 >= logic_end_[4] \
+                 | _idx5 < logic_start_[5] | _idx5 >= logic_end_[5] \
+                 | _idx6 < logic_start_[6] | _idx5 >= logic_end_[6])
 
 #define check_boundary8(_idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
-                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
-                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] \
-                 || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] \
-                 || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5] \
-                 || _idx6 < logic_start_[6] || _idx5 >= logic_end_[6] \
-                 || _idx7 < logic_start_[7] || _idx5 >= logic_end_[7])
+            (_idx0 < logic_start_[0] | _idx0 >= logic_end_[0] \
+                 | _idx1 < logic_start_[1] | _idx1 >= logic_end_[1] \
+                 | _idx2 < logic_start_[2] | _idx2 >= logic_end_[2] \
+                 | _idx3 < logic_start_[3] | _idx3 >= logic_end_[3] \
+                 | _idx4 < logic_start_[4] | _idx4 >= logic_end_[4] \
+                 | _idx5 < logic_start_[5] | _idx5 >= logic_end_[5] \
+                 | _idx6 < logic_start_[6] | _idx5 >= logic_end_[6] \
+                 | _idx7 < logic_start_[7] | _idx5 >= logic_end_[7])
         /* 
          * orig_value() is reserved for "ostream" : cout << Pochoir_Array
          */
@@ -647,7 +644,8 @@ class Pochoir_Array {
          */
 		inline T operator() (int _idx1, int _idx0) const {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before accessing!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -658,7 +656,8 @@ class Pochoir_Array {
                 l_shift[1] = _idx0 - home_cell_[1];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d), shape{%d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d)\nShape index {%d, %d}\n",
                             _idx1, _idx0, l_shift[0], l_shift[1]);
                     print_shape();
                     exit(1);
@@ -677,7 +676,8 @@ class Pochoir_Array {
 
 		inline T operator() (int _idx2, int _idx1, int _idx0) const {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -688,7 +688,8 @@ class Pochoir_Array {
                 l_shift[1] = _idx1 - home_cell_[1]; l_shift[2] = _idx0 - home_cell_[2];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d), shape{%d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d)\nShape index {%d, %d, %d}\n",
                             _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2]);
                     print_shape();
@@ -705,7 +706,8 @@ class Pochoir_Array {
 
 		inline T operator() (int _idx3, int _idx2, int _idx1, int _idx0) const {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -717,7 +719,8 @@ class Pochoir_Array {
                 l_shift[3] = _idx0 - home_cell_[3];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d, %d), shape{%d, %d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d, %d)\nShape index {%d, %d, %d, %d}\n",
                             _idx3, _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2], l_shift[3]);
                     print_shape();
@@ -734,7 +737,8 @@ class Pochoir_Array {
 
 		inline T operator() (int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) const {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -746,7 +750,8 @@ class Pochoir_Array {
                 l_shift[3] = _idx1 - home_cell_[3]; l_shift[4] = _idx0 - home_cell_[4];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d, %d, %d), shape{%d, %d, %d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d, %d, %d)\nShape index {%d, %d, %d, %d, %d}\n",
                             _idx4, _idx3, _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2], l_shift[3], l_shift[4]);
                     print_shape();
@@ -763,7 +768,8 @@ class Pochoir_Array {
 
 		inline T operator() (int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) const {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -776,7 +782,8 @@ class Pochoir_Array {
                 l_shift[5] = _idx0 - home_cell_[5];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d, %d, %d, %d), shape{%d, %d, %d, %d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d, %d, %d, %d)\nShape index {%d, %d, %d, %d, %d, %d}\n",
                             _idx5, _idx4, _idx3, _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2], l_shift[3], l_shift[4], l_shift[5]);
                     print_shape();
@@ -793,7 +800,8 @@ class Pochoir_Array {
 
 		inline T operator() (int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) const {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -806,7 +814,8 @@ class Pochoir_Array {
                 l_shift[5] = _idx1 - home_cell_[5]; l_shift[6] = _idx0 - home_cell_[6];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d, %d, %d, %d, %d), shape{%d, %d, %d, %d, %d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d, %d, %d, %d, %d)\nShape index {%d, %d, %d, %d, %d, %d, %d}\n",
                             _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2], l_shift[3], l_shift[4], l_shift[5], l_shift[6]);
                     print_shape();
@@ -823,7 +832,8 @@ class Pochoir_Array {
 
 		inline T operator() (int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) const {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -837,7 +847,8 @@ class Pochoir_Array {
                 l_shift[7] = _idx0 - home_cell_[7];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d, %d, %d, %d, %d, %d), shape{%d, %d, %d, %d, %d, %d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d, %d, %d, %d, %d, %d)\nShape index {%d, %d, %d, %d, %d, %d, %d, %d}\n",
                             _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2], l_shift[3], l_shift[4], l_shift[5], l_shift[6], l_shift[7]);
                     print_shape();
@@ -854,7 +865,8 @@ class Pochoir_Array {
 
 		inline T operator() (int _idx8, int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) const {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -868,7 +880,8 @@ class Pochoir_Array {
                 l_shift[7] = _idx1 - home_cell_[7]; l_shift[8] = _idx0 - home_cell_[8];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d, %d, %d, %d, %d, %d, %d), shape{%d, %d, %d, %d, %d, %d, %d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d, %d, %d, %d, %d, %d, %d)\nShape index {%d, %d, %d, %d, %d, %d, %d, %d, %d}\n",
                             _idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2], l_shift[3], l_shift[4], l_shift[5], l_shift[6], l_shift[7], l_shift[8]);
                     print_shape();
@@ -885,7 +898,8 @@ class Pochoir_Array {
 
 		inline T & operator() (int _idx1, int _idx0) {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -896,7 +910,8 @@ class Pochoir_Array {
                 l_shift[1] = _idx0 - home_cell_[1];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d), shape{%d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d)\nShape index {%d, %d}\n",
                             _idx1, _idx0, l_shift[0], l_shift[1]);
                     print_shape();
                     exit(1);
@@ -912,7 +927,8 @@ class Pochoir_Array {
 
 		inline T & operator() (int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -929,7 +945,8 @@ class Pochoir_Array {
                  */
                 if (!l_within_shape) {
 #if 1
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d), shape{%d, %d, %d}\n", _idx2, _idx1, _idx0, l_shift[0], l_shift[1], l_shift[2]);
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d)\nShape index {%d, %d, %d}\n", _idx2, _idx1, _idx0, l_shift[0], l_shift[1], l_shift[2]);
                     print_shape();
                     exit(1);
 #endif
@@ -945,7 +962,8 @@ class Pochoir_Array {
 
 		inline T & operator() (int _idx3, int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -957,7 +975,8 @@ class Pochoir_Array {
                 l_shift[3] = _idx0 - home_cell_[3];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d, %d), shape{%d, %d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d, %d)\nShape index {%d, %d, %d, %d}\n",
                             _idx3, _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2], l_shift[3]);
                     print_shape();
@@ -974,7 +993,8 @@ class Pochoir_Array {
 
 		inline T & operator() (int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -986,7 +1006,8 @@ class Pochoir_Array {
                 l_shift[3] = _idx1 - home_cell_[3]; l_shift[4] = _idx0 - home_cell_[4];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d, %d, %d), shape{%d, %d, %d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d, %d, %d)\nShape index {%d, %d, %d, %d, %d}\n",
                             _idx4, _idx3, _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2], l_shift[3], l_shift[4]);
                     print_shape();
@@ -1003,7 +1024,8 @@ class Pochoir_Array {
 
 		inline T & operator() (int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -1016,7 +1038,8 @@ class Pochoir_Array {
                 l_shift[5] = _idx0 - home_cell_[5];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d, %d, %d, %d), shape{%d, %d, %d, %d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d, %d, %d, %d)\nShape index {%d, %d, %d, %d, %d, %d}\n",
                             _idx5, _idx4, _idx3, _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2], l_shift[3], l_shift[4], l_shift[5]);
                     print_shape();
@@ -1033,7 +1056,8 @@ class Pochoir_Array {
 
 		inline T & operator() (int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -1046,7 +1070,8 @@ class Pochoir_Array {
                 l_shift[5] = _idx1 - home_cell_[5]; l_shift[6] = _idx0 - home_cell_[6];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d, %d, %d, %d, %d), shape{%d, %d, %d, %d, %d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d, %d, %d, %d, %d)\nShape index {%d, %d, %d, %d, %d, %d, %d}\n",
                             _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2], l_shift[3], l_shift[4], l_shift[5], l_shift[6]);
                     print_shape();
@@ -1063,7 +1088,8 @@ class Pochoir_Array {
 
 		inline T & operator() (int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -1077,7 +1103,8 @@ class Pochoir_Array {
                 l_shift[7] = _idx0 - home_cell_[7];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d, %d, %d, %d, %d, %d), shape{%d, %d, %d, %d, %d, %d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d, %d, %d, %d, %d, %d)\nShape index {%d, %d, %d, %d, %d, %d, %d, %d}\n",
                             _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2], l_shift[3], l_shift[4], l_shift[5], l_shift[6], l_shift[7]);
                     print_shape();
@@ -1094,7 +1121,8 @@ class Pochoir_Array {
 
 		inline T & operator() (int _idx8, int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
-                printf("Please Register the Pochoir_Array<%d> with a Pochoir object before access!\n", N_RANK);
+                printf("Pochoir array access error:\n");
+                printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
 #ifdef CHECK_SHAPE
@@ -1108,7 +1136,8 @@ class Pochoir_Array {
                 l_shift[7] = _idx1 - home_cell_[7]; l_shift[8] = _idx0 - home_cell_[8];
                 bool l_within_shape = check_shape(l_shift);
                 if (!l_within_shape) {
-                    printf("Off-shape access at Pochoir_Array(%d, %d, %d, %d, %d, %d, %d, %d, %d), shape{%d, %d, %d, %d, %d, %d, %d, %d, %d}\n",
+                    printf("Pochoir off-shape access error:\n");
+                    printf("Pochoir array index (%d, %d, %d, %d, %d, %d, %d, %d, %d)\nShape{%d, %d, %d, %d, %d, %d, %d, %d, %d}\n",
                             _idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0,
                             l_shift[0], l_shift[1], l_shift[2], l_shift[3], l_shift[4], l_shift[5], l_shift[6], l_shift[7], l_shift[8]);
                     print_shape();
@@ -1166,7 +1195,8 @@ class Pochoir_Array {
 
 		inline T get (int _idx1, int _idx0) {
             if (check_boundary1(_idx1, _idx0)) {
-                printf("Off-boundary access in boundary function at arr.get(%d, %d)\n", _idx1, _idx0);
+                printf("Pochoir illegal access by boundary function error:\n");
+                printf("Out-of-range access by boundary function at index (%d, %d)\n", _idx1, _idx0);
                 exit(1);
             }
 			int l_idx = _idx0 * stride_[0] + (_idx1 % toggle_) * total_size_;
@@ -1175,7 +1205,8 @@ class Pochoir_Array {
 
 		inline T get (int _idx2, int _idx1, int _idx0) {
             if (check_boundary2(_idx2, _idx1, _idx0)) {
-                printf("Off-boundary access in boundary function at arr.get(%d, %d, %d)\n", _idx2, _idx1, _idx0);
+                printf("Pochoir illegal access by boundary function error:\n");
+                printf("Out-of-range access by boundary function at index (%d, %d, %d)\n", _idx2, _idx1, _idx0);
                 exit(1);
             }
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + (_idx2 % toggle_) * total_size_;
@@ -1184,7 +1215,8 @@ class Pochoir_Array {
 
 		inline T get (int _idx3, int _idx2, int _idx1, int _idx0) {
             if (check_boundary3(_idx3, _idx2, _idx1, _idx0)) {
-                printf("Off-boundary access in boundary function at arr.get(%d, %d, %d, %d)\n", _idx3, _idx2, _idx1, _idx0);
+                printf("Pochoir illegal access by boundary function error:\n");
+                printf("Out-of-range access by boundary function at index (%d, %d, %d, %d)\n", _idx3, _idx2, _idx1, _idx0);
                 exit(1);
             }
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + (_idx3 % toggle_) * total_size_;
@@ -1193,7 +1225,8 @@ class Pochoir_Array {
 
 		inline T get (int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (check_boundary4(_idx4, _idx3, _idx2, _idx1, _idx0)) {
-                printf("Off-boundary access in boundary function at arr.get(%d, %d, %d, %d, %d)\n", _idx4, _idx3, _idx2, _idx1, _idx0);
+                printf("Pochoir illegal access by boundary function error:\n");
+                printf("Out-of-range access by boundary function at index (%d, %d, %d, %d, %d)\n", _idx4, _idx3, _idx2, _idx1, _idx0);
                 exit(1);
             }
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + (_idx4 % toggle_) * total_size_;
@@ -1202,7 +1235,8 @@ class Pochoir_Array {
 
 		inline T get (int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (check_boundary5(_idx5, _idx4, _idx3, _idx2, _idx1, _idx0)) {
-                printf("Off-boundary access in boundary function at arr.get(%d, %d, %d, %d, %d, %d)\n", _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+                printf("Pochoir illegal access by boundary function error:\n");
+                printf("Out-of-range access by boundary function at index (%d, %d, %d, %d, %d, %d)\n", _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
                 exit(1);
             }
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + (_idx5 % toggle_) * total_size_;
@@ -1211,7 +1245,8 @@ class Pochoir_Array {
 
 		inline T get (int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (check_boundary6(_idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0)) {
-                printf("Off-boundary access in boundary function at arr.get(%d, %d, %d, %d, %d, %d, %d)\n", _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+                printf("Pochoir illegal access by boundary function error:\n");
+                printf("Out-of-range accesss by boundary function at index (%d, %d, %d, %d, %d, %d, %d)\n", _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
                 exit(1);
             }
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + (_idx6 % toggle_) * total_size_;
@@ -1220,7 +1255,8 @@ class Pochoir_Array {
 
 		inline T get (int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (check_boundary7(_idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0)) {
-                printf("Off-boundary access in boundary function at arr.get(%d, %d, %d, %d, %d, %d, %d, %d)\n", _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+                printf("Pochoir illegal access by boundary function error:\n");
+                printf("Out-of-range access by boundary function at index (%d, %d, %d, %d, %d, %d, %d, %d)\n", _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
                 exit(1);
             }
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + (_idx7 % toggle_) * total_size_;
@@ -1229,7 +1265,8 @@ class Pochoir_Array {
 
 		inline T get (int _idx8, int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (check_boundary8(_idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0)) {
-                printf("Off-boundary access in boundary function at arr.get(%d, %d, %d, %d, %d, %d, %d, %d, %d)\n", _idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+                printf("Pochoir illegal access by boundary function error:\n");
+                printf("Out-of-range access by boundary function at index (%d, %d, %d, %d, %d, %d, %d, %d, %d)\n", _idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
                 exit(1);
             }
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + _idx7 * stride_[7] + (_idx8 % toggle_) * total_size_;
