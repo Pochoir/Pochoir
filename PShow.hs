@@ -291,7 +291,7 @@ pShowCachingKernel l_name l_kernel =
         pShowPointers l_iter ++ breakline ++ 
         pShowArrayInfo l_arrays ++ pShowArrayGaps l_rank l_arrays ++
         breakline ++ pShowRankAttr l_rank "stride" l_arrays ++ breakline ++
-        pShowDeltaT ++ breakline ++ pShowLocalCache l_arrays ++ breakline ++ 
+        pShowDeltaT ++ breakline ++ pAllocStack l_arrays ++ breakline ++ 
         pShowLocalCacheAttr l_rank l_arrays ++ breakline ++ 
         pShowLocalGrid l_rank (head l_arrays) ++ breakline ++
         pShowLocalCopyIn l_rank (tail $ kParams l_kernel) l_arrays ++ breakline ++ 
@@ -301,6 +301,7 @@ pShowCachingKernel l_name l_kernel =
         breakline ++ pShowPointerStmt False l_kernel ++ breakline ++ 
         pShowObaseForTail l_rank ++ pShowObaseTail l_rank ++ breakline ++ 
         pShowLocalCopyOut l_rank (tail $ kParams l_kernel) l_arrays ++ breakline ++ 
+        pFreeStack l_arrays ++ breakline ++ 
         "};\n"
 
 -- we assume all Pochoir_Array associated with the same Pochoir object has the same size,
@@ -362,8 +363,8 @@ pShowLocalCopyOutForHeader 1 l_kSpatialParams l_array =
     let l_loopVar = head l_kSpatialParams
         l_begin = show 0
         l_size = "lc_" ++ aName l_array ++ "_size_" ++ show 0
-        l_slope_begin = "l_dx0_" ++ show 0
-        l_slope_end = "l_dx1_" ++ show 0
+        l_slope_begin = "l_dx_" ++ show 0
+        l_slope_end = "l_dx_" ++ show 0
         l_end = l_size ++ " - " ++ l_slope_begin ++ " - " ++ l_slope_end
     in  "for (int " ++ l_loopVar ++ " = " ++ l_begin ++ "; " ++ 
         l_loopVar ++ " < " ++ l_end ++ "; " ++ "++" ++ l_loopVar ++ ") {" ++ 
@@ -372,8 +373,8 @@ pShowLocalCopyOutForHeader l_rank l_kSpatialParams l_array =
     let l_loopVar = head l_kSpatialParams
         l_begin = show 0 
         l_size = "lc_" ++ aName l_array ++ "_size_" ++ show (l_rank-1)
-        l_slope_begin = "l_dx0_" ++ show (l_rank-1)
-        l_slope_end = "l_dx1_" ++ show (l_rank-1)
+        l_slope_begin = "l_dx_" ++ show (l_rank-1)
+        l_slope_end = "l_dx_" ++ show (l_rank-1)
         l_end = l_size ++ " - " ++ l_slope_begin ++ " - " ++ l_slope_end
     in  "for (int " ++ l_loopVar ++ " = " ++ l_begin ++ "; " ++ 
         l_loopVar ++ " < " ++ l_end ++ "; " ++ "++" ++ l_loopVar ++ ") {" ++ 
@@ -409,7 +410,7 @@ pShowGlobalOutAddrTerm 1 l_array =
         l_showType = (show $ aType l_array) ++ " * "
         l_base = l_a ++ "_base"
         l_out = "l_" ++ l_a ++ "_out_" ++ show (1-1)
-        l_slopes = pGenRankList "l_dx0_" l_rank 
+        l_slopes = pGenRankList "l_dx_" l_rank 
         l_begins = pGenRankList ("lc_" ++ l_a ++ "_begin_") l_rank
         l_beginOffsets = zipWith (pInsParens " + ") l_begins l_slopes
         l_strides = pGenRankList ("l_" ++ l_a ++ "_stride_") l_rank
@@ -422,7 +423,7 @@ pShowGlobalOutAddrTerm l_toggle l_array =
         l_base = l_a ++ "_base"
         l_out = "l_" ++ l_a ++ "_out_" ++ show (l_toggle-1)
         l_local_total_size = "l_" ++ l_a ++ "_total_size"
-        l_slopes = pGenRankList "l_dx0_" l_rank
+        l_slopes = pGenRankList "l_dx_" l_rank
         l_begins = pGenRankList ("lc_" ++ l_a ++ "_begin_") l_rank
         l_beginOffsets = zipWith (pInsParens " + ") l_begins l_slopes
         l_strides = pGenRankList ("l_" ++ l_a ++ "_stride_") l_rank
@@ -443,7 +444,7 @@ pShowLocalOutAddrTerm 1 l_array =
         l_showType = (show $ aType l_array) ++ " * "
         l_base = "lc_" ++ l_a
         l_out = "lc_" ++ l_a ++ "_out_" ++ show (1-1)
-        l_slopes = pGenRankList "l_dx0_" l_rank
+        l_slopes = pGenRankList "l_dx_" l_rank
         l_strides = pGenRankList ("lc_" ++ l_a ++ "_stride_") l_rank
     in  l_showType ++ l_out ++ " = " ++ l_base ++ " + " ++ 
         (intercalate " + " $ zipWith (pIns " * ") l_slopes l_strides) ++ ";" 
@@ -454,7 +455,7 @@ pShowLocalOutAddrTerm l_toggle l_array =
         l_base = "lc_" ++ l_a
         l_out = "lc_" ++ l_a ++ "_out_" ++ show (l_toggle-1)
         l_local_total_size = "lc_" ++ l_a ++ "_total_size"
-        l_slopes = pGenRankList "l_dx0_" l_rank 
+        l_slopes = pGenRankList "l_dx_" l_rank 
         l_strides = pGenRankList ("lc_" ++ l_a ++ "_stride_") l_rank
     in  l_showType ++ l_out ++ " = " ++ l_base ++ " + " ++
         show (l_toggle-1) ++ " * " ++ l_local_total_size ++ " + " ++ 
@@ -610,15 +611,39 @@ pShowLocalInAddrTerm l_toggle l_array =
 pShowDeltaT :: String
 pShowDeltaT = "const int lt = t1 - t0;"
 
-pShowLocalCache :: [PArray] -> String
-pShowLocalCache l_arrays = intercalate breakline $ map pShowLocalCacheItem l_arrays
-    where pShowLocalCacheItem l_array = (show $ aType l_array) ++ 
-            " lc_" ++ aName l_array ++ "[2*10*10];" ++ breakline
+pFreeHeap :: [PArray] -> String
+pFreeHeap l_arrays = concatMap pFreeHeapItem l_arrays
+    where pFreeHeapItem l_array =
+            let l_a = aName l_array
+                l_cache = "lc_" ++ l_a
+            in  "free(" ++ l_cache ++ ");" ++ breakline
+
+pAllocHeap :: [PArray] -> String
+pAllocHeap l_arrays = concatMap pAllocHeapItem l_arrays
+    where pAllocHeapItem l_array = 
+            let l_type = show (aType l_array) 
+                l_a = aName l_array
+                l_size = " 2 * 120 * 120 "
+                l_cache = " lc_" ++ l_a
+            in  l_type ++ " *" ++ l_cache ++ " = new " ++ 
+                l_type ++ " [" ++ l_size ++ "];" ++ breakline
+
+pFreeStack :: [PArray] -> String
+pFreeStack l_arrays = breakline
+
+pAllocStack :: [PArray] -> String
+pAllocStack l_arrays = concatMap pAllocStackItem l_arrays
+    where pAllocStackItem l_array = 
+            let l_type = show (aType l_array) 
+                l_a = aName l_array
+                l_size = " 2 * 120 * 120 "
+                l_cache = " lc_" ++ l_a
+            in  l_type ++ l_cache ++ " [" ++ l_size ++ "];" ++ breakline
 
 pShowLocalCacheAttr :: Int -> [PArray] -> String
 pShowLocalCacheAttr l_rank l_arrays = 
     pShowColor l_rank ++ breakline ++ 
-    pShowSlopes 0 l_rank ++ breakline ++ pShowSlopes 1 l_rank ++ breakline ++
+    pShowSlopes l_rank ++ breakline ++ 
     (intercalate breakline $ map (pShowEndIndex l_rank 0) l_arrays) ++ breakline ++ 
     (intercalate breakline $ map (pShowEndIndex l_rank 1) l_arrays) ++ breakline ++
     (intercalate breakline $ map (pShowLocalArraySize l_rank) l_arrays) ++ breakline ++
@@ -679,22 +704,12 @@ pShowLocalArraySize n l_array =
     in  "const int " ++ l_var ++ " = " ++ l_end ++ " - " ++ l_begin ++ " + 1;" ++ 
         breakline ++ pShowLocalArraySize (n-1) l_array
 
-pShowSlopes :: Int -> Int -> String
-pShowSlopes l_end l_rank = 
-    let l_dxs = pGenRankList ("const int l_dx" ++ show l_end ++ "_") l_rank
-        l_grid_dxs = pGenRankListFull ("grid.dx" ++ show l_end ++ "[") l_rank "]"
-        l_grid_ndxs = pGenRankListFull ("-grid.dx" ++ show l_end ++ "[") l_rank "]"
-        l_blacks = pGenRankList "black_" l_rank
-        l_r0s = 
-            if l_end == 0 
-                then zipWith (pIns " ? ") l_blacks l_grid_dxs
-                else zipWith (pIns " ? ") l_blacks l_grid_ndxs
-        l_r1s = 
-            if l_end == 0
-                then zipWith (pIns " : ") l_r0s l_grid_ndxs
-                else zipWith (pIns " : ") l_r0s l_grid_dxs
-        l_r2s = map (flip (++) ";") l_r1s
-    in  intercalate breakline $ zipWith (pIns " = ") l_dxs l_r2s
+pShowSlopes :: Int -> String
+pShowSlopes l_rank = 
+    let l_dxs = pGenRankList "const int l_dx_" l_rank
+        l_slopes = pGenRankListFull "a.slope(" l_rank ")"
+        l_rs = map (flip (++) ";")  l_slopes
+    in  intercalate breakline $ zipWith (pIns " = ") l_dxs l_rs
 
 pShowColor :: Int -> String
 pShowColor 1 = "const bool black_0 = (grid.dx0[0] >= 0 & grid.dx1[0] <= 0);"
@@ -707,27 +722,29 @@ pShowColor n =
         l_end_slope ++ " <= 0);" ++ breakline ++ pShowColor (n-1)
 
 pShowEndIndex :: Int -> Int -> PArray -> String
-pShowEndIndex 1 l_endCoding l_array = 
+pShowEndIndex l_rank l_end l_array =
     let l_a = aName l_array
-        l_end = if l_endCoding == 0 then "0" else "1"
-        l_x = "grid.x" ++ l_end ++ "[0]"
-        l_dx = "grid.dx" ++ l_end ++ "[0]"
-        l_endVar = if l_endCoding == 0 then "lc_" ++ l_a ++ "_begin_0"
-                                       else "lc_" ++ l_a ++ "_end_0" 
-    in  "const int " ++ l_endVar ++ " = black_0 ? " ++ l_x ++ " - " ++ l_dx ++  
-        " : " ++ l_x ++ " + " ++ l_dx ++ " * (lt + 1);"
-pShowEndIndex n l_endCoding l_array =
-    let l_a = aName l_array
-        l_dim = show (n - 1)
-        l_end = if l_endCoding == 0 then "0" else "1"
-        l_x = "grid.x" ++ l_end ++ "[" ++ l_dim ++ "]"
-        l_dx = "grid.dx" ++ l_end ++ "[" ++ l_dim ++ "]"
-        l_endVar = if l_endCoding == 0 then "lc_" ++ l_a ++ "_begin_" ++ l_dim
-                                       else "lc_" ++ l_a ++ "_end_" ++ l_dim
-    in  "const int " ++ l_endVar ++ " = black_" ++ l_dim ++
-        " ? " ++ l_x ++ " - " ++ l_dx ++
-        " : " ++ l_x ++ " + " ++ l_dx ++ " * (lt + 1);" ++ breakline ++ 
-        pShowEndIndex (n-1) l_endCoding l_array
+        l_endVar = if l_end == 0 then "_begin_" else "_end_"
+        l_type = "const int "
+        l_lvalues = pGenRankList ("lc_" ++ l_a ++ l_endVar) l_rank
+        l_lefts = map ((++) l_type) l_lvalues
+        l_blacks = pGenRankList "black_" l_rank
+        l_slopes = pGenRankList "l_dx_" l_rank
+        l_grid_xs = if l_end == 0 
+                        then pGenRankListFull "grid.x0[" l_rank "]"
+                        else pGenRankListFull "grid.x1[" l_rank "]"
+        l_grid_dxs = if l_end == 0
+                        then pGenRankListFull "grid.dx0[" l_rank "]"
+                        else pGenRankListFull "grid.dx1[" l_rank "]"
+        l_glue = if l_end == 0 then " - " else " + "
+        l_r1s = zipWith (pIns l_glue) l_grid_xs l_slopes
+        l_r20s = map (flip (++) " * lt") l_grid_dxs
+        l_r21s = zipWith (pIns l_glue) l_r20s l_slopes
+        l_r2s = zipWith (pIns " + ") l_grid_xs l_r21s
+        l_rr0s = zipWith (pIns " ? ") l_blacks l_r1s
+        l_rr1s = zipWith (pIns " : ") l_rr0s l_r2s
+        l_rights = map (flip (++) ";") l_rr1s
+    in  intercalate breakline $ zipWith (pIns " = ") l_lefts l_rights
 
 pShowOptPointerKernel :: String -> PKernel -> String
 pShowOptPointerKernel l_name l_kernel = 

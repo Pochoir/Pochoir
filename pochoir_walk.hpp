@@ -434,19 +434,26 @@ struct Algorithm {
      * - walk_ncores_boundary
      */
     inline void set_thres(int arr_type_size) {
-#if 1
+#if 0
         dt_recursive_ = 1;
         dx_recursive_[0] = 1;
         for (int i = N_RANK-1; i >= 1; --i)
             dx_recursive_[i] = 1;
 #else
+#if 0
         dt_recursive_ = (N_RANK == 1) ? 20 : ((N_RANK == 2) ? 40 : 5);
         dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((100 * sizeof(double))/arr_type_size)) : (int)floor(float((600 * sizeof(double))/arr_type_size));
 //        dx_recursive_[0] = 30;
         for (int i = N_RANK-1; i >= 1; --i)
             dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(100 * sizeof(double))/arr_type_size): 10;
+#else
+        dx_recursive_[0] = 10;
+        for (int i = N_RANK-1; i >= 1; --i)
+            dx_recursive_[i] = 10;
+        dt_recursive_ = 4;
 #endif
-#if DEBUG
+#endif
+#if 1
         printf("arr_type_size = %d\n", arr_type_size);
         printf("dt_thres = %d, ", dt_recursive_);
         for (int i = N_RANK-1; i >=1; --i)
@@ -538,7 +545,7 @@ struct Algorithm {
     inline void naive_cut_space_ncores(int dim, int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename F> 
     inline void cut_space_ncores_boundary(int dim, int t0, int t1, grid_info<N_RANK> const grid, F const & f);
-#if DEBUG 
+#if DEBUG_FACILITY 
 	void print_grid(FILE * fp, int t0, int t1, grid_info<N_RANK> const & grid);
 	void print_sync(FILE * fp);
 	void print_index(int t, int const idx[]);
@@ -608,7 +615,7 @@ inline void Algorithm<N_RANK>::base_case_kernel_boundary(int t0, int t1, grid_in
 	}
 }
 
-#if DEBUG 
+#if DEBUG_FACILITY 
 template <int N_RANK>
 void Algorithm<N_RANK>::print_grid(FILE *fp, int t0, int t1, grid_info<N_RANK> const & grid)
 {

@@ -3,14 +3,14 @@ CC = ./pochoir
 ICC = icpc
 OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -std=c++0x
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x
-# ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h -std=c++0x
-ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x
+ICC_DEBUG_FLAGS = -O3 -g3 -DDEBUG -Wall -Werror -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h -std=c++0x
+# ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x
 example_1D : tb_example_1D.cpp
 #   Phase-II compilation
 #	${CC} -o tb_example_1D_pochoir ${OPT_FLAGS} -split-caching tb_example_1D.cpp
 	${CC} -o tb_example_1D_pochoir ${OPT_FLAGS} -split-caching tb_example_1D.cpp
-	${ICC} -P tb_example_1D_pochoir.cpp
-	${ICC} -o example_1D ${ICC_DEBUG_FLAGS} tb_example_1D_pochoir.i
+#	${ICC} -P tb_example_1D_pochoir.cpp
+	${ICC} -o example_1D ${ICC_DEBUG_FLAGS} tb_example_1D_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_example_1D_pochoir ${POCHOIR_DEBUG_FLAGS} tb_example_1D.cpp
 
@@ -22,8 +22,11 @@ heat_1D_NP : tb_heat_1D_NP.cpp
 
 heat_NP : tb_heat_2D_NP.cpp
 #   Phase-II compilation
-	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} -split-caching tb_heat_2D_NP.cpp
-	${ICC} -o heat_2D_NP ${ICC_DEBUG_FLAGS} tb_heat_2D_NP_pochoir.cpp
+#	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} -split-caching tb_heat_2D_NP.cpp
+#	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} tb_heat_2D_NP.cpp
+#	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} -split-c-pointer tb_heat_2D_NP.cpp
+#	${ICC} -o heat_2D_NP ${ICC_DEBUG_FLAGS} tb_heat_2D_NP_pochoir.cpp
+	${ICC} -o heat_2D_NP ${OPT_FLAGS}  tb_heat_2D_NP_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_2D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_NP.cpp
 

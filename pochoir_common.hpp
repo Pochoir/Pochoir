@@ -56,6 +56,7 @@ static inline int StrToInt(const std::string& s)
 #define BIT_TRICK 0
 #define INF 100000000
 #define SUPPORT_RANK 9
+#define DEBUG_FACILITY 1
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
