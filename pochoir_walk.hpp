@@ -447,10 +447,10 @@ struct Algorithm {
         for (int i = N_RANK-1; i >= 1; --i)
             dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(100 * sizeof(double))/arr_type_size): 10;
 #else
-        dx_recursive_[0] = 10;
+        dx_recursive_[0] = 100;
         for (int i = N_RANK-1; i >= 1; --i)
-            dx_recursive_[i] = 10;
-        dt_recursive_ = 4;
+            dx_recursive_[i] = 100;
+        dt_recursive_ = 45;
 #endif
 #endif
 #if 1

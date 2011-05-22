@@ -259,7 +259,7 @@ pShowObaseKernel l_name l_kernel =
         pShowIterSet l_iter (kParams l_kernel)++
         breakline ++ pShowObaseForHeader l_rank l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowObaseStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
-        pShowObaseTail l_rank ++ breakline ++ pShowTimeLoopTail ++ "};\n"
+        pAdjustTrape l_rank ++ breakline ++ pShowTimeLoopTail ++ "};\n"
 
 pShowPointerKernel :: String -> PKernel -> String
 pShowPointerKernel l_name l_kernel = 
@@ -277,7 +277,7 @@ pShowPointerKernel l_name l_kernel =
         pShowPointerSet l_iter (kParams l_kernel)++
         breakline ++ pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowPointerStmt True l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
-        pShowObaseTail l_rank ++ breakline ++ pShowTimeLoopTail ++ "};\n"
+        pAdjustTrape l_rank ++ breakline ++ pShowTimeLoopTail ++ "};\n"
 
 pShowCachingKernel :: String -> PKernel -> String
 pShowCachingKernel l_name l_kernel = 
@@ -299,10 +299,9 @@ pShowCachingKernel l_name l_kernel =
         pShowPointerSetLocal l_iter (kParams l_kernel) ++
         breakline ++ pShowPointerForHeader l_rank False l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowPointerStmt False l_kernel ++ breakline ++ 
-        pShowObaseForTail l_rank ++ pShowObaseTail l_rank ++ breakline ++ 
+        pShowObaseForTail l_rank ++ pAdjustTrape l_rank ++ breakline ++ 
         pShowTimeLoopTail ++ breakline ++
-        pShowLocalGridForCopyOut l_rank ++ breakline ++
-        pShowLocalCopyOut l_rank (tail $ kParams l_kernel) l_arrays ++ breakline ++ 
+        pShowLocalCopyOut l_rank (kParams l_kernel) l_arrays ++ breakline ++ 
         pFreeStack l_arrays ++ breakline ++ 
         "};\n"
 
@@ -364,144 +363,96 @@ pShowPointerSetLocal iL@(i:is) l_kernelParams = concatMap pShowPointerSetLocalTe
                 l_arrayTimeOffset ++ " + " ++ l_arraySpaceOffset ++ ";" 
 
 pShowLocalCopyOut :: Int -> [PName] -> [PArray] -> String
-pShowLocalCopyOut l_rank l_kSpatialParams l_arrays =
-    breakline ++ "/* copy out */" ++ breakline ++ 
-    (intercalate breakline $ map pShowLocalOutAddr l_arrays) ++ breakline ++
-    (intercalate breakline $ map pShowGlobalOutAddr l_arrays) ++ breakline ++
-    (intercalate breakline $ map (pShowCopyOutLoop l_rank l_kSpatialParams) l_arrays) ++ breakline
-
-pShowCopyOutLoop :: Int -> [PName] -> PArray -> String
-pShowCopyOutLoop l_rank l_kSpatialParams l_array =
-    let l_forHead = pShowLocalCopyOutForHeader l_rank l_kSpatialParams l_array
-        l_forTail = pShowLocalForTail l_rank
-        l_toggle = aToggle l_array
-        l_body = pShowLocalCopyOutBody l_toggle l_kSpatialParams l_array
-    in  l_forHead ++ l_body ++ l_forTail
-
-pShowLocalCopyOutForHeader :: Int -> [PName] -> PArray -> String
-pShowLocalCopyOutForHeader 1 l_kSpatialParams l_array =
-    let l_loopVar = head l_kSpatialParams
-        l_begin = show 0
-        l_size = "lc_" ++ aName l_array ++ "_size_" ++ show 0
-        l_slope_begin = "l_dx_" ++ show 0
-        l_slope_end = "l_dx_" ++ show 0
-        l_end = l_size ++ " - " ++ l_slope_begin ++ " - " ++ l_slope_end
-    in  "for (int " ++ l_loopVar ++ " = " ++ l_begin ++ "; " ++ 
-        l_loopVar ++ " < " ++ l_end ++ "; " ++ "++" ++ l_loopVar ++ ") {" ++ 
-        breakline
-pShowLocalCopyOutForHeader l_rank l_kSpatialParams l_array =
-    let l_loopVar = head l_kSpatialParams
-        l_begin = show 0 
-        l_size = "lc_" ++ aName l_array ++ "_size_" ++ show (l_rank-1)
-        l_slope_begin = "l_dx_" ++ show (l_rank-1)
-        l_slope_end = "l_dx_" ++ show (l_rank-1)
-        l_end = l_size ++ " - " ++ l_slope_begin ++ " - " ++ l_slope_end
-    in  "for (int " ++ l_loopVar ++ " = " ++ l_begin ++ "; " ++ 
-        l_loopVar ++ " < " ++ l_end ++ "; " ++ "++" ++ l_loopVar ++ ") {" ++ 
-        breakline ++ pShowLocalCopyOutForHeader (l_rank-1) (tail l_kSpatialParams) l_array
-
-pShowLocalCopyOutBody :: Int -> [PName] -> PArray -> String
-pShowLocalCopyOutBody 1 l_kSpatialParams l_array =
-    let l_a = aName l_array
-        l_rank = aRank l_array
-        l_local_addr = "lc_" ++ l_a ++ "_out_" ++ show 0
-        l_global_addr = "l_" ++ l_a ++ "_out_" ++ show 0
-        l_local_offset = intercalate " + " $ zipWith (pIns " * ") l_kSpatialParams (pGenRankList ("lc_" ++ l_a ++ "_stride_") l_rank)
-        l_global_offset = intercalate " + " $ zipWith (pIns " * ") l_kSpatialParams (pGenRankList ("l_" ++ l_a ++ "_stride_") l_rank)
-    in  l_global_addr ++ "[" ++ l_global_offset ++ "] = " ++ l_local_addr ++ "[" ++ l_local_offset ++ "];" ++ breakline
-pShowLocalCopyOutBody l_toggle l_kSpatialParams l_array =
-    let l_a = aName l_array
-        l_rank = aRank l_array
-        l_local_addr = "lc_" ++ l_a ++ "_out_" ++ show (l_toggle-1)
-        l_global_addr = "l_" ++ l_a ++ "_out_" ++ show (l_toggle-1)
-        l_local_offset = intercalate " + " $ zipWith (pIns " * ") l_kSpatialParams (pGenRankList ("lc_" ++ l_a ++ "_stride_") l_rank)
-        l_global_offset = intercalate " + " $ zipWith (pIns " * ") l_kSpatialParams (pGenRankList ("l_" ++ l_a ++ "_stride_") l_rank)
-    in  l_global_addr ++ "[" ++ l_global_offset ++ "] = " ++ l_local_addr ++ "[" ++ l_local_offset ++ "];" ++ breakline ++ pShowLocalCopyOutBody (l_toggle-1) l_kSpatialParams l_array
-
-pShowGlobalOutAddr :: PArray -> String
-pShowGlobalOutAddr l_array =
-    let l_toggle = aToggle l_array
-    in  pShowGlobalOutAddrTerm l_toggle l_array
-
-pShowGlobalOutAddrTerm :: Int -> PArray -> String
-pShowGlobalOutAddrTerm 1 l_array =
-    let l_a = aName l_array
-        l_rank = aRank l_array
-        l_showType = (show $ aType l_array) ++ " * "
-        l_base = l_a ++ "_base"
-        l_out = "l_" ++ l_a ++ "_out_" ++ show (1-1)
-        l_slopes = pGenRankList "l_dx_" l_rank 
-        l_begins = pGenRankList ("lc_" ++ l_a ++ "_begin_") l_rank
-        l_beginOffsets = zipWith (pInsParens " + ") l_begins l_slopes
-        l_strides = pGenRankList ("l_" ++ l_a ++ "_stride_") l_rank
-    in  l_showType ++ l_out ++ " = " ++ l_base ++ " + " ++ 
-        (intercalate " + " $ zipWith (pIns " * ") l_beginOffsets l_strides) ++ ";" 
-pShowGlobalOutAddrTerm l_toggle l_array =
-    let l_a = aName l_array
-        l_rank = aRank l_array
-        l_showType = (show $ aType l_array) ++ " * "
-        l_base = l_a ++ "_base"
-        l_out = "l_" ++ l_a ++ "_out_" ++ show (l_toggle-1)
-        l_local_total_size = "l_" ++ l_a ++ "_total_size"
-        l_slopes = pGenRankList "l_dx_" l_rank
-        l_begins = pGenRankList ("lc_" ++ l_a ++ "_begin_") l_rank
-        l_beginOffsets = zipWith (pInsParens " + ") l_begins l_slopes
-        l_strides = pGenRankList ("l_" ++ l_a ++ "_stride_") l_rank
-    in  l_showType ++ l_out ++ " = " ++ l_base ++ " + " ++
-        show (l_toggle-1) ++ " * " ++ l_local_total_size ++ " + " ++ 
-        (intercalate " + " $ zipWith (pIns " * ") l_beginOffsets l_strides) ++ ";" ++ 
-        breakline ++ pShowGlobalOutAddrTerm (l_toggle-1) l_array
-
-pShowLocalOutAddr :: PArray -> String
-pShowLocalOutAddr l_array =
-    let l_toggle = aToggle l_array
-    in  pShowLocalOutAddrTerm l_toggle l_array
-
-pShowLocalOutAddrTerm :: Int -> PArray -> String
-pShowLocalOutAddrTerm 1 l_array =
-    let l_a = aName l_array
-        l_rank = aRank l_array
-        l_showType = (show $ aType l_array) ++ " * "
-        l_base = "lc_" ++ l_a
-        l_out = "lc_" ++ l_a ++ "_out_" ++ show (1-1)
-        l_slopes = pGenRankList "l_dx_" l_rank
-        l_strides = pGenRankList ("lc_" ++ l_a ++ "_stride_") l_rank
-    in  l_showType ++ l_out ++ " = " ++ l_base ++ " + " ++ 
-        (intercalate " + " $ zipWith (pIns " * ") l_slopes l_strides) ++ ";" 
-pShowLocalOutAddrTerm l_toggle l_array =
-    let l_a = aName l_array
-        l_rank = aRank l_array
-        l_showType = (show $ aType l_array) ++ " * "
-        l_base = "lc_" ++ l_a
-        l_out = "lc_" ++ l_a ++ "_out_" ++ show (l_toggle-1)
-        l_local_total_size = "lc_" ++ l_a ++ "_total_size"
-        l_slopes = pGenRankList "l_dx_" l_rank 
-        l_strides = pGenRankList ("lc_" ++ l_a ++ "_stride_") l_rank
-    in  l_showType ++ l_out ++ " = " ++ l_base ++ " + " ++
-        show (l_toggle-1) ++ " * " ++ l_local_total_size ++ " + " ++ 
-        (intercalate " + " $ zipWith (pIns " * ") l_slopes l_strides) ++ ";" ++ 
-        breakline ++ pShowLocalOutAddrTerm (l_toggle-1) l_array
+pShowLocalCopyOut l_rank l_kParams l_arrays =
+    "/* Copy Out */" ++ breakline ++ 
+    pShowLocalGridForCopyOut l_rank ++ breakline ++
+    pShowTimeLoopHeader (head l_kParams) ++ breakline ++
+    (intercalate breakline $ map (pShowCopyInOutBase False l_rank $ head l_kParams) l_arrays) ++ breakline ++
+    pShowCopyLoopHeader False l_rank (tail l_kParams) l_arrays ++ breakline ++
+    (intercalate breakline $ map (pShowCopyInOutBody False) l_arrays) ++ breakline ++
+    pShowCopyLoopTail l_rank ++ breakline ++ pAdjustTrape l_rank ++ breakline ++ 
+    pShowTimeLoopTail ++ breakline
 
 pShowLocalCopyIn :: Int -> [PName] -> [PArray] -> String
 pShowLocalCopyIn l_rank l_kParams l_arrays =
     "/* Copy In */" ++ breakline ++ 
     pShowLocalGridForCopyIn l_rank ++ breakline ++
     pShowTimeLoopHeader (head l_kParams) ++ breakline ++
-    (intercalate breakline $ map (pShowCopyInItems l_rank $ head l_kParams) l_arrays) ++ breakline ++
-    -- bookmark
-    pShowCopyLoopHeader l_rank (tail l_kParams) l_arrays ++ breakline ++
---    (intercalate breakline $ map (pShowCopyInLoop l_rank $ tail l_kParams) l_arrays) ++ breakline ++
-    pShowCopyLoopTail l_rank ++ breakline ++
+    (intercalate breakline $ map (pShowCopyInOutBase True l_rank $ head l_kParams) l_arrays) ++ breakline ++
+    pShowCopyLoopHeader True l_rank (tail l_kParams) l_arrays ++ breakline ++
+    (intercalate breakline $ map (pShowCopyInOutBody True) l_arrays) ++ breakline ++
+    pShowCopyLoopTail l_rank ++ breakline ++ pAdjustTrape l_rank ++ breakline ++
     pShowTimeLoopTail ++ breakline
 
-pShowCopyInItems :: Int -> PName -> PArray -> String
-pShowCopyInItems l_rank l_t l_array =
+pShowCopyInOutBody :: Bool -> PArray -> String
+pShowCopyInOutBody l_inOut l_array =
+    let l_a = aName l_array
+        l_suffix = if l_inOut == True then "_in" else "_out"
+        lc_iter = "lc_" ++ l_a ++ l_suffix ++ "[0]"
+        l_iter = "l_" ++ l_a ++ l_suffix ++ "[0]"
+    in  if l_inOut == True 
+            then lc_iter ++ " = " ++ l_iter ++ ";"
+            else l_iter ++ " = " ++ lc_iter ++ ";"
+
+pShowCopyLoopHeader :: Bool -> Int -> [PName] -> [PArray] -> String
+pShowCopyLoopHeader l_inOut 1 l_kSpatialParams l_arrays =
+    let l_loopVar = head l_kSpatialParams
+        lc_incGap = intercalate ", " $ map (pShowIncGap l_inOut "lc_" 1) l_arrays
+        l_incGap = intercalate ", " $ map (pShowIncGap l_inOut "l_" 1) l_arrays
+    in  "for (int " ++ 
+        l_loopVar ++ " = l_grid.x0[" ++ show (1-1) ++ "]; " ++ 
+        l_loopVar ++ " < l_grid.x1[" ++ show (1-1) ++ "]; ++" ++
+        l_loopVar ++ ", " ++ breakline ++ lc_incGap ++ ", " ++ 
+        breakline ++ l_incGap ++ ") {"
+pShowCopyLoopHeader l_inOut l_rank l_kSpatialParams l_arrays =
+    let lc_gaps = intercalate breakline $ map (pShowArrayGap "lc_" l_rank) l_arrays
+        l_gaps = intercalate breakline $ map (pShowArrayGap "l_" l_rank) l_arrays
+        l_loopVar = head l_kSpatialParams
+        lc_incGap = intercalate ", " $ map (pShowIncGap l_inOut "lc_" l_rank) l_arrays
+        l_incGap = intercalate ", " $ map (pShowIncGap l_inOut "l_" l_rank) l_arrays
+    in  lc_gaps ++ breakline ++ l_gaps ++ breakline ++ "for (int " ++ 
+        l_loopVar ++ " = l_grid.x0[" ++ show (l_rank-1) ++ "]; " ++ 
+        l_loopVar ++ " < l_grid.x1[" ++ show (l_rank-1) ++ "]; ++" ++
+        l_loopVar ++ ", " ++ breakline ++ lc_incGap ++ ", " ++ 
+        breakline ++ l_incGap ++ ") {" ++
+        breakline ++ pShowCopyLoopHeader l_inOut (l_rank-1) (tail l_kSpatialParams) l_arrays
+
+pShowIncGap :: Bool -> String -> Int -> PArray -> String
+pShowIncGap l_inOut pre 1 l_array =
+    let l_a = aName l_array
+        l_suffix = if l_inOut == True then "_in" else "_out"
+        l_iter = pre ++ l_a ++ l_suffix
+    in  "++" ++ l_iter
+pShowIncGap l_inOut pre l_rank l_array =
+    let l_a = aName l_array
+        l_suffix = if l_inOut == True then "_in" else "_out"
+        l_iter = pre ++ l_a ++ l_suffix
+        l_gap = pre ++ "gap_" ++ l_a ++ "_" ++ show (l_rank-1)
+    in  l_iter ++ " += " ++ l_gap
+
+pShowArrayGap :: String -> Int -> PArray -> String
+pShowArrayGap pre l_rank l_array =
+    let l_a = aName l_array
+        l_gap = pre ++ "gap_" ++ l_a ++ "_" ++ show (l_rank-1)
+        l_stride = pre ++ l_a ++ "_stride_" ++ show (l_rank-1)
+        l_pre_stride = pre ++ l_a ++ "_stride_" ++ show (l_rank-2)
+        l_offset = "(l_grid.x0[" ++ show (l_rank-2) ++ "] - l_grid.x1[" ++ show (l_rank-2) ++ "])"
+    in  "int " ++ l_gap ++ " = " ++ l_stride ++ " + " ++ l_offset ++ " * " ++ l_pre_stride ++ ";"
+
+pShowCopyLoopTail :: Int -> String
+pShowCopyLoopTail 1 = "}"
+pShowCopyLoopTail l_rank = "}" ++ breakline ++ pShowCopyLoopTail (l_rank-1)
+
+pShowCopyInOutBase :: Bool -> Int -> PName -> PArray -> String
+pShowCopyInOutBase l_inOut l_rank l_t l_array =
     let l_type = show (aType l_array) ++ " * "
         l_a = aName l_array
         lc_base = "lc_" ++ l_a
         l_base = l_a ++ "_base"
-        lc_in_var = "lc_" ++ l_a ++ "_in"
-        l_in_var = "l_" ++ l_a ++ "_in"
+        l_suffix = if l_inOut == True then "_in" else "_out"
+        l_t_dim = if l_inOut == True then (DimVAR l_t) else (DimDuo " + " (DimVAR l_t) (DimINT 1))
+        lc_iter = "lc_" ++ l_a ++ l_suffix
+        l_iter = "l_" ++ l_a ++ l_suffix
         l_toggle = aToggle l_array
         lc_total_size = "lc_" ++ l_a ++ "_total_size"
         l_total_size = "l_" ++ l_a ++ "_total_size"
@@ -511,16 +462,16 @@ pShowCopyInItems l_rank l_t l_array =
         lc_begins = pGenRankList ("lc_" ++ l_a ++ "_begin_") l_rank
         lc_grid_offsets = zipWith (pInsParens " - ") l_grid_begins lc_begins
         lc_offsets = zipWith (pIns " * ") lc_grid_offsets lc_strides
-        lc_a_in = l_type ++ lc_in_var ++ " = " ++ lc_base ++ " + " ++
-                  (pShowTimeOffset l_toggle (DimVAR l_t)) ++
+        lc_a_base = l_type ++ lc_iter ++ " = " ++ lc_base ++ " + " ++
+                  (pShowTimeOffset l_toggle l_t_dim) ++
                   " * " ++ lc_total_size ++ " + " ++ 
                   intercalate " + " lc_offsets ++ ";" ++ breakline
         l_grid_offsets = zipWith (pIns " * ") l_grid_begins l_strides
-        l_a_in = l_type ++ l_in_var ++ " = " ++ l_base ++ " + " ++
-                 (pShowTimeOffset l_toggle (DimVAR l_t)) ++
+        l_a_base = l_type ++ l_iter ++ " = " ++ l_base ++ " + " ++
+                 (pShowTimeOffset l_toggle l_t_dim) ++
                  " * " ++ l_total_size ++ " + " ++
                  intercalate " + " l_grid_offsets ++ ";" ++ breakline
-    in  lc_a_in ++ l_a_in
+    in  lc_a_base ++ l_a_base
 
 pShowTimeLoopHeader :: String -> String
 pShowTimeLoopHeader l_t =
@@ -611,7 +562,7 @@ pAllocHeap l_arrays = concatMap pAllocHeapItem l_arrays
                 l_type ++ " [" ++ l_size ++ "];" ++ breakline
 
 pFreeStack :: [PArray] -> String
-pFreeStack l_arrays = breakline
+pFreeStack l_arrays = ""
 
 pAllocStack :: [PArray] -> String
 pAllocStack l_arrays = concatMap pAllocStackItem l_arrays
@@ -744,7 +695,7 @@ pShowOptPointerKernel l_name l_kernel =
         pShowOptPointerSet l_iter (kParams l_kernel)++
         breakline ++ pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowOptPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
-        pShowObaseTail l_rank ++ breakline ++ "};\n"
+        pAdjustTrape l_rank ++ breakline ++ "};\n"
 
 pShowCPointerKernel :: String -> PKernel -> String
 pShowCPointerKernel l_name l_kernel = 
@@ -761,7 +712,7 @@ pShowCPointerKernel l_name l_kernel =
         "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
         breakline ++ pShowRawForHeader (tail $ kParams l_kernel) ++
         breakline ++ pShowCPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
-        pShowObaseTail l_rank ++ breakline ++ pShowRefUnMacro l_array ++ 
+        pAdjustTrape l_rank ++ breakline ++ pShowRefUnMacro l_array ++ 
         "};\n"
 
 pShowCPointerStmt :: PKernel -> String
@@ -1047,10 +998,10 @@ pShowObaseForTail n
     | n == 0 = "/* end for (sub-trapezoid) */ "
     | otherwise = "} " ++ pShowObaseForTail (n-1)
 
-pShowObaseTail :: Int -> String
-pShowObaseTail n = 
+pAdjustTrape :: Int -> String
+pAdjustTrape l_rank = 
     breakline ++ "/* Adjust sub-trapezoid! */" ++
-    breakline ++ "for (int i = 0; i < " ++ show n ++ "; ++i) {" ++ 
+    breakline ++ "for (int i = 0; i < " ++ show l_rank ++ "; ++i) {" ++ 
     breakline ++ "\tl_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];" ++
     breakline ++ "}" 
 
