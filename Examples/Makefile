@@ -22,11 +22,11 @@ heat_1D_NP : tb_heat_1D_NP.cpp
 
 heat_NP : tb_heat_2D_NP.cpp
 #   Phase-II compilation
-#	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} -split-caching tb_heat_2D_NP.cpp
+	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} -split-caching tb_heat_2D_NP.cpp
 #	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} tb_heat_2D_NP.cpp
 #	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} -split-c-pointer tb_heat_2D_NP.cpp
 #	${ICC} -o heat_2D_NP ${ICC_DEBUG_FLAGS} tb_heat_2D_NP_pochoir.cpp
-	${ICC} -o heat_2D_NP ${OPT_FLAGS}  tb_heat_2D_NP_pochoir.cpp
+#	${ICC} -o heat_2D_NP ${OPT_FLAGS}  tb_heat_2D_NP_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_2D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_NP.cpp
 

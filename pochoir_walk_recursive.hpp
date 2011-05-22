@@ -703,7 +703,6 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut(int t0, int t1, grid_info
         } /* end while (queue_len_[curr_dep] > 0) */
 #if !USE_CILK_FOR
         cilk_sync;
-        printf("cilk_sync\n");
 #endif
         assert(queue_len_[curr_dep_pointer] == 0);
     } /* end for (curr_dep < N_RANK+1) */
@@ -882,7 +881,6 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut_p(int t0, int t1, grid_in
         } /* end while (queue_len_[curr_dep] > 0) */
 #if !USE_CILK_FOR
         cilk_sync;
-        printf("cilk_sync\n");
 #endif
         assert(queue_len_[curr_dep_pointer] == 0);
     } /* end for (curr_dep < N_RANK+1) */
