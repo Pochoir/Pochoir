@@ -259,7 +259,7 @@ pShowObaseKernel l_name l_kernel =
         pShowIterSet l_iter (kParams l_kernel)++
         breakline ++ pShowObaseForHeader l_rank l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowObaseStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
-        pAdjustTrape l_rank ++ breakline ++ pShowTimeLoopTail ++ "};\n"
+        pAdjustTrape l_rank ++ breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
 
 pShowPointerKernel :: String -> PKernel -> String
 pShowPointerKernel l_name l_kernel = 
@@ -277,7 +277,7 @@ pShowPointerKernel l_name l_kernel =
         pShowPointerSet l_iter (kParams l_kernel)++
         breakline ++ pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowPointerStmt True l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
-        pAdjustTrape l_rank ++ breakline ++ pShowTimeLoopTail ++ "};\n"
+        pAdjustTrape l_rank ++ breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
 
 pShowCachingKernel :: String -> PKernel -> String
 pShowCachingKernel l_name l_kernel = 
@@ -300,7 +300,7 @@ pShowCachingKernel l_name l_kernel =
         breakline ++ pShowPointerForHeader l_rank False l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowPointerStmt False l_kernel ++ breakline ++ 
         pShowObaseForTail l_rank ++ pAdjustTrape l_rank ++ breakline ++ 
-        pShowTimeLoopTail ++ breakline ++
+        pShowTimeLoopTail ++ breakline ++ 
         pShowLocalCopyOut l_rank (kParams l_kernel) l_arrays ++ breakline ++ 
         pFreeStack l_arrays ++ breakline ++ 
         "};\n"
@@ -371,7 +371,7 @@ pShowLocalCopyOut l_rank l_kParams l_arrays =
     pShowCopyLoopHeader False l_rank (tail l_kParams) l_arrays ++ breakline ++
     (intercalate breakline $ map (pShowCopyInOutBody False) l_arrays) ++ breakline ++
     pShowCopyLoopTail l_rank ++ breakline ++ pAdjustTrape l_rank ++ breakline ++ 
-    pShowTimeLoopTail ++ breakline
+    pShowTimeLoopTail ++ breakline 
 
 pShowLocalCopyIn :: Int -> [PName] -> [PArray] -> String
 pShowLocalCopyIn l_rank l_kParams l_arrays =
@@ -691,11 +691,11 @@ pShowOptPointerKernel l_name l_kernel =
         pShowPointers l_iter ++ breakline ++ 
         pShowArrayInfo l_array ++ pShowArrayGaps l_rank l_array ++
         breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
-        "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
+        pShowTimeLoopHeader l_t ++ breakline ++
         pShowOptPointerSet l_iter (kParams l_kernel)++
         breakline ++ pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowOptPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
-        pAdjustTrape l_rank ++ breakline ++ "};\n"
+        pAdjustTrape l_rank ++ breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
 
 pShowCPointerKernel :: String -> PKernel -> String
 pShowCPointerKernel l_name l_kernel = 
@@ -710,10 +710,11 @@ pShowCPointerKernel l_name l_kernel =
         breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
         pShowRefMacro (kParams l_kernel) l_array ++
         "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
+        pShowTimeLoopHeader l_t ++ breakline ++
         breakline ++ pShowRawForHeader (tail $ kParams l_kernel) ++
         breakline ++ pShowCPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
-        pAdjustTrape l_rank ++ breakline ++ pShowRefUnMacro l_array ++ 
-        "};\n"
+        pAdjustTrape l_rank ++ breakline ++ pShowRefUnMacro l_array ++ pShowTimeLoopTail ++ 
+        breakline ++ "};\n"
 
 pShowCPointerStmt :: PKernel -> String
 pShowCPointerStmt l_kernel = 
