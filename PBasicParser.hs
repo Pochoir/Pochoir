@@ -212,27 +212,26 @@ transKernel l_kernel l_stencil l_mode =
            l_kernelParams = kParams l_kernel
            l_iters =
                    case l_mode of 
-                       PMacroShadow -> getFromStmts getIter 
+                       PMacroShadow -> getFromStmts getIter PRead 
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_exprStmts
-                       PCPointer -> getFromStmts getIter 
+                       PCPointer -> getFromStmts getIter PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_exprStmts
-                       PPointer -> getFromStmts (getPointer $ l_kernelParams) 
+                       PPointer -> getFromStmts (getPointer $ l_kernelParams) PRead 
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_exprStmts
-                       POptPointer -> getFromStmts getIter 
+                       POptPointer -> getFromStmts getIter PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_exprStmts 
-                       PCaching -> getFromStmts (getPointer $ l_kernelParams) 
+                       PCaching -> getFromStmts (getPointer $ l_kernelParams) PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_exprStmts 
                        PDefault -> let l_get = 
                                             if sRank l_stencil < 3 
                                                 then getIter
                                                 else (getPointer $ l_kernelParams)
-                                   in  getFromStmts 
-                                         l_get
+                                   in  getFromStmts l_get PRead
                                          (transArrayMap $ sArrayInUse l_stencil) 
                                          l_exprStmts 
            l_revIters = transIterN 0 l_iters

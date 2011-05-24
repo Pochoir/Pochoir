@@ -55,61 +55,65 @@ simplifyDimExprItem (DimDuo bop e1 e2)
     | otherwise = DimDuo bop (simplifyDimExprItem e1) (simplifyDimExprItem e2)
 simplifyDimExprItem (DimParen e) = DimParen (simplifyDimExprItem e)
 
-getFromStmts :: (PArray -> Expr -> [Iter]) -> Map.Map PName PArray -> [Stmt] -> [Iter]
-getFromStmts l_action _ [] = []
-getFromStmts l_action l_arrayMap l_stmts@(a:as) = 
+getFromStmts :: (PArray -> Expr -> PRWMode -> [Iter]) -> PRWMode -> Map.Map PName PArray -> [Stmt] -> [Iter]
+getFromStmts l_action _ _ [] = []
+getFromStmts l_action l_rw l_arrayMap l_stmts@(a:as) = 
     let i1 = getFromStmt a 
-        i2 = getFromStmts l_action l_arrayMap as 
+        i2 = getFromStmts l_action l_rw l_arrayMap as 
     in  union i1 i2
-    where getFromStmt (BRACES stmts) = getFromStmts l_action l_arrayMap stmts 
-          getFromStmt (EXPR e) = getFromExpr e
-          getFromStmt (DEXPR qs t es) = concat $ map getFromExpr es
+    where getFromStmt (BRACES stmts) = getFromStmts l_action l_rw l_arrayMap stmts 
+          getFromStmt (EXPR e) = getFromExpr l_rw e
+          getFromStmt (DEXPR qs t es) = concatMap (getFromExpr l_rw) es
           getFromStmt (IF e s1 s2) = 
-              let iter1 = getFromExpr e 
+              let iter1 = getFromExpr l_rw e 
                   iter2 = getFromStmt s1 
                   iter3 = getFromStmt s2 
               in  union iter1 (union iter2 iter3)
           getFromStmt (SWITCH e stmts) = 
-              let iter1 = getFromExpr e 
-                  iter2 = getFromStmts l_action l_arrayMap stmts
+              let iter1 = getFromExpr l_rw e 
+                  iter2 = getFromStmts l_action l_rw l_arrayMap stmts
               in  union iter1 iter2
-          getFromStmt (CASE v stmts) = getFromStmts l_action l_arrayMap stmts
-          getFromStmt (DEFAULT stmts) = getFromStmts l_action l_arrayMap stmts
+          getFromStmt (CASE v stmts) = getFromStmts l_action l_rw l_arrayMap stmts
+          getFromStmt (DEFAULT stmts) = getFromStmts l_action l_rw l_arrayMap stmts
           getFromStmt (NOP) = []
           getFromStmt (BREAK) = []
           getFromStmt (DO e stmts) = 
-              let iter1 = getFromExpr e 
-                  iter2 = getFromStmts l_action l_arrayMap stmts
+              let iter1 = getFromExpr l_rw e 
+                  iter2 = getFromStmts l_action l_rw l_arrayMap stmts
               in  union iter1 iter2
           getFromStmt (WHILE e stmts) = 
-              let iter1 = getFromExpr e 
-                  iter2 = getFromStmts l_action l_arrayMap stmts
+              let iter1 = getFromExpr l_rw e 
+                  iter2 = getFromStmts l_action l_rw l_arrayMap stmts
               in  union iter1 iter2
           getFromStmt (FOR sL s) = 
               let iter1 = getFromStmt s 
-                  iter2 = concat $ map (getFromStmts l_action l_arrayMap) sL
+                  iter2 = concat $ map (getFromStmts l_action l_rw l_arrayMap) sL
               in  union iter1 iter2
           getFromStmt (CONT) = []
-          getFromStmt (RET e) = getFromExpr e
+          getFromStmt (RET e) = getFromExpr l_rw e
           getFromStmt (RETURN) = []
           getFromStmt (UNKNOWN s) = []
-          getFromExpr (VAR q v) = []
-          getFromExpr (PVAR q v dL) = 
+          getFromExpr _ (VAR q v) = []
+          getFromExpr l_rw (PVAR q v dL) = 
               case Map.lookup v l_arrayMap of
                    Nothing -> []
-                   Just arrayInUse -> l_action arrayInUse (PVAR q v dL)
-          getFromExpr (BVAR v dim) = []
-          getFromExpr (BExprVAR v e) = getFromExpr e
-          getFromExpr (SVAR t e c f) = getFromExpr e
-          getFromExpr (PSVAR t e c f) = getFromExpr e
-          getFromExpr (Uno uop e) = getFromExpr e
-          getFromExpr (PostUno uop e) = getFromExpr e
-          getFromExpr (Duo bop e1 e2) = 
-              let iter1 = getFromExpr e1 
-                  iter2 = getFromExpr e2
-              in  (union iter1 iter2)
-          getFromExpr (PARENS e) = getFromExpr e
-          getFromExpr _ = []
+                   Just arrayInUse -> l_action arrayInUse (PVAR q v dL) l_rw
+          getFromExpr _ (BVAR v dim) = []
+          getFromExpr l_rw (BExprVAR v e) = getFromExpr l_rw e
+          getFromExpr l_rw (SVAR t e c f) = getFromExpr l_rw e
+          getFromExpr l_rw (PSVAR t e c f) = getFromExpr l_rw e
+          getFromExpr l_rw (Uno uop e) = getFromExpr l_rw e
+          getFromExpr l_rw (PostUno uop e) = getFromExpr l_rw e
+          getFromExpr l_rw (Duo bop e1 e2) = 
+            if bop == "=" 
+                then let iter1 = getFromExpr PWrite e1
+                         iter2 = getFromExpr PRead e1
+                     in  (union iter1 iter2)
+                else let iter1 = getFromExpr l_rw e1
+                         iter2 = getFromExpr l_rw e2
+                     in  (union iter1 iter2)
+          getFromExpr l_rw (PARENS e) = getFromExpr l_rw e
+          getFromExpr _ _ = []
 
 transStmts :: [Stmt] -> (Expr -> Expr) -> [Stmt]
 transStmts [] _ = []
@@ -153,7 +157,7 @@ transStmts l_stmts@(a:as) l_action = transStmt a : transStmts as l_action
 
 pIterLookup :: (String, [DimExpr]) -> [Iter] -> Maybe String
 pIterLookup (v, dL) [] = Nothing
-pIterLookup (v, dL) ((iterName, arrayInUse, dim):is) 
+pIterLookup (v, dL) ((iterName, arrayInUse, dim, rw):is) 
     | v == aName arrayInUse && dL == dim = Just iterName
     | otherwise = pIterLookup (v, dL) is
 
@@ -253,7 +257,7 @@ pShowObaseKernel l_name l_kernel =
     in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
         "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
-        pShowIters l_iter ++ pShowArrayGaps l_rank l_array ++
+        pShowArrayGaps l_rank l_array ++
         breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
         pShowTimeLoopHeader l_t ++ breakline ++
         pShowIterSet l_iter (kParams l_kernel)++
@@ -282,13 +286,16 @@ pShowPointerKernel l_name l_kernel =
 pShowCachingKernel :: String -> PKernel -> String
 pShowCachingKernel l_name l_kernel = 
     let l_rank = length (kParams l_kernel) - 1
-        l_iter = kIter l_kernel
-        l_arrays = unionArrayIter l_iter
+        l_iters = kIter l_kernel
+        l_stmts = kStmt l_kernel
+        l_rdIters = pGetReadIters l_iters
+        l_wrIters = pGetWriteIters l_iters 
+        l_arrays = unionArrayIter l_iters
         l_t = head $ kParams l_kernel
     in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
         "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
-        pShowPointers l_iter ++ breakline ++ 
+        pShowPointers l_iters ++ breakline ++ 
         pShowArrayInfo l_arrays ++ pShowArrayGaps l_rank l_arrays ++
         breakline ++ pShowRankAttr l_rank "stride" l_arrays ++ breakline ++
         pShowDeltaT ++ breakline ++ pAllocStack l_arrays ++ breakline ++ 
@@ -296,8 +303,8 @@ pShowCachingKernel l_name l_kernel =
         pShowLocalCopyIn l_rank (kParams l_kernel) l_arrays ++ breakline ++ 
         pShowLocalGridForComp l_rank (head l_arrays) ++ breakline ++
         pShowTimeLoopHeader l_t ++ breakline ++
-        pShowPointerSetLocal l_iter (kParams l_kernel) ++
-        breakline ++ pShowPointerForHeader l_rank False l_iter (tail $ kParams l_kernel) ++
+        pShowPointerSetLocal l_iters (kParams l_kernel) ++
+        breakline ++ pShowPointerForHeader l_rank False l_iters (tail $ kParams l_kernel) ++
         breakline ++ pShowPointerStmt False l_kernel ++ breakline ++ 
         pShowObaseForTail l_rank ++ pAdjustTrape l_rank ++ breakline ++ 
         pShowTimeLoopTail ++ breakline ++ 
@@ -346,7 +353,7 @@ pShowXs l_end l_rank l_op l_offsets =
 pShowPointerSetLocal :: [Iter] -> [PName] -> String
 pShowPointerSetLocal [] _ = ""
 pShowPointerSetLocal iL@(i:is) l_kernelParams = concatMap pShowPointerSetLocalTerm iL
-    where pShowPointerSetLocalTerm (iterName, array, dim) = 
+    where pShowPointerSetLocalTerm (iterName, array, dim, rw) = 
             let l_arrayName = aName array
                 l_rank = length l_kernelParams - 1
                 l_arrayBaseName = "lc_" ++ l_arrayName
@@ -569,9 +576,10 @@ pAllocStack l_arrays = concatMap pAllocStackItem l_arrays
     where pAllocStackItem l_array = 
             let l_type = show (aType l_array) 
                 l_a = aName l_array
-                l_size = " 2 * 120 * 120 "
+                l_toggle = aToggle l_array
+                l_size = show l_toggle ++ " * 120 * 120"
                 l_cache = " lc_" ++ l_a
-            in  l_type ++ l_cache ++ " [" ++ l_size ++ "];" ++ breakline
+            in  l_type ++ l_cache ++ " [ " ++ l_size ++ " ];" ++ breakline
 
 pShowLocalCacheAttr :: Int -> [PArray] -> String
 pShowLocalCacheAttr l_rank l_arrays = 
@@ -799,7 +807,7 @@ pShowRankAttr n attr aL@(a:as) = "const int " ++ getAttrs n aL ++ ";\n"
 pShowPointers :: [Iter] -> String
 pShowPointers [] = ""
 pShowPointers iL@(i:is) = foldr pShowPointer "" iL
-    where pShowPointer (nameIter, arrayInUse, dL) str =
+    where pShowPointer (nameIter, arrayInUse, dL, rw) str =
                 str ++ breakline ++ (show $ aType arrayInUse) ++ " * " ++ nameIter ++ ";"
 
 pShowPointerStmt :: Bool -> PKernel -> String
@@ -835,7 +843,7 @@ transPointer global l_iters (PVAR q v dL) =
     let pre = if global == True then "l_" else "lc_"
     in  case pPointerLookup (v, dL) l_iters of
             Nothing -> PVAR q v dL
-            Just (iterName, arrayInUse, des) -> 
+            Just (iterName, arrayInUse, des, rw) -> 
                 BVAR iterName de
                     where de = simplifyDimExpr naive_de
                           naive_de = foldr plusCombDimExpr x $ zipWith mulDimExpr strideL $ tail $ excludeDimExpr dL des 
@@ -867,8 +875,8 @@ excludeDimExpr (d:ds) (r:rs) = (excludeDimExprItem d r):(excludeDimExpr ds rs)
 
 pPointerLookup :: (PName, [DimExpr]) -> [Iter] -> Maybe Iter
 pPointerLookup (v, dL) [] = Nothing
-pPointerLookup (v, dL) ((iterName, arrayInUse, dL'):is)
-    | v == aName arrayInUse && head dL == head dL' = Just (iterName, arrayInUse, dL')
+pPointerLookup (v, dL) ((iterName, arrayInUse, dL', rw):is)
+    | v == aName arrayInUse && head dL == head dL' = Just (iterName, arrayInUse, dL', rw)
     | otherwise = pPointerLookup (v, dL) is
 
 transIter :: [Iter] -> Expr -> Expr
@@ -880,7 +888,7 @@ transIter l_iters e = e
 
 pShowIterSet :: [Iter] -> [PName] -> String
 pShowIterSet iL@(i:is) l_kernelParams = concat $ map pShowIterSetTerm iL
-    where pShowIterSetTerm (name, array, dim) = 
+    where pShowIterSetTerm (name, array, dim, rw) = 
             breakline ++ name ++ ".set(" ++ show (pShowTransDim dim l_kernelParams) ++ ");" 
             --
 -- PName : list of kernel parameters
@@ -889,7 +897,7 @@ pShowOptPointerSet [] _ = ""
 pShowOptPointerSet iL@(i:is) l_kernelParams = 
     let baseIters = transIterN 0 $ getBaseIter l_kernelParams iL
     in  pShowPointers baseIters ++ (concat $ map pShowOptPointerSetTerm baseIters) ++ pShowNonBaseIters baseIters iL
-        where pShowOptPointerSetTerm (iterName, array, dim) = 
+        where pShowOptPointerSetTerm (iterName, array, dim, rw) = 
                 let l_arrayName = aName array
                     l_arrayBaseName = l_arrayName ++ "_base"
                     l_arrayTotalSize = "l_" ++ l_arrayName ++ "_total_size"
@@ -907,7 +915,7 @@ pShowNonBaseIters :: [Iter] -> [Iter] -> String
 pShowNonBaseIters _ [] = ""
 pShowNonBaseIters bL iL@(i:is) = pShowShiftFromBase i bL ++ pShowNonBaseIters bL is
     where pShowShiftFromBase _ [] = "/* NO baseIter found! */"
-          pShowShiftFromBase (iName, iArray, iDims) ((bName, bArray, bDims):bs)
+          pShowShiftFromBase (iName, iArray, iDims, iRW) ((bName, bArray, bDims, bRW):bs)
             | iArray == bArray && head iDims == head bDims =
                 let l_arrayName = aName iArray
                     l_arrayStrideList =
@@ -916,7 +924,7 @@ pShowNonBaseIters bL iL@(i:is) = pShowShiftFromBase i bL ++ pShowNonBaseIters bL
                     l_arraySpaceOffset = 
                         intercalate " + " $ zipWith pCombineDim l_transDimList l_arrayStrideList
                 in  breakline ++ iName ++ " = "  ++ bName ++ " + " ++ l_arraySpaceOffset ++ ";"
-            | otherwise = pShowShiftFromBase (iName, iArray, iDims) bs
+            | otherwise = pShowShiftFromBase (iName, iArray, iDims, iRW) bs
 
 excludeBaseDim :: DimExpr -> DimExpr -> DimExpr
 excludeBaseDim (DimVAR i) b 
@@ -933,7 +941,7 @@ excludeBaseDim (DimParen e) b = DimParen (excludeBaseDim e b)
 pShowPointerSet :: [Iter] -> [PName] -> String
 pShowPointerSet [] _ = ""
 pShowPointerSet iL@(i:is) l_kernelParams = concatMap pShowPointerSetTerm iL
-    where pShowPointerSetTerm (iterName, array, dim) = 
+    where pShowPointerSetTerm (iterName, array, dim, rw) = 
             let l_arrayName = aName array
                 l_arrayBaseName = l_arrayName ++ "_base"
                 l_arrayTotalSize = "l_" ++ l_arrayName ++ "_total_size"
@@ -973,9 +981,10 @@ pTransDim n r dL@(d:ds) pL@(p:ps) = pTransDimTerm n r d p : pTransDim (n+1) r ds
           pTransDimTerm n r (DimDuo bop e1 e2) p = 
               DimDuo bop (pTransDimTerm n r e1 p) (pTransDimTerm n r e2 p)
         
+{-
 pShowIters :: [Iter] -> String
 pShowIters [] = ""
-pShowIters ((l_name, l_array, l_dim):is) = 
+pShowIters ((l_name, l_array, l_dim, l_rw):is) = 
     let l_type = aType l_array
         l_rank = aRank l_array
         l_toggle = aToggle l_array
@@ -983,16 +992,17 @@ pShowIters ((l_name, l_array, l_dim):is) =
     in breakline ++ "Pochoir_Iterator<" ++ show l_type ++ ", " ++ show l_rank ++ 
        ", " ++ show l_toggle ++ "> " ++
        l_name ++ "(" ++ l_arrayName ++ ");" ++ pShowIters is   
+-}
 
 unionArrayIter :: [Iter] -> [PArray]
 unionArrayIter [] = []
 unionArrayIter iL@(i:is) = union (getArrayItem i) (unionArrayIter is)
-    where getArrayItem (_, a, _) = [a]
+    where getArrayItem (_, a, _, _) = [a]
 
 getArrayIter :: [Iter] -> [PName]
 getArrayIter [] = []
 getArrayIter iL@(i:is) = (getArrayItem i) ++ (getArrayIter is)
-    where getArrayItem (_, a, _) = [aName a]
+    where getArrayItem (_, a, _, _) = [aName a]
 
 pShowObaseForTail :: Int -> String
 pShowObaseForTail n 
@@ -1080,7 +1090,7 @@ adjustGap l_rank global aL@(a:as) =
                 ") * " ++ l_pre_stride ++ ";" ++ breakline
           
 getIterName :: Iter -> String
-getIterName (name, _, _) = name
+getIterName (name, _, _, _) = name
 
 getArrayGaps :: Int -> PArray -> String
 getArrayGaps 0 array = getArrayGap 0 (aName array)

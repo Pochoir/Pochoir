@@ -141,29 +141,29 @@ getPStencil l_id l_state l_oldStencil =
         Nothing -> l_oldStencil
         Just l_stencil -> l_stencil
 
-getIter :: PArray -> Expr -> [Iter]
-getIter arrayInUse (PVAR q v dL) =
+getIter :: PArray -> Expr -> PRWMode -> [Iter]
+getIter arrayInUse (PVAR q v dL) l_rw =
     let iterName = "iter"
-    in  [(iterName, arrayInUse, dL)]
-getIter arrayInUse _ = []
+    in  [(iterName, arrayInUse, dL, l_rw)]
+getIter arrayInUse _ _ = []
 
 getBaseIter :: [PName] -> [Iter] -> [Iter]
 getBaseIter _ []  = []
 getBaseIter l_kernelParams iL@(i:is) = union (getBaseIterItem i) (getBaseIter l_kernelParams is)
-    where getBaseIterItem (name, array, dims) = 
+    where getBaseIterItem (name, array, dims, rw) = 
             let dims' = getBaseDimExpr (tail l_kernelParams) dims
-            in  [("baseIter_", array, dims')]
+            in  [("baseIter_", array, dims', rw)]
 
-getPointer :: [PName] -> PArray -> Expr -> [Iter]
-getPointer kernelParams arrayInUse (PVAR q v dL) =
+getPointer :: [PName] -> PArray -> Expr -> PRWMode -> [Iter]
+getPointer kernelParams arrayInUse (PVAR q v dL) l_rw =
     let iterName = "pt_" ++ aName arrayInUse ++ "_"
         dL' = transDimExpr kernelParams dL
-    in  [(iterName, arrayInUse, dL')]
-getPointer _ arrayInUse _ = []
+    in  [(iterName, arrayInUse, dL', l_rw)]
+getPointer _ arrayInUse _ _ = []
 
 transIterN :: Int -> [Iter] -> [Iter]
 transIterN _ [] = []
-transIterN n ((name, array, dim):is) = (name ++ show n, array, dim) : (transIterN (n+1) is)
+transIterN n ((name, array, dim, rw):is) = (name ++ show n, array, dim, rw) : (transIterN (n+1) is)
 
 transArrayMap :: [PArray] -> Map.Map PName PArray
 transArrayMap aL = Map.fromList $ transAssocList aL
@@ -203,4 +203,17 @@ getArrayName :: [PArray] -> [PName]
 getArrayName [] = []
 getArrayName (a:as) = (aName a) : (getArrayName as)
 
+pGetReadIters :: [Iter] -> [Iter]
+pGetReadIters [] = []
+pGetReadIters iL@(i:is) = 
+    if isReadIter i == True then (i:pGetReadIters is) else pGetReadIters is
+       where isReadIter (iName, iArray, iDims, iRW) =
+               if iRW == PRead then True else False
+
+pGetWriteIters :: [Iter] -> [Iter]
+pGetWriteIters [] = []
+pGetWriteIters iL@(i:is) = 
+    if isWriteIter i == True then (i:pGetWriteIters is) else pGetWriteIters is
+       where isWriteIter (iName, iArray, iDims, iRW) =
+               if iRW == PWrite then True else False
 

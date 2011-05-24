@@ -60,8 +60,8 @@ Pochoir_Boundary_2D(heat_bv_2D, arr, t, i, j)
      * boundary function to supply a value; in arr.get(...), if off-boundary 
      * access occurs, we will print the off-boundary access and quit!
      */
-    // return arr.get(t, new_i, new_j);
-    return arr.get(t, -1, -1);
+    return arr.get(t, new_i, new_j);
+    // return arr.get(t, -1, -1);
 Pochoir_Boundary_End
 
 int main(int argc, char * argv[])

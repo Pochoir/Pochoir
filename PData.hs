@@ -46,6 +46,7 @@ stripWhite l = dropWhile isSpace l
 newtype PShift = PShift Int deriving (Eq, Ord)
 data RegionT = Periodic | Nonperiodic | UnknownRegionT deriving Show
 data PBasicType = PChar | PShort | PLong | PSigned | PUnsigned | PVoid | PInt | PDouble | PFloat | PBool | PUserType deriving Eq
+data PRWMode = PRead | PWrite | POther deriving (Eq, Show)
 data PType = PType {
     basicType :: PBasicType,
     typeName :: String
@@ -87,8 +88,10 @@ data PRange = PRange {
     rLast :: DimExpr,
     rStride :: DimExpr 
 } deriving Show 
--- (NameOfIter, arrayInUse, correspondingDimExpr)
-type Iter = (String, PArray, [DimExpr])
+
+-- (NameOfIter, arrayInUse, correspondingDimExpr, RWMode)
+type Iter = (String, PArray, [DimExpr], PRWMode)
+
 data PKernel = PKernel {
     kName :: PName,
     kParams :: [PName],
