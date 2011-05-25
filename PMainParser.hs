@@ -230,7 +230,7 @@ pPochoirKernel =
     do  l_kernel_params <- parens $ commaSep1 identifier           
         exprStmts <- manyTill pStatement (try $ reserved "Pochoir_Kernel_End")
         l_state <- getState
-        let l_iters = getFromStmts (getPointer $ tail l_kernel_params) 
+        let l_iters = getFromStmts (getPointer $ tail l_kernel_params) PRead 
                                    (pArray l_state) exprStmts
         let l_revIters = transIterN 0 l_iters
         let l_kernel = PKernel { kName = head l_kernel_params, 

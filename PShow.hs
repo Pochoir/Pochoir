@@ -107,7 +107,7 @@ getFromStmts l_action l_rw l_arrayMap l_stmts@(a:as) =
           getFromExpr l_rw (Duo bop e1 e2) = 
             if bop == "=" 
                 then let iter1 = getFromExpr PWrite e1
-                         iter2 = getFromExpr PRead e1
+                         iter2 = getFromExpr PRead e2
                      in  (union iter1 iter2)
                 else let iter1 = getFromExpr l_rw e1
                          iter2 = getFromExpr l_rw e2
@@ -300,7 +300,7 @@ pShowCachingKernel l_name l_kernel =
         breakline ++ pShowRankAttr l_rank "stride" l_arrays ++ breakline ++
         pShowDeltaT ++ breakline ++ pAllocStack l_arrays ++ breakline ++ 
         pShowLocalCacheAttr l_rank l_arrays ++ breakline ++ 
-        pShowLocalCopyIn l_rank (kParams l_kernel) l_arrays ++ breakline ++ 
+        pShowLocalCopyIn l_rank (kParams l_kernel) l_arrays l_rdIters ++ breakline ++ 
         pShowLocalGridForComp l_rank (head l_arrays) ++ breakline ++
         pShowTimeLoopHeader l_t ++ breakline ++
         pShowPointerSetLocal l_iters (kParams l_kernel) ++
@@ -308,7 +308,7 @@ pShowCachingKernel l_name l_kernel =
         breakline ++ pShowPointerStmt False l_kernel ++ breakline ++ 
         pShowObaseForTail l_rank ++ pAdjustTrape l_rank ++ breakline ++ 
         pShowTimeLoopTail ++ breakline ++ 
-        pShowLocalCopyOut l_rank (kParams l_kernel) l_arrays ++ breakline ++ 
+        pShowLocalCopyOut l_rank (kParams l_kernel) l_arrays l_wrIters ++ breakline ++ 
         pFreeStack l_arrays ++ breakline ++ 
         "};\n"
 
@@ -369,23 +369,23 @@ pShowPointerSetLocal iL@(i:is) l_kernelParams = concatMap pShowPointerSetLocalTe
             in  breakline ++ iterName ++ " = " ++ l_arrayBaseName ++ " + " ++ 
                 l_arrayTimeOffset ++ " + " ++ l_arraySpaceOffset ++ ";" 
 
-pShowLocalCopyOut :: Int -> [PName] -> [PArray] -> String
-pShowLocalCopyOut l_rank l_kParams l_arrays =
+pShowLocalCopyOut :: Int -> [PName] -> [PArray] -> [Iter] -> String
+pShowLocalCopyOut l_rank l_kParams l_arrays l_wrIters =
     "/* Copy Out */" ++ breakline ++ 
     pShowLocalGridForCopyOut l_rank ++ breakline ++
     pShowTimeLoopHeader (head l_kParams) ++ breakline ++
-    (intercalate breakline $ map (pShowCopyInOutBase False l_rank $ head l_kParams) l_arrays) ++ breakline ++
+    (intercalate breakline $ map (pShowCopyInOutBase False l_rank $ head l_kParams) l_wrIters) ++ breakline ++
     pShowCopyLoopHeader False l_rank (tail l_kParams) l_arrays ++ breakline ++
     (intercalate breakline $ map (pShowCopyInOutBody False) l_arrays) ++ breakline ++
     pShowCopyLoopTail l_rank ++ breakline ++ pAdjustTrape l_rank ++ breakline ++ 
     pShowTimeLoopTail ++ breakline 
 
-pShowLocalCopyIn :: Int -> [PName] -> [PArray] -> String
-pShowLocalCopyIn l_rank l_kParams l_arrays =
+pShowLocalCopyIn :: Int -> [PName] -> [PArray] -> [Iter] -> String
+pShowLocalCopyIn l_rank l_kParams l_arrays l_rdIters =
     "/* Copy In */" ++ breakline ++ 
     pShowLocalGridForCopyIn l_rank ++ breakline ++
     pShowTimeLoopHeader (head l_kParams) ++ breakline ++
-    (intercalate breakline $ map (pShowCopyInOutBase True l_rank $ head l_kParams) l_arrays) ++ breakline ++
+    (intercalate breakline $ map (pShowCopyInOutBase True l_rank $ head l_kParams) l_rdIters) ++ breakline ++
     pShowCopyLoopHeader True l_rank (tail l_kParams) l_arrays ++ breakline ++
     (intercalate breakline $ map (pShowCopyInOutBody True) l_arrays) ++ breakline ++
     pShowCopyLoopTail l_rank ++ breakline ++ pAdjustTrape l_rank ++ breakline ++
@@ -450,14 +450,15 @@ pShowCopyLoopTail :: Int -> String
 pShowCopyLoopTail 1 = "}"
 pShowCopyLoopTail l_rank = "}" ++ breakline ++ pShowCopyLoopTail (l_rank-1)
 
-pShowCopyInOutBase :: Bool -> Int -> PName -> PArray -> String
-pShowCopyInOutBase l_inOut l_rank l_t l_array =
-    let l_type = show (aType l_array) ++ " * "
+pShowCopyInOutBase :: Bool -> Int -> PName -> Iter -> String
+pShowCopyInOutBase l_inOut l_rank l_t l_rwIter =
+    let l_array = pIterArray l_rwIter 
+        l_type = show (aType l_array) ++ " * "
         l_a = aName l_array
         lc_base = "lc_" ++ l_a
         l_base = l_a ++ "_base"
         l_suffix = if l_inOut == True then "_in" else "_out"
-        l_t_dim = if l_inOut == True then (DimVAR l_t) else (DimDuo " + " (DimVAR l_t) (DimINT 1))
+        l_t_dim = head $ pIterDims l_rwIter 
         lc_iter = "lc_" ++ l_a ++ l_suffix
         l_iter = "l_" ++ l_a ++ l_suffix
         l_toggle = aToggle l_array

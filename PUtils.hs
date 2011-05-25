@@ -193,6 +193,11 @@ pFirst (a, _, _) = a
 pSecond (_, b, _) = b
 pThird (_, _, c) = c
 
+pIterName (a, _, _, _) = a
+pIterArray (_, a, _, _) = a
+pIterDims (_, _, a, _) = a
+pIterRWMode (_, _, _, a) = a
+
 transInterior :: [PName] -> Expr -> Expr
 transInterior l_arrayInUse (PVAR q v dL) =
     if elem v l_arrayInUse == True then PVAR q (v ++ ".interior") dL
