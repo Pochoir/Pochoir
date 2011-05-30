@@ -32,19 +32,19 @@ heat_NP : tb_heat_2D_NP.cpp
 
 heat_NP_zero : tb_heat_2D_NP_zero.cpp
 #   Phase-II compilation
-#	${CC} -o tb_heat_2D_NP_zero_pochoir ${OPT_FLAGS} tb_heat_2D_NP_zero.cpp
+	${CC} -o tb_heat_2D_NP_zero_pochoir ${OPT_FLAGS} -split-caching tb_heat_2D_NP_zero.cpp
 #	Phase-I compilation with debugging aid
-	${CC} -o tb_heat_2D_NP_zero_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_NP_zero.cpp
+#	${CC} -o tb_heat_2D_NP_zero_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_NP_zero.cpp
 
 heat_P : tb_heat_2D_P.cpp
 #   Phase-II compilation
-	${CC} -o tb_heat_2D_P_pochoir ${OPT_FLAGS} -split-pointer tb_heat_2D_P.cpp
+	${CC} -o tb_heat_2D_P_pochoir ${OPT_FLAGS} -split-caching tb_heat_2D_P.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_2D_P_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_P.cpp
 
 heat_3D_NP : tb_heat_3D_NP.cpp
 #   Phase-II compilation
-	${CC} -o tb_heat_3D_NP_pochoir ${OPT_FLAGS} tb_heat_3D_NP.cpp
+	${CC} -o tb_heat_3D_NP_pochoir ${OPT_FLAGS} -split-caching tb_heat_3D_NP.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_3D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_3D_NP.cpp
 

@@ -103,7 +103,7 @@ int main(int argc, char * argv[])
      * the boundary region and when to call the user supplied boundary
      * value function
      */
-    a.Register_Boundary(heat_bv_3D);
+    // a.Register_Boundary(heat_bv_3D);
     heat_3D.Register_Domain(I, J, K);
 
 #if 1
