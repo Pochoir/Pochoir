@@ -441,11 +441,12 @@ struct Algorithm {
             dx_recursive_[i] = 1;
 #else
 #if 1
-        dt_recursive_ = (N_RANK == 1) ? 20 : ((N_RANK == 2) ? 40 : 5);
         dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((100 * sizeof(double))/arr_type_size)) : (int)floor(float((600 * sizeof(double))/arr_type_size));
 //        dx_recursive_[0] = 30;
         for (int i = N_RANK-1; i >= 1; --i)
             dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(100 * sizeof(double))/arr_type_size): 10;
+        assert(slope_[0] != 0);
+        dt_recursive_ = (N_RANK == 1) ? floor(dx_recursive_[0]/(2 * slope_[0])) : ((N_RANK == 2) ? floor(dx_recursive_[0]/(2 * slope_[0])) : 5);
 #else
         dx_recursive_[0] = (N_RANK == 1) ? 10000 : (N_RANK == 2 ? 100 : (N_RANK == 3 ? 20 : 10));
         for (int i = N_RANK-1; i >= 1; --i)

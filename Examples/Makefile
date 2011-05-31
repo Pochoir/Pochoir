@@ -7,16 +7,13 @@ ICC_DEBUG_FLAGS = -O3 -g3 -DDEBUG -Wall -Werror -I/opt/intel/composerxe-2011.2.1
 # ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x
 example_1D : tb_example_1D.cpp
 #   Phase-II compilation
-#	${CC} -o tb_example_1D_pochoir ${OPT_FLAGS} -split-caching tb_example_1D.cpp
-	${CC} -o tb_example_1D_pochoir ${OPT_FLAGS} -split-caching tb_example_1D.cpp
-#	${ICC} -P tb_example_1D_pochoir.cpp
-	${ICC} -o example_1D ${ICC_DEBUG_FLAGS} tb_example_1D_pochoir.cpp
+	${CC} -o tb_example_1D_pochoir ${OPT_FLAGS} tb_example_1D.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_example_1D_pochoir ${POCHOIR_DEBUG_FLAGS} tb_example_1D.cpp
 
 heat_1D_NP : tb_heat_1D_NP.cpp
 #   Phase-II compilation
-	${CC} -o tb_heat_1D_NP_pochoir ${OPT_FLAGS} -split-caching tb_heat_1D_NP.cpp
+	${CC} -o tb_heat_1D_NP_pochoir ${OPT_FLAGS} tb_heat_1D_NP.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_1D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_1D_NP.cpp
 
@@ -49,6 +46,12 @@ heat_3D_NP : tb_heat_3D_NP.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_3D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_3D_NP.cpp
 
+animwave : tb_animwave.cpp
+#   Phase-II compilation
+	${CC} -o animwave_pochoir ${OPT_FLAGS} tb_animwave.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o animwave_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave.cpp
+
 apop : apop.cpp
 #   Phase-II compilation
 	${CC} -o apop_pochoir ${OPT_FLAGS} apop.cpp
@@ -57,7 +60,7 @@ apop : apop.cpp
 
 life : tb_life.cpp
 #   Phase-II compilation
-	${CC} -o tb_life_pochoir ${OPT_FLAGS} -split-caching tb_life.cpp
+	${CC} -o tb_life_pochoir ${OPT_FLAGS} tb_life.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_life_pochoir ${POCHOIR_DEBUG_FLAGS} tb_life.cpp
 
