@@ -32,8 +32,8 @@
  *                  Uses timestep c*dt = cdtdx * dx. For stability, cdtdx 
  *                  should be < 1.
  *
- *                  Initial matlab program from Steven G. Johnson, 
- *                  ported to Pochoir by Yuan Tang
+ *                  Initial matlab program got from Steven G. Johnson, 
+ *                  ported to Pochoir by Yuan Tang.
  */
 
 #include <cstdio>
@@ -104,7 +104,7 @@ int main(int argc, char * argv[])
     double umin, umax;
 
     if (argc < 3) {
-        printf("argc < 2, quit! \n");
+        printf("argc < 3, quit! \n");
         exit(1);
     }
     M = StrToInt(argv[1]);
@@ -130,7 +130,7 @@ int main(int argc, char * argv[])
     }
 
 #if 0
-    /* it seems that umin and umax doesn't engage in the stencil computation */
+    /* it seems that umin and umax don't engage in the stencil computation */
     umin = array_min_u(a, 0, M) - (array_max_u(a, 0, M) - array_min_u(a, 0, M)) * 0.2;
     umax = array_max_u(a, 0, M) + (array_max_u(a, 0, M) - array_min_u(a, 0, M)) * 0.2;
 #endif
@@ -167,8 +167,8 @@ int main(int argc, char * argv[])
     /* check results! */
     t = nt;
     for (int i = 0; i < M; ++i) {
-        check_result(t, i, a.interior(t, i).u, b.interior(t, i).u);
-        check_result(t, i, a.interior(t, i).v, b.interior(t, i).v);
+        check_result(t, i, a(t, i).u, b(t, i).u);
+        check_result(t, i, a(t, i).v, b(t, i).v);
     } 
 
     return 0;
