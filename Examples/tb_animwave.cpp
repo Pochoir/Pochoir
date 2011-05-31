@@ -58,8 +58,6 @@ void check_result(int t, int i, double a, double b)
     }
 }
 
-#define func sin
-
 Pochoir_Boundary_1D(periodic_1D, arr, t, i)
     const int arr_size_0 = arr.size(0);
 
@@ -120,11 +118,16 @@ int main(int argc, char * argv[])
     b.Register_Boundary(periodic_1D);
     double * x = new double[M];
 
+    /* we can define an arbitrary function here, and transfer it to the animwave
+     * function as a templated input
+     */
+    auto f = [](double x) { return sin(x); };
+
     /* initialization */
     for (int i = 0; i < M; ++i) {
         x[i] = i * dx;
-        a(0, i).u = func(x[i]);
-        a(0, i).v = -func(x[i] + 0.5 * dx * (1 + cdtdx));
+        a(0, i).u = f(x[i]);
+        a(0, i).v = -f(x[i] + 0.5 * dx * (1 + cdtdx));
         b(0, i).u = a(0, i).u;
         b(0, i).v = a(0, i).v;
     }
