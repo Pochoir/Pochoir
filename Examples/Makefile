@@ -49,9 +49,9 @@ heat_3D_NP : tb_heat_3D_NP.cpp
 
 animwave : tb_animwave.cpp
 #   Phase-II compilation
-	${CC} -o animwave_pochoir ${OPT_FLAGS} tb_animwave.cpp
+#	${CC} -o animwave_pochoir ${OPT_FLAGS} tb_animwave.cpp
 #	Phase-I compilation with debugging aid
-#	${CC} -o animwave_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave.cpp
+	${CC} -o animwave_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave.cpp
 
 apop : apop.cpp
 #   Phase-II compilation

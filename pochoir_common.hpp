@@ -32,12 +32,6 @@
 #include <cstdlib>
 #include <string>
 
-#if 0
-#define cilk_spawn 
-#define cilk_sync
-#define cilk_for for
-#endif
-
 static inline double tdiff (struct timeval *a, struct timeval *b)
 {
 	    return a->tv_sec - b->tv_sec + 1e-6 * (a->tv_usec - b->tv_usec);

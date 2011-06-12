@@ -89,11 +89,13 @@ inline bool Algorithm<N_RANK>::within_boundary(int t0, int t1, grid_info<N_RANK>
     return !l_touch_boundary;
 }
 
+/* assuming that 'walk_serial' will only be called for interior region,
+ * because boundary region usually it's very small, so let's call loop
+ */
 template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::walk_serial(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
 {
     int lt = t1 - t0;
-    bool base_cube = (lt <= dt_recursive_); /* dt_recursive_ : temporal dimension stop */
     bool cut_yet = false;
     bool can_cut[N_RANK];
     grid_info<N_RANK> l_grid;
@@ -103,58 +105,38 @@ inline void Algorithm<N_RANK>::walk_serial(int t0, int t1, grid_info<N_RANK> con
         /* if all lb[i] < thres[i] && lt <= dt_recursive, 
            we have nothing to cut!
          */
-        base_cube = base_cube && (!can_cut[i]);
     }
 
-    if (base_cube) {
-#if DEBUG
-        print_grid(stdout, t0, t1, grid);
-#endif
-        base_case_kernel_boundary(t0, t1, grid, f);
-        return;
-    } else  {
-		/* N_RANK-1 because we exclude the time dimension here */
-        for (int i = N_RANK-1; i >= 0 && !cut_yet; --i) {
-            if (can_cut[i]) {
-                l_grid = grid;
-                int xm = (2 * (grid.x0[i] + grid.x1[i]) + (2 * slope_[i] + grid.dx0[i] + grid.dx1[i]) * lt) / 4;
-                l_grid.x0[i] = grid.x0[i]; l_grid.dx0[i] = grid.dx0[i];
-                l_grid.x1[i] = xm; l_grid.dx1[i] = -slope_[i];
-                walk_serial(t0, t1, l_grid, f);
-                l_grid.x0[i] = xm; l_grid.dx0[i] = -slope_[i];
-                l_grid.x1[i] = grid.x1[i]; l_grid.dx1[i] = grid.dx1[i];
-                walk_serial(t0, t1, l_grid, f);
-#if 0
-                printf("%s:%d cut into %d dim\n", __FUNCTION__, __LINE__, i);
-                fflush(stdout);
-#endif
-                cut_yet = true;
-            }/* end if */
-        } /* end for */
-        if (!cut_yet && lt > dt_recursive_) {
-            int halflt = lt / 2;
+	/* N_RANK-1 because we exclude the time dimension here */
+    for (int i = N_RANK-1; i >= 0 && !cut_yet; --i) {
+        if (can_cut[i]) {
             l_grid = grid;
-            walk_serial(t0, t0+halflt, l_grid, f);
-#if DEBUG
-            print_sync(stdout);
-#endif
-
-            for (int i = 0; i < N_RANK; ++i) {
-                l_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
-                l_grid.dx0[i] = grid.dx0[i];
-                l_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
-                l_grid.dx1[i] = grid.dx1[i];
-            }
-            walk_serial(t0+halflt, t1, l_grid, f);
-#if 0
-            printf("%s:%d cut into time dim\n", __FUNCTION__, __LINE__);
-            fflush(stdout);
-#endif
+            int xm = (2 * (grid.x0[i] + grid.x1[i]) + (2 * slope_[i] + grid.dx0[i] + grid.dx1[i]) * lt) / 4;
+            l_grid.x0[i] = grid.x0[i]; l_grid.dx0[i] = grid.dx0[i];
+            l_grid.x1[i] = xm; l_grid.dx1[i] = -slope_[i];
+            walk_serial(t0, t1, l_grid, f);
+            l_grid.x0[i] = xm; l_grid.dx0[i] = -slope_[i];
+            l_grid.x1[i] = grid.x1[i]; l_grid.dx1[i] = grid.dx1[i];
+            walk_serial(t0, t1, l_grid, f);
             cut_yet = true;
+        }/* end if */
+    } /* end for spatial dimensions */
+    if (lt > dt_recursive_) {
+        int halflt = lt / 2;
+        l_grid = grid;
+        walk_serial(t0, t0+halflt, l_grid, f);
+
+        for (int i = 0; i < N_RANK; ++i) {
+            l_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
+            l_grid.dx0[i] = grid.dx0[i];
+            l_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
+            l_grid.dx1[i] = grid.dx1[i];
         }
-        assert(cut_yet);
-        return;
+        walk_serial(t0+halflt, t1, l_grid, f);
+        cut_yet = true;
     }
+    base_case_kernel_boundary(t0, t1, grid, f);
+    return;
 }
 
 /* walk_adaptive() is just for interior region */
