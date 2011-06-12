@@ -2,8 +2,9 @@
 CC = ./pochoir
 ICC = icpc
 OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -std=c++0x
-POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x
-ICC_DEBUG_FLAGS = -O3 -g3 -DDEBUG -Wall -Werror -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h -std=c++0x
+POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
+ICC_DEBUG_FLAGS = -O3 -g3 -DDEBUG -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
+
 # ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x
 example_1D : tb_example_1D.cpp
 #   Phase-II compilation
