@@ -1149,6 +1149,11 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
 //        assert(dt_recursive_ >= r_t);
         assert(lt > dt_recursive_);
         int halflt = lt / 2;
+        /* cutting halflt align to unroll_ factor */
+        halflt -= (halflt % unroll_);
+#if DEBUG
+        printf("halflt = %d\n", halflt);
+#endif
         l_son_grid = grid;
         shorter_duo_sim_obase_bicut(t0, t0+halflt, l_son_grid, f);
 
@@ -1316,6 +1321,11 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
     if (lt > l_dt_stop) {
         /* cut into time */
         int halflt = lt / 2;
+        /* cut halflt align to unroll_ */
+        halflt -= (halflt % unroll_);
+#if DEBUG
+        printf("halflt = %d\n", halflt);
+#endif
         l_son_grid = l_father_grid;
         if (call_boundary) {
             shorter_duo_sim_obase_bicut_p(t0, t0+halflt, l_son_grid, f, bf);

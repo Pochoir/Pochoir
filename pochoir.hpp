@@ -38,6 +38,7 @@ class Pochoir {
         grid_info<N_RANK> phys_grid_;
         int time_shift_;
         int toggle_;
+        int unroll_;
         int timestep_;
         bool regArrayFlag, regLogicDomainFlag, regPhysDomainFlag, regShapeFlag;
         void checkFlag(bool flag, char const * str);
@@ -48,6 +49,8 @@ class Pochoir {
         void cmpPhysDomainFromArray(T_Array & arr);
         template <size_t N_SIZE>
         void Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]);
+        template <size_t N_SIZE1, size_t N_SIZE2>
+        void Register_Shape(Pochoir_Shape<N_RANK> (& shape1)[N_SIZE1], Pochoir_Shape<N_RANK> (& shape2)[N_SIZE2]);
         Pochoir_Shape<N_RANK> * shape_;
         int shape_size_;
         int num_arr_;
@@ -64,6 +67,21 @@ class Pochoir {
         timestep_ = 0;
         regArrayFlag = regLogicDomainFlag = regPhysDomainFlag = regShapeFlag = false;
         Register_Shape(shape);
+        regShapeFlag = true;
+        num_arr_ = 0;
+        arr_type_size_ = 0;
+    }
+
+    template <size_t N_SIZE1, size_t N_SIZE2>
+    Pochoir(Pochoir_Shape<N_RANK> (& shape1)[N_SIZE1], Pochoir_Shape<N_RANK> (& shape2)[N_SIZE2]) {
+        for (int i = 0; i < N_RANK; ++i) {
+            slope_[i] = 0;
+            logic_grid_.x0[i] = logic_grid_.x1[i] = logic_grid_.dx0[i] = logic_grid_.dx1[i] = 0;
+            phys_grid_.x0[i] = phys_grid_.x1[i] = phys_grid_.dx0[i] = phys_grid_.dx1[i] = 0;
+        }
+        timestep_ = 0;
+        regArrayFlag = regLogicDomainFlag = regPhysDomainFlag = regShapeFlag = false;
+        Register_Shape(shape1, shape2);
         regShapeFlag = true;
         num_arr_ = 0;
         arr_type_size_ = 0;
@@ -103,6 +121,10 @@ class Pochoir {
     /* safe/unsafe Executable Spec */
     template <typename F, typename BF>
     void Run(int timestep, F const & f, BF const & bf);
+    template <typename G1, typename F1, typename G2, typename F2>
+    void Run_Leap_Frog(int timestep, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2);
+    template <typename F1, typename F2>
+    void Run_Unroll(int timestep, F1 const & f1, F2 const & f2);
     /* obase for zero-padded region */
     template <typename F>
     void Run_Obase(int timestep, F const & f);
@@ -175,7 +197,7 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & arr) {
     } else {
         cmpPhysDomainFromArray(arr);
     }
-    arr.Register_Shape(shape_, shape_size_);
+    arr.Register_Shape(shape_, shape_size_, unroll_);
 #if 0
     arr.set_slope(slope_);
     arr.set_toggle(toggle_);
@@ -202,9 +224,54 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
     depth = l_max_time_shift - l_min_time_shift;
     time_shift_ = 0 - l_min_time_shift;
     toggle_ = depth + 1;
+    unroll_ = 1;
     for (int i = 0; i < N_SIZE; ++i) {
         for (int r = 1; r < N_RANK+1; ++r) {
-            slope_[N_RANK-r] = max(slope_[N_RANK-r], abs((int)ceil((float)shape[i].shift[r]/(l_max_time_shift - shape[i].shift[0]))));
+            slope_[N_RANK-r] = max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[r]/(l_max_time_shift - shape_[i].shift[0]))));
+        }
+    }
+#if DEBUG 
+    cout << "time_shift_ = " << time_shift_ << ", toggle = " << toggle_ << endl;
+    for (int r = 0; r < N_RANK; ++r) {
+        printf("slope[%d] = %d, ", r, slope_[r]);
+    }
+    printf("\n");
+#endif
+    regShapeFlag = true;
+}
+
+template <int N_RANK> template <size_t N_SIZE1, size_t N_SIZE2>
+void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape1)[N_SIZE1], Pochoir_Shape<N_RANK> (& shape2)[N_SIZE2]) {
+    /* currently we just get the slope_[] and toggle_ out of the shape[] */
+    shape_ = new Pochoir_Shape<N_RANK>[N_SIZE1+N_SIZE2];
+    shape_size_ = N_SIZE1+N_SIZE2;
+    int l_min_time_shift=0, l_max_time_shift=0, depth=0;
+    int i;
+    for (i = 0; i < N_SIZE1; ++i) {
+        if (shape1[i].shift[0] < l_min_time_shift)
+            l_min_time_shift = shape1[i].shift[0];
+        if (shape1[i].shift[0] > l_max_time_shift)
+            l_max_time_shift = shape1[i].shift[0];
+        for (int r = 0; r < N_RANK+1; ++r) {
+            shape_[i].shift[r] = shape1[i].shift[r];
+        }
+    }
+    for (i = 0; i < N_SIZE2; ++i) {
+        if (shape2[i].shift[0] < l_min_time_shift)
+            l_min_time_shift = shape2[i].shift[0];
+        if (shape2[i].shift[0] > l_max_time_shift)
+            l_max_time_shift = shape2[i].shift[0];
+        for (int r = 0; r < N_RANK+1; ++r) {
+            shape_[i+N_SIZE1].shift[r] = shape2[i].shift[r];
+        }
+    }
+    depth = l_max_time_shift - l_min_time_shift;
+    time_shift_ = 0 - l_min_time_shift;
+    toggle_ = depth + 1;
+    unroll_ = 2;
+    for (i = 0; i < N_SIZE1+N_SIZE2; ++i) {
+        for (int r = 1; r < N_RANK+1; ++r) {
+            slope_[N_RANK-r] = max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[r]/(l_max_time_shift - shape_[i].shift[0]))));
         }
     }
 #if DEBUG 
@@ -332,12 +399,10 @@ void Pochoir<N_RANK>::Register_Domain(Domain const & r_i) {
 /* Executable Spec */
 template <int N_RANK> template <typename BF>
 void Pochoir<N_RANK>::Run(int timestep, BF const & bf) {
-    /* this version uses 'f' to compute interior region, 
-     * and 'bf' to compute boundary region
-     */
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
+    algor.set_unroll(unroll_);
     timestep_ = timestep;
     /* base_case_kernel() will mimic exact the behavior of serial nested loop!
     */
@@ -352,12 +417,46 @@ void Pochoir<N_RANK>::Run(int timestep, BF const & bf) {
     // algor.obase_boundary_p(0, timestep, logic_grid_, bf);
 }
 
+/* Executable Spec for staggered grid/leap frog scheme */
+template <int N_RANK> template <typename G1, typename F1, typename G2, typename F2>
+void Pochoir<N_RANK>::Run_Leap_Frog(int timestep, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2) {
+    Algorithm<N_RANK> algor(slope_);
+    algor.set_phys_grid(phys_grid_);
+    algor.set_thres(arr_type_size_);
+    algor.set_unroll(unroll_);
+    timestep_ = timestep;
+    /* base_case_kernel() will mimic exact the behavior of serial nested loop!
+    */
+    checkFlags();
+    inRun = true;
+    algor.base_case_kernel_stagger(0 + time_shift_, timestep + time_shift_, logic_grid_, g1, f1, g2, f2);
+    inRun = false;
+}
+
+/* Executable Spec for unrolled staggered grid/leap frog scheme */
+template <int N_RANK> template <typename F1, typename F2>
+void Pochoir<N_RANK>::Run_Unroll(int timestep, F1 const & f1, F2 const & f2) {
+    Algorithm<N_RANK> algor(slope_);
+    algor.set_phys_grid(phys_grid_);
+    algor.set_thres(arr_type_size_);
+    algor.set_unroll(unroll_);
+    timestep_ = timestep;
+    /* base_case_kernel() will mimic exact the behavior of serial nested loop!
+    */
+    checkFlags();
+    inRun = true;
+    algor.base_case_kernel_unroll(0 + time_shift_, timestep + time_shift_, logic_grid_, f1, f2);
+    inRun = false;
+}
+
+
 /* safe/non-safe ExecSpec */
 template <int N_RANK> template <typename F, typename BF>
 void Pochoir<N_RANK>::Run(int timestep, F const & f, BF const & bf) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
+    algor.set_unroll(unroll_);
     /* this version uses 'f' to compute interior region, 
      * and 'bf' to compute boundary region
      */
@@ -380,6 +479,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
+    algor.set_unroll(unroll_);
     timestep_ = timestep;
     checkFlags();
 #if BICUT
@@ -409,6 +509,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
+    algor.set_unroll(unroll_);
     /* this version uses 'f' to compute interior region, 
      * and 'bf' to compute boundary region
      */

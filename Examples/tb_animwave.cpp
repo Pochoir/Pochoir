@@ -66,7 +66,7 @@ Pochoir_Boundary_1D(periodic_1D, arr, t, i)
     return arr.get(t, new_i);
 Pochoir_Boundary_End
 
-Pochoir_Boundary_1D(a1d, arr, t, i)
+Pochoir_Boundary_1D(aperiodic_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
 
@@ -92,15 +92,17 @@ int main(int argc, char * argv[])
     // nt = round(ct / (cdtdx * dx));
     nt = StrToInt(argv[2]);
     printf("M = %d, nt = %d\n", M, nt);
+    
+    Pochoir_Shape_1D oned_2x4pt[] = {{0, 0}, {-2, 0}, {-1, 1}, {-1, 0}, {-1, -1}};
     Pochoir_Shape_1D oned_4pt_v[] = {{0, 0}, {-2, 0}, {-1, 1}, {-1, 0}};
     Pochoir_Shape_1D oned_4pt_u[] = {{1, 0}, {-1, 0}, {0, 0}, {0, -1}};
     Pochoir_Array_1D(double) a(M);
     Pochoir_Array_1D(double) b(M);
     Pochoir_1D leap_frog(oned_4pt_v, oned_4pt_u);
     leap_frog.Register_Array(a);
-    a.Register_Boundary(a1d);
-    b.Register_Shape(oned_4pt_v, oned_4pt_u);
-    b.Register_Boundary(a1d);
+    a.Register_Boundary(aperiodic_1D);
+    b.Register_Shape(oned_2x4pt);
+    b.Register_Boundary(aperiodic_1D);
     double * x = new double[M];
 
     /* we can define an arbitrary function here, and transfer it to the animwave
@@ -120,8 +122,17 @@ int main(int argc, char * argv[])
     }
 
     Pochoir_Kernel_1D(animwave_fn, t, i)
+#if 1
         a(t, i) = a(t-2, i) + cdtdx * (a(t-1, i+1) - a(t-1, i));
         a(t+1, i) = a(t-1, i) + cdtdx * (a(t, i) - a(t, i-1));
+#else
+        if (t & 0x1) {
+            a(t, i) = a(t-2, i) + cdtdx * (a(t-1, i) - a(t-1, i-1));
+        } else {
+            a(t, i) = a(t-2, i) + cdtdx * (a(t-1, i+1) - a(t-1, i));
+        }
+
+#endif
     Pochoir_Kernel_End
 
     for (int times = 0; times < TIMES; ++times) {
@@ -134,12 +145,15 @@ int main(int argc, char * argv[])
 
     min_tdiff = INF;
 
+#if 1
     /* cilk_for */
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        for (int t = 2; t <= 2*nt; t += 2) {
-            for (int i = 0; i < M; ++i) {
+        for (int t = 2; t < 2*(nt+1); t += 2) {
+            cilk_for (int i = 0; i < M; ++i) {
                 b(t, i) = b(t-2, i) + cdtdx * (b(t-1, i+1) - b(t-1, i));
+            }
+            cilk_for (int i = 0; i < M; ++i) {
                 b(t+1, i) = b(t-1, i) + cdtdx * (b(t, i) - b(t, i-1));
             }
         }
@@ -147,7 +161,25 @@ int main(int argc, char * argv[])
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
     std::cout << "Parallel Loop time : " << min_tdiff << " ms" << std::endl;
+#else
+    /* cilk_for */
+    for (int times = 0; times < TIMES; ++times) {
+        gettimeofday(&start, 0);
+        for (int t = 2; t < 2*(nt+1); t += 1) {
+            for (int i = 0; i < M; ++i) {
+                if (t & 0x1) {
+                    b(t, i) = b(t-2, i) + cdtdx * (b(t-1, i) - b(t-1, i-1));
+                } else {
+                    b(t, i) = b(t-2, i) + cdtdx * (b(t-1, i+1) - b(t-1, i));
+                }
+            }
+        }
+        gettimeofday(&end, 0);
+        min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
+    }
+    std::cout << "Parallel Loop time : " << min_tdiff << " ms" << std::endl;
 
+#endif
     /* check results! */
     t = nt;
     for (int i = 0; i < M; ++i) {

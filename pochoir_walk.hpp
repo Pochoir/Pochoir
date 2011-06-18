@@ -36,13 +36,15 @@
 
 using namespace std;
 
-template <int N_RANK, typename BF>
+template <int N_RANK>
 struct meta_grid_boundary {
+    template <typename BF>
 	static inline void single_step(int t, grid_info<N_RANK> const & grid, grid_info<N_RANK> const & initial_grid, BF const & bf); 
 };
 
-template <typename BF>
-struct meta_grid_boundary <8, BF>{
+template <>
+struct meta_grid_boundary <8>{
+    template <typename BF>
 	static inline void single_step(int t, grid_info<8> const & grid, grid_info<8> const & initial_grid, BF const & bf) {
         /* add cilk_for here will only lower the performance */
 		for (int i = grid.x0[7]; i < grid.x1[7]; ++i) {
@@ -72,8 +74,9 @@ struct meta_grid_boundary <8, BF>{
     }
 };
 
-template <typename BF>
-struct meta_grid_boundary <7, BF>{
+template <>
+struct meta_grid_boundary <7>{
+    template <typename BF>
 	static inline void single_step(int t, grid_info<7> const & grid, grid_info<7> const & initial_grid, BF const & bf) {
         /* add cilk_for here will only lower the performance */
 		for (int i = grid.x0[6]; i < grid.x1[6]; ++i) {
@@ -101,8 +104,9 @@ struct meta_grid_boundary <7, BF>{
     }
 };
 
-template <typename BF>
-struct meta_grid_boundary <6, BF>{
+template <>
+struct meta_grid_boundary <6>{
+    template <typename BF>
 	static inline void single_step(int t, grid_info<6> const & grid, grid_info<6> const & initial_grid, BF const & bf) {
         /* add cilk_for here will only lower the performance */
 		for (int i = grid.x0[5]; i < grid.x1[5]; ++i) {
@@ -127,8 +131,9 @@ struct meta_grid_boundary <6, BF>{
     }
 };
 
-template <typename BF>
-struct meta_grid_boundary <5, BF>{
+template <>
+struct meta_grid_boundary <5>{
+    template <typename BF>
 	static inline void single_step(int t, grid_info<5> const & grid, grid_info<5> const & initial_grid, BF const & bf) {
         /* add cilk_for here will only lower the performance */
 		for (int i = grid.x0[4]; i < grid.x1[4]; ++i) {
@@ -151,8 +156,9 @@ struct meta_grid_boundary <5, BF>{
     }
 };
 
-template <typename BF>
-struct meta_grid_boundary <4, BF>{
+template <>
+struct meta_grid_boundary <4>{
+    template <typename BF>
 	static inline void single_step(int t, grid_info<4> const & grid, grid_info<4> const & initial_grid, BF const & bf) {
         /* add cilk_for here will only lower the performance */
 		for (int i = grid.x0[3]; i < grid.x1[3]; ++i) {
@@ -172,8 +178,9 @@ struct meta_grid_boundary <4, BF>{
     } 
 };
 
-template <typename BF>
-struct meta_grid_boundary <3, BF>{
+template <>
+struct meta_grid_boundary <3>{
+    template <typename BF>
 	static inline void single_step(int t, grid_info<3> const & grid, grid_info<3> const & initial_grid, BF const & bf) {
         /* add cilk_for here will only lower the performance */
 		for (int i = grid.x0[2]; i < grid.x1[2]; ++i) {
@@ -192,8 +199,9 @@ struct meta_grid_boundary <3, BF>{
 	} 
 };
 
-template <typename BF>
-struct meta_grid_boundary <2, BF>{
+template <>
+struct meta_grid_boundary <2>{
+    template <typename BF>
 	static inline void single_step(int t, grid_info<2> const & grid, grid_info<2> const & initial_grid, BF const & bf) {
 		for (int i = grid.x0[1]; i < grid.x1[1]; ++i) {
 #if (KLEIN == 0)
@@ -215,8 +223,9 @@ struct meta_grid_boundary <2, BF>{
 	} 
 };
 
-template <typename BF>
-struct meta_grid_boundary <1, BF>{
+template <>
+struct meta_grid_boundary <1>{
+    template <typename BF>
 	static inline void single_step(int t, grid_info<1> const & grid, grid_info<1> const & initial_grid, BF const & bf) {
 		for (int i = grid.x0[0]; i < grid.x1[0]; ++i) {
             int new_i = pmod_lu(i, initial_grid.x0[0], initial_grid.x1[0]);
@@ -228,13 +237,15 @@ struct meta_grid_boundary <1, BF>{
 	} 
 };
 
-template <int N_RANK, typename F>
+template <int N_RANK>
 struct meta_grid_interior {
+    template <typename F>
 	static inline void single_step(int t, grid_info<N_RANK> const & grid, grid_info<N_RANK> const & initial_grid, F const & f); 
 };
 
-template <typename F>
-struct meta_grid_interior <8, F>{
+template <>
+struct meta_grid_interior <8>{
+    template <typename F>
 	static inline void single_step(int t, grid_info<8> const & grid, grid_info<8> const & initial_grid, F const & f) {
         /* add cilk_for here will only lower the performance */
 		for (int i = grid.x0[7]; i < grid.x1[7]; ++i) {
@@ -250,8 +261,9 @@ struct meta_grid_interior <8, F>{
     }
 };
 
-template <typename F>
-struct meta_grid_interior <7, F>{
+template <>
+struct meta_grid_interior <7>{
+    template <typename F>
 	static inline void single_step(int t, grid_info<7> const & grid, grid_info<7> const & initial_grid, F const & f) {
         /* add cilk_for here will only lower the performance */
 		for (int i = grid.x0[6]; i < grid.x1[6]; ++i) {
@@ -266,8 +278,9 @@ struct meta_grid_interior <7, F>{
     }
 };
 
-template <typename F>
-struct meta_grid_interior <6, F>{
+template <>
+struct meta_grid_interior <6>{
+    template <typename F>
 	static inline void single_step(int t, grid_info<6> const & grid, grid_info<6> const & initial_grid, F const & f) {
         /* add cilk_for here will only lower the performance */
 		for (int i = grid.x0[5]; i < grid.x1[5]; ++i) {
@@ -281,8 +294,9 @@ struct meta_grid_interior <6, F>{
     } 
 };
 
-template <typename F>
-struct meta_grid_interior <5, F>{
+template <>
+struct meta_grid_interior <5>{
+    template <typename F>
 	static inline void single_step(int t, grid_info<5> const & grid, grid_info<5> const & initial_grid, F const & f) {
         /* add cilk_for here will only lower the performance */
 		for (int i = grid.x0[4]; i < grid.x1[4]; ++i) {
@@ -295,8 +309,9 @@ struct meta_grid_interior <5, F>{
     }
 };
 
-template <typename F>
-struct meta_grid_interior <4, F>{
+template <>
+struct meta_grid_interior <4>{
+    template <typename F>
 	static inline void single_step(int t, grid_info<4> const & grid, grid_info<4> const & initial_grid, F const & f) {
         /* add cilk_for here will only lower the performance */
 		for (int i = grid.x0[3]; i < grid.x1[3]; ++i) {
@@ -308,9 +323,9 @@ struct meta_grid_interior <4, F>{
 	} 
 };
 
-
-template <typename F>
-struct meta_grid_interior <3, F>{
+template <>
+struct meta_grid_interior <3>{
+    template <typename F>
 	static inline void single_step(int t, grid_info<3> const & grid, grid_info<3> const & initial_grid, F const & f) {
         /* add cilk_for here will only lower the performance */
 		for (int i = grid.x0[2]; i < grid.x1[2]; ++i) {
@@ -321,8 +336,9 @@ struct meta_grid_interior <3, F>{
 	} 
 };
 
-template <typename F>
-struct meta_grid_interior <2, F>{
+template <>
+struct meta_grid_interior <2>{
+    template <typename F>
 	static inline void single_step(int t, grid_info<2> const & grid, grid_info<2> const & initial_grid, F const & f) {
 		for (int i = grid.x0[1]; i < grid.x1[1]; ++i) {
 			for (int j = grid.x0[0]; j < grid.x1[0]; ++j) {
@@ -331,8 +347,9 @@ struct meta_grid_interior <2, F>{
 	} 
 };
 
-template <typename F>
-struct meta_grid_interior <1, F>{
+template <>
+struct meta_grid_interior <1>{
+    template <typename F>
 	static inline void single_step(int t, grid_info<1> const & grid, grid_info<1> const & initial_grid, F const & f) {
 		for (int i = grid.x0[0]; i < grid.x1[0]; ++i) {
 		    f(t, i);
@@ -389,8 +406,9 @@ struct Algorithm {
         grid_info<N_RANK> phys_grid_;
         int phys_length_[N_RANK];
         int slope_[N_RANK];
+        int unroll_;
         int ulb_boundary[N_RANK], uub_boundary[N_RANK], lub_boundary[N_RANK];
-        bool boundarySet, physGridSet, slopeSet;
+        bool boundarySet, physGridSet, slopeSet, unrollSet;
 	public:
 #if STAT
     /* sim_count_cut will be accessed outside Algorithm object */
@@ -414,6 +432,8 @@ struct Algorithm {
         boundarySet = false;
         physGridSet = false;
         slopeSet = true;
+        unrollSet = false;
+        unroll_ = 1;
         /* ALGOR_QUEUE_SIZE = 3^N_RANK */
         // ALGOR_QUEUE_SIZE = power<N_RANK>::value;
 #define ALGOR_QUEUE_SIZE (power<N_RANK>::value)
@@ -470,6 +490,7 @@ struct Algorithm {
     void set_phys_grid(grid_info<N_RANK> const & grid);
     // void set_stride(int const stride[]);
     void set_slope(int const slope[]);
+    void set_unroll(int const unroll);
     inline bool touch_boundary(int i, int lt, grid_info<N_RANK> & grid);
 
     /* followings are the sim cut of both top and bottom bar */
@@ -509,6 +530,10 @@ struct Algorithm {
 	inline void base_case_kernel_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename BF> 
 	inline void base_case_kernel_boundary(int t0, int t1, grid_info<N_RANK> const grid, BF const & bf);
+    template <typename G1, typename F1, typename G2, typename F2> 
+	inline void base_case_kernel_stagger(int t0, int t1, grid_info<N_RANK> const grid, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2);
+    template <typename F1, typename F2> 
+	inline void base_case_kernel_unroll(int t0, int t1, grid_info<N_RANK> const grid, F1 const & f1, F2 const & f2);
     template <typename F> 
 	inline void walk_serial(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
 
@@ -587,17 +612,27 @@ void Algorithm<N_RANK>::set_slope(int const slope[])
     }
 }
 
+template <int N_RANK> 
+void Algorithm<N_RANK>::set_unroll(int const unroll)
+{
+    unroll_ = unroll;
+    unrollSet = true;
+#if DEBUG
+    printf("Algorithm::unroll = %d\n", unroll_);
+#endif
+}
+
 template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::base_case_kernel_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f) {
 	grid_info<N_RANK> l_grid = grid;
 	for (int t = t0; t < t1; ++t) {
-		/* execute one single time step */
-		meta_grid_interior<N_RANK, F>::single_step(t, l_grid, phys_grid_, f);
+            /* execute one single time step */
+            meta_grid_interior<N_RANK>::single_step(t, l_grid, phys_grid_, f);
 
-		/* because the shape is trapezoid! */
-		for (int i = 0; i < N_RANK; ++i) {
-			l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-		}
+            /* because the shape is trapezoid! */
+            for (int i = 0; i < N_RANK; ++i) {
+                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+            }
 	}
 }
 
@@ -605,14 +640,63 @@ template <int N_RANK> template <typename BF>
 inline void Algorithm<N_RANK>::base_case_kernel_boundary(int t0, int t1, grid_info<N_RANK> const grid, BF const & bf) {
 	grid_info<N_RANK> l_grid = grid;
 	for (int t = t0; t < t1; ++t) {
-        home_cell_[0] = t;
-		/* execute one single time step */
-		meta_grid_boundary<N_RANK, BF>::single_step(t, l_grid, phys_grid_, bf);
+            home_cell_[0] = t;
+            /* execute one single time step */
+            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, bf);
 
-		/* because the shape is trapezoid! */
-		for (int i = 0; i < N_RANK; ++i) {
-			l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-		}
+            /* because the shape is trapezoid! */
+            for (int i = 0; i < N_RANK; ++i) {
+                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+            }
+	}
+}
+
+template <int N_RANK> template <typename G1, typename F1, typename G2, typename F2>
+inline void Algorithm<N_RANK>::base_case_kernel_stagger(int t0, int t1, grid_info<N_RANK> const grid, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2) {
+	grid_info<N_RANK> l_grid = grid;
+    auto merged_kernel = [&](int t, int i) { 
+        if (g1(t, i)) 
+            f1(t, i); 
+        else if (g2(t, i)) 
+            f2(t, i); 
+        else {
+            printf("Error! Exit!\n");
+            exit (-1);
+        }
+    };
+	for (int t = t0; t < t1; ++t) {
+            home_cell_[0] = t;
+            /* execute one single time step */
+            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, merged_kernel);
+
+            /* because the shape is trapezoid! */
+            for (int i = 0; i < N_RANK; ++i) {
+                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+            }
+	}
+}
+
+template <int N_RANK> template <typename F1, typename F2>
+inline void Algorithm<N_RANK>::base_case_kernel_unroll(int t0, int t1, grid_info<N_RANK> const grid, F1 const & f1, F2 const & f2) {
+	grid_info<N_RANK> l_grid = grid;
+	for (int t = t0; t < t1; ++t) {
+            home_cell_[0] = t;
+            /* execute one single time step */
+            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, f1);
+
+            /* because the shape is trapezoid! */
+            for (int i = 0; i < N_RANK; ++i) {
+                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+            }
+
+            home_cell_[0] = ++t;
+            /* execute one single time step */
+            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, f2);
+
+            /* because the shape is trapezoid! */
+            for (int i = 0; i < N_RANK; ++i) {
+                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+            }
 	}
 }
 

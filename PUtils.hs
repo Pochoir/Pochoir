@@ -131,7 +131,7 @@ getArrayRegBound l_state l_pArray =
     
 getPShape :: ParserState -> String -> PShape
 getPShape l_state l_shape =
-    case Map.lookup l_shape $pShape l_state of
+    case Map.lookup l_shape $ pShape l_state of
         Nothing -> PShape{shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shape = []}
         Just l_pShape -> l_pShape
 

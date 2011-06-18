@@ -47,6 +47,24 @@ heat_3D_NP : tb_heat_3D_NP.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_3D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_3D_NP.cpp
 
+animwave_2array : tb_animwave_2array.cpp
+#   Phase-II compilation
+	${CC} -o animwave_2array_pochoir ${OPT_FLAGS} tb_animwave_2array.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o animwave_2array_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave_2array.cpp
+
+animwave_2array_unroll : tb_animwave_2array_unroll.cpp
+#   Phase-II compilation
+#	${CC} -o animwave_2array_unroll_pochoir ${OPT_FLAGS} tb_animwave_2array_unroll.cpp
+#	Phase-I compilation with debugging aid
+	${CC} -o animwave_2array_unroll_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave_2array_unroll.cpp
+
+animwave_unroll : tb_animwave_unroll.cpp
+#   Phase-II compilation
+	${CC} -o animwave_unroll_pochoir ${OPT_FLAGS} tb_animwave_unroll.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o animwave_unroll_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave_unroll.cpp
+
 animwave : tb_animwave.cpp
 #   Phase-II compilation
 #	${CC} -o animwave_pochoir ${OPT_FLAGS} tb_animwave.cpp

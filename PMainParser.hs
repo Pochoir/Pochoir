@@ -35,6 +35,7 @@ import PUtils
 import PData
 import PShow
 -- import Text.Show
+import Data.List
 import qualified Data.Map as Map
 
 pParser :: GenParser Char ParserState String
@@ -104,13 +105,13 @@ pParsePochoirStencil =
        l_delim <- pDelim
        l_state <- getState
        let l_stencils = map pSecond l_rawStencils
-       let l_shapes = map pThird l_rawStencils
+       let l_shapes = concatMap pThird l_rawStencils
        let l_pShapes = map (getPShape l_state) l_shapes
        let l_toggles = map shapeToggle l_pShapes
        updateState $ updatePStencil $ transPStencil l_rank l_stencils l_pShapes
        return (breakline ++ "/* Known */ Pochoir <" ++ show l_rank ++ 
-               "> " ++ pShowDynamicDecl l_rawStencils (showString "") ++ l_delim ++ 
-               "/* toggles = " ++ show l_toggles ++ "*/")
+               "> " ++ pShowDynamicDecl l_rawStencils (intercalate ", ") ++ l_delim ++ 
+               "/* toggles = " ++ show l_toggles ++ "*/" ++ breakline)
 
 pParsePochoirStencilWithShape :: GenParser Char ParserState String
 pParsePochoirStencilWithShape = 
@@ -124,8 +125,10 @@ pParsePochoirStencilWithShape =
        let l_toggles = map shapeToggle l_pShapes
        updateState $ updatePStencil $ transPStencil l_rank l_stencils l_pShapes
        return (breakline ++ "/* Known */ Pochoir <" ++ show l_rank ++ 
-               "> " ++ pShowDynamicDecl l_rawStencils (pShowShapes . shape) ++ l_delim ++ 
-               "/* toggles = " ++ (show $ map shapeToggle l_pShapes) ++ "*/")
+               "> " ++ pShowDynamicDecl l_rawStencils (pShowShapes . shape) ++ 
+               l_delim ++ 
+               "/* toggles = " ++ (show $ map shapeToggle l_pShapes) ++ "*/" ++ 
+               breakline)
 
 pParsePochoirStencilAsParam :: GenParser Char ParserState String
 pParsePochoirStencilAsParam = 
@@ -135,13 +138,13 @@ pParsePochoirStencilAsParam =
        l_delim <- pDelim
        l_state <- getState
        let l_stencil = pSecond l_rawStencil
-       let l_shape = pThird l_rawStencil
-       let l_pShape = getPShape l_state l_shape
-       let l_toggle = shapeToggle l_pShape
-       updateState $ updatePStencil $ transPStencil l_rank [l_stencil] [l_pShape]
+       let l_shapes = pThird l_rawStencil
+       let l_pShapes = map (getPShape l_state) l_shapes
+       let l_toggles = map shapeToggle l_pShapes
+       updateState $ updatePStencil $ transPStencil l_rank [l_stencil] l_pShapes
        return (breakline ++ "/* Known */ Pochoir <" ++ show l_rank ++ 
-               "> " ++ pShowDynamicDecl [l_rawStencil] (showString "") ++ l_delim ++ 
-               "/* toggles = " ++ show l_toggle ++ "*/")
+               "> " ++ pShowDynamicDecl [l_rawStencil] (intercalate ", ") ++ 
+               l_delim ++ "/* toggles = " ++ show l_toggles ++ "*/" ++ breakline)
 
 pParsePochoirStencilWithShapeAsParam :: GenParser Char ParserState String
 pParsePochoirStencilWithShapeAsParam = 
@@ -156,7 +159,8 @@ pParsePochoirStencilWithShapeAsParam =
        updateState $ updatePStencil $ transPStencil l_rank [l_stencil] [l_pShape]
        return (breakline ++ "/* Known */ Pochoir <" ++ show l_rank ++ 
                "> " ++ pShowDynamicDecl [l_rawStencil] (pShowShapes . shape) ++ 
-               l_delim ++ "/* toggles = " ++ (show $ shapeToggle l_pShape) ++ "*/")
+               l_delim ++ "/* toggles = " ++ (show $ shapeToggle l_pShape) ++ "*/" ++
+               breakline)
 
 pParsePochoirShapeInfo :: GenParser Char ParserState String
 pParsePochoirShapeInfo = 
@@ -171,7 +175,7 @@ pParsePochoirShapeInfo =
        let l_toggle = getToggleFromShape l_shapes
        let l_slopes = getSlopesFromShape (l_toggle-1) l_shapes 
        updateState $ updatePShape (l_name, l_rank, l_len, l_toggle, l_slopes, l_shapes)
-       return (breakline ++ "/* Known */ Pochoir_Shape <" ++ show l_rank ++ "> " ++ l_name ++ " [" ++ show l_len ++ "] = " ++ pShowShapes l_shapes ++ ";\n" ++ breakline ++ "/* toggle: " ++ show l_toggle ++ "; slopes: " ++ show l_slopes ++ " */\n")
+       return (breakline ++ "/* Known */ Pochoir_Shape <" ++ show l_rank ++ "> " ++ l_name ++ " [" ++ show l_len ++ "] = " ++ pShowShapes l_shapes ++ ";\n" ++ breakline ++ "/* toggle: " ++ show l_toggle ++ "; slopes: " ++ show l_slopes ++ " */" ++ breakline)
 
 pParsePochoirDomain :: GenParser Char ParserState String
 pParsePochoirDomain =

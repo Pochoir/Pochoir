@@ -207,6 +207,11 @@ static inline void klein_region(grid_info<2> & grid, grid_info<2> const & initia
 
 #define Pochoir_Kernel_End }; 
 
+#define Pochoir_Guard_1D(name, t, i) \
+    auto name = [&](int t, int i) -> bool {
+
+#define Pochoir_Guard_End };
+
 #define Pochoir_Obase_Fn_1D(name, t0, t1, grid) \
     auto name = [&](int t0, int t1, grid_info<1> const & grid) {
 

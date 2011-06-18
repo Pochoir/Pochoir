@@ -92,12 +92,17 @@ int main(int argc, char * argv[])
     // nt = round(ct / (cdtdx * dx));
     nt = StrToInt(argv[2]);
     printf("M = %d, nt = %d\n", M, nt);
+    Pochoir_Shape_1D oned_uv[] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
+    Pochoir_Shape_1D oned_v[] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
+    Pochoir_Shape_1D oned_u[] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
     Pochoir_Shape_1D oned_4pt[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {-2, 0}};
-    Pochoir_Array_1D(double) a(M);
+    Pochoir_Array_1D(double) u(M), v(M);
     Pochoir_Array_1D(double) b(M);
-    Pochoir_1D leap_frog(oned_4pt);
-    leap_frog.Register_Array(a);
-    a.Register_Boundary(periodic_1D);
+    Pochoir_1D leap_frog(oned_v, oned_u);
+    leap_frog.Register_Array(u);
+    leap_frog.Register_Array(v);
+    u.Register_Boundary(periodic_1D);
+    v.Register_Boundary(periodic_1D);
     b.Register_Shape(oned_4pt);
     b.Register_Boundary(periodic_1D);
     double * x = new double[M];
@@ -111,30 +116,35 @@ int main(int argc, char * argv[])
     for (int i = 0; i < M; ++i) {
         x[i] = i * dx;
         /* a(0, i) corresponds to v */
-        a(0, i) = -f(x[i] + 0.5 * dx * (1 + cdtdx));
+        v(0, i) = -f(x[i] + 0.5 * dx * (1 + cdtdx));
         /* a(1, i) corresponds to u */
-        a(1, i) = f(x[i]);
-        b(0, i) = a(0, i);
-        b(1, i) = a(1, i);
+        u(0, i) = f(x[i]);
+        b(0, i) = v(0, i);
+        b(1, i) = u(0, i);
     }
 
-    Pochoir_Kernel_1D(animwave_fn, t, i)
-#if 1
-        if (t & 0x1) {
-            /* update u */
-            a(t, i) = a(t-2, i) + cdtdx * (a(t-1, i) - a(t-1, i-1));
-        } else {
-            /* update v */
-            a(t, i) = a(t-2, i) + cdtdx * (a(t-1, i+1) - a(t-1, i));
-        }
-#else
-        a(t, i) = (t & 0x1) ? (a(t-2, i) + cdtdx * (a(t-1, i) - a(t-1, i-1))) : (a(t-2, i) + cdtdx * (a(t-1, i+1) - a(t-1, i)));
-#endif
+    Pochoir_Guard_1D(guard_v, t, i)
+        return (t & 0x1);
+    Pochoir_Guard_End
+
+    Pochoir_Guard_1D(guard_u, t, i)
+        return (!(t & 0x1));
+    Pochoir_Guard_End
+
+    Pochoir_Kernel_1D(update_v, t, i)
+        /* update v */
+        v(t/2+1, i) = v(t/2, i) + cdtdx * (u(t/2, i+1) - u(t/2, i));
+    Pochoir_Kernel_End
+
+    Pochoir_Kernel_1D(update_u, t, i)
+        /* update u */
+        u(t/2, i) = u(t/2-1, i) + cdtdx * (v(t/2, i) - v(t/2, i-1));
     Pochoir_Kernel_End
 
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        leap_frog.Run(2*nt, animwave_fn);
+//        leap_frog.Run_Leap_Frog(2*nt, guard_v, update_v, guard_u, update_u);
+        leap_frog.Run_Unroll(2*nt, update_v, update_u);
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
@@ -146,9 +156,11 @@ int main(int argc, char * argv[])
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         for (int t = 2; t < 2*(nt+1); t += 2) {
+            /* update v */
             cilk_for (int i = 0; i < M; ++i) {
                 b(t, i) = b(t-2, i) + cdtdx * (b(t-1, i+1) - b(t-1, i));
             }
+            /* update u */
             cilk_for (int i = 0; i < M; ++i) {
                 b(t+1, i) = b(t-1, i) + cdtdx * (b(t, i) - b(t, i-1));
             }
@@ -161,8 +173,8 @@ int main(int argc, char * argv[])
     /* check results! */
     t = nt;
     for (int i = 0; i < M; ++i) {
-        check_result(t, i, a(2*t, i), b(2*t, i));
-        check_result(t, i, a(2*t+1, i), b(2*t+1, i));
+        check_result(t, i, v(t, i), b(2*t, i));
+        check_result(t, i, u(t, i), b(2*t+1, i));
     } 
 
     return 0;
