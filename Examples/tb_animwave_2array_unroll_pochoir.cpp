@@ -35122,20 +35122,6 @@ void Pochoir<N_RANK>::Run(int timestep, F1 const & f1, F2 const & f2) {
     inRun = false;
 }
 
-/* safe/non-safe ExecSpec */
-template <int N_RANK> template <typename F, typename BF>
-void Pochoir<N_RANK>::Run_Split_Scope(int timestep, F const & f, BF const & bf) {
-    Algorithm<N_RANK> algor(slope_);
-    algor.set_phys_grid(phys_grid_);
-    algor.set_thres(arr_type_size_);
-    algor.set_unroll(unroll_);
-    /* this version uses 'f' to compute interior region, 
-     * and 'bf' to compute boundary region
-     */
-    timestep_ = timestep;
-    checkFlags();
-    algor.shorter_duo_sim_obase_bicut_p(0 + time_shift_, timestep + time_shift_, logic_grid_, f, bf);
-}
 
 /* obase for zero-padded area! */
 template <int N_RANK> template <typename F>
@@ -35288,7 +35274,7 @@ nt = StrToInt(argv[2]);
 	#define v(t, i) v.boundary(t, i)
 	#define u(t, i) u.boundary(t, i)
 	#define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -((a)>=(ub))))
-	/* known! */ auto macro_boundary_update_v_update_u = [&] (int t0, int t1, grid_info<1> const & grid) {
+	/* known! */ auto Pointer_boundary_update_v_update_u = [&] (int t0, int t1, grid_info<1> const & grid) {
 	grid_info<1> l_grid = grid;
 	grid_info<1> l_phys_grid = leap_frog.get_phys_grid();
 	for (int t = t0; t < t1; ++t) {
@@ -35322,31 +35308,57 @@ nt = StrToInt(argv[2]);
 	#undef v(t, i)
 	#undef u(t, i)
 	
-	
-	#define v(t, i) v.interior(t, i)
-	#define u(t, i) u.interior(t, i)
-	
-	/* known! */ auto macro_interior_update_v_update_u = [&] (int t0, int t1, grid_info<1> const & grid) {
+	auto Pointer_interior_update_v_update_u = [&] (int t0, int t1, grid_info<1> const & grid) {
 	grid_info<1> l_grid = grid;
+	double * u_base = u.data();
+	const int l_u_total_size = u.total_size();
 	
+	double * v_base = v.data();
+	const int l_v_total_size = v.total_size();
+	
+	int gap_v_0, gap_u_0;
+	const int l_v_stride_0 = v.stride(0), l_u_stride_0 = u.stride(0);
+
 	for (int t = t0; t < t1; ++t) {
+	double * pt_u_2;
+	double * pt_v_1;
+	double * pt_v_0;
 	
-	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
-	v(t / 2 + 1, i) = v(t / 2, i) + cdtdx * (u(t / 2, i + 1) - u(t / 2, i));
+	pt_v_0 = v_base + ((t / 2 + 1) & 0x1) * l_v_total_size + (l_grid.x0[0]) * l_v_stride_0;
+	pt_v_1 = v_base + ((t / 2) & 0x1) * l_v_total_size + (l_grid.x0[0]) * l_v_stride_0;
+	pt_u_2 = u_base + ((t / 2) & 0x1) * l_u_total_size + (l_grid.x0[0]) * l_u_stride_0;
 	
-	} 
 	
+	#pragma ivdep
+	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i, 
+	++pt_v_0, 
+	++pt_v_1, 
+	++pt_u_2) {
+	pt_v_0[0] = pt_v_1[0] + cdtdx * (pt_u_2[l_u_stride_0 * (1)] - pt_u_2[0]);
+	
+	} /* end for (sub-trapezoid) */ 
 	/* Adjust sub-trapezoid! */
 	for (int i = 0; i < 1; ++i) {
 		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
 	}
 	++t;
+	double * pt_v_2;
+	double * pt_u_1;
+	double * pt_u_0;
 	
-	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
-	u(t / 2, i) = u(t / 2 - 1, i) + cdtdx * (v(t / 2, i) - v(t / 2, i - 1));
+	pt_u_0 = u_base + ((t / 2) & 0x1) * l_u_total_size + (l_grid.x0[0]) * l_u_stride_0;
+	pt_u_1 = u_base + ((t / 2 - 1) & 0x1) * l_u_total_size + (l_grid.x0[0]) * l_u_stride_0;
+	pt_v_2 = v_base + ((t / 2) & 0x1) * l_v_total_size + (l_grid.x0[0]) * l_v_stride_0;
 	
-	} 
 	
+	#pragma ivdep
+	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i, 
+	++pt_u_0, 
+	++pt_u_1, 
+	++pt_v_2) {
+	pt_u_0[0] = pt_u_1[0] + cdtdx * (pt_v_2[0] - pt_v_2[l_v_stride_0 * (-1)]);
+	
+	} /* end for (sub-trapezoid) */ 
 	/* Adjust sub-trapezoid! */
 	for (int i = 0; i < 1; ++i) {
 		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
@@ -35354,10 +35366,8 @@ nt = StrToInt(argv[2]);
 	
 	} /* end for t */
 	};
-	
-	#undef v(t, i)
-	#undef u(t, i)
-	leap_frog.Run_Split_Scope(2 * nt, macro_interior_update_v_update_u, macro_boundary_update_v_update_u);
+
+	leap_frog.Run_Obase(2 * nt, Pointer_interior_update_v_update_u, Pointer_boundary_update_v_update_u);
 	}
 	gettimeofday(&end, 0);
         min_tdiff = ((min_tdiff) < ((1.0e3 * tdiff(&end, &start))) ? (min_tdiff) : ((1.0e3 * tdiff(&end, &start))));

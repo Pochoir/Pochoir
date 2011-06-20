@@ -455,6 +455,7 @@ void Pochoir<N_RANK>::Run(int timestep, F1 const & f1, F2 const & f2) {
     inRun = false;
 }
 
+#if 0
 /* safe/non-safe ExecSpec */
 template <int N_RANK> template <typename F, typename BF>
 void Pochoir<N_RANK>::Run_Split_Scope(int timestep, F const & f, BF const & bf) {
@@ -469,6 +470,7 @@ void Pochoir<N_RANK>::Run_Split_Scope(int timestep, F const & f, BF const & bf) 
     checkFlags();
     algor.shorter_duo_sim_obase_bicut_p(0 + time_shift_, timestep + time_shift_, logic_grid_, f, bf);
 }
+#endif
 
 /* obase for zero-padded area! */
 template <int N_RANK> template <typename F>

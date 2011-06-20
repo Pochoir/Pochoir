@@ -237,9 +237,10 @@ ppStencil l_id l_state =
                                     PDefault -> 
                                         let l_showKernel = 
                                               if sRank l_newStencil < 3
-                                                 then pShowOptPointerKernel
-                                                 else pShowPointerKernel
-                                        in  pSplitObase 
+                                                 -- then pShowOptPointerKernel
+                                                 then pShowUnrolledPointerKernels
+                                                 else pShowUnrolledPointerKernels
+                                        in  pSplitScope
                                              ("Default_", l_id, l_tstep, l_revKernels, 
                                                l_newStencil) 
                                              l_showKernel
@@ -247,12 +248,12 @@ ppStencil l_id l_state =
                                         pSplitScope 
                                           ("macro_", l_id, l_tstep, l_revKernels, 
                                             l_newStencil) 
-                                          pShowMacroKernel
+                                          pShowUnrolledMacroKernels
                                     PPointer -> 
-                                         pSplitObase 
+                                         pSplitScope
                                           ("Pointer_", l_id, l_tstep, l_revKernels, 
                                             l_newStencil) 
-                                          pShowPointerKernel
+                                          pShowUnrolledPointerKernels
                                     POptPointer -> 
                                          pSplitObase 
                                           ("Opt_Pointer_", l_id, l_tstep, l_revKernels,
@@ -302,20 +303,22 @@ transKernel l_stencil l_mode l_kernel =
            l_revIters = transIterN 0 l_iters
        in  l_kernel { kIter = l_revIters }
  
-pSplitScope :: (String, String, String, [PKernel], PStencil) -> (String -> PKernel -> String) -> GenParser Char ParserState String
-pSplitScope (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showKernel = 
-    let oldKernelNames = map kName l_kernels
-        bdryKernelNames = map ((++) "boundary_") oldKernelNames
-        obaseKernelNames = map ((++) "interior_") oldKernelNames
-        oldKernelName = intercalate "_" oldKernelNames
+pSplitScope :: (String, String, String, [PKernel], PStencil) -> (String -> [PKernel] -> String) -> GenParser Char ParserState String
+pSplitScope (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showKernels = 
+    let oldKernelName = intercalate "_" $ map kName l_kernels
         bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
         obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
-        bdryKernel = pShowUnrolledMacroKernels True bdryKernelName l_stencil l_kernels bdryKernelNames
-        obaseKernel = pShowUnrolledMacroKernels False obaseKernelName l_stencil l_kernels obaseKernelNames
-        runKernel = obaseKernelName ++ ", " ++ bdryKernelName
+        regBound = sRegBound l_stencil
+        bdryKernel = if regBound 
+                        then pShowUnrolledBoundaryKernels bdryKernelName 
+                                l_stencil l_kernels 
+                        else ""
+        obaseKernel = l_showKernels obaseKernelName l_kernels
+        runKernel = if regBound then obaseKernelName ++ ", " ++ bdryKernelName
+                                else obaseKernelName
     in  return ("{" ++ breakline ++ 
                 bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
-                l_id ++ ".Run_Split_Scope(" ++ l_tstep ++ ", " ++ runKernel ++ 
+                l_id ++ ".Run_Obase(" ++ l_tstep ++ ", " ++ runKernel ++ 
                 ");" ++ breakline ++ "}" ++ breakline)
 
 pSplitObase :: (String, String, String, [PKernel], PStencil) -> (String -> PKernel -> String) -> GenParser Char ParserState String
@@ -325,8 +328,10 @@ pSplitObase (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showKernel = undefine
         bdryKernelName = "bdry_" ++ oldKernelName
         obaseKernelName = l_tag ++ oldKernelName 
         regBound = sRegBound l_stencil
-        bdryKernel = pShowMacroKernel "boundary" (sArrayInUse l_stencil) 
-                                                  bdryKernelNames l_kernels
+        bdryKernel = if regBound 
+                            then pShowMacroKernel "boundary" (sArrayInUse l_stencil) 
+                                 bdryKernelNames l_kernels
+                            else ""
         obaseKernel = l_showKernel obaseKernelName l_kernel 
         runKernel = 
             if regBound then obaseKernelName ++ ", " ++ bdryKernelName

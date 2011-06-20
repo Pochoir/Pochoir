@@ -242,60 +242,107 @@ pShowAutoKernel l_name l_kernel =
         show (kStmt l_kernel) ++
         breakline ++ "};" ++ breakline
 
-pShowUnrolledMacroKernels :: Bool -> String -> PStencil -> [PKernel] -> [String] -> String
-pShowUnrolledMacroKernels l_boundary l_name l_stencil l_kL@(l_kernel:l_kernels) l_nL@(n:ns) = 
+pShowMacroKernel :: PName -> PKernel -> String
+pShowMacroKernel l_macro l_kernel =
+    let l_iters = kIter l_kernel
+        l_name = l_macro ++ "_" ++ kName l_kernel
+        l_sArrayInUse = unionArrayIter l_iters
+        shadowArrayInUse = pDefMacroArrayInUse l_macro l_sArrayInUse (kParams l_kernel)
+        unshadowArrayInUse = pUndefMacroArrayInUse l_sArrayInUse (kParams l_kernel)
+    in  shadowArrayInUse ++ pShowAutoKernel l_name l_kernel ++ unshadowArrayInUse
+
+pShowUnrolledMacroKernels :: PName -> [PKernel] -> String
+pShowUnrolledMacroKernels _ [] = ""
+pShowUnrolledMacroKernels l_name l_kL@(l_kernel:l_kernels)  = 
+    let l_iters = concatMap kIter l_kL
+        l_arrayInUse = unionArrayIter l_iters 
+        l_t = "t"
+        -- We are assuming all kernels have the same number of input parameters
+        l_kParams = kParams l_kernel
+        -- assuming all kernels have the same rank
+        l_rank = length l_kParams - 1
+        l_defMacro = pDefMacroArrayInUse "interior" l_arrayInUse l_kParams
+        l_undefMacro = pUndefMacroArrayInUse l_arrayInUse l_kParams
+    in  breakline ++ l_defMacro ++
+        breakline ++ "/* known! */ auto " ++ l_name ++ " = [&] (" ++
+        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++
+        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        breakline ++ pShowTimeLoopHeader l_t ++ 
+        pShowSingleKernelIteration False l_t l_kL ++
+        breakline ++ pShowTimeLoopTail ++ breakline ++ "};" ++
+        breakline ++ l_undefMacro
+
+        -- bookmark
+pShowUnrolledPointerKernels :: PName -> [PKernel] -> String
+pShowUnrolledPointerKernels _ [] = ""
+pShowUnrolledPointerKernels l_name l_kL@(l_kernel:l_kernels) = 
+    let l_rank = length (kParams l_kernel) - 1
+        l_iter = kIter l_kernel
+        l_arrayInUse = unionArrayIter l_iter
+        l_t = "t"
+    in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
+        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
+        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++
+        breakline ++ pShowRankAttr l_rank "stride" l_arrayInUse ++ 
+        breakline ++ pShowTimeLoopHeader l_t ++ 
+        pShowSinglePointerKernel l_t l_kL ++
+        breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
+
+pShowUnrolledBoundaryKernels :: String -> PStencil -> [PKernel] -> String
+pShowUnrolledBoundaryKernels l_name l_stencil l_kL@(l_kernel:l_kernels) = 
     let l_t = "t"
         l_rank = sRank l_stencil
         l_arrayInUse = sArrayInUse l_stencil
         -- We are assuming all kernels have the same number of input parameters
         l_kParams = kParams l_kernel
-        l_defMacro = if l_boundary
-                        then pDefMacroArrayInUse "boundary" l_arrayInUse l_kParams
-                        else pDefMacroArrayInUse "interior" l_arrayInUse l_kParams
+        l_defMacro = pDefMacroArrayInUse "boundary" l_arrayInUse l_kParams
         l_undefMacro = pUndefMacroArrayInUse l_arrayInUse l_kParams
-        l_showPhysGrid = if l_boundary 
-                            then "grid_info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
-                                 sName l_stencil ++ ".get_phys_grid();"
-                            else ""
+        l_showPhysGrid = "grid_info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
+                         sName l_stencil ++ ".get_phys_grid();"
     in  breakline ++ l_defMacro ++
-        breakline ++ pShowPMODLU l_boundary ++
+        breakline ++ pShowPMODLU ++
         breakline ++ "/* known! */ auto " ++ l_name ++ " = [&] (" ++
         "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ l_showPhysGrid ++
         breakline ++ pShowTimeLoopHeader l_t ++ 
-        pShowSingleKernelIteration l_boundary l_t l_kL l_nL ++
+        pShowSingleKernelIteration True l_t l_kL ++
         breakline ++ pShowTimeLoopTail ++ breakline ++ "};" ++
         breakline ++ l_undefMacro
     
-pShowPMODLU :: Bool -> String
-pShowPMODLU l_boundary = 
-    if l_boundary 
-        then "#define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -((a)>=(ub))))"
-        else ""
+pShowPMODLU :: String
+pShowPMODLU = "#define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -((a)>=(ub))))"
 
-pShowSingleKernelIteration :: Bool -> String -> [PKernel] -> [String] -> String
-pShowSingleKernelIteration _ _ [] [] = ""
-pShowSingleKernelIteration l_boundary l_t (l_kernel:l_kernels) (l_kName:l_kNames)=
+pShowSinglePointerKernel :: String -> [PKernel] -> String
+pShowSinglePointerKernel _ [] = ""
+pShowSinglePointerKernel l_t l_kL@(l_kernel:l_kernels) =
+    let l_rank = length (kParams l_kernel) - 1
+        l_iter = kIter l_kernel
+        l_arrayInUse = unionArrayIter l_iter
+        l_t = "t"
+    in  pShowPointers l_iter ++ breakline ++ 
+        pShowPointerSet l_iter (kParams l_kernel)++ breakline ++ 
+        pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
+        breakline ++ pShowPointerStmt True l_kernel ++ breakline ++ 
+        pShowObaseForTail l_rank ++
+        pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++
+        pShowSinglePointerKernel l_t l_kernels
+ 
+pShowSingleKernelIteration :: Bool -> String -> [PKernel] -> String
+pShowSingleKernelIteration _ _ [] = ""
+pShowSingleKernelIteration l_boundary l_t (l_kernel:l_kernels) =
     let l_params = tail $ kParams l_kernel
         l_rank = length (kParams l_kernel) - 1
+        l_t = "t"
     in  breakline ++ pShowMetaGridHeader l_boundary l_params ++
         breakline ++ show (kStmt l_kernel) ++
         breakline ++ pShowMetaGridTail l_params ++ 
-        breakline ++ pAdjustTrape l_rank ++ breakline ++ pAdjustT ++ 
-        pShowSingleKernelIteration l_boundary l_t l_kernels l_kNames
-            where pAdjustT = if null l_kernels then "" else "++" ++ l_t ++ ";" 
+        breakline ++ pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++ 
+        pShowSingleKernelIteration l_boundary l_t l_kernels 
 
-pShowSingleKernel :: Bool -> String -> PKernel -> String -> String
-pShowSingleKernel l_boundary l_t l_kernel l_name = show $ kStmt l_kernel
-{-
-    let l_params = tail $ kParams l_kernel
-        l_rank = length l_params
-        l_new_params = if l_boundary 
-            then zipWith (++) (replicate l_rank "new_") l_params
-            else l_params
-    in  l_name ++ "(" ++ l_t ++ ", " ++ intercalate ", " l_new_params ++ ");"
--}
+pAdjustT :: String -> [PKernel] -> String
+pAdjustT l_t l_kernels = if null l_kernels then "" else "++" ++ l_t ++ ";" 
 
 pShowMetaGridHeader :: Bool -> [String] -> String
 pShowMetaGridHeader _ [] = ""
@@ -321,15 +368,6 @@ pShowMetaGridTail :: [String] -> String
 pShowMetaGridTail [] = ""
 pShowMetaGridTail pL@(p:ps) = "} " ++ pShowMetaGridTail ps
     
-pShowMacroKernel :: PName -> PKernel -> String
-pShowMacroKernel l_macro l_kernel =
-    let l_iters = kIter l_kernel
-        l_name = l_macro ++ "_" ++ kName l_kernel
-        l_sArrayInUse = unionArrayIter l_iters
-        shadowArrayInUse = pDefMacroArrayInUse l_macro l_sArrayInUse (kParams l_kernel)
-        unshadowArrayInUse = pUndefMacroArrayInUse l_sArrayInUse (kParams l_kernel)
-    in  shadowArrayInUse ++ pShowAutoKernel l_name l_kernel ++ unshadowArrayInUse
-
 pShowObaseKernel :: String -> PKernel -> String
 pShowObaseKernel l_name l_kernel = 
     let l_rank = length (kParams l_kernel) - 1
@@ -345,24 +383,6 @@ pShowObaseKernel l_name l_kernel =
         pShowIterSet l_iter (kParams l_kernel)++
         breakline ++ pShowObaseForHeader l_rank l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowObaseStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
-        pAdjustTrape l_rank ++ breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
-
-pShowPointerKernel :: String -> PKernel -> String
-pShowPointerKernel l_name l_kernel = 
-    let l_rank = length (kParams l_kernel) - 1
-        l_iter = kIter l_kernel
-        l_array = unionArrayIter l_iter
-        l_t = head $ kParams l_kernel
-    in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
-        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
-        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
-        pShowPointers l_iter ++ breakline ++ 
-        pShowArrayInfo l_array ++ pShowArrayGaps l_rank l_array ++
-        breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
-        pShowTimeLoopHeader l_t ++ breakline ++
-        pShowPointerSet l_iter (kParams l_kernel)++
-        breakline ++ pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
-        breakline ++ pShowPointerStmt True l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
         pAdjustTrape l_rank ++ breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
 
 pShowCachingKernel :: String -> PKernel -> String
