@@ -35286,9 +35286,8 @@ nt = StrToInt(argv[2]);
 	} 
 	
 	/* Adjust sub-trapezoid! */
-	for (int i = 0; i < 1; ++i) {
-		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-	}
+	l_grid.x0[0] += l_grid.dx0[0];
+	l_grid.x1[0] += l_grid.dx1[0];
 	++t;
 	
 	for (int old_i = l_grid.x0[0]; old_i < l_grid.x1[0]; ++old_i) {
@@ -35298,9 +35297,8 @@ nt = StrToInt(argv[2]);
 	} 
 	
 	/* Adjust sub-trapezoid! */
-	for (int i = 0; i < 1; ++i) {
-		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-	}
+	l_grid.x0[0] += l_grid.dx0[0];
+	l_grid.x1[0] += l_grid.dx1[0];
 	
 	} /* end for t */
 	};
@@ -35338,9 +35336,8 @@ nt = StrToInt(argv[2]);
 	
 	} /* end for (sub-trapezoid) */ 
 	/* Adjust sub-trapezoid! */
-	for (int i = 0; i < 1; ++i) {
-		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-	}
+	l_grid.x0[0] += l_grid.dx0[0];
+	l_grid.x1[0] += l_grid.dx1[0];
 	++t;
 	double * pt_v_2;
 	double * pt_u_1;
@@ -35360,9 +35357,8 @@ nt = StrToInt(argv[2]);
 	
 	} /* end for (sub-trapezoid) */ 
 	/* Adjust sub-trapezoid! */
-	for (int i = 0; i < 1; ++i) {
-		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-	}
+	l_grid.x0[0] += l_grid.dx0[0];
+	l_grid.x1[0] += l_grid.dx1[0];
 	
 	} /* end for t */
 	};

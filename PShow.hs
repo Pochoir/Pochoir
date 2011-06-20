@@ -1112,12 +1112,24 @@ pShowObaseForTail n
     | n == 0 = "/* end for (sub-trapezoid) */ "
     | otherwise = "} " ++ pShowObaseForTail (n-1)
 
+{-
 pAdjustTrape :: Int -> String
 pAdjustTrape l_rank = 
     breakline ++ "/* Adjust sub-trapezoid! */" ++
     breakline ++ "for (int i = 0; i < " ++ show l_rank ++ "; ++i) {" ++ 
     breakline ++ "\tl_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];" ++
     breakline ++ "}" 
+-}
+
+pAdjustTrape :: Int -> String
+pAdjustTrape l_rank =
+    let l_x0s = pGenRankListFull "l_grid.x0[" l_rank "]"
+        l_x1s = pGenRankListFull "l_grid.x1[" l_rank "]"
+        l_dx0s = pGenRankListFull " += l_grid.dx0[" l_rank "];"
+        l_dx1s = pGenRankListFull " += l_grid.dx1[" l_rank "];"
+    in  breakline ++ "/* Adjust sub-trapezoid! */" ++
+        breakline ++ (intercalate breakline $ zipWith (++) l_x0s l_dx0s) ++ 
+        breakline ++ (intercalate breakline $ zipWith (++) l_x1s l_dx1s)
 
 -- pL is the parameter list of original user supplied computing kernel
 pShowObaseForHeader :: Int -> [Iter] -> [PName] -> String
