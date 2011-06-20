@@ -152,11 +152,12 @@ ppStencil l_id l_state =
                    case Map.lookup l_array $ pArray l_state of
                        Nothing -> registerUndefinedBoundaryFn l_id l_boundaryParams l_stencil
                        Just l_pArray -> registerBoundaryFn l_id l_boundaryParams l_pArray
+{-
     <|> do try $ pMember "Run"
            (l_tstep, l_func) <- parens pStencilRun
            semi
            case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ ", " ++ l_func ++ "); /*Run with  UNKNOWN Stencil " ++ l_id ++ "*/" ++ breakline)
+               Nothing -> return (l_id ++ ".Run(" ++ l_tstep ++ ", " ++ l_func ++ "); /*Run with  UNKNOWN Stencil " ++ l_id ++ "*/" ++ breakline)
                Just l_stencil -> 
                    do let l_arrayInUse = sArrayInUse l_stencil
                       let l_regBound = foldr (||) False $ map (getArrayRegBound l_state) l_arrayInUse 
@@ -166,7 +167,8 @@ ppStencil l_id l_state =
                       case Map.lookup l_func $ pKernel l_newState of
                           Nothing -> return ("{" ++ breakline ++ l_id ++ ".Run(" ++ l_tstep ++ ", " ++ l_func ++ ");" ++ breakline ++ "} /* Didn't find the kernel_func */ " ++ breakline)
                           Just l_kernel -> 
-                              let l_revKernel = transKernel l_kernel l_newStencil $ pMode l_newState
+                              let l_mode = pMode l_newState
+                                  l_revKernel = transKernel l_newStencil l_mode l_kernel
                               in  
                                 case pMode l_newState of
                                     PDefault -> 
@@ -203,11 +205,74 @@ ppStencil l_id l_state =
                                           ("C_Pointer_", l_id, l_tstep, l_revKernel, 
                                             l_newStencil) 
                                           pShowCPointerKernel
+-}
+    -- Ad hoc implementation of Run_Unroll
+    <|> do try $ pMember "Run"
+           (l_tstep, l_funcs) <- parens pStencilRunUnroll
+           semi
+           case Map.lookup l_id $ pStencil l_state of
+               Nothing -> return (l_id ++ ".Run(" ++ l_tstep ++ ", " ++ 
+                                  intercalate ", " l_funcs ++ 
+                                  "); /*Run with  UNKNOWN Stencil " ++ l_id ++ 
+                                  "*/" ++ breakline)
+               Just l_stencil ->
+                   do let l_arrayInUse = sArrayInUse l_stencil
+                      let l_regBound = foldr (||) False $ map (getArrayRegBound l_state) l_arrayInUse 
+                      let l_unroll = length l_funcs
+                      updateState $ updateStencilBoundary l_id l_regBound 
+                      updateState $ updateStencilUnroll l_id l_unroll
+                      l_newState <- getState
+                      let l_newStencil = getPStencil l_id l_newState l_stencil
+                      let l_validKernels = map (getValidKernel l_newState) l_funcs
+                      let l_validKernel = foldr (&&) True $ map fst l_validKernels
+                      if (l_validKernel == False) 
+                         then return ("{" ++ breakline ++ l_id ++ ".Run(" ++ 
+                                      l_tstep ++ ", " ++ intercalate ", " l_funcs ++ 
+                                      ");" ++ breakline ++ 
+                                      "} /* Not all kernels are valid */ " ++ 
+                                      breakline)
+                         else let l_mode = pMode l_newState
+                                  l_revKernels = map (transKernel l_newStencil l_mode) (map snd l_validKernels) 
+                              in  case l_mode of
+                                    PDefault -> 
+                                        let l_showKernel = 
+                                              if sRank l_newStencil < 3
+                                                 then pShowOptPointerKernel
+                                                 else pShowPointerKernel
+                                        in  pSplitObase 
+                                             ("Default_", l_id, l_tstep, l_revKernels, 
+                                               l_newStencil) 
+                                             l_showKernel
+                                    PMacroShadow -> 
+                                        pSplitScope 
+                                          ("macro_", l_id, l_tstep, l_revKernels, 
+                                            l_newStencil) 
+                                          pShowMacroKernel
+                                    PPointer -> 
+                                         pSplitObase 
+                                          ("Pointer_", l_id, l_tstep, l_revKernels, 
+                                            l_newStencil) 
+                                          pShowPointerKernel
+                                    POptPointer -> 
+                                         pSplitObase 
+                                          ("Opt_Pointer_", l_id, l_tstep, l_revKernels,
+                                            l_newStencil) 
+                                          pShowOptPointerKernel
+                                    PCaching -> 
+                                         pSplitObase 
+                                          ("Caching_", l_id, l_tstep, l_revKernels, 
+                                            l_newStencil) 
+                                          pShowCachingKernel
+                                    PCPointer -> 
+                                         pSplitObase 
+                                          ("C_Pointer_", l_id, l_tstep, l_revKernels, 
+                                            l_newStencil) 
+                                          pShowCPointerKernel
     <|> do return (l_id)
 
 -- get all iterators from Kernel
-transKernel :: PKernel -> PStencil -> PMode -> PKernel
-transKernel l_kernel l_stencil l_mode =
+transKernel :: PStencil -> PMode -> PKernel -> PKernel
+transKernel l_stencil l_mode l_kernel =
        let l_exprStmts = kStmt l_kernel
            l_kernelParams = kParams l_kernel
            l_iters =
@@ -237,27 +302,34 @@ transKernel l_kernel l_stencil l_mode =
            l_revIters = transIterN 0 l_iters
        in  l_kernel { kIter = l_revIters }
  
-pSplitScope :: (String, String, String, PKernel, PStencil) -> (String -> PKernel -> String) -> GenParser Char ParserState String
-pSplitScope (l_tag, l_id, l_tstep, l_kernel, l_stencil) l_showKernel = 
-    let oldKernelName = kName l_kernel
-        bdryKernelName = "bdry_" ++ oldKernelName
-        obaseKernelName = l_tag ++ oldKernelName
-        bdryKernel = pShowMacroKernel ".boundary" (sArrayInUse l_stencil) 
-                                                  bdryKernelName l_kernel
-        obaseKernel = l_showKernel obaseKernelName l_kernel
+pSplitScope :: (String, String, String, [PKernel], PStencil) -> (String -> PKernel -> String) -> GenParser Char ParserState String
+pSplitScope (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showKernel = 
+    let oldKernelNames = map kName l_kernels
+        bdryKernelNames = map ((++) "boundary_") oldKernelNames
+        obaseKernelNames = map ((++) "interior_") oldKernelNames
+        bdryKernels = concatMap (pShowMacroKernel "boundary") l_kernels
+        obaseKernels = concatMap (l_showKernel "interior") l_kernels
+        oldKernelName = intercalate "_" oldKernelNames
+        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
+        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
+        bdryKernel = pShowUnrolledMacroKernels "boundary" bdryKernelName l_stencil bdryKernelNames
+        obaseKernel = pShowUnrolledMacroKernels "interior" obaseKernelName l_stencil obaseKernelNames
         runKernel = obaseKernelName ++ ", " ++ bdryKernelName
-    in  return ("{" ++ breakline ++ bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
-                l_id ++ ".Run(" ++ l_tstep ++ ", " ++ runKernel ++ ");" ++ breakline ++ 
-                "}" ++ breakline)
+    in  return ("{" ++ breakline ++ 
+                bdryKernels ++ breakline ++ obaseKernels ++ breakline ++ 
+                bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
+                l_id ++ ".Run_Split_Scope(" ++ l_tstep ++ ", " ++ runKernel ++ 
+                ");" ++ breakline ++ "}" ++ breakline)
 
-pSplitObase :: (String, String, String, PKernel, PStencil) -> (String -> PKernel -> String) -> GenParser Char ParserState String
-pSplitObase (l_tag, l_id, l_tstep, l_kernel, l_stencil) l_showKernel = 
-    let oldKernelName = kName l_kernel 
+pSplitObase :: (String, String, String, [PKernel], PStencil) -> (String -> PKernel -> String) -> GenParser Char ParserState String
+pSplitObase (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showKernel = undefined
+{-
+    let oldKernelName = concatMap kName l_kernels
         bdryKernelName = "bdry_" ++ oldKernelName
         obaseKernelName = l_tag ++ oldKernelName 
         regBound = sRegBound l_stencil
-        bdryKernel = pShowMacroKernel ".boundary" (sArrayInUse l_stencil) 
-                                                  bdryKernelName l_kernel
+        bdryKernel = pShowMacroKernel "boundary" (sArrayInUse l_stencil) 
+                                                  bdryKernelNames l_kernels
         obaseKernel = l_showKernel obaseKernelName l_kernel 
         runKernel = 
             if regBound then obaseKernelName ++ ", " ++ bdryKernelName
@@ -267,6 +339,7 @@ pSplitObase (l_tag, l_id, l_tstep, l_kernel, l_stencil) l_showKernel =
     in  return ("{" ++ breakline ++ bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
                 l_id ++ ".Run_Obase(" ++ l_tstep ++ ", " ++ runKernel ++ ");" ++ 
                 breakline ++ "}" ++ breakline)
+-}
 -------------------------------------------------------------------------------------------
 --                             Following are C++ Grammar Parser                         ---
 -------------------------------------------------------------------------------------------
@@ -277,6 +350,16 @@ pStencilRun =
            l_func <- identifier
            return (show l_tstep, l_func)
     <?> "Stencil Run Parameters"
+
+-- parse the input parameters of Run_Unroll:
+-- it may contains multiple computing kernels
+pStencilRunUnroll :: GenParser Char ParserState (String, [String])
+pStencilRunUnroll = 
+        do l_tstep <- try exprStmtDim
+           comma
+           l_funcs <- commaSep1 identifier
+           return (show l_tstep, l_funcs)
+    <?> "Stencil Run_Unroll Parameters"
 
 -- Register_Boundary :: String -> String -> PArray -> GenParser Char ParserState String
 -- Register_Boundary l_id l_boundaryFn l_array =

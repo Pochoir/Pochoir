@@ -1314,7 +1314,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
     } 
 
     if (call_boundary)
-        l_dt_stop = dt_recursive_boundary_;
+        l_dt_stop = max(dt_recursive_boundary_, unroll_);
     else
         l_dt_stop = dt_recursive_;
 
@@ -1362,7 +1362,8 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
         boundary_points_count += l_total_points;
 #endif
         if (call_boundary) {
-            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+            bf(t0, t1, l_father_grid);
+//            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
         } else {
             f(t0, t1, l_father_grid);
         }
@@ -1471,7 +1472,8 @@ inline void Algorithm<N_RANK>::duo_sim_obase_bicut_p(int t0, int t1, grid_info<N
         boundary_points_count += l_total_points;
 #endif
         if (call_boundary) {
-            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+            bf(t0, t1, l_father_grid);
+//            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
         } else {
             f(t0, t1, l_father_grid);
         }
@@ -1648,7 +1650,8 @@ inline void Algorithm<N_RANK>::sim_obase_bicut_p(int t0, int t1, grid_info<N_RAN
         boundary_points_count += l_total_points;
 #endif
         if (call_boundary) {
-            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+            bf(t0, t1, l_father_grid);
+//            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
         } else {
             f(t0, t1, l_father_grid);
         }

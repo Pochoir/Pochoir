@@ -48,6 +48,7 @@
 using namespace std;
 #define TIMES 1
 #define TOLERANCE (1e-6)
+#define COND 0
 
 void check_result(int t, int i, double a, double b)
 {
@@ -98,7 +99,11 @@ int main(int argc, char * argv[])
     Pochoir_Shape_1D oned_4pt[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {-2, 0}};
     Pochoir_Array_1D(double) u(M), v(M);
     Pochoir_Array_1D(double) b(M);
+#if COND
+    Pochoir_1D leap_frog(oned_uv);
+#else
     Pochoir_1D leap_frog(oned_v, oned_u);
+#endif
     leap_frog.Register_Array(u);
     leap_frog.Register_Array(v);
     u.Register_Boundary(periodic_1D);
@@ -143,8 +148,11 @@ int main(int argc, char * argv[])
 
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-//        leap_frog.Run_Leap_Frog(2*nt, guard_v, update_v, guard_u, update_u);
-        leap_frog.Run_Unroll(2*nt, update_v, update_u);
+#if COND
+        leap_frog.Run_Leap_Frog(2*nt, guard_v, update_v, guard_u, update_u);
+#else
+        leap_frog.Run(2*nt, update_v, update_u);
+#endif
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }

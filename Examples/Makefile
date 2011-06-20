@@ -3,7 +3,7 @@ CC = ./pochoir
 ICC = icpc
 OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -std=c++0x
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
-ICC_DEBUG_FLAGS = -O3 -g3 -DDEBUG -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
+ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
 
 # ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x
 example_1D : tb_example_1D.cpp
@@ -55,9 +55,10 @@ animwave_2array : tb_animwave_2array.cpp
 
 animwave_2array_unroll : tb_animwave_2array_unroll.cpp
 #   Phase-II compilation
-#	${CC} -o animwave_2array_unroll_pochoir ${OPT_FLAGS} tb_animwave_2array_unroll.cpp
+	${CC} -o animwave_2array_unroll_pochoir ${OPT_FLAGS} -split-macro-shadow tb_animwave_2array_unroll.cpp
+#	${ICC} -o animwave_2array_unroll_pochoir ${ICC_DEBUG_FLAGS} tb_animwave_2array_unroll_pochoir.cpp
 #	Phase-I compilation with debugging aid
-	${CC} -o animwave_2array_unroll_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave_2array_unroll.cpp
+#	${CC} -o animwave_2array_unroll_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave_2array_unroll.cpp
 
 animwave_unroll : tb_animwave_unroll.cpp
 #   Phase-II compilation

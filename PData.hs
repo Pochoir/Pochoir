@@ -70,6 +70,7 @@ data PStencil = PStencil {
     sName :: PName,
     sRank :: Int,
     sToggle :: Int,
+    sUnroll :: Int,
     sArrayInUse :: [PArray],
     sShape :: PShape,
     sRegBound :: Bool
@@ -82,6 +83,10 @@ data PShape = PShape {
     shapeSlopes :: [Int],
     shape :: [[Int]]
 } deriving Show
+
+emptyShape :: PShape
+emptyShape = PShape {shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shape = []}
+
 data PRange = PRange {
     rName :: PName,
     rFirst :: DimExpr,
@@ -98,6 +103,9 @@ data PKernel = PKernel {
     kStmt :: [Stmt],
     kIter :: [Iter]
 } deriving Show
+
+emptyKernel :: PKernel
+emptyKernel = PKernel {kName = "", kParams = [], kStmt = [], kIter = []}
 
 data ParserState = ParserState {
     pMode  :: PMode,

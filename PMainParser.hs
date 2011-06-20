@@ -59,9 +59,6 @@ pToken =
     <|> try pParsePochoirStencilWithShapeAsParam
     <|> try pParsePochoirShapeInfo
     <|> try pParsePochoirDomain
-    <|> try pParsePochoirKernel1D
-    <|> try pParsePochoirKernel2D
-    <|> try pParsePochoirKernel3D
     <|> try pParsePochoirAutoKernel
     <|> try pParsePochoirArrayMember
     <|> try pParsePochoirStencilMember
@@ -186,21 +183,6 @@ pParsePochoirDomain =
        return (breakline ++ "Pochoir_Domain " ++ 
                pShowDynamicDecl l_rangeDecl pShowArrayDim ++ ";\n")
 
-pParsePochoirKernel1D :: GenParser Char ParserState String
-pParsePochoirKernel1D =
-    do reserved "Pochoir_Kernel_1D"
-       pPochoirKernel
-
-pParsePochoirKernel2D :: GenParser Char ParserState String
-pParsePochoirKernel2D =
-    do reserved "Pochoir_Kernel_2D"
-       pPochoirKernel
-
-pParsePochoirKernel3D :: GenParser Char ParserState String
-pParsePochoirKernel3D =
-    do reserved "Pochoir_Kernel_3D"
-       pPochoirKernel
-
 pParsePochoirAutoKernel :: GenParser Char ParserState String
 pParsePochoirAutoKernel =
     do reserved "auto"
@@ -228,20 +210,6 @@ pParseCPPComment =
            str <- manyTill anyChar (try $ eol)
            -- return ("// comment\n")
            return ("//" ++ str ++ "\n")
-
-pPochoirKernel :: GenParser Char ParserState String
-pPochoirKernel = 
-    do  l_kernel_params <- parens $ commaSep1 identifier           
-        exprStmts <- manyTill pStatement (try $ reserved "Pochoir_Kernel_End")
-        l_state <- getState
-        let l_iters = getFromStmts (getPointer $ tail l_kernel_params) PRead 
-                                   (pArray l_state) exprStmts
-        let l_revIters = transIterN 0 l_iters
-        let l_kernel = PKernel { kName = head l_kernel_params, 
-                         kParams = tail l_kernel_params,
-                         kStmt = exprStmts, kIter = l_revIters }
-        updateState $ updatePKernel l_kernel
-        return (pShowKernel (kName l_kernel) l_kernel)
 
 pPochoirAutoKernel :: GenParser Char ParserState String
 pPochoirAutoKernel =
@@ -277,7 +245,10 @@ transPArray (l_type, l_rank) (p:ps) =
 transPStencil :: Int -> [PName] -> [PShape] -> [(PName, PStencil)]
 transPStencil l_rank [] _ = []
 -- sToggle by default is two (2)
-transPStencil l_rank (p:ps) (a:as) = (p, PStencil {sName = p, sRank = l_rank, sToggle = shapeToggle a, sArrayInUse = [], sShape = a, sRegBound = False}) : transPStencil l_rank ps as
+transPStencil l_rank (p:ps) (a:as) = 
+    (p, PStencil 
+        {sName = p, sRank = l_rank, sToggle = shapeToggle a, sUnroll = 1, 
+         sArrayInUse = [], sShape = a, sRegBound = False}) : transPStencil l_rank ps as
 
 transURange :: [([PName], PName, [DimExpr])] -> [(PName, PRange)]
 transURange [] = []

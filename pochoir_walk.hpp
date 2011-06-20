@@ -626,13 +626,13 @@ template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::base_case_kernel_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f) {
 	grid_info<N_RANK> l_grid = grid;
 	for (int t = t0; t < t1; ++t) {
-            /* execute one single time step */
-            meta_grid_interior<N_RANK>::single_step(t, l_grid, phys_grid_, f);
+        /* execute one single time step */
+        meta_grid_interior<N_RANK>::single_step(t, l_grid, phys_grid_, f);
 
-            /* because the shape is trapezoid! */
-            for (int i = 0; i < N_RANK; ++i) {
-                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-            }
+        /* because the shape is trapezoid! */
+        for (int i = 0; i < N_RANK; ++i) {
+            l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+        }
 	}
 }
 
@@ -640,14 +640,14 @@ template <int N_RANK> template <typename BF>
 inline void Algorithm<N_RANK>::base_case_kernel_boundary(int t0, int t1, grid_info<N_RANK> const grid, BF const & bf) {
 	grid_info<N_RANK> l_grid = grid;
 	for (int t = t0; t < t1; ++t) {
-            home_cell_[0] = t;
-            /* execute one single time step */
-            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, bf);
+        home_cell_[0] = t;
+        /* execute one single time step */
+        meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, bf);
 
-            /* because the shape is trapezoid! */
-            for (int i = 0; i < N_RANK; ++i) {
-                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-            }
+        /* because the shape is trapezoid! */
+        for (int i = 0; i < N_RANK; ++i) {
+            l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+        }
 	}
 }
 
@@ -680,23 +680,24 @@ template <int N_RANK> template <typename F1, typename F2>
 inline void Algorithm<N_RANK>::base_case_kernel_unroll(int t0, int t1, grid_info<N_RANK> const grid, F1 const & f1, F2 const & f2) {
 	grid_info<N_RANK> l_grid = grid;
 	for (int t = t0; t < t1; ++t) {
-            home_cell_[0] = t;
-            /* execute one single time step */
-            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, f1);
+        home_cell_[0] = t;
+        /* execute one single time step */
+        meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, f1);
 
-            /* because the shape is trapezoid! */
-            for (int i = 0; i < N_RANK; ++i) {
-                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-            }
+        /* because the shape is trapezoid! */
+        for (int i = 0; i < N_RANK; ++i) {
+            l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+        }
 
-            home_cell_[0] = ++t;
-            /* execute one single time step */
-            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, f2);
+        ++t;
+        home_cell_[0] = t;
+        /* execute one single time step */
+        meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, f2);
 
-            /* because the shape is trapezoid! */
-            for (int i = 0; i < N_RANK; ++i) {
-                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-            }
+        /* because the shape is trapezoid! */
+        for (int i = 0; i < N_RANK; ++i) {
+            l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+        }
 	}
 }
 

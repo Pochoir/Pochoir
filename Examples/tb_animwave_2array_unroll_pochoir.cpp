@@ -37,1356 +37,9 @@
  */
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cstdio
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stdio.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 27.8.2  C Library files
-//
-
 #pragma GCC system_header
 
 // Predefined symbols and macros -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file c++config.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
-// The current version of the C++ library in compressed ISO date format.
-
-// Macros for visibility.
-// _GLIBCXX_HAVE_ATTRIBUTE_VISIBILITY
-// _GLIBCXX_VISIBILITY_ATTR
-
-
-// Macros for deprecated.
-// _GLIBCXX_DEPRECATED
-// _GLIBCXX_DEPRECATED_ATTR
-
-
-// Macros for activating various namespace association modes.
-// _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG
-// _GLIBCXX_NAMESPACE_ASSOCIATION_PARALLEL
-// _GLIBCXX_NAMESPACE_ASSOCIATION_VERSION
-
-// Guide to libstdc++ namespaces.
-/*
-  namespace std
-  {
-    namespace __debug { }
-    namespace __parallel { }
-    namespace __norm { } // __normative, __shadow, __replaced
-    namespace __cxx1998 { }
-
-    namespace tr1 { }
-  }
-*/
-
-
-
-// Namespace association for profile
-
-
-// Defined if any namespace association modes are active.
-
-// Macros for namespace scope. Either namespace std:: or the name
-// of some nested namespace within it.
-// _GLIBCXX_STD
-// _GLIBCXX_STD_D
-// _GLIBCXX_STD_P
-//
-// Macros for enclosing namespaces and possibly nested namespaces.
-// _GLIBCXX_BEGIN_NAMESPACE
-// _GLIBCXX_END_NAMESPACE
-// _GLIBCXX_BEGIN_NESTED_NAMESPACE
-// _GLIBCXX_END_NESTED_NAMESPACE
-
-// Namespace associations for debug mode.
-
-// Namespace associations for parallel mode.
-
-// Namespace associations for profile mode
-
-// Namespace associations for versioning mode.
-
-// XXX GLIBCXX_ABI Deprecated
-// Define if compatibility should be provided for -mlong-double-64
-
-// Namespace associations for long double 128 mode.
-
-
-// Defines for C compatibility. In particular, define extern "C"
-// linkage only when using C++.
-
-
-// First includes.
-
-// Pick up any OS-specific definitions.
-// Specific definitions for GNU/Linux  -*- C++ -*-
-
-// Copyright (C) 2000, 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file os_defines.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
-// System-specific #define, typedefs, corrections, etc, go here.  This
-// file will come before all others.
-
-// This keeps isanum, et al from being propagated as macros.
-
-/* Copyright (C) 1991-1993,1995-2007,2009,2010,2011
-   Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
-
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-
-/* These are defined by the user (or the compiler)
-   to specify the desired environment:
-
-   __STRICT_ANSI__	ISO Standard C.
-   _ISOC99_SOURCE	Extensions to ISO C89 from ISO C99.
-   _POSIX_SOURCE	IEEE Std 1003.1.
-   _POSIX_C_SOURCE	If ==1, like _POSIX_SOURCE; if >=2 add IEEE Std 1003.2;
-			if >=199309L, add IEEE Std 1003.1b-1993;
-			if >=199506L, add IEEE Std 1003.1c-1995;
-			if >=200112L, all of IEEE 1003.1-2004
-			if >=200809L, all of IEEE 1003.1-2008
-   _XOPEN_SOURCE	Includes POSIX and XPG things.  Set to 500 if
-			Single Unix conformance is wanted, to 600 for the
-			sixth revision, to 700 for the seventh revision.
-   _XOPEN_SOURCE_EXTENDED XPG things and X/Open Unix extensions.
-   _LARGEFILE_SOURCE	Some more functions for correct standard I/O.
-   _LARGEFILE64_SOURCE	Additional functionality from LFS for large files.
-   _FILE_OFFSET_BITS=N	Select default filesystem interface.
-   _BSD_SOURCE		ISO C, POSIX, and 4.3BSD things.
-   _SVID_SOURCE		ISO C, POSIX, and SVID things.
-   _ATFILE_SOURCE	Additional *at interfaces.
-   _GNU_SOURCE		All of the above, plus GNU extensions.
-   _REENTRANT		Select additionally reentrant object.
-   _THREAD_SAFE		Same as _REENTRANT, often used by other systems.
-   _FORTIFY_SOURCE	If set to numeric value > 0 additional security
-			measures are defined, according to level.
-
-   The `-ansi' switch to the GNU C compiler defines __STRICT_ANSI__.
-   If none of these are defined, the default is to have _SVID_SOURCE,
-   _BSD_SOURCE, and _POSIX_SOURCE set to one and _POSIX_C_SOURCE set to
-   200112L.  If more than one of these are defined, they accumulate.
-   For example __STRICT_ANSI__, _POSIX_SOURCE and _POSIX_C_SOURCE
-   together give you ISO C, 1003.1, and 1003.2, but nothing else.
-
-   These are defined by this file and are used by the
-   header files to decide what to declare or define:
-
-   __USE_ISOC99		Define ISO C99 things.
-   __USE_ISOC95		Define ISO C90 AMD1 (C95) things.
-   __USE_POSIX		Define IEEE Std 1003.1 things.
-   __USE_POSIX2		Define IEEE Std 1003.2 things.
-   __USE_POSIX199309	Define IEEE Std 1003.1, and .1b things.
-   __USE_POSIX199506	Define IEEE Std 1003.1, .1b, .1c and .1i things.
-   __USE_XOPEN		Define XPG things.
-   __USE_XOPEN_EXTENDED	Define X/Open Unix things.
-   __USE_UNIX98		Define Single Unix V2 things.
-   __USE_XOPEN2K        Define XPG6 things.
-   __USE_XOPEN2KXSI     Define XPG6 XSI things.
-   __USE_XOPEN2K8XSI    Define XPG7 XSI things.
-   __USE_LARGEFILE	Define correct standard I/O things.
-   __USE_LARGEFILE64	Define LFS things with separate names.
-   __USE_FILE_OFFSET64	Define 64bit interface as default.
-   __USE_BSD		Define 4.3BSD things.
-   __USE_SVID		Define SVID things.
-   __USE_MISC		Define things common to BSD and System V Unix.
-   __USE_ATFILE		Define *at interfaces and AT_* constants for them.
-   __USE_GNU		Define GNU extensions.
-   __USE_REENTRANT	Define reentrant/thread-safe *_r functions.
-   __USE_FORTIFY_LEVEL	Additional security measures used, according to level.
-   __FAVOR_BSD		Favor 4.3BSD things in cases of conflict.
-
-   The macros `__GNU_LIBRARY__', `__GLIBC__', and `__GLIBC_MINOR__' are
-   defined by this file unconditionally.  `__GNU_LIBRARY__' is provided
-   only for compatibility.  All new code should use the other symbols
-   to test for features.
-
-   All macros listed above as possibly being defined by this file are
-   explicitly undefined if they are not explicitly defined.
-   Feature-test macros that are not defined by the user or compiler
-   but are implied by the other feature-test macros defined (or by the
-   lack of any definitions) are defined by the file.  */
-
-
-/* Undefine everything, so we get a clean slate.  */
-
-/* Suppress kernel-name space pollution unless user expressedly asks
-   for it.  */
-
-/* Always use ISO C things.  */
-
-/* Convenience macros to test the versions of glibc and gcc.
-   Use them like this:
-   #if __GNUC_PREREQ (2,8)
-   ... code requiring gcc 2.8 or later ...
-   #endif
-   Note - they won't work for gcc1 or glibc1, since the _MINOR macros
-   were not defined then.  */
-
-
-/* If _BSD_SOURCE was defined by the user, favor BSD over POSIX.  */
-
-/* If _GNU_SOURCE was defined by the user, turn on all the other features.  */
-
-/* If nothing (other than _GNU_SOURCE) is defined,
-   define _BSD_SOURCE and _SVID_SOURCE.  */
-
-/* This is to enable the ISO C99 extension.  Also recognize the old macro
-   which was used prior to the standard acceptance.  This macro will
-   eventually go away and the features enabled by default once the ISO C99
-   standard is widely adopted.  */
-
-/* This is to enable the ISO C90 Amendment 1:1995 extension.  */
-
-/* If none of the ANSI/POSIX macros are defined, use POSIX.1 and POSIX.2
-   (and IEEE Std 1003.1b-1993 unless _XOPEN_SOURCE is defined).  */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Define __STDC_IEC_559__ and other similar macros.  */
-/* Copyright (C) 2005 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
-
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-
-
-/* We do support the IEC 559 math functionality, real and complex.  */
-
-
-/* wchar_t uses ISO 10646-1 (2nd ed., published 2000-09-15) / Unicode 3.1.  */
-
-/* This macro indicates that the installed library is the GNU C Library.
-   For historic reasons the value now is 6 and this will stay from now
-   on.  The use of this variable is deprecated.  Use __GLIBC__ and
-   __GLIBC_MINOR__ now (see below) when you want to test for a specific
-   GNU C library version and use the values in <gnu/lib-names.h> to get
-   the sonames of the shared libraries.  */
-
-/* Major and minor version number of the GNU C library package.  Use
-   these macros to test for features in specific releases.  */
-
-
-/* Decide whether a compiler supports the long long datatypes.  */
-
-/* This is here only because every header file already includes this one.  */
-/* Copyright (C) 1992-2001, 2002, 2004, 2005, 2006, 2007, 2009
-   Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
-
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-
-/* We are almost always included from features.h. */
-
-/* The GNU libc does not support any K&R compilers or the traditional mode
-   of ISO C compilers anymore.  Check for some of the combinations not
-   anymore supported.  */
-
-/* Some user header file might have defined this before.  */
-
-
-/* GCC can always grok prototypes.  For C++ programs we add throw()
-   to help it optimize the function calls.  But this works only with
-   gcc 2.8.x and egcs.  For gcc 3.2 and up we even mark C functions
-   as non-throwing using a function attribute since programs can use
-   the -fexceptions options for C code as well.  */
-
-
-/* These two macros are not used in glibc anymore.  They are kept here
-   only because some other projects expect the macros to be defined.  */
-
-/* For these things, GCC behaves the ANSI way normally,
-   and the non-ANSI way under -traditional.  */
-
-
-/* This is not a typedef so `const __ptr_t' does the right thing.  */
-
-
-/* C++ needs to know that types and declarations are C, not C++.  */
-
-
-/* The standard library needs the functions from the ISO C90 standard
-   in the std namespace.  At the same time we want to be safe for
-   future changes and we include the ISO C99 code in the non-standard
-   namespace __c99.  The C++ wrapper header take case of adding the
-   definitions to the global namespace.  */
-/* For compatibility we do not add the declarations into any
-   namespace.  They will end up in the global namespace which is what
-   old code expects.  */
-
-
-/* Support for bounded pointers.  */
-
-
-/* Fortify support.  */
-
-
-/* Support for flexible arrays.  */
-/* GCC 2.97 supports C99 flexible array members.  */
-
-
-/* __asm__ ("xyz") is used throughout the headers to rename functions
-   at the assembly language level.  This is wrapped by the __REDIRECT
-   macro, in order to support compilers that can do this some other
-   way.  When compilers don't support asm-names at all, we have to do
-   preprocessor tricks instead (which don't have exactly the right
-   semantics, but it's the best we can do).
-
-   Example:
-   int __REDIRECT(setpgrp, (__pid_t pid, __pid_t pgrp), setpgid); */
-
-
-
-/*
-#elif __SOME_OTHER_COMPILER__
-
-# define __REDIRECT(name, proto, alias) name proto; 	_Pragma("let " #name " = " #alias)
-*/
-
-/* GCC has various useful declarations that can be made with the
-   `__attribute__' syntax.  All of the ways we use this do fine if
-   they are omitted for compilers that don't understand it. */
-
-/* At some point during the gcc 2.96 development the `malloc' attribute
-   for functions was introduced.  We don't want to use it unconditionally
-   (although this would be possible) since it generates warnings.  */
-
-/* At some point during the gcc 2.96 development the `pure' attribute
-   for functions was introduced.  We don't want to use it unconditionally
-   (although this would be possible) since it generates warnings.  */
-
-/* At some point during the gcc 3.1 development the `used' attribute
-   for functions was introduced.  We don't want to use it unconditionally
-   (although this would be possible) since it generates warnings.  */
-
-/* gcc allows marking deprecated functions.  */
-
-/* At some point during the gcc 2.8 development the `format_arg' attribute
-   for functions was introduced.  We don't want to use it unconditionally
-   (although this would be possible) since it generates warnings.
-   If several `format_arg' attributes are given for the same function, in
-   gcc-3.0 and older, all but the last one are ignored.  In newer gccs,
-   all designated arguments are considered.  */
-
-/* At some point during the gcc 2.97 development the `strfmon' format
-   attribute for functions was introduced.  We don't want to use it
-   unconditionally (although this would be possible) since it
-   generates warnings.  */
-
-/* The nonull function attribute allows to mark pointer parameters which
-   must not be NULL.  */
-
-/* If fortification mode, we warn about unused results of certain
-   function calls which can lead to problems.  */
-
-/* Forces a function to be always inlined.  */
-
-/* GCC 4.3 and above with -std=c99 or -std=gnu99 implements ISO C99
-   inline semantics, unless -fgnu89-inline is used.  */
-
-/* GCC 4.3 and above allow passing all anonymous arguments of an
-   __extern_always_inline function to some other vararg function.  */
-
-/* It is possible to compile containing GCC extensions even if GCC is
-   run in pedantic mode if the uses are carefully marked using the
-   `__extension__' keyword.  But this is not generally available before
-   version 2.8.  */
-
-/* __restrict is known in EGCS 1.2 and above. */
-
-/* ISO C99 also allows to declare arrays as non-overlapping.  The syntax is
-     array_name[restrict]
-   GCC 3.1 supports this.  */
-
-/* Determine the wordsize from the preprocessor defines.  */
-
-
-
-
-/* If we don't have __REDIRECT, prototypes will be missing if
-   __USE_FILE_OFFSET64 but not __USE_LARGEFILE[64]. */
-
-
-/* Decide whether we can define 'extern inline' functions in headers.  */
-
-/* There are some functions that must be declared 'extern inline' even with
-   -Os when building LIBC, or they'll end up undefined.  */
-
-
-/* This is here only because every header file already includes this one.
-   Get the definitions of all the appropriate `__stub_FUNCTION' symbols.
-   <gnu/stubs.h> contains `#define __stub_FUNCTION' when FUNCTION is a stub
-   that will always return failure (and set errno to ENOSYS).  */
-/* This file selects the right generated file of `__stub_FUNCTION' macros
-   based on the architecture being compiled for.  */
-
-/* Determine the wordsize from the preprocessor defines.  */
-
-
-/* This file is automatically generated.
-   It defines a symbol `__stub_FUNCTION' for each function
-   in the C library which is a stub, meaning it will fail
-   every time called, usually setting errno to ENOSYS.  */
-
-
-
-
-
-
-// Pick up any CPU-specific definitions.
-// Specific definitions for generic platforms  -*- C++ -*-
-
-// Copyright (C) 2005, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cpu_defines.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
-
-// If platform uses neither visibility nor psuedo-visibility,
-// specify empty default for namespace annotation macros.
-
-// Allow use of "export template." This is currently not a feature
-// that g++ supports.
-// #define _GLIBCXX_EXPORT_TEMPLATE 1
-
-// Allow use of the GNU syntax extension, "extern template." This
-// extension is fully documented in the g++ manual, but in a nutshell,
-// it inhibits all implicit instantiations and is used throughout the
-// library to avoid multiple weak definitions for required types that
-// are already explicitly instantiated in the library binary. This
-// substantially reduces the binary size of resulting executables.
-
-// Special case: _GLIBCXX_EXTERN_TEMPLATE == -1 disallows extern
-// templates only in basic_string, thus activating its debug-mode
-// checks even at -O0.
-
-// Certain function definitions that are meant to be overridable from
-// user code are decorated with this macro.  For some targets, this
-// macro causes these definitions to be weak.
-
-// Assert.
-// Avoid the use of assert, because we're trying to keep the <cassert>
-// include out of the mix.
-
-// The remainder of the prewritten config is automatic; all the
-// user hooks are listed above.
-
-// Create a boolean flag to be used to determine if --fast-math is set.
-
-// This marks string literals in header files to be extracted for eventual
-// translation.  It is primarily used for messages in thrown exceptions; see
-// src/functexcept.cc.  We use __N because the more traditional _N is used
-// for something else under certain OSes (see BADNAMES).
-
-// For example, <windows.h> is known to #define min and max as macros...
-
-
-
-
-
-// End of prewritten config; the discovered settings follow.
-/* config.h.  Generated from config.h.in by configure.  */
-/* config.h.in.  Generated from configure.ac by autoheader.  */
-
-/* Define to 1 if you have the `acosf' function. */
-
-/* Define to 1 if you have the `acosl' function. */
-
-/* Define to 1 if you have the `asinf' function. */
-
-/* Define to 1 if you have the `asinl' function. */
-
-/* Define to 1 if the target assembler supports .symver directive. */
-
-/* Define to 1 if you have the `atan2f' function. */
-
-/* Define to 1 if you have the `atan2l' function. */
-
-/* Define to 1 if you have the `atanf' function. */
-
-/* Define to 1 if you have the `atanl' function. */
-
-/* Define to 1 if the target assembler supports thread-local storage. */
-/* #undef _GLIBCXX_HAVE_CC_TLS */
-
-/* Define to 1 if you have the `ceilf' function. */
-
-/* Define to 1 if you have the `ceill' function. */
-
-/* Define to 1 if you have the <complex.h> header file. */
-
-/* Define to 1 if you have the `cosf' function. */
-
-/* Define to 1 if you have the `coshf' function. */
-
-/* Define to 1 if you have the `coshl' function. */
-
-/* Define to 1 if you have the `cosl' function. */
-
-/* Define to 1 if you have the <dlfcn.h> header file. */
-
-/* Define if EBADMSG exists. */
-
-/* Define if ECANCELED exists. */
-
-/* Define if EIDRM exists. */
-
-/* Define to 1 if you have the <endian.h> header file. */
-
-/* Define if ENODATA exists. */
-
-/* Define if ENOLINK exists. */
-
-/* Define if ENOSR exists. */
-
-/* Define if ENOSTR exists. */
-
-/* Define if ENOTRECOVERABLE exists. */
-
-/* Define if ENOTSUP exists. */
-
-/* Define if EOVERFLOW exists. */
-
-/* Define if EOWNERDEAD exists. */
-
-/* Define if EPROTO exists. */
-
-/* Define if ETIME exists. */
-
-/* Define if ETXTBSY exists. */
-
-/* Define to 1 if you have the <execinfo.h> header file. */
-
-/* Define to 1 if you have the `expf' function. */
-
-/* Define to 1 if you have the `expl' function. */
-
-/* Define to 1 if you have the `fabsf' function. */
-
-/* Define to 1 if you have the `fabsl' function. */
-
-/* Define to 1 if you have the <fenv.h> header file. */
-
-/* Define to 1 if you have the `finite' function. */
-
-/* Define to 1 if you have the `finitef' function. */
-
-/* Define to 1 if you have the `finitel' function. */
-
-/* Define to 1 if you have the <float.h> header file. */
-
-/* Define to 1 if you have the `floorf' function. */
-
-/* Define to 1 if you have the `floorl' function. */
-
-/* Define to 1 if you have the `fmodf' function. */
-
-/* Define to 1 if you have the `fmodl' function. */
-
-/* Define to 1 if you have the `fpclass' function. */
-/* #undef _GLIBCXX_HAVE_FPCLASS */
-
-/* Define to 1 if you have the <fp.h> header file. */
-/* #undef _GLIBCXX_HAVE_FP_H */
-
-/* Define to 1 if you have the `frexpf' function. */
-
-/* Define to 1 if you have the `frexpl' function. */
-
-/* Define if _Unwind_GetIPInfo is available. */
-
-/* Define if gthr-default.h exists (meaning that threading support is
-   enabled). */
-
-/* Define to 1 if you have the `hypot' function. */
-
-/* Define to 1 if you have the `hypotf' function. */
-
-/* Define to 1 if you have the `hypotl' function. */
-
-/* Define if you have the iconv() function. */
-
-/* Define to 1 if you have the <ieeefp.h> header file. */
-/* #undef _GLIBCXX_HAVE_IEEEFP_H */
-
-/* Define if int64_t is available in <stdint.h>. */
-
-/* Define if int64_t is a long. */
-
-/* Define if int64_t is a long long. */
-/* #undef _GLIBCXX_HAVE_INT64_T_LONG_LONG */
-
-/* Define to 1 if you have the <inttypes.h> header file. */
-
-/* Define to 1 if you have the `isinf' function. */
-
-/* Define to 1 if you have the `isinff' function. */
-
-/* Define to 1 if you have the `isinfl' function. */
-
-/* Define to 1 if you have the `isnan' function. */
-
-/* Define to 1 if you have the `isnanf' function. */
-
-/* Define to 1 if you have the `isnanl' function. */
-
-/* Defined if iswblank exists. */
-
-/* Define if LC_MESSAGES is available in <locale.h>. */
-
-/* Define to 1 if you have the `ldexpf' function. */
-
-/* Define to 1 if you have the `ldexpl' function. */
-
-/* Define to 1 if you have the <libintl.h> header file. */
-
-/* Only used in build directory testsuite_hooks.h. */
-
-/* Only used in build directory testsuite_hooks.h. */
-
-/* Only used in build directory testsuite_hooks.h. */
-
-/* Only used in build directory testsuite_hooks.h. */
-
-/* Only used in build directory testsuite_hooks.h. */
-
-/* Define if futex syscall is available. */
-
-/* Define to 1 if you have the <locale.h> header file. */
-
-/* Define to 1 if you have the `log10f' function. */
-
-/* Define to 1 if you have the `log10l' function. */
-
-/* Define to 1 if you have the `logf' function. */
-
-/* Define to 1 if you have the `logl' function. */
-
-/* Define to 1 if you have the <machine/endian.h> header file. */
-/* #undef _GLIBCXX_HAVE_MACHINE_ENDIAN_H */
-
-/* Define to 1 if you have the <machine/param.h> header file. */
-/* #undef _GLIBCXX_HAVE_MACHINE_PARAM_H */
-
-/* Define if mbstate_t exists in wchar.h. */
-
-/* Define to 1 if you have the <memory.h> header file. */
-
-/* Define to 1 if you have the `modf' function. */
-
-/* Define to 1 if you have the `modff' function. */
-
-/* Define to 1 if you have the `modfl' function. */
-
-/* Define to 1 if you have the <nan.h> header file. */
-/* #undef _GLIBCXX_HAVE_NAN_H */
-
-/* Define if poll is available in <poll.h>. */
-
-/* Define to 1 if you have the `powf' function. */
-
-/* Define to 1 if you have the `powl' function. */
-
-/* Define to 1 if you have the `qfpclass' function. */
-/* #undef _GLIBCXX_HAVE_QFPCLASS */
-
-/* Define to 1 if you have the `setenv' function. */
-
-/* Define to 1 if you have the `sincos' function. */
-
-/* Define to 1 if you have the `sincosf' function. */
-
-/* Define to 1 if you have the `sincosl' function. */
-
-/* Define to 1 if you have the `sinf' function. */
-
-/* Define to 1 if you have the `sinhf' function. */
-
-/* Define to 1 if you have the `sinhl' function. */
-
-/* Define to 1 if you have the `sinl' function. */
-
-/* Define to 1 if you have the `sqrtf' function. */
-
-/* Define to 1 if you have the `sqrtl' function. */
-
-/* Define to 1 if you have the <stdbool.h> header file. */
-
-/* Define to 1 if you have the <stdint.h> header file. */
-
-/* Define to 1 if you have the <stdlib.h> header file. */
-
-/* Define if strerror_l is available in <string.h>. */
-
-/* Define if strerror_r is available in <string.h>. */
-
-/* Define to 1 if you have the <strings.h> header file. */
-
-/* Define to 1 if you have the <string.h> header file. */
-
-/* Define to 1 if you have the `strtof' function. */
-
-/* Define to 1 if you have the `strtold' function. */
-
-/* Define if strxfrm_l is available in <string.h>. */
-
-/* Define to 1 if you have the <sys/filio.h> header file. */
-/* #undef _GLIBCXX_HAVE_SYS_FILIO_H */
-
-/* Define to 1 if you have the <sys/ioctl.h> header file. */
-
-/* Define to 1 if you have the <sys/ipc.h> header file. */
-
-/* Define to 1 if you have the <sys/isa_defs.h> header file. */
-/* #undef _GLIBCXX_HAVE_SYS_ISA_DEFS_H */
-
-/* Define to 1 if you have the <sys/machine.h> header file. */
-/* #undef _GLIBCXX_HAVE_SYS_MACHINE_H */
-
-/* Define to 1 if you have the <sys/param.h> header file. */
-
-/* Define to 1 if you have the <sys/resource.h> header file. */
-
-/* Define to 1 if you have the <sys/sem.h> header file. */
-
-/* Define to 1 if you have the <sys/stat.h> header file. */
-
-/* Define to 1 if you have the <sys/time.h> header file. */
-
-/* Define to 1 if you have the <sys/types.h> header file. */
-
-/* Define to 1 if you have the <sys/uio.h> header file. */
-
-/* Define if S_IFREG is available in <sys/stat.h>. */
-/* #undef _GLIBCXX_HAVE_S_IFREG */
-
-/* Define if S_IFREG is available in <sys/stat.h>. */
-
-/* Define to 1 if you have the `tanf' function. */
-
-/* Define to 1 if you have the `tanhf' function. */
-
-/* Define to 1 if you have the `tanhl' function. */
-
-/* Define to 1 if you have the `tanl' function. */
-
-/* Define to 1 if you have the <tgmath.h> header file. */
-
-/* Define to 1 if the target supports thread-local storage. */
-
-/* Define to 1 if you have the <unistd.h> header file. */
-
-/* Defined if vfwscanf exists. */
-
-/* Defined if vswscanf exists. */
-
-/* Defined if vwscanf exists. */
-
-/* Define to 1 if you have the <wchar.h> header file. */
-
-/* Defined if wcstof exists. */
-
-/* Define to 1 if you have the <wctype.h> header file. */
-
-/* Define if writev is available in <sys/uio.h>. */
-
-/* Define to 1 if you have the `_acosf' function. */
-/* #undef _GLIBCXX_HAVE__ACOSF */
-
-/* Define to 1 if you have the `_acosl' function. */
-/* #undef _GLIBCXX_HAVE__ACOSL */
-
-/* Define to 1 if you have the `_asinf' function. */
-/* #undef _GLIBCXX_HAVE__ASINF */
-
-/* Define to 1 if you have the `_asinl' function. */
-/* #undef _GLIBCXX_HAVE__ASINL */
-
-/* Define to 1 if you have the `_atan2f' function. */
-/* #undef _GLIBCXX_HAVE__ATAN2F */
-
-/* Define to 1 if you have the `_atan2l' function. */
-/* #undef _GLIBCXX_HAVE__ATAN2L */
-
-/* Define to 1 if you have the `_atanf' function. */
-/* #undef _GLIBCXX_HAVE__ATANF */
-
-/* Define to 1 if you have the `_atanl' function. */
-/* #undef _GLIBCXX_HAVE__ATANL */
-
-/* Define to 1 if you have the `_ceilf' function. */
-/* #undef _GLIBCXX_HAVE__CEILF */
-
-/* Define to 1 if you have the `_ceill' function. */
-/* #undef _GLIBCXX_HAVE__CEILL */
-
-/* Define to 1 if you have the `_cosf' function. */
-/* #undef _GLIBCXX_HAVE__COSF */
-
-/* Define to 1 if you have the `_coshf' function. */
-/* #undef _GLIBCXX_HAVE__COSHF */
-
-/* Define to 1 if you have the `_coshl' function. */
-/* #undef _GLIBCXX_HAVE__COSHL */
-
-/* Define to 1 if you have the `_cosl' function. */
-/* #undef _GLIBCXX_HAVE__COSL */
-
-/* Define to 1 if you have the `_expf' function. */
-/* #undef _GLIBCXX_HAVE__EXPF */
-
-/* Define to 1 if you have the `_expl' function. */
-/* #undef _GLIBCXX_HAVE__EXPL */
-
-/* Define to 1 if you have the `_fabsf' function. */
-/* #undef _GLIBCXX_HAVE__FABSF */
-
-/* Define to 1 if you have the `_fabsl' function. */
-/* #undef _GLIBCXX_HAVE__FABSL */
-
-/* Define to 1 if you have the `_finite' function. */
-/* #undef _GLIBCXX_HAVE__FINITE */
-
-/* Define to 1 if you have the `_finitef' function. */
-/* #undef _GLIBCXX_HAVE__FINITEF */
-
-/* Define to 1 if you have the `_finitel' function. */
-/* #undef _GLIBCXX_HAVE__FINITEL */
-
-/* Define to 1 if you have the `_floorf' function. */
-/* #undef _GLIBCXX_HAVE__FLOORF */
-
-/* Define to 1 if you have the `_floorl' function. */
-/* #undef _GLIBCXX_HAVE__FLOORL */
-
-/* Define to 1 if you have the `_fmodf' function. */
-/* #undef _GLIBCXX_HAVE__FMODF */
-
-/* Define to 1 if you have the `_fmodl' function. */
-/* #undef _GLIBCXX_HAVE__FMODL */
-
-/* Define to 1 if you have the `_fpclass' function. */
-/* #undef _GLIBCXX_HAVE__FPCLASS */
-
-/* Define to 1 if you have the `_frexpf' function. */
-/* #undef _GLIBCXX_HAVE__FREXPF */
-
-/* Define to 1 if you have the `_frexpl' function. */
-/* #undef _GLIBCXX_HAVE__FREXPL */
-
-/* Define to 1 if you have the `_hypot' function. */
-/* #undef _GLIBCXX_HAVE__HYPOT */
-
-/* Define to 1 if you have the `_hypotf' function. */
-/* #undef _GLIBCXX_HAVE__HYPOTF */
-
-/* Define to 1 if you have the `_hypotl' function. */
-/* #undef _GLIBCXX_HAVE__HYPOTL */
-
-/* Define to 1 if you have the `_isinf' function. */
-/* #undef _GLIBCXX_HAVE__ISINF */
-
-/* Define to 1 if you have the `_isinff' function. */
-/* #undef _GLIBCXX_HAVE__ISINFF */
-
-/* Define to 1 if you have the `_isinfl' function. */
-/* #undef _GLIBCXX_HAVE__ISINFL */
-
-/* Define to 1 if you have the `_isnan' function. */
-/* #undef _GLIBCXX_HAVE__ISNAN */
-
-/* Define to 1 if you have the `_isnanf' function. */
-/* #undef _GLIBCXX_HAVE__ISNANF */
-
-/* Define to 1 if you have the `_isnanl' function. */
-/* #undef _GLIBCXX_HAVE__ISNANL */
-
-/* Define to 1 if you have the `_ldexpf' function. */
-/* #undef _GLIBCXX_HAVE__LDEXPF */
-
-/* Define to 1 if you have the `_ldexpl' function. */
-/* #undef _GLIBCXX_HAVE__LDEXPL */
-
-/* Define to 1 if you have the `_log10f' function. */
-/* #undef _GLIBCXX_HAVE__LOG10F */
-
-/* Define to 1 if you have the `_log10l' function. */
-/* #undef _GLIBCXX_HAVE__LOG10L */
-
-/* Define to 1 if you have the `_logf' function. */
-/* #undef _GLIBCXX_HAVE__LOGF */
-
-/* Define to 1 if you have the `_logl' function. */
-/* #undef _GLIBCXX_HAVE__LOGL */
-
-/* Define to 1 if you have the `_modf' function. */
-/* #undef _GLIBCXX_HAVE__MODF */
-
-/* Define to 1 if you have the `_modff' function. */
-/* #undef _GLIBCXX_HAVE__MODFF */
-
-/* Define to 1 if you have the `_modfl' function. */
-/* #undef _GLIBCXX_HAVE__MODFL */
-
-/* Define to 1 if you have the `_powf' function. */
-/* #undef _GLIBCXX_HAVE__POWF */
-
-/* Define to 1 if you have the `_powl' function. */
-/* #undef _GLIBCXX_HAVE__POWL */
-
-/* Define to 1 if you have the `_qfpclass' function. */
-/* #undef _GLIBCXX_HAVE__QFPCLASS */
-
-/* Define to 1 if you have the `_sincos' function. */
-/* #undef _GLIBCXX_HAVE__SINCOS */
-
-/* Define to 1 if you have the `_sincosf' function. */
-/* #undef _GLIBCXX_HAVE__SINCOSF */
-
-/* Define to 1 if you have the `_sincosl' function. */
-/* #undef _GLIBCXX_HAVE__SINCOSL */
-
-/* Define to 1 if you have the `_sinf' function. */
-/* #undef _GLIBCXX_HAVE__SINF */
-
-/* Define to 1 if you have the `_sinhf' function. */
-/* #undef _GLIBCXX_HAVE__SINHF */
-
-/* Define to 1 if you have the `_sinhl' function. */
-/* #undef _GLIBCXX_HAVE__SINHL */
-
-/* Define to 1 if you have the `_sinl' function. */
-/* #undef _GLIBCXX_HAVE__SINL */
-
-/* Define to 1 if you have the `_sqrtf' function. */
-/* #undef _GLIBCXX_HAVE__SQRTF */
-
-/* Define to 1 if you have the `_sqrtl' function. */
-/* #undef _GLIBCXX_HAVE__SQRTL */
-
-/* Define to 1 if you have the `_tanf' function. */
-/* #undef _GLIBCXX_HAVE__TANF */
-
-/* Define to 1 if you have the `_tanhf' function. */
-/* #undef _GLIBCXX_HAVE__TANHF */
-
-/* Define to 1 if you have the `_tanhl' function. */
-/* #undef _GLIBCXX_HAVE__TANHL */
-
-/* Define to 1 if you have the `_tanl' function. */
-/* #undef _GLIBCXX_HAVE__TANL */
-
-/* Define as const if the declaration of iconv() needs const. */
-
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
-
-/* Name of package */
-/* #undef _GLIBCXX_PACKAGE */
-
-/* Define to the address where bug reports for this package should be sent. */
-
-/* Define to the full name of this package. */
-
-/* Define to the full name and version of this package. */
-
-/* Define to the one symbol short name of this package. */
-
-/* Define to the home page for this package. */
-
-/* Define to the version of this package. */
-
-/* The size of `char', as computed by sizeof. */
-/* #undef SIZEOF_CHAR */
-
-/* The size of `int', as computed by sizeof. */
-/* #undef SIZEOF_INT */
-
-/* The size of `long', as computed by sizeof. */
-/* #undef SIZEOF_LONG */
-
-/* The size of `short', as computed by sizeof. */
-/* #undef SIZEOF_SHORT */
-
-/* The size of `void *', as computed by sizeof. */
-/* #undef SIZEOF_VOID_P */
-
-/* Define to 1 if you have the ANSI C header files. */
-
-/* Version number of package */
-/* #undef _GLIBCXX_VERSION */
-
-/* Define if builtin atomic operations for bool are supported on this host. */
-
-/* Define if builtin atomic operations for short are supported on this host.
-   */
-
-/* Define if builtin atomic operations for int are supported on this host. */
-
-/* Define if builtin atomic operations for long long are supported on this
-   host. */
-
-/* Define to use concept checking code from the boost libraries. */
-/* #undef _GLIBCXX_CONCEPT_CHECKS */
-
-/* Define if a fully dynamic basic_string is wanted. */
-/* #undef _GLIBCXX_FULLY_DYNAMIC_STRING */
-
-/* Define if gthreads library is available. */
-
-/* Define to 1 if a full hosted library is built, or 0 if freestanding. */
-
-/* Define if compatibility should be provided for -mlong-double-64. */
-
-/* Define if ptrdiff_t is int. */
-/* #undef _GLIBCXX_PTRDIFF_T_IS_INT */
-
-/* Define if using setrlimit to set resource limits during "make check" */
-
-/* Define if size_t is unsigned int. */
-/* #undef _GLIBCXX_SIZE_T_IS_UINT */
-
-/* Define if the compiler is configured for setjmp/longjmp exceptions. */
-/* #undef _GLIBCXX_SJLJ_EXCEPTIONS */
-
-/* Define if EOF == -1, SEEK_CUR == 1, SEEK_END == 2. */
-
-/* Define to use symbol versioning in the shared library. */
-
-/* Define to use darwin versioning in the shared library. */
-/* #undef _GLIBCXX_SYMVER_DARWIN */
-
-/* Define to use GNU versioning in the shared library. */
-
-/* Define to use GNU namespace versioning in the shared library. */
-/* #undef _GLIBCXX_SYMVER_GNU_NAMESPACE */
-
-/* Define if C99 functions or macros from <wchar.h>, <math.h>, <complex.h>,
-   <stdio.h>, and <stdlib.h> can be used or exposed. */
-
-/* Define if C99 functions in <complex.h> should be used in <complex>. Using
-   compiler builtins for these functions requires corresponding C99 library
-   functions to be present. */
-
-/* Define if C99 functions in <complex.h> should be used in <tr1/complex>.
-   Using compiler builtins for these functions requires corresponding C99
-   library functions to be present. */
-
-/* Define if C99 functions in <ctype.h> should be imported in <tr1/cctype> in
-   namespace std::tr1. */
-
-/* Define if C99 functions in <fenv.h> should be imported in <tr1/cfenv> in
-   namespace std::tr1. */
-
-/* Define if C99 functions in <inttypes.h> should be imported in
-   <tr1/cinttypes> in namespace std::tr1. */
-
-/* Define if wchar_t C99 functions in <inttypes.h> should be imported in
-   <tr1/cinttypes> in namespace std::tr1. */
-
-/* Define if C99 functions or macros in <math.h> should be imported in <cmath>
-   in namespace std. */
-
-/* Define if C99 functions or macros in <math.h> should be imported in
-   <tr1/cmath> in namespace std::tr1. */
-
-/* Define if C99 types in <stdint.h> should be imported in <tr1/cstdint> in
-   namespace std::tr1. */
-
-/* Defined if clock_gettime has monotonic clock support. */
-/* #undef _GLIBCXX_USE_CLOCK_MONOTONIC */
-
-/* Defined if clock_gettime has realtime clock support. */
-/* #undef _GLIBCXX_USE_CLOCK_REALTIME */
-
-/* Define if ISO/IEC TR 24733 decimal floating point types are supported on
-   this host. */
-
-/* Defined if gettimeofday is available. */
-
-/* Define if LFS support is available. */
-
-/* Define if code specialized for long long should be used. */
-
-/* Defined if nanosleep is available. */
-
-/* Define if NLS translations are to be used. */
-
-/* Define if /dev/random and /dev/urandom are available for the random_device
-   of TR1 (Chapter 5.1). */
-
-/* Defined if sched_yield is available. */
-
-/* Define if code specialized for wchar_t should be used. */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -2701,7 +1354,6 @@ extern void funlockfile (FILE *__stream) throw ();
 
 
 // Get rid of those macros defined in <stdio.h> in lieu of real functions.
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   using ::FILE;
@@ -2777,45 +1429,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -2846,187 +1459,18 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 /*#endif*/ /* _STDDEF */
 
 // Standard iostream objects -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2005, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file iostream
- *  This is a Standard C++ Library header. 
- */
-
-//
-// ISO C++ 14882: 27.3  Standard iostream objects
-//
-
-
 #pragma GCC system_header
 
 // Output streams -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file ostream
- *  This is a Standard C++ Library header.
- */
-
-//
-// ISO C++ 14882: 27.6.2  Output streams
-//
-
-
 #pragma GCC system_header
 
 // Iostreams base classes -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-// 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file ios
- *  This is a Standard C++ Library header.
- */
-
-//
-// ISO C++ 14882: 27.4  Iostreams base classes
-//
-
-
 #pragma GCC system_header
 
 // Forwarding declarations -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file iosfwd
- *  This is a Standard C++ Library header.
- */
-
-//
-// ISO C++ 14882: 27.2  Forward declarations
-//
-
-
 #pragma GCC system_header
 
 // String support -*- C++ -*-
-
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-// 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file stringfwd.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 21 Strings library
-//
-
-
 #pragma GCC system_header
 
 
@@ -3051,136 +1495,18 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   template<> struct char_traits<char>;
 
   typedef basic_string<char>    string;   ///< A string of @c char
-
-  template<> struct char_traits<wchar_t>;
+template<> struct char_traits<wchar_t>;
 
   typedef basic_string<wchar_t> wstring;   ///< A string of @c wchar_t
-
-  /** @}  */
-
 }
 
 // Position types -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file postypes.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 27.4.1 - Types
-// ISO C++ 14882: 27.4.3 - Template class fpos
-//
-
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cwchar
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c wchar.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 21.4
-//
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -4005,8 +2331,6 @@ extern size_t wcsftime_l (wchar_t *__restrict __s, size_t __maxsize,
 
 
 // Need to do a bit of trickery here with mbstate_t as char_traits
-// assumes it is in wchar.h, regardless of wchar_t specializations.
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   using ::mbstate_t;
@@ -4014,8 +2338,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // Get rid of those macros defined in <wchar.h> in lieu of real functions.
-
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   using ::wint_t;
@@ -4103,43 +2425,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // XXX If <stdint.h> is really needed, make sure to define the macros
-// before including it, in order not to break <tr1/cstdint> (and <cstdint>
-// in C++0x).  Reconsider all this as soon as possible...
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // The types streamoff, streampos and wstreampos and the class
-  // template fpos<> are described in clauses 21.1.2, 21.1.3, 27.1.2,
-  // 27.2, 27.4.1, 27.4.3 and D.6. Despite all this verbiage, the
-  // behaviour of these types is mostly implementation defined or
-  // unspecified. The behaviour in this implementation is as noted
-  // below.
-
-  /**
-   *  @brief  Type used by fpos, char_traits<char>, and char_traits<wchar_t>.
-   *
-   *  In clauses 21.1.3.1 and 27.4.1 streamoff is described as an
-   *  implementation defined type.
-   *  Note: In versions of GCC up to and including GCC 3.3, streamoff
-   *  was typedef long.
-  */  
-  typedef long          streamoff;
+typedef long          streamoff;
 
   /// Integral type for I/O operation counts and buffer sizes.
-  typedef ptrdiff_t	streamsize; // Signed integral type
-
-  /**
-   *  @brief  Class representing stream positions.
-   *
-   *  The standard places no requirements upon the template parameter StateT.
-   *  In this implementation StateT must be DefaultConstructible,
-   *  CopyConstructible and Assignable.  The standard only requires that fpos
-   *  should contain a member of type StateT. In this implementation it also
-   *  contains an offset stored as a signed integer.
-   *
-   *  @param  StateT  Type passed to and returned from state().
-   */
-  template<typename _StateT>
+typedef ptrdiff_t	streamsize; // Signed integral type
+template<typename _StateT>
     class fpos
     {
     private:
@@ -4148,40 +2441,28 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     public:
       // The standard doesn't require that fpos objects can be default
-      // constructed. This implementation provides a default
-      // constructor that initializes the offset to 0 and default
-      // constructs the state.
-      fpos()
+fpos()
       : _M_off(0), _M_state() { }
 
       // The standard requires that fpos objects can be constructed
-      // from streamoff objects using the constructor syntax, and
-      // fails to give any meaningful semantics. In this
-      // implementation implicit conversion is also allowed, and this
-      // constructor stores the streamoff as the offset and default
-      // constructs the state.
-      /// Construct position from offset.
-      fpos(streamoff __off)
+fpos(streamoff __off)
       : _M_off(__off), _M_state() { }
 
       /// Convert to streamoff.
-      operator streamoff() const { return _M_off; }
+operator streamoff() const { return _M_off; }
 
       /// Remember the value of @a st.
-      void
+void
       state(_StateT __st)
       { _M_state = __st; }
 
       /// Return the last set value of @a st.
-      _StateT
+_StateT
       state() const
       { return _M_state; }
 
       // The standard requires that this operator must be defined, but
-      // gives no semantics. In this implementation it just adds its
-      // argument to the stored offset and returns *this.
-      /// Add offset to this position.
-      fpos&
+fpos&
       operator+=(streamoff __off)
       {
 	_M_off += __off;
@@ -4189,10 +2470,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // The standard requires that this operator must be defined, but
-      // gives no semantics. In this implementation it just subtracts
-      // its argument from the stored offset and returns *this.
-      /// Subtract offset from this position.
-      fpos&
+fpos&
       operator-=(streamoff __off)
       {
 	_M_off -= __off;
@@ -4200,12 +2478,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // The standard requires that this operator must be defined, but
-      // defines its semantics only in terms of operator-. In this
-      // implementation it constructs a copy of *this, adds the
-      // argument to that copy using operator+= and then returns the
-      // copy.
-      /// Add position and offset.
-      fpos
+fpos
       operator+(streamoff __off) const
       {
 	fpos __pos(*this);
@@ -4214,12 +2487,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // The standard requires that this operator must be defined, but
-      // defines its semantics only in terms of operator+. In this
-      // implementation it constructs a copy of *this, subtracts the
-      // argument from that copy using operator-= and then returns the
-      // copy.
-      /// Subtract offset from position.
-      fpos
+fpos
       operator-(streamoff __off) const
       {
 	fpos __pos(*this);
@@ -4228,21 +2496,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // The standard requires that this operator must be defined, but
-      // defines its semantics only in terms of operator+. In this
-      // implementation it returns the difference between the offset
-      // stored in *this and in the argument.
-      /// Subtract position to return offset.
-      streamoff
+streamoff
       operator-(const fpos& __other) const
       { return _M_off - __other._M_off; }
     };
 
   // The standard only requires that operator== must be an
-  // equivalence relation. In this implementation two fpos<StateT>
-  // objects belong to the same equivalence class if the contained
-  // offsets compare equal.
-  /// Test if equivalent to another position.
-  template<typename _StateT>
+template<typename _StateT>
     inline bool
     operator==(const fpos<_StateT>& __lhs, const fpos<_StateT>& __rhs)
     { return streamoff(__lhs) == streamoff(__rhs); }
@@ -4253,12 +2513,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return streamoff(__lhs) != streamoff(__rhs); }
 
   // Clauses 21.1.3.1 and 21.1.3.2 describe streampos and wstreampos
-  // as implementation defined types, but clause 27.2 requires that
-  // they must both be typedefs for fpos<mbstate_t>
-  /// File position for char streams.
-  typedef fpos<mbstate_t> streampos;
+typedef fpos<mbstate_t> streampos;
   /// File position for wchar_t streams.
-  typedef fpos<mbstate_t> wstreampos;
+typedef fpos<mbstate_t> wstreampos;
 
 
 }
@@ -4346,71 +2603,35 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     class ostreambuf_iterator;
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // Not included.   (??? Apparently no LWG number?)
-
-  typedef basic_ios<char> 		ios;		///< @isiosfwd
-  typedef basic_streambuf<char> 	streambuf;	///< @isiosfwd
-  typedef basic_istream<char> 		istream;	///< @isiosfwd
-  typedef basic_ostream<char> 		ostream;	///< @isiosfwd
-  typedef basic_iostream<char> 		iostream;	///< @isiosfwd
-  typedef basic_stringbuf<char> 	stringbuf;	///< @isiosfwd
-  typedef basic_istringstream<char> 	istringstream;	///< @isiosfwd
-  typedef basic_ostringstream<char> 	ostringstream;	///< @isiosfwd
-  typedef basic_stringstream<char> 	stringstream;	///< @isiosfwd
-  typedef basic_filebuf<char> 		filebuf;	///< @isiosfwd
-  typedef basic_ifstream<char> 		ifstream;	///< @isiosfwd
-  typedef basic_ofstream<char> 		ofstream;	///< @isiosfwd
-  typedef basic_fstream<char> 		fstream;	///< @isiosfwd
-
-  typedef basic_ios<wchar_t> 		wios;		///< @isiosfwd
-  typedef basic_streambuf<wchar_t> 	wstreambuf;	///< @isiosfwd
-  typedef basic_istream<wchar_t> 	wistream;	///< @isiosfwd
-  typedef basic_ostream<wchar_t> 	wostream;	///< @isiosfwd
-  typedef basic_iostream<wchar_t> 	wiostream;	///< @isiosfwd
-  typedef basic_stringbuf<wchar_t> 	wstringbuf;	///< @isiosfwd
-  typedef basic_istringstream<wchar_t> 	wistringstream;	///< @isiosfwd
-  typedef basic_ostringstream<wchar_t> 	wostringstream;	///< @isiosfwd
-  typedef basic_stringstream<wchar_t> 	wstringstream;	///< @isiosfwd
-  typedef basic_filebuf<wchar_t> 	wfilebuf;	///< @isiosfwd
-  typedef basic_ifstream<wchar_t> 	wifstream;	///< @isiosfwd
-  typedef basic_ofstream<wchar_t> 	wofstream;	///< @isiosfwd
-  typedef basic_fstream<wchar_t> 	wfstream;	///< @isiosfwd
-  /** @}  */
-
+typedef basic_ios<char> 		ios;		///< @isiosfwd
+typedef basic_streambuf<char> 	streambuf;	///< @isiosfwd
+typedef basic_istream<char> 		istream;	///< @isiosfwd
+typedef basic_ostream<char> 		ostream;	///< @isiosfwd
+typedef basic_iostream<char> 		iostream;	///< @isiosfwd
+typedef basic_stringbuf<char> 	stringbuf;	///< @isiosfwd
+typedef basic_istringstream<char> 	istringstream;	///< @isiosfwd
+typedef basic_ostringstream<char> 	ostringstream;	///< @isiosfwd
+typedef basic_stringstream<char> 	stringstream;	///< @isiosfwd
+typedef basic_filebuf<char> 		filebuf;	///< @isiosfwd
+typedef basic_ifstream<char> 		ifstream;	///< @isiosfwd
+typedef basic_ofstream<char> 		ofstream;	///< @isiosfwd
+typedef basic_fstream<char> 		fstream;	///< @isiosfwd
+typedef basic_ios<wchar_t> 		wios;		///< @isiosfwd
+typedef basic_streambuf<wchar_t> 	wstreambuf;	///< @isiosfwd
+typedef basic_istream<wchar_t> 	wistream;	///< @isiosfwd
+typedef basic_ostream<wchar_t> 	wostream;	///< @isiosfwd
+typedef basic_iostream<wchar_t> 	wiostream;	///< @isiosfwd
+typedef basic_stringbuf<wchar_t> 	wstringbuf;	///< @isiosfwd
+typedef basic_istringstream<wchar_t> 	wistringstream;	///< @isiosfwd
+typedef basic_ostringstream<wchar_t> 	wostringstream;	///< @isiosfwd
+typedef basic_stringstream<wchar_t> 	wstringstream;	///< @isiosfwd
+typedef basic_filebuf<wchar_t> 	wfilebuf;	///< @isiosfwd
+typedef basic_ifstream<wchar_t> 	wifstream;	///< @isiosfwd
+typedef basic_ofstream<wchar_t> 	wofstream;	///< @isiosfwd
+typedef basic_fstream<wchar_t> 	wfstream;	///< @isiosfwd
 }
 
 // Exception Handling support header for -*- C++ -*-
-
-// Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-// 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation
-//
-// This file is part of GCC.
-//
-// GCC is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 3, or (at your option)
-// any later version.
-//
-// GCC is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file exception
- *  This is a Standard C++ Library header.
- */
-
-
 #pragma GCC system_header
 
 #pragma GCC visibility push(default)
@@ -4455,28 +2676,27 @@ namespace std
     bad_exception() throw() { }
 
     // This declaration is not useless:
-    // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
-    virtual ~bad_exception() throw();
+virtual ~bad_exception() throw();
 
     // See comment in eh_exception.cc.
-    virtual const char* what() const throw();
+virtual const char* what() const throw();
   };
 
   /// If you write a replacement %terminate handler, it must be of this type.
-  typedef void (*terminate_handler) ();
+typedef void (*terminate_handler) ();
 
   /// If you write a replacement %unexpected handler, it must be of this type.
-  typedef void (*unexpected_handler) ();
+typedef void (*unexpected_handler) ();
 
   /// Takes a new handler function as an argument, returns the old function.
-  terminate_handler set_terminate(terminate_handler) throw();
+terminate_handler set_terminate(terminate_handler) throw();
 
   /** The runtime will call this function if %exception handling must be
    *  abandoned for any reason.  It can also be called by the user.  */
   void terminate() throw() __attribute__ ((__noreturn__));
 
   /// Takes a new handler function as an argument, returns the old function.
-  unexpected_handler set_unexpected(unexpected_handler) throw();
+unexpected_handler set_unexpected(unexpected_handler) throw();
 
   /** The runtime will call this function if an %exception is thrown which
    *  violates the function's %exception specification.  */
@@ -4497,7 +2717,6 @@ namespace std
 
   // @} group exceptions
 } // namespace std
-
 namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
   /**
@@ -4521,145 +2740,13 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 }
 
 } // extern "C++"
-
 #pragma GCC visibility pop
 
 
 // Character Traits for use by standard string and iostream -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file char_traits.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 21  Strings library
-//
-
-
 #pragma GCC system_header
 
 // Core algorithmic facilities -*- C++ -*-
-
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/*
- *
- * Copyright (c) 1994
- * Hewlett-Packard Company
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Hewlett-Packard Company makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- *
- *
- * Copyright (c) 1996-1998
- * Silicon Graphics Computer Systems, Inc.
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Silicon Graphics makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- */
-
-/** @file stl_algobase.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
-// -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -4690,94 +2777,25 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 /*#endif*/ /* _STDDEF */
 
 // Function-Based Exception Support -*- C++ -*-
-
-// Copyright (C) 2001, 2004, 2005, 2008, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file functexcept.h
- *  This header provides support for -fno-exceptions.
- */
-
-//
-// ISO C++ 14882: 19.1  Exception classes
-//
-
-
-// -fno-exceptions Support -*- C++ -*-
-
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2006, 2007, 2008, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-//
-// ISO C++ 14882: 19.1  Exception classes
-//
-
-/** @file exception_defines.h
- *  This is a Standard C++ Library header.
- */
-
-
-// Else proceed normally.
-
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // Helper for exception objects in <except>
-  void
+void
   __throw_bad_exception(void) __attribute__((__noreturn__));
 
   // Helper for exception objects in <new>
-  void
+void
   __throw_bad_alloc(void) __attribute__((__noreturn__));
 
   // Helper for exception objects in <typeinfo>
-  void
+void
   __throw_bad_cast(void) __attribute__((__noreturn__));
 
   void
   __throw_bad_typeid(void) __attribute__((__noreturn__));
 
   // Helpers for exception objects in <stdexcept>
-  void
+void
   __throw_logic_error(const char*) __attribute__((__noreturn__));
 
   void
@@ -4805,7 +2823,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   __throw_underflow_error(const char*) __attribute__((__noreturn__));
 
   // Helpers for exception objects in <ios>
-  void
+void
   __throw_ios_failure(const char*) __attribute__((__noreturn__));
 
   void
@@ -4815,76 +2833,16 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   __throw_future_error(int) __attribute__((__noreturn__));
 
   // Helpers for exception objects in <functional>
-  void
+void
   __throw_bad_function_call() __attribute__((__noreturn__));
 
 }
 
 // The  -*- C++ -*- type traits classes for internal use in libstdc++
-
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cpp_type_traits.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-// Written by Gabriel Dos Reis <dosreis@cmla.ens-cachan.fr>
-
-
 #pragma GCC system_header
 
 
 //
-// This file provides some compile-time information about various types.
-// These representations were designed, on purpose, to be constant-expressions
-// and not types as found in <bits/type_traits.h>.  In particular, they
-// can be used in control structures and the optimizer hopefully will do
-// the obvious thing.
-//
-// Why integral expressions, and not functions nor types?
-// Firstly, these compile-time entities are used as template-arguments
-// so function return values won't work:  We need compile-time entities.
-// We're left with types and constant  integral expressions.
-// Secondly, from the point of view of ease of use, type-based compile-time
-// information is -not- *that* convenient.  On has to write lots of
-// overloaded functions and to hope that the compiler will select the right
-// one. As a net effect, the overall structure isn't very clear at first
-// glance.
-// Thirdly, partial ordering and overload resolution (of function templates)
-// is highly costly in terms of compiler-resource.  It is a Good Thing to
-// keep these resource consumption as least as possible.
-//
-// See valarray_array.h for a case use.
-//
-// -- Gaby (dosreis@cmla.ens-cachan.fr) 2000-03-06.
-//
-// Update 2005: types are also provided and <bits/type_traits.h> has been
-// removed.
-//
-
-// Forward declaration hack, should really include this from somewhere.
 namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
   template<typename _Iterator, typename _Container>
@@ -4906,8 +2864,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { typedef __true_type __type; };
 
   // N.B. The conversions to bool are needed due to the issue
-  // explained in c++/19404.
-  template<class _Sp, class _Tp>
+template<class _Sp, class _Tp>
     struct __traitor
     {
       enum { __value = bool(_Sp::__value) || bool(_Tp::__value) };
@@ -4915,7 +2872,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // Compare for equality of types.
-  template<typename, typename>
+template<typename, typename>
     struct __are_same
     {
       enum { __value = 0 };
@@ -4930,7 +2887,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // Holds if the template-argument is a void type.
-  template<typename _Tp>
+template<typename _Tp>
     struct __is_void
     {
       enum { __value = 0 };
@@ -4945,9 +2902,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   //
-  // Integer types
-  //
-  template<typename _Tp>
+template<typename _Tp>
     struct __is_integer
     {
       enum { __value = 0 };
@@ -4955,9 +2910,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // Thirteen specializations (yes there are eleven standard integer
-  // types; <em>long long</em> and <em>unsigned long long</em> are
-  // supported as extensions)
-  template<>
+template<>
     struct __is_integer<bool>
     {
       enum { __value = 1 };
@@ -5050,9 +3003,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   //
-  // Floating point types
-  //
-  template<typename _Tp>
+template<typename _Tp>
     struct __is_floating
     {
       enum { __value = 0 };
@@ -5060,7 +3011,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // three specializations (float, double and 'long double')
-  template<>
+template<>
     struct __is_floating<float>
     {
       enum { __value = 1 };
@@ -5082,9 +3033,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   //
-  // Pointer types
-  //
-  template<typename _Tp>
+template<typename _Tp>
     struct __is_pointer
     {
       enum { __value = 0 };
@@ -5099,9 +3048,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   //
-  // Normal iterator type
-  //
-  template<typename _Tp>
+template<typename _Tp>
     struct __is_normal_iterator
     {
       enum { __value = 0 };
@@ -5117,33 +3064,25 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   //
-  // An arithmetic type is an integer type or a floating point type
-  //
-  template<typename _Tp>
+template<typename _Tp>
     struct __is_arithmetic
     : public __traitor<__is_integer<_Tp>, __is_floating<_Tp> >
     { };
 
   //
-  // A fundamental type is `void' or and arithmetic type
-  //
-  template<typename _Tp>
+template<typename _Tp>
     struct __is_fundamental
     : public __traitor<__is_void<_Tp>, __is_arithmetic<_Tp> >
     { };
 
   //
-  // A scalar type is an arithmetic type or a pointer type
-  // 
-  template<typename _Tp>
+template<typename _Tp>
     struct __is_scalar
     : public __traitor<__is_arithmetic<_Tp>, __is_pointer<_Tp> >
     { };
 
   //
-  // For use in std::copy and std::find overloads for streambuf iterators.
-  //
-  template<typename _Tp>
+template<typename _Tp>
     struct __is_char
     {
       enum { __value = 0 };
@@ -5193,9 +3132,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   //
-  // Move iterator type
-  //
-  template<typename _Tp>
+template<typename _Tp>
     struct __is_move_iterator
     {
       enum { __value = 0 };
@@ -5234,41 +3171,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // -*- C++ -*-
-
-// Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the terms
-// of the GNU General Public License as published by the Free Software
-// Foundation; either version 3, or (at your option) any later
-// version.
-
-// This library is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file ext/type_traits.h
- *  This file is a GNU extension to the Standard C++ Library.
- */
-
-
 #pragma GCC system_header
 
 
 namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
   // Define a nested type if some predicate holds.
-  template<bool, typename>
+template<bool, typename>
     struct __enable_if 
     { };
 
@@ -5278,7 +3187,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
 
   // Conditional expression for types. If true, first, if false, second.
-  template<bool _Cond, typename _Iftrue, typename _Iffalse>
+template<bool _Cond, typename _Iftrue, typename _Iffalse>
     struct __conditional_type
     { typedef _Iftrue __type; };
 
@@ -5288,7 +3197,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
 
   // Given an integral builtin type, return the corresponding unsigned type.
-  template<typename _Tp>
+template<typename _Tp>
     struct __add_unsigned
     { 
     private:
@@ -5323,7 +3232,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
     { typedef unsigned long long __type; };
 
   // Declare but don't define.
-  template<>
+template<>
     struct __add_unsigned<bool>;
 
   template<>
@@ -5331,7 +3240,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
 
   // Given an integral builtin type, return the corresponding signed type.
-  template<typename _Tp>
+template<typename _Tp>
     struct __remove_unsigned
     { 
     private:
@@ -5366,7 +3275,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
     { typedef long long __type; };
 
   // Declare but don't define.
-  template<>
+template<>
     struct __remove_unsigned<bool>;
 
   template<>
@@ -5374,7 +3283,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
 
   // For use in string and vstring.
-  template<typename _Type>
+template<typename _Type>
     inline bool
     __is_null_pointer(_Type* __ptr)
     { return __ptr == 0; }
@@ -5386,7 +3295,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
 
   // For complex and cmath
-  template<typename _Tp, bool = std::__is_integer<_Tp>::__value>
+template<typename _Tp, bool = std::__is_integer<_Tp>::__value>
     struct __promote
     { typedef double __type; };
 
@@ -5433,54 +3342,21 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 }
 
 // -*- C++ -*-
-
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the terms
-// of the GNU General Public License as published by the Free Software
-// Foundation; either version 3, or (at your option) any later
-// version.
-
-// This library is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-// General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file ext/numeric_traits.h
- *  This file is a GNU extension to the Standard C++ Library.
- */
-
-
 #pragma GCC system_header
 
 
 namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
   // Compile time constants for builtin types.
-  // Sadly std::numeric_limits member functions cannot be used for this.
-
-
-
-  template<typename _Value>
+template<typename _Value>
     struct __numeric_traits_integer
     {
       // Only integers for initialization of member constant.
-      static const _Value __min = (((_Value)(-1) < 0) ? (_Value)1 << (sizeof(_Value) * 8 - ((_Value)(-1) < 0)) : (_Value)0);
+static const _Value __min = (((_Value)(-1) < 0) ? (_Value)1 << (sizeof(_Value) * 8 - ((_Value)(-1) < 0)) : (_Value)0);
       static const _Value __max = (((_Value)(-1) < 0) ? (((((_Value)1 << ((sizeof(_Value) * 8 - ((_Value)(-1) < 0)) - 1)) - 1) << 1) + 1) : ~(_Value)0);
 
       // NB: these two also available in std::numeric_limits as compile
-      // time constants, but <limits> is big and we avoid including it.
-      static const bool __is_signed = ((_Value)(-1) < 0);
+static const bool __is_signed = ((_Value)(-1) < 0);
       static const int __digits = (sizeof(_Value) * 8 - ((_Value)(-1) < 0));      
     };
 
@@ -5505,10 +3381,10 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
     struct __numeric_traits_floating
     {
       // Only floating point types. See N1822. 
-      static const int __max_digits10 = (2 + (std::__are_same<_Value, float> ::__value ? 24 : std::__are_same<_Value, double> ::__value ? 53 : 64) * 3010 / 10000);
+static const int __max_digits10 = (2 + (std::__are_same<_Value, float> ::__value ? 24 : std::__are_same<_Value, double> ::__value ? 53 : 64) * 3010 / 10000);
 
       // See above comment...
-      static const bool __is_signed = true;
+static const bool __is_signed = true;
       static const int __digits10 = (std::__are_same<_Value, float> ::__value ? 6 : std::__are_same<_Value, double> ::__value ? 15 : 18);
       static const int __max_exponent10 = (std::__are_same<_Value, float> ::__value ? 38 : std::__are_same<_Value, double> ::__value ? 308 : 4932);
     };
@@ -5536,132 +3412,6 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
 
 // Pair implementation -*- C++ -*-
-
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/*
- *
- * Copyright (c) 1994
- * Hewlett-Packard Company
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Hewlett-Packard Company makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- *
- *
- * Copyright (c) 1996,1997
- * Silicon Graphics Computer Systems, Inc.
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Silicon Graphics makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- */
-
-/** @file stl_pair.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
-// Move, forward and identity for C++0x + swap -*- C++ -*-
-
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file move.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
-// -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -5692,51 +3442,10 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 /*#endif*/ /* _STDDEF */
 
 // Concept-checking control -*- C++ -*-
-
-// Copyright (C) 2001, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file concept_check.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
 #pragma GCC system_header
 
 
 // All places in libstdc++-v3 where these are used, or /might/ be used, or
-// don't need to be used, or perhaps /should/ be used, are commented with
-// "concept requirements" (and maybe some more text).  So grep like crazy
-// if you're looking for additional places to use these.
-
-// Concept-checking code is off by default unless users turn it on via
-// configure options or editing c++config.h.
-
-
-
-
-
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   /**
@@ -5751,16 +3460,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     swap(_Tp& __a, _Tp& __b)
     {
       // concept requirements
-      
-
-      _Tp __tmp = (__a);
+_Tp __tmp = (__a);
       __a = (__b);
       __b = (__tmp);
     }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // DR 809. std::swap should be overloaded for array types.
-  template<typename _Tp, size_t _Nm>
+template<typename _Tp, size_t _Nm>
     inline void
     swap(_Tp (&__a)[_Nm], _Tp (&__b)[_Nm])
     {
@@ -5771,25 +3477,17 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
                        // std::swap
-
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   /// pair holds two objects of arbitrary type.
-  template<class _T1, class _T2>
+template<class _T1, class _T2>
     struct pair
     {
       typedef _T1 first_type;    ///<  @c first_type is the first bound type
-      typedef _T2 second_type;   ///<  @c second_type is the second bound type
-
-      _T1 first;                 ///< @c first is a copy of the first object
-      _T2 second;                ///< @c second is a copy of the second object
-
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 265.  std::pair::pair() effects overly restrictive
-      /** The default constructor creates @c first and @c second using their
-       *  respective default constructors.  */
-      pair()
+typedef _T2 second_type;   ///<  @c second_type is the second bound type
+_T1 first;                 ///< @c first is a copy of the first object
+_T2 second;                ///< @c second is a copy of the second object
+pair()
       : first(), second() { }
 
       /** Two objects may be passed to a @c pair constructor to be copied.  */
@@ -5806,38 +3504,38 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// Two pairs of the same type are equal iff their members are equal.
-  template<class _T1, class _T2>
+template<class _T1, class _T2>
     inline bool
     operator==(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return __x.first == __y.first && __x.second == __y.second; }
 
   /// <http://gcc.gnu.org/onlinedocs/libstdc++/manual/utilities.html>
-  template<class _T1, class _T2>
+template<class _T1, class _T2>
     inline bool
     operator<(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return __x.first < __y.first
 	     || (!(__y.first < __x.first) && __x.second < __y.second); }
 
   /// Uses @c operator== to find the result.
-  template<class _T1, class _T2>
+template<class _T1, class _T2>
     inline bool
     operator!=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return !(__x == __y); }
 
   /// Uses @c operator< to find the result.
-  template<class _T1, class _T2>
+template<class _T1, class _T2>
     inline bool
     operator>(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return __y < __x; }
 
   /// Uses @c operator< to find the result.
-  template<class _T1, class _T2>
+template<class _T1, class _T2>
     inline bool
     operator<=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return !(__y < __x); }
 
   /// Uses @c operator< to find the result.
-  template<class _T1, class _T2>
+template<class _T1, class _T2>
     inline bool
     operator>=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return !(__x < __y); }
@@ -5854,8 +3552,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    *  the LWG by default.
    */
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // 181.  make_pair() unintended behavior
-  template<class _T1, class _T2>
+template<class _T1, class _T2>
     inline pair<_T1, _T2>
     make_pair(_T1 __x, _T2 __y)
     { return pair<_T1, _T2>(__x, __y); }
@@ -5863,107 +3560,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // Types used in iterator implementation -*- C++ -*-
-
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/*
- *
- * Copyright (c) 1994
- * Hewlett-Packard Company
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Hewlett-Packard Company makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- *
- *
- * Copyright (c) 1996-1998
- * Silicon Graphics Computer Systems, Inc.
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Silicon Graphics makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- */
-
-/** @file stl_iterator_base_types.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- *
- *  This file contains all of the general iterator-related utility types,
- *  such as iterator_traits and struct iterator.
- */
-
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -6001,57 +3600,34 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    *  Abstractions for uniform iterating through various underlying types.
   */
   //@{ 
-
-  /**
-   *  @defgroup iterator_tags Iterator Tags
-   *  These are empty types, used to distinguish different iterators.  The
-   *  distinction is not made by what they contain, but simply by what they
-   *  are.  Different underlying algorithms can then be used based on the
-   *  different operations supported by different iterator types.
-  */
-  //@{ 
-  ///  Marking input iterators.
-  struct input_iterator_tag { };
+struct input_iterator_tag { };
 
   ///  Marking output iterators.
-  struct output_iterator_tag { };
+struct output_iterator_tag { };
 
   /// Forward iterators support a superset of input iterator operations.
-  struct forward_iterator_tag : public input_iterator_tag { };
+struct forward_iterator_tag : public input_iterator_tag { };
 
   /// Bidirectional iterators support a superset of forward iterator
-  /// operations.
-  struct bidirectional_iterator_tag : public forward_iterator_tag { };
+struct bidirectional_iterator_tag : public forward_iterator_tag { };
 
   /// Random-access iterators support a superset of bidirectional
-  /// iterator operations.
-  struct random_access_iterator_tag : public bidirectional_iterator_tag { };
+struct random_access_iterator_tag : public bidirectional_iterator_tag { };
   //@}
-
-  /**
-   *  @brief  Common %iterator class.
-   *
-   *  This class does nothing but define nested typedefs.  %Iterator classes
-   *  can inherit from this class to save some work.  The typedefs are then
-   *  used in specializations and overloading.
-   *
-   *  In particular, there are no default implementations of requirements
-   *  such as @c operator++ and the like.  (How could there be?)
-  */
-  template<typename _Category, typename _Tp, typename _Distance = ptrdiff_t,
+template<typename _Category, typename _Tp, typename _Distance = ptrdiff_t,
            typename _Pointer = _Tp*, typename _Reference = _Tp&>
     struct iterator
     {
       /// One of the @link iterator_tags tag types@endlink.
-      typedef _Category  iterator_category;
+typedef _Category  iterator_category;
       /// The type "pointed to" by the iterator.
-      typedef _Tp        value_type;
+typedef _Tp        value_type;
       /// Distance between iterators is represented as this type.
-      typedef _Distance  difference_type;
+typedef _Distance  difference_type;
       /// This type represents a pointer-to-value_type.
-      typedef _Pointer   pointer;
+typedef _Pointer   pointer;
       /// This type represents a reference-to-value_type.
-      typedef _Reference reference;
+typedef _Reference reference;
     };
 
   /**
@@ -6073,7 +3649,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// Partial specialization for pointer types.
-  template<typename _Tp>
+template<typename _Tp>
     struct iterator_traits<_Tp*>
     {
       typedef random_access_iterator_tag iterator_category;
@@ -6084,7 +3660,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// Partial specialization for const pointer types.
-  template<typename _Tp>
+template<typename _Tp>
     struct iterator_traits<const _Tp*>
     {
       typedef random_access_iterator_tag iterator_category;
@@ -6104,70 +3680,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return typename iterator_traits<_Iter>::iterator_category(); }
 
   //@}
-
 }
 
 
 // Functions used by iterators -*- C++ -*-
-
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/*
- *
- * Copyright (c) 1994
- * Hewlett-Packard Company
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Hewlett-Packard Company makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- *
- *
- * Copyright (c) 1996-1998
- * Silicon Graphics Computer Systems, Inc.
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Silicon Graphics makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- */
-
-/** @file stl_iterator_base_funcs.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- *
- *  This file contains all of the general iterator-related utility
- *  functions, such as distance() and advance().
- */
-
-
 #pragma GCC system_header
 
 
@@ -6179,9 +3695,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
                input_iterator_tag)
     {
       // concept requirements
-      
-
-      typename iterator_traits<_InputIterator>::difference_type __n = 0;
+typename iterator_traits<_InputIterator>::difference_type __n = 0;
       while (__first != __last)
 	{
 	  ++__first;
@@ -6196,8 +3710,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
                random_access_iterator_tag)
     {
       // concept requirements
-      
-      return __last - __first;
+return __last - __first;
     }
 
   /**
@@ -6217,7 +3730,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     distance(_InputIterator __first, _InputIterator __last)
     {
       // concept requirements -- taken care of in __distance
-      return std::__distance(__first, __last,
+return std::__distance(__first, __last,
 			     std::__iterator_category(__first));
     }
 
@@ -6226,8 +3739,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     __advance(_InputIterator& __i, _Distance __n, input_iterator_tag)
     {
       // concept requirements
-      
-      while (__n--)
+while (__n--)
 	++__i;
     }
 
@@ -6237,8 +3749,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	      bidirectional_iterator_tag)
     {
       // concept requirements
-      
-      if (__n > 0)
+if (__n > 0)
         while (__n--)
 	  ++__i;
       else
@@ -6252,8 +3763,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
               random_access_iterator_tag)
     {
       // concept requirements
-      
-      __i += __n;
+__i += __n;
     }
 
   /**
@@ -6273,7 +3783,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     advance(_InputIterator& __i, _Distance __n)
     {
       // concept requirements -- taken care of in __advance
-      typename iterator_traits<_InputIterator>::difference_type __d = __n;
+typename iterator_traits<_InputIterator>::difference_type __d = __n;
       std::__advance(__i, __d, std::__iterator_category(__i));
     }
 
@@ -6281,67 +3791,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // Iterators -*- C++ -*-
-
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/*
- *
- * Copyright (c) 1994
- * Hewlett-Packard Company
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Hewlett-Packard Company makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- *
- *
- * Copyright (c) 1996-1998
- * Silicon Graphics Computer Systems, Inc.
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Silicon Graphics makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- */
-
-/** @file stl_iterator.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- *
- *  This file implements reverse_iterator, back_insert_iterator,
- *  front_insert_iterator, insert_iterator, __normal_iterator, and their
- *  supporting functions and overloaded operators.
- */
-
-
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   /**
@@ -6350,25 +3799,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    */
 
   // 24.4.1 Reverse iterators
-  /**
-   *  Bidirectional and random access iterators have corresponding reverse
-   *  %iterator adaptors that iterate through the data structure in the
-   *  opposite direction.  They have the same signatures as the corresponding
-   *  iterators.  The fundamental relation between a reverse %iterator and its
-   *  corresponding %iterator @c i is established by the identity:
-   *  @code
-   *      &*(reverse_iterator(i)) == &*(i - 1)
-   *  @endcode
-   *
-   *  <em>This mapping is dictated by the fact that while there is always a
-   *  pointer past the end of an array, there might not be a valid pointer
-   *  before the beginning of an array.</em> [24.4.1]/1,2
-   *
-   *  Reverse iterators can be tricky and surprising at first.  Their
-   *  semantics make sense, however, and the trickiness is a side effect of
-   *  the requirement that the iterators must be safe.
-  */
-  template<typename _Iterator>
+template<typename _Iterator>
     class reverse_iterator
     : public iterator<typename iterator_traits<_Iterator>::iterator_category,
 		      typename iterator_traits<_Iterator>::value_type,
@@ -6392,8 +3823,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
        *  If it is a pointer, that means it is zero-initialized.
       */
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 235 No specification of default ctor for reverse_iterator
-      reverse_iterator() : current() { }
+reverse_iterator() : current() { }
 
       /**
        *  This %iterator will move in the opposite direction that @p x does.
@@ -6546,16 +3976,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   //@{
-  /**
-   *  @param  x  A %reverse_iterator.
-   *  @param  y  A %reverse_iterator.
-   *  @return  A simple bool.
-   *
-   *  Reverse iterators forward many operations to their underlying base()
-   *  iterators.  Others are implemented in terms of one another.
-   *
-  */
-  template<typename _Iterator>
+template<typename _Iterator>
     inline bool
     operator==(const reverse_iterator<_Iterator>& __x,
 	       const reverse_iterator<_Iterator>& __y)
@@ -6604,8 +4025,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return reverse_iterator<_Iterator>(__x.base() - __n); }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // DR 280. Comparison of reverse_iterator to const reverse_iterator.
-  template<typename _IteratorL, typename _IteratorR>
+template<typename _IteratorL, typename _IteratorR>
     inline bool
     operator==(const reverse_iterator<_IteratorL>& __x,
 	       const reverse_iterator<_IteratorR>& __y)
@@ -6647,19 +4067,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	      const reverse_iterator<_IteratorR>& __y)
     { return __y.base() - __x.base(); }
   //@}
-
-  // 24.4.2.2.1 back_insert_iterator
-  /**
-   *  @brief  Turns assignment into insertion.
-   *
-   *  These are output iterators, constructed from a container-of-T.
-   *  Assigning a T to the iterator appends it to the container using
-   *  push_back.
-   *
-   *  Tip:  Using the back_inserter function to create these iterators can
-   *  save typing.
-  */
-  template<typename _Container>
+template<typename _Container>
     class back_insert_iterator
     : public iterator<output_iterator_tag, void, void, void, void>
     {
@@ -6668,10 +4076,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     public:
       /// A nested typedef for the type of whatever container you used.
-      typedef _Container          container_type;
+typedef _Container          container_type;
 
       /// The only way to create this %iterator is with a container.
-      explicit
+explicit
       back_insert_iterator(_Container& __x) : container(&__x) { }
 
       /**
@@ -6693,17 +4101,17 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       /// Simply returns *this.
-      back_insert_iterator&
+back_insert_iterator&
       operator*()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
-      back_insert_iterator&
+back_insert_iterator&
       operator++()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
-      back_insert_iterator
+back_insert_iterator
       operator++(int)
       { return *this; }
     };
@@ -6743,10 +4151,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     public:
       /// A nested typedef for the type of whatever container you used.
-      typedef _Container          container_type;
+typedef _Container          container_type;
 
       /// The only way to create this %iterator is with a container.
-      explicit front_insert_iterator(_Container& __x) : container(&__x) { }
+explicit front_insert_iterator(_Container& __x) : container(&__x) { }
 
       /**
        *  @param  value  An instance of whatever type
@@ -6767,17 +4175,17 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       /// Simply returns *this.
-      front_insert_iterator&
+front_insert_iterator&
       operator*()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
-      front_insert_iterator&
+front_insert_iterator&
       operator++()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
-      front_insert_iterator
+front_insert_iterator
       operator++(int)
       { return *this; }
     };
@@ -6822,7 +4230,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     public:
       /// A nested typedef for the type of whatever container you used.
-      typedef _Container          container_type;
+typedef _Container          container_type;
 
       /**
        *  The only way to create this %iterator is with a container and an
@@ -6863,17 +4271,17 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       /// Simply returns *this.
-      insert_iterator&
+insert_iterator&
       operator*()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
-      insert_iterator&
+insert_iterator&
       operator++()
       { return *this; }
 
       /// Simply returns *this.  (This %iterator does not @a move.)
-      insert_iterator&
+insert_iterator&
       operator++(int)
       { return *this; }
     };
@@ -6898,19 +4306,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // @} group iterators
-
 }
 
 namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
   // This iterator adapter is @a normal in the sense that it does not
-  // change the semantics of any of the operators of its iterator
-  // parameter.  Its primary purpose is to convert an iterator that is
-  // not a class, e.g. a pointer, into an iterator that is a class.
-  // The _Container parameter exists solely so that different containers
-  // using this template can instantiate different types, even if the
-  // _Iterator parameter is the same.
-  using std::iterator_traits;
+using std::iterator_traits;
   using std::iterator;
   template<typename _Iterator, typename _Container>
     class __normal_iterator
@@ -6934,7 +4335,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
       __normal_iterator(const _Iterator& __i) : _M_current(__i) { }
 
       // Allow iterator to const_iterator conversion
-      template<typename _Iter>
+template<typename _Iter>
         __normal_iterator(const __normal_iterator<_Iter,
 			  typename __enable_if<
       	       (std::__are_same<_Iter, typename _Container::pointer>::__value),
@@ -6942,7 +4343,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
         : _M_current(__i.base()) { }
 
       // Forward iterator requirements
-      reference
+reference
       operator*() const
       { return *_M_current; }
 
@@ -6962,7 +4363,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
       { return __normal_iterator(_M_current++); }
 
       // Bidirectional iterator requirements
-      __normal_iterator&
+__normal_iterator&
       operator--()
       {
 	--_M_current;
@@ -6974,7 +4375,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
       { return __normal_iterator(_M_current--); }
 
       // Random access iterator requirements
-      reference
+reference
       operator[](const difference_type& __n) const
       { return _M_current[__n]; }
 
@@ -7000,15 +4401,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
     };
 
   // Note: In what follows, the left- and right-hand-side iterators are
-  // allowed to vary in types (conceptually in cv-qualification) so that
-  // comparison between cv-qualified and non-cv-qualified iterators be
-  // valid.  However, the greedy and unfriendly operators in std::rel_ops
-  // will make overload resolution ambiguous (when in scope) if we don't
-  // provide overloads whose operands are of the same type.  Can someone
-  // remind me what generic programming is about? -- Gaby
-
-  // Forward iterator requirements
-  template<typename _IteratorL, typename _IteratorR, typename _Container>
+template<typename _IteratorL, typename _IteratorR, typename _Container>
     inline bool
     operator==(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	       const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -7033,7 +4426,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
     { return __lhs.base() != __rhs.base(); }
 
   // Random access iterator requirements
-  template<typename _IteratorL, typename _IteratorR, typename _Container>
+template<typename _IteratorL, typename _IteratorR, typename _Container>
     inline bool
     operator<(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	      const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -7082,10 +4475,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
     { return __lhs.base() >= __rhs.base(); }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // According to the resolution of DR179 not only the various comparison
-  // operators but also operator- must accept mixed iterator/const_iterator
-  // parameters.
-  template<typename _IteratorL, typename _IteratorR, typename _Container>
+template<typename _IteratorL, typename _IteratorR, typename _Container>
     inline typename __normal_iterator<_IteratorL, _Container>::difference_type
     operator-(const __normal_iterator<_IteratorL, _Container>& __lhs,
 	      const __normal_iterator<_IteratorR, _Container>& __rhs)
@@ -7107,49 +4497,6 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
 
 // Debugging support implementation -*- C++ -*-
-
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file debug/debug.h
- *  This file is a GNU debug extension to the Standard C++ Library.
- */
-
-
-/** Macros and namespaces used by the implementation outside of debug
- *  wrappers to verify certain properties. The __glibcxx_requires_xxx
- *  macros are merely wrappers around the __glibcxx_check_xxx wrappers
- *  when we are compiling with debug mode, but disappear when we are
- *  in release mode so that there is no checking performed in, e.g.,
- *  the standard library algorithms.
-*/
-
-// Debug mode namespaces.
-
-/**
- * @namespace std::__debug
- * @brief GNU debug code, replaces standard behavior with debug behavior.
- */
 namespace std 
 { 
   namespace __debug { } 
@@ -7170,9 +4517,7 @@ namespace __gnu_debug
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // See http://gcc.gnu.org/ml/libstdc++/2004-08/msg00167.html: in a
-  // nutshell, we are partially implementing the resolution of DR 187,
-  // when it's safe, i.e., the value_types are equal.
-  template<bool _BoolType>
+template<bool _BoolType>
     struct __iter_swap
     {
       template<typename _ForwardIterator1, typename _ForwardIterator2>
@@ -7218,12 +4563,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	_ValueType2;
 
       // concept requirements
-      
-      
-      
-      
-
-      typedef typename iterator_traits<_ForwardIterator1>::reference
+typedef typename iterator_traits<_ForwardIterator1>::reference
 	_ReferenceType1;
       typedef typename iterator_traits<_ForwardIterator2>::reference
 	_ReferenceType2;
@@ -7251,9 +4591,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		_ForwardIterator2 __first2)
     {
       // concept requirements
-      
-      
-      ;
+;
 
       for (; __first1 != __last1; ++__first1, ++__first2)
 	std::iter_swap(__first1, __first2);
@@ -7276,9 +4614,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     min(const _Tp& __a, const _Tp& __b)
     {
       // concept requirements
-      
-      //return __b < __a ? __b : __a;
-      if (__b < __a)
+if (__b < __a)
 	return __b;
       return __a;
     }
@@ -7299,9 +4635,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     max(const _Tp& __a, const _Tp& __b)
     {
       // concept requirements
-      
-      //return  __a < __b ? __b : __a;
-      if (__a < __b)
+if (__a < __b)
 	return __b;
       return __a;
     }
@@ -7322,7 +4656,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     min(const _Tp& __a, const _Tp& __b, _Compare __comp)
     {
       //return __comp(__b, __a) ? __b : __a;
-      if (__comp(__b, __a))
+if (__comp(__b, __a))
 	return __b;
       return __a;
     }
@@ -7343,15 +4677,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     max(const _Tp& __a, const _Tp& __b, _Compare __comp)
     {
       //return __comp(__a, __b) ? __b : __a;
-      if (__comp(__a, __b))
+if (__comp(__a, __b))
 	return __b;
       return __a;
     }
 
 
   // If _Iterator has a base returns it otherwise _Iterator is returned
-  // untouched
-  template<typename _Iterator, bool _HasBase>
+template<typename _Iterator, bool _HasBase>
     struct _Iter_base
     {
       typedef _Iterator iterator_type;
@@ -7370,8 +4703,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // If _Iterator is a __normal_iterator return its base (a plain pointer,
-  // normally) otherwise return it untouched.  See copy, fill, ... 
-  template<typename _Iterator>
+template<typename _Iterator>
     struct _Niter_base
     : _Iter_base<_Iterator, __is_normal_iterator<_Iterator>::__value>
     { };
@@ -7382,7 +4714,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return std::_Niter_base<_Iterator>::_S_base(__it); }
 
   // Likewise, for move_iterator.
-  template<typename _Iterator>
+template<typename _Iterator>
     struct _Miter_base
     : _Iter_base<_Iterator, __is_move_iterator<_Iterator>::__value>
     { };
@@ -7393,12 +4725,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return std::_Miter_base<_Iterator>::_S_base(__it); }
 
   // All of these auxiliary structs serve two purposes.  (1) Replace
-  // calls to copy with memmove whenever possible.  (Memmove, not memcpy,
-  // because the input and output ranges are permitted to overlap.)
-  // (2) If we're using random access iterators, then write the loop as
-  // a for loop with an explicit count.
-
-  template<bool, bool, typename>
+template<bool, bool, typename>
     struct __copy_move
     {
       template<typename _II, typename _OI>
@@ -7462,8 +4789,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Helpers for streambuf iterators (either istream or ostream).
-  // NB: avoid including <iosfwd>, relatively large.
-  template<typename _CharT>
+template<typename _CharT>
     struct char_traits;
 
   template<typename _CharT, typename _Traits>
@@ -7521,9 +4847,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     copy(_II __first, _II __last, _OI __result)
     {
       // concept requirements
-      
-      
-      ;
+;
 
       return (std::__copy_move_a2<__is_move_iterator<_II>::__value>
 	      (std::__miter_base(__first), std::__miter_base(__last),
@@ -7624,10 +4948,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     copy_backward(_BI1 __first, _BI1 __last, _BI2 __result)
     {
       // concept requirements
-      
-      
-      
-      ;
+;
 
       return (std::__copy_move_backward_a2<__is_move_iterator<_BI1>::__value>
 	      (std::__miter_base(__first), std::__miter_base(__last),
@@ -7657,7 +4978,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Specialization: for char types we can use memset.
-  template<typename _Tp>
+template<typename _Tp>
     inline typename
     __gnu_cxx::__enable_if<__is_byte<_Tp>::__value, void>::__type
     __fill_a(_Tp* __first, _Tp* __last, const _Tp& __c)
@@ -7684,8 +5005,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     fill(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value)
     {
       // concept requirements
-      
-      ;
+;
 
       std::__fill_a(std::__niter_base(__first), std::__niter_base(__last),
 		    __value);
@@ -7741,9 +5061,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     fill_n(_OI __first, _Size __n, const _Tp& __value)
     {
       // concept requirements
-      
-
-      return _OI(std::__fill_n_a(std::__niter_base(__first), __n, __value));
+return _OI(std::__fill_n_a(std::__niter_base(__first), __n, __value));
     }
 
   template<bool _BoolType>
@@ -7908,9 +5226,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	_DistanceType;
 
       // concept requirements
-      
-      
-      ;
+;
 
       _DistanceType __len = std::distance(__first, __last);
       _DistanceType __half;
@@ -7934,8 +5250,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   /// This is a helper function for the sort routines and for random.tcc.
-  //  Precondition: __n > 0.
-  template<typename _Size>
+template<typename _Size>
     inline _Size
     __lg(_Size __n)
     {
@@ -7978,10 +5293,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     equal(_II1 __first1, _II1 __last1, _II2 __first2)
     {
       // concept requirements
-      
-      
-      
-      ;
+;
 
       return std::__equal_aux(std::__niter_base(__first1),
 			      std::__niter_base(__last1),
@@ -8009,9 +5321,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  _IIter2 __first2, _BinaryPredicate __binary_pred)
     {
       // concept requirements
-      
-      
-      ;
+;
 
       for (; __first1 != __last1; ++__first1, ++__first2)
 	if (!bool(__binary_pred(*__first1, *__first2)))
@@ -8040,7 +5350,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 			    _II2 __first2, _II2 __last2)
     {
       // concept requirements
-      typedef typename iterator_traits<_II1>::value_type _ValueType1;
+typedef typename iterator_traits<_II1>::value_type _ValueType1;
       typedef typename iterator_traits<_II2>::value_type _ValueType2;
       
       
@@ -8078,9 +5388,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       typedef std::__lc_rai<_Category1, _Category2> 	__rai_type;
 
       // concept requirements
-      
-      
-      ;
+;
       ;
 
       __last1 = __rai_type::__newlast1(__first1, __last1, __first2, __last2);
@@ -8114,10 +5422,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	     _InputIterator2 __first2)
     {
       // concept requirements
-      
-      
-      
-      ;
+;
 
       while (__first1 != __last1 && *__first1 == *__first2)
         {
@@ -8150,9 +5455,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	     _InputIterator2 __first2, _BinaryPredicate __binary_pred)
     {
       // concept requirements
-      
-      
-      ;
+;
 
       while (__first1 != __last1 && bool(__binary_pred(*__first1, *__first2)))
         {
@@ -8165,91 +5468,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // NB: This file is included within many other C++ includes, as a way
-// of getting the base algorithms. So, make sure that parallel bits
-// come in too if requested. 
-
-// -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cwchar
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c wchar.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 21.4
-//
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -8456,7 +5677,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
     copy(char_type* __s1, const char_type* __s2, std::size_t __n)
     {
       // NB: Inline std::copy so no recursive dependencies.
-      std::copy(__s2, __s2 + __n, __s1);
+std::copy(__s2, __s2 + __n, __s1);
       return __s1;
     }
 
@@ -8466,7 +5687,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
     assign(char_type* __s, std::size_t __n, char_type __a)
     {
       // NB: Inline std::fill_n so no recursive dependencies.
-      std::fill_n(__s, __n, __a);
+std::fill_n(__s, __n, __a);
       return __s;
     }
 
@@ -8475,25 +5696,13 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // 21.1
-  /**
-   *  @brief  Basis for explicit traits specializations.
-   *
-   *  @note  For any given actual character type, this definition is
-   *  probably wrong.  Since this is just a thin wrapper around
-   *  __gnu_cxx::char_traits, it is possible to achieve a more
-   *  appropriate definition by specializing __gnu_cxx::char_traits.
-   *
-   *  See http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt05ch13s03.html
-   *  for advice on how to make use of this class for @a unusual character
-   *  types. Also, check out include/ext/pod_char_traits.h.
-  */
-  template<class _CharT>
+template<class _CharT>
     struct char_traits : public __gnu_cxx::char_traits<_CharT>
     { };
 
 
   /// 21.1.3.1  char_traits specializations
-  template<>
+template<>
     struct char_traits<char>
     {
       typedef char              char_type;
@@ -8543,8 +5752,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { return static_cast<char_type>(__c); }
 
       // To keep both the byte 0xff and the eof symbol 0xffffffff
-      // from ending up as 0xffffffff.
-      static int_type
+static int_type
       to_int_type(const char_type& __c)
       { return static_cast<int_type>(static_cast<unsigned char>(__c)); }
 
@@ -8563,7 +5771,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
   /// 21.1.3.2  char_traits specializations
-  template<>
+template<>
     struct char_traits<wchar_t>
     {
       typedef wchar_t           char_type;
@@ -8634,122 +5842,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // Locale support -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file localefwd.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 22.1  Locales
-//
-
-
 #pragma GCC system_header
 
 // Wrapper for underlying C-language localization -*- C++ -*-
-
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file c++locale.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 22.8  Standard locale categories.
-//
-
-// Written by Benjamin Kosnik <bkoz@redhat.com>
-
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file clocale
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c locale.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.2.2  Implementation properties: C library
-//
-
 #pragma GCC system_header
 
 /* Copyright (C) 1991,1992,1995-2002,2007,2009 Free Software Foundation, Inc.
@@ -8969,7 +6067,6 @@ extern __locale_t uselocale (__locale_t __dataset) throw ();
 
 
 // Get rid of those macros defined in <locale.h> in lieu of real functions.
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   using ::lconv;
@@ -8979,45 +6076,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -9061,10 +6119,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   typedef __locale_t		__c_locale;
 
   // Convert numeric value of type double and long double to string and
-  // return length of string.  If vsnprintf is available use it, otherwise
-  // fall back to the unsafe vsprintf which, in general, can be dangerous
-  // and should be avoided.
-  inline int
+inline int
   __convert_from_v(const __c_locale& __cloc __attribute__ ((__unused__)),
 		   char* __out,
 		   const int __size __attribute__ ((__unused__)),
@@ -9086,45 +6141,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cctype
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c ctype.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: <ccytpe>
-//
-
 #pragma GCC system_header
 
 /* Copyright (C) 1991,92,93,95,96,97,98,99,2001,2002,2004,2007,2008,2009
@@ -9398,7 +6414,6 @@ extern int toupper_l (int __c, __locale_t __l) throw ();
 
 
 // Get rid of those macros defined in <ctype.h> in lieu of real functions.
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   using ::isalnum;
@@ -9428,7 +6443,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    */
 
   // 22.1.1 Locale
-  class locale;
+class locale;
 
   template<typename _Facet>
     bool
@@ -9439,7 +6454,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     use_facet(const locale&);
 
   // 22.1.3 Convenience interfaces
-  template<typename _CharT>
+template<typename _CharT>
     bool
     isspace(_CharT, const locale&);
 
@@ -9492,7 +6507,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     tolower(_CharT, const locale&);
 
   // 22.2.1 and 22.2.1.3 ctype
-  class ctype_base;
+class ctype_base;
   template<typename _CharT>
     class ctype;
   template<> class ctype<char>;
@@ -9500,8 +6515,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   template<typename _CharT>
     class ctype_byname;
   // NB: Specialized for char and wchar_t in locale_facets.h.
-
-  class codecvt_base;
+class codecvt_base;
   template<typename _InternT, typename _ExternT, typename _StateT>
     class codecvt;
   template<> class codecvt<char, char, mbstate_t>;
@@ -9510,8 +6524,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     class codecvt_byname;
 
   // 22.2.2 and 22.2.3 numeric
-
-  template<typename _CharT, typename _InIter = istreambuf_iterator<_CharT> >
+template<typename _CharT, typename _InIter = istreambuf_iterator<_CharT> >
     class num_get;
   template<typename _CharT, typename _OutIter = ostreambuf_iterator<_CharT> >
     class num_put;
@@ -9520,13 +6533,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   template<typename _CharT> class numpunct_byname;
 
   // 22.2.4 collation
-  template<typename _CharT>
+template<typename _CharT>
     class collate;
   template<typename _CharT> class
     collate_byname;
 
   // 22.2.5 date and time
-  class time_base;
+class time_base;
   template<typename _CharT, typename _InIter =  istreambuf_iterator<_CharT> >
     class time_get;
   template<typename _CharT, typename _InIter =  istreambuf_iterator<_CharT> >
@@ -9537,7 +6550,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     class time_put_byname;
 
   // 22.2.6 money
-  class money_base;
+class money_base;
 
   template<typename _CharT, typename _InIter =  istreambuf_iterator<_CharT> >
     class money_get;
@@ -9550,7 +6563,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     class moneypunct_byname;
 
   // 22.2.7 message retrieval
-  class messages_base;
+class messages_base;
   template<typename _CharT>
     class messages;
   template<typename _CharT>
@@ -9559,99 +6572,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // Iostreams base classes -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file ios_base.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 27.4  Iostreams base classes
-//
-
-
 #pragma GCC system_header
 
 // Support for atomic operations -*- C++ -*-
-
-// Copyright (C) 2004, 2005, 2006, 2008, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file atomicity.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
-/* Threads compatibility routines for libgcc2.  */
-/* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1998, 2004, 2008, 2009 Free Software Foundation, Inc.
-
-This file is part of GCC.
-
-GCC is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License as published by the Free
-Software Foundation; either version 3, or (at your option) any later
-version.
-
-GCC is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-for more details.
-
-Under Section 7 of GPL version 3, you are granted additional
-permissions described in the GCC Runtime Library Exception, version
-3.1, as published by the Free Software Foundation.
-
-You should have received a copy of the GNU General Public License and
-a copy of the GCC Runtime Library Exception along with this program;
-see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-<http://www.gnu.org/licenses/>.  */
-
-
 #pragma GCC visibility push(default)
 
 /* If this file is compiled with threads support, it must
@@ -13257,57 +10180,13 @@ __gthread_cond_destroy (__gthread_cond_t* __cond)
 #pragma GCC visibility pop
 
 // Low-level type for atomic operations -*- C++ -*-
-
-// Copyright (C) 2004, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file atomic_word.h
- *  This file is a GNU extension to the Standard C++ Library.
- */
-
-
 typedef int _Atomic_word;
 
 // Define these two macros using the appropriate memory barrier for the target.
-// The commented out versions below are the defaults.
-// See ia64/atomic_word.h for an alternative approach.
-
-// This one prevents loads from being hoisted across the barrier;
-// in other words, this is a Load-Load acquire barrier.
-// This is necessary iff TARGET_RELAXED_ORDERING is defined in tm.h.  
-// #define _GLIBCXX_READ_MEM_BARRIER __asm __volatile ("":::"memory")
-
-// This one prevents stores from being sunk across the barrier; in other
-// words, a Store-Store release barrier.
-// #define _GLIBCXX_WRITE_MEM_BARRIER __asm __volatile ("":::"memory")
-
-
 namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
   // Functions for portable atomic access.
-  // To abstract locking primitives across all thread policies, use:
-  // __exchange_and_add_dispatch
-  // __atomic_add_dispatch
-  static inline _Atomic_word 
+static inline _Atomic_word 
   __exchange_and_add(volatile _Atomic_word* __mem, int __val)
   { return __sync_fetch_and_add(__mem, __val); }
 
@@ -13350,268 +10229,15 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 }
 
 // Even if the CPU doesn't need a memory barrier, we need to ensure
-// that the compiler doesn't reorder memory accesses across the
-// barriers.
-
-// Locale support -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file locale_classes.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 22.1  Locales
-//
-
-
 #pragma GCC system_header
 
 // Components for manipulating sequences of characters -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-// 2005, 2006, 2007, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/string
- *  This is a Standard C++ Library header.
- */
-
-//
-// ISO C++ 14882: 21  Strings library
-//
-
-
 #pragma GCC system_header
 
 // Allocators -*- C++ -*-
-
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/*
- * Copyright (c) 1996-1997
- * Silicon Graphics Computer Systems, Inc.
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Silicon Graphics makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- */
-
-/** @file allocator.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
-// Define the base class to std::allocator.
-// Base to std::allocator -*- C++ -*-
-
-// Copyright (C) 2004, 2005, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file c++allocator.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
-// Define new_allocator as the base class to std::allocator.
-// Allocator that wraps operator new -*- C++ -*-
-
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file ext/new_allocator.h
- *  This file is a GNU extension to the Standard C++ Library.
- */
-
-
-// The -*- C++ -*- dynamic memory management header.
-
-// Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-// 2003, 2004, 2005, 2006, 2007, 2009, 2010
-// Free Software Foundation
-
-// This file is part of GCC.
-//
-// GCC is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 3, or (at your option)
-// any later version.
-// 
-// GCC is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file new
- *  This is a Standard C++ Library header.
- *
- *  The header @c new defines several functions to manage dynamic memory and
- *  handling memory allocation errors; see
- *  http://gcc.gnu.org/onlinedocs/libstdc++/18_support/howto.html#4 for more.
- */
-
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -13660,11 +10286,10 @@ namespace std
     bad_alloc() throw() { }
 
     // This declaration is not useless:
-    // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
-    virtual ~bad_alloc() throw();
+virtual ~bad_alloc() throw();
 
     // See comment in eh_exception.cc.
-    virtual const char* what() const throw();
+virtual const char* what() const throw();
   };
 
   struct nothrow_t { };
@@ -13676,21 +10301,8 @@ namespace std
   typedef void (*new_handler)();
 
   /// Takes a replacement handler as the argument, returns the
-  /// previous handler.
-  new_handler set_new_handler(new_handler) throw();
+new_handler set_new_handler(new_handler) throw();
 } // namespace std
-
-//@{
-/** These are replaceable signatures:
- *  - normal single new and delete (no arguments, throw @c bad_alloc on error)
- *  - normal array new and delete (same)
- *  - @c nothrow single new and delete (take a @c nothrow argument, return
- *    @c NULL on error)
- *  - @c nothrow array new and delete (same)
- *
- *  Placement new and delete signatures (take a memory address argument,
- *  does nothing) may not be replaced by a user's program.
-*/
 void* operator new(std::size_t) throw (std::bad_alloc);
 void* operator new[](std::size_t) throw (std::bad_alloc);
 void operator delete(void*) throw();
@@ -13709,7 +10321,6 @@ inline void  operator delete  (void*, void*) throw() { }
 inline void  operator delete[](void*, void*) throw() { }
 //@}
 } // extern "C++"
-
 #pragma GCC visibility pop
 
 
@@ -13758,8 +10369,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
       address(const_reference __x) const { return &__x; }
 
       // NB: __n is permitted to be 0.  The C++ standard says nothing
-      // about what the return value is when __n == 0.
-      pointer
+pointer
       allocate(size_type __n, const void* = 0)
       { 
 	if (__n > this->max_size())
@@ -13769,7 +10379,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
       }
 
       // __p is not permitted to be a null pointer.
-      void
+void
       deallocate(pointer __p, size_type)
       { ::operator delete(__p); }
 
@@ -13778,8 +10388,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
       { return size_t(-1) / sizeof(_Tp); }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 402. wrong new expression in [some_] allocator::construct
-      void 
+void 
       construct(pointer __p, const _Tp& __val) 
       { ::new((void *)__p) _Tp(__val); }
 
@@ -13815,7 +10424,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     class allocator;
 
   /// allocator<void> specialization.
-  template<>
+template<>
     class allocator<void>
     {
     public:
@@ -13864,7 +10473,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       ~allocator() throw() { }
 
       // Inherit everything else.
-    };
+};
 
   template<typename _T1, typename _T2>
     inline bool
@@ -13887,15 +10496,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return false; }
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.
-  // NB: This syntax is a GNU extension.
-  extern template class allocator<char>;
+extern template class allocator<char>;
   extern template class allocator<wchar_t>;
 
   // Undefine.
-
-  // To implement Option 3 of DR 431.
-  template<typename _Alloc, bool = __is_empty(_Alloc)>
+template<typename _Alloc, bool = __is_empty(_Alloc)>
     struct __alloc_swap
     { static void _S_do_it(_Alloc&, _Alloc&) { } };
 
@@ -13906,13 +10511,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       _S_do_it(_Alloc& __one, _Alloc& __two)
       {
 	// Precondition: swappable allocators.
-	if (__one != __two)
+if (__one != __two)
 	  swap(__one, __two);
       }
     };
 
   // Optimize for stateless allocators.
-  template<typename _Alloc, bool = __is_empty(_Alloc)>
+template<typename _Alloc, bool = __is_empty(_Alloc)>
     struct __alloc_neq
     {
       static bool
@@ -13932,67 +10537,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // Helpers for ostream inserters -*- C++ -*-
-
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file ostream_insert.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
 #pragma GCC system_header
 
 // cxxabi.h subset for inclusion by other library headers -*- C++ -*-
-  
-// Copyright (C) 2007, 2009, 2010 Free Software Foundation, Inc.
-//
-// This file is part of GCC.
-//
-// GCC is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 3, or (at your option)
-// any later version.
-// 
-// GCC is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-// 
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cxxabi-forced.h
- *  The header provides an interface to the C++ ABI.
- */
-
-
 #pragma GCC system_header
 
 #pragma GCC visibility push(default)
@@ -14011,7 +10558,7 @@ namespace __cxxabiv1
     virtual ~__forced_unwind() throw();
 
     // Prevent catch by value.
-    virtual void __pure_dummy() = 0; 
+virtual void __pure_dummy() = 0; 
   };
 }
 
@@ -14094,9 +10641,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.
-  // NB:  This syntax is a GNU extension.
-  extern template ostream& __ostream_insert(ostream&, const char*, streamsize);
+extern template ostream& __ostream_insert(ostream&, const char*, streamsize);
 
   extern template wostream& __ostream_insert(wostream&, const wchar_t*,
 					     streamsize);
@@ -14104,109 +10649,15 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // Functor implementations -*- C++ -*-
-
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/*
- *
- * Copyright (c) 1994
- * Hewlett-Packard Company
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Hewlett-Packard Company makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- *
- *
- * Copyright (c) 1996-1998
- * Silicon Graphics Computer Systems, Inc.
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Silicon Graphics makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- */
-
-/** @file stl_function.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // 20.3.1 base classes
-  /** @defgroup functors Function Objects
-   * @ingroup utilities
-   *
-   *  Function objects, or @e functors, are objects with an @c operator()
-   *  defined and accessible.  They can be passed as arguments to algorithm
-   *  templates and used in place of a function pointer.  Not only is the
-   *  resulting expressiveness of the library increased, but the generated
-   *  code can be more efficient than what you might write by hand.  When we
-   *  refer to @a functors, then, generally we include function pointers in
-   *  the description as well.
-   *
-   *  Often, functors are only created as temporaries passed to algorithm
-   *  calls, rather than being created as named variables.
-   *
-   *  Two examples taken from the standard itself follow.  To perform a
-   *  by-element addition of two vectors @c a and @c b containing @c double,
-   *  and put the result in @c a, use
-   *  \code
-   *  transform (a.begin(), a.end(), b.begin(), a.begin(), plus<double>());
-   *  \endcode
-   *  To negate every element in @c a, use
-   *  \code
-   *  transform(a.begin(), a.end(), a.begin(), negate<double>());
-   *  \endcode
-   *  The addition and negation functions will be inlined directly.
-   *
-   *  The standard functors are derived from structs named @c unary_function
-   *  and @c binary_function.  These two classes contain nothing but typedefs,
-   *  to aid in generic (template) programming.  If you write your own
-   *  functors, you might consider doing the same.
-   *
-   *  @{
-   */
-  /**
-   *  This is one of the @link functors functor base classes@endlink.
-   */
-  template<typename _Arg, typename _Result>
+template<typename _Arg, typename _Result>
     struct unary_function
     {
       typedef _Arg argument_type;   ///< @c argument_type is the type of the
-                                    ///     argument (no surprises here)
-
-      typedef _Result result_type;  ///< @c result_type is the return type
-    };
+typedef _Result result_type;  ///< @c result_type is the return type
+};
 
   /**
    *  This is one of the @link functors functor base classes@endlink.
@@ -14215,26 +10666,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     struct binary_function
     {
       typedef _Arg1 first_argument_type;   ///< the type of the first argument
-                                           ///  (no surprises here)
-
-      typedef _Arg2 second_argument_type;  ///< the type of the second argument
-      typedef _Result result_type;         ///< type of the return type
-    };
+typedef _Arg2 second_argument_type;  ///< the type of the second argument
+typedef _Result result_type;         ///< type of the return type
+};
   /** @}  */
 
   // 20.3.2 arithmetic
-  /** @defgroup arithmetic_functors Arithmetic Classes
-   * @ingroup functors
-   *
-   *  Because basic math often needs to be done during an algorithm,
-   *  the library provides functors for those operations.  See the
-   *  documentation for @link functors the base classes@endlink
-   *  for examples of their use.
-   *
-   *  @{
-   */
-  /// One of the @link arithmetic_functors math functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct plus : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -14243,7 +10681,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link arithmetic_functors math functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct minus : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -14252,7 +10690,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link arithmetic_functors math functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct multiplies : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -14261,7 +10699,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link arithmetic_functors math functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct divides : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -14270,7 +10708,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link arithmetic_functors math functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct modulus : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -14279,7 +10717,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link arithmetic_functors math functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct negate : public unary_function<_Tp, _Tp>
     {
       _Tp
@@ -14289,16 +10727,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   /** @}  */
 
   // 20.3.3 comparisons
-  /** @defgroup comparison_functors Comparison Classes
-   * @ingroup functors
-   *
-   *  The library provides six wrapper functors for all the basic comparisons
-   *  in C++, like @c <.
-   *
-   *  @{
-   */
-  /// One of the @link comparison_functors comparison functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct equal_to : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -14307,7 +10736,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link comparison_functors comparison functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct not_equal_to : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -14316,7 +10745,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link comparison_functors comparison functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct greater : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -14325,7 +10754,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link comparison_functors comparison functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct less : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -14334,7 +10763,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link comparison_functors comparison functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct greater_equal : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -14343,7 +10772,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link comparison_functors comparison functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct less_equal : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -14353,16 +10782,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   /** @}  */
 
   // 20.3.4 logical operations
-  /** @defgroup logical_functors Boolean Operations Classes
-   * @ingroup functors
-   *
-   *  Here are wrapper functors for Boolean operations: @c &&, @c ||,
-   *  and @c !.
-   *
-   *  @{
-   */
-  /// One of the @link logical_functors Boolean operations functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct logical_and : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -14371,7 +10791,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link logical_functors Boolean operations functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct logical_or : public binary_function<_Tp, _Tp, bool>
     {
       bool
@@ -14380,7 +10800,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link logical_functors Boolean operations functors@endlink.
-  template<typename _Tp>
+template<typename _Tp>
     struct logical_not : public unary_function<_Tp, bool>
     {
       bool
@@ -14390,8 +10810,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   /** @}  */
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // DR 660. Missing Bitwise Operations.
-  template<typename _Tp>
+template<typename _Tp>
     struct bit_and : public binary_function<_Tp, _Tp, _Tp>
     {
       _Tp
@@ -14416,36 +10835,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // 20.3.5 negators
-  /** @defgroup negators Negators
-   * @ingroup functors
-   *
-   *  The functions @c not1 and @c not2 each take a predicate functor
-   *  and return an instance of @c unary_negate or
-   *  @c binary_negate, respectively.  These classes are functors whose
-   *  @c operator() performs the stored predicate function and then returns
-   *  the negation of the result.
-   *
-   *  For example, given a vector of integers and a trivial predicate,
-   *  \code
-   *  struct IntGreaterThanThree
-   *    : public std::unary_function<int, bool>
-   *  {
-   *      bool operator() (int x) { return x > 3; }
-   *  };
-   *
-   *  std::find_if (v.begin(), v.end(), not1(IntGreaterThanThree()));
-   *  \endcode
-   *  The call to @c find_if will locate the first index (i) of @c v for which
-   *  <code>!(v[i] > 3)</code> is true.
-   *
-   *  The not1/unary_negate combination works on predicates taking a single
-   *  argument.  The not2/binary_negate combination works on predicates which
-   *  take two arguments.
-   *
-   *  @{
-   */
-  /// One of the @link negators negation functors@endlink.
-  template<typename _Predicate>
+template<typename _Predicate>
     class unary_negate
     : public unary_function<typename _Predicate::argument_type, bool>
     {
@@ -14462,13 +10852,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link negators negation functors@endlink.
-  template<typename _Predicate>
+template<typename _Predicate>
     inline unary_negate<_Predicate>
     not1(const _Predicate& __pred)
     { return unary_negate<_Predicate>(__pred); }
 
   /// One of the @link negators negation functors@endlink.
-  template<typename _Predicate>
+template<typename _Predicate>
     class binary_negate
     : public binary_function<typename _Predicate::first_argument_type,
 			     typename _Predicate::second_argument_type, bool>
@@ -14487,36 +10877,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link negators negation functors@endlink.
-  template<typename _Predicate>
+template<typename _Predicate>
     inline binary_negate<_Predicate>
     not2(const _Predicate& __pred)
     { return binary_negate<_Predicate>(__pred); }
   /** @}  */
 
   // 20.3.7 adaptors pointers functions
-  /** @defgroup pointer_adaptors Adaptors for pointers to functions
-   * @ingroup functors
-   *
-   *  The advantage of function objects over pointers to functions is that
-   *  the objects in the standard library declare nested typedefs describing
-   *  their argument and result types with uniform names (e.g., @c result_type
-   *  from the base classes @c unary_function and @c binary_function).
-   *  Sometimes those typedefs are required, not just optional.
-   *
-   *  Adaptors are provided to turn pointers to unary (single-argument) and
-   *  binary (double-argument) functions into function objects.  The
-   *  long-winded functor @c pointer_to_unary_function is constructed with a
-   *  function pointer @c f, and its @c operator() called with argument @c x
-   *  returns @c f(x).  The functor @c pointer_to_binary_function does the same
-   *  thing, but with a double-argument @c f and @c operator().
-   *
-   *  The function @c ptr_fun takes a pointer-to-function @c f and constructs
-   *  an instance of the appropriate functor.
-   *
-   *  @{
-   */
-  /// One of the @link pointer_adaptors adaptors for function pointers@endlink.
-  template<typename _Arg, typename _Result>
+template<typename _Arg, typename _Result>
     class pointer_to_unary_function : public unary_function<_Arg, _Result>
     {
     protected:
@@ -14535,13 +10903,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link pointer_adaptors adaptors for function pointers@endlink.
-  template<typename _Arg, typename _Result>
+template<typename _Arg, typename _Result>
     inline pointer_to_unary_function<_Arg, _Result>
     ptr_fun(_Result (*__x)(_Arg))
     { return pointer_to_unary_function<_Arg, _Result>(__x); }
 
   /// One of the @link pointer_adaptors adaptors for function pointers@endlink.
-  template<typename _Arg1, typename _Arg2, typename _Result>
+template<typename _Arg1, typename _Arg2, typename _Result>
     class pointer_to_binary_function
     : public binary_function<_Arg1, _Arg2, _Result>
     {
@@ -14561,7 +10929,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link pointer_adaptors adaptors for function pointers@endlink.
-  template<typename _Arg1, typename _Arg2, typename _Result>
+template<typename _Arg1, typename _Arg2, typename _Result>
     inline pointer_to_binary_function<_Arg1, _Arg2, _Result>
     ptr_fun(_Result (*__x)(_Arg1, _Arg2))
     { return pointer_to_binary_function<_Arg1, _Arg2, _Result>(__x); }
@@ -14606,24 +10974,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // 20.3.8 adaptors pointers members
-  /** @defgroup memory_adaptors Adaptors for pointers to members
-   * @ingroup functors
-   *
-   *  There are a total of 8 = 2^3 function objects in this family.
-   *   (1) Member functions taking no arguments vs member functions taking
-   *        one argument.
-   *   (2) Call through pointer vs call through reference.
-   *   (3) Const vs non-const member function.
-   *
-   *  All of this complexity is in the function objects themselves.  You can
-   *   ignore it by using the helper function mem_fun and mem_fun_ref,
-   *   which create whichever type of adaptor is appropriate.
-   *
-   *  @{
-   */
-  /// One of the @link memory_adaptors adaptors for member
-  /// pointers@endlink.
-  template<typename _Ret, typename _Tp>
+template<typename _Ret, typename _Tp>
     class mem_fun_t : public unary_function<_Tp*, _Ret>
     {
     public:
@@ -14640,8 +10991,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link memory_adaptors adaptors for member
-  /// pointers@endlink.
-  template<typename _Ret, typename _Tp>
+template<typename _Ret, typename _Tp>
     class const_mem_fun_t : public unary_function<const _Tp*, _Ret>
     {
     public:
@@ -14658,8 +11008,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link memory_adaptors adaptors for member
-  /// pointers@endlink.
-  template<typename _Ret, typename _Tp>
+template<typename _Ret, typename _Tp>
     class mem_fun_ref_t : public unary_function<_Tp, _Ret>
     {
     public:
@@ -14676,8 +11025,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   };
 
   /// One of the @link memory_adaptors adaptors for member
-  /// pointers@endlink.
-  template<typename _Ret, typename _Tp>
+template<typename _Ret, typename _Tp>
     class const_mem_fun_ref_t : public unary_function<_Tp, _Ret>
     {
     public:
@@ -14694,8 +11042,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link memory_adaptors adaptors for member
-  /// pointers@endlink.
-  template<typename _Ret, typename _Tp, typename _Arg>
+template<typename _Ret, typename _Tp, typename _Arg>
     class mem_fun1_t : public binary_function<_Tp*, _Arg, _Ret>
     {
     public:
@@ -14712,8 +11059,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link memory_adaptors adaptors for member
-  /// pointers@endlink.
-  template<typename _Ret, typename _Tp, typename _Arg>
+template<typename _Ret, typename _Tp, typename _Arg>
     class const_mem_fun1_t : public binary_function<const _Tp*, _Arg, _Ret>
     {
     public:
@@ -14730,8 +11076,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link memory_adaptors adaptors for member
-  /// pointers@endlink.
-  template<typename _Ret, typename _Tp, typename _Arg>
+template<typename _Ret, typename _Tp, typename _Arg>
     class mem_fun1_ref_t : public binary_function<_Tp, _Arg, _Ret>
     {
     public:
@@ -14748,8 +11093,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// One of the @link memory_adaptors adaptors for member
-  /// pointers@endlink.
-  template<typename _Ret, typename _Tp, typename _Arg>
+template<typename _Ret, typename _Tp, typename _Arg>
     class const_mem_fun1_ref_t : public binary_function<_Tp, _Arg, _Ret>
     {
     public:
@@ -14766,8 +11110,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // Mem_fun adaptor helper functions.  There are only two:
-  // mem_fun and mem_fun_ref.
-  template<typename _Ret, typename _Tp>
+template<typename _Ret, typename _Tp>
     inline mem_fun_t<_Ret, _Tp>
     mem_fun(_Ret (_Tp::*__f)())
     { return mem_fun_t<_Ret, _Tp>(__f); }
@@ -14812,100 +11155,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // Functor implementations -*- C++ -*-
-
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/*
- *
- * Copyright (c) 1994
- * Hewlett-Packard Company
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Hewlett-Packard Company makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- *
- *
- * Copyright (c) 1996-1998
- * Silicon Graphics Computer Systems, Inc.
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Silicon Graphics makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- */
-
-/** @file backward/binders.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // 20.3.6 binders
-  /** @defgroup binders Binder Classes
-   * @ingroup functors
-   *
-   *  Binders turn functions/functors with two arguments into functors
-   *  with a single argument, storing an argument to be applied later.
-   *  For example, a variable @c B of type @c binder1st is constructed
-   *  from a functor @c f and an argument @c x. Later, B's @c
-   *  operator() is called with a single argument @c y. The return
-   *  value is the value of @c f(x,y). @c B can be @a called with
-   *  various arguments (y1, y2, ...) and will in turn call @c
-   *  f(x,y1), @c f(x,y2), ...
-   *
-   *  The function @c bind1st is provided to save some typing. It takes the
-   *  function and an argument as parameters, and returns an instance of
-   *  @c binder1st.
-   *
-   *  The type @c binder2nd and its creator function @c bind2nd do the same
-   *  thing, but the stored argument is passed as the second parameter instead
-   *  of the first, e.g., @c bind2nd(std::minus<float>,1.3) will create a
-   *  functor whose @c operator() accepts a floating-point number, subtracts
-   *  1.3 from it, and returns the result. (If @c bind1st had been used,
-   *  the functor would perform <em>1.3 - x</em> instead.
-   *
-   *  Creator-wrapper functions like @c bind1st are intended to be used in
-   *  calling algorithms. Their return values will be temporary objects.
-   *  (The goal is to not require you to type names like
-   *  @c std::binder1st<std::plus<int>> for declaring a variable to hold the
-   *  return value from @c bind1st(std::plus<int>,5).
-   *
-   *  These become more useful when combined with the composition functions.
-   *
-   *  @{
-   */
-  /// One of the @link binders binder functors@endlink.
-  template<typename _Operation>
+template<typename _Operation>
     class binder1st
     : public unary_function<typename _Operation::second_argument_type,
 			    typename _Operation::result_type>
@@ -14924,14 +11177,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { return op(value, __x); }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 109.  Missing binders for non-const sequence elements
-      typename _Operation::result_type
+typename _Operation::result_type
       operator()(typename _Operation::second_argument_type& __x) const
       { return op(value, __x); }
     } ;
 
   /// One of the @link binders binder functors@endlink.
-  template<typename _Operation, typename _Tp>
+template<typename _Operation, typename _Tp>
     inline binder1st<_Operation>
     bind1st(const _Operation& __fn, const _Tp& __x)
     {
@@ -14940,7 +11192,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   /// One of the @link binders binder functors@endlink.
-  template<typename _Operation>
+template<typename _Operation>
     class binder2nd
     : public unary_function<typename _Operation::first_argument_type,
 			    typename _Operation::result_type>
@@ -14959,14 +11211,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { return op(__x, value); }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 109.  Missing binders for non-const sequence elements
-      typename _Operation::result_type
+typename _Operation::result_type
       operator()(typename _Operation::first_argument_type& __x) const
       { return op(__x, value); }
     } ;
 
   /// One of the @link binders binder functors@endlink.
-  template<typename _Operation, typename _Tp>
+template<typename _Operation, typename _Tp>
     inline binder2nd<_Operation>
     bind2nd(const _Operation& __fn, const _Tp& __x)
     {
@@ -14979,73 +11230,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // Components for manipulating sequences of characters -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file basic_string.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 21 Strings library
-//
-
-
 #pragma GCC system_header
 
 // std::initializer_list support -*- C++ -*-
-
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
-//
-// This file is part of GCC.
-//
-// GCC is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation; either version 3, or (at your option)
-// any later version.
-//
-// GCC is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file initializer_list
- *  This is a Standard C++ Library header.
- */
-
-
 #pragma GCC system_header
 
 
@@ -15108,13 +11295,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    *  for a C++ string implementation.
   */
   // 21.3  Template class basic_string
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     class basic_string
     {
       typedef typename _Alloc::template rebind<_CharT>::other _CharT_alloc_type;
 
       // Types:
-    public:
+public:
       typedef _Traits					    traits_type;
       typedef typename _Traits::char_type		    value_type;
       typedef _Alloc					    allocator_type;
@@ -15132,20 +11319,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     private:
       // _Rep: string representation
-      //   Invariants:
-      //   1. String really contains _M_length + 1 characters: due to 21.3.4
-      //      must be kept null-terminated.
-      //   2. _M_capacity >= _M_length
-      //      Allocated memory is always (_M_capacity + 1) * sizeof(_CharT).
-      //   3. _M_refcount has three states:
-      //      -1: leaked, one reference, no ref-copies allowed, non-const.
-      //       0: one reference, non-const.
-      //     n>0: n + 1 references, operations require a lock, const.
-      //   4. All fields==0 is an empty string, given the extra storage
-      //      beyond-the-end for a null terminator; thus, the shared
-      //      empty string representation needs no constructor.
-
-      struct _Rep_base
+struct _Rep_base
       {
 	size_type		_M_length;
 	size_type		_M_capacity;
@@ -15155,35 +11329,20 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       struct _Rep : _Rep_base
       {
 	// Types:
-	typedef typename _Alloc::template rebind<char>::other _Raw_bytes_alloc;
+typedef typename _Alloc::template rebind<char>::other _Raw_bytes_alloc;
 
 	// (Public) Data members:
-
-	// The maximum number of individual char_type elements of an
-	// individual string is determined by _S_max_size. This is the
-	// value that will be returned by max_size().  (Whereas npos
-	// is the maximum number of bytes the allocator can allocate.)
-	// If one was to divvy up the theoretical largest size string,
-	// with a terminating character and m _CharT elements, it'd
-	// look like this:
-	// npos = sizeof(_Rep) + (m * sizeof(_CharT)) + sizeof(_CharT)
-	// Solving for m:
-	// m = ((npos - sizeof(_Rep))/sizeof(CharT)) - 1
-	// In addition, this implementation quarters this amount.
-	static const size_type	_S_max_size;
+static const size_type	_S_max_size;
 	static const _CharT	_S_terminal;
 
 	// The following storage is init'd to 0 by the linker, resulting
-        // (carefully) in an empty string with one reference.
-        static size_type _S_empty_rep_storage[];
+static size_type _S_empty_rep_storage[];
 
         static _Rep&
         _S_empty_rep()
         { 
 	  // NB: Mild hack to avoid strict-aliasing warnings.  Note that
-	  // _S_empty_rep_storage is never modified and the punning should
-	  // be reasonably safe in this case.
-	  void* __p = reinterpret_cast<void*>(&_S_empty_rep_storage);
+void* __p = reinterpret_cast<void*>(&_S_empty_rep_storage);
 	  return *reinterpret_cast<_Rep*>(__p);
 	}
 
@@ -15209,11 +11368,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
 	    {
 	      this->_M_set_sharable();  // One reference.
-	      this->_M_length = __n;
+this->_M_length = __n;
 	      traits_type::assign(this->_M_refdata()[__n], _S_terminal);
 	      // grrr. (per 21.3.4)
-	      // You cannot leave those LWG people alone for a second.
-	    }
+}
 	}
 
 	_CharT*
@@ -15228,7 +11386,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	}
 
 	// Create & Destroy
-	static _Rep*
+static _Rep*
 	_S_create(size_type, size_type, const _Alloc&);
 
 	void
@@ -15239,8 +11397,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 						       -1) <= 0)
 	      _M_destroy(__a);
 	}  // XXX MT
-
-	void
+void
 	_M_destroy(const _Alloc&) throw();
 
 	_CharT*
@@ -15250,30 +11407,26 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
             __gnu_cxx::__atomic_add_dispatch(&this->_M_refcount, 1);
 	  return _M_refdata();
 	}  // XXX MT
-
-	_CharT*
+_CharT*
 	_M_clone(const _Alloc&, size_type __res = 0);
       };
 
       // Use empty-base optimization: http://www.cantrip.org/emptyopt.html
-      struct _Alloc_hider : _Alloc
+struct _Alloc_hider : _Alloc
       {
 	_Alloc_hider(_CharT* __dat, const _Alloc& __a)
 	: _Alloc(__a), _M_p(__dat) { }
 
 	_CharT* _M_p; // The actual data.
-      };
+};
 
     public:
       // Data Members (public):
-      // NB: This is an unsigned type, and thus represents the maximum
-      // size that the allocator can hold.
-      ///  Value returned by various member functions when they fail.
-      static const size_type	npos = static_cast<size_type>(-1);
+static const size_type	npos = static_cast<size_type>(-1);
 
     private:
       // Data Members (private):
-      mutable _Alloc_hider	_M_dataplus;
+mutable _Alloc_hider	_M_dataplus;
 
       _CharT*
       _M_data() const
@@ -15288,8 +11441,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { return &((reinterpret_cast<_Rep*> (_M_data()))[-1]); }
 
       // For the internal use we have functions similar to `begin'/`end'
-      // but they do not call _M_leak.
-      iterator
+iterator
       _M_ibegin() const
       { return iterator(_M_data()); }
 
@@ -15299,7 +11451,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
       void
       _M_leak()    // for use in begin() & non-const op[]
-      {
+{
 	if (!_M_rep()->_M_is_leaked())
 	  _M_leak_hard();
       }
@@ -15320,7 +11472,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // NB: _M_limit doesn't check for a bad __pos value.
-      size_type
+size_type
       _M_limit(size_type __pos, size_type __off) const
       {
 	const bool __testoff =  __off < this->size() - __pos;
@@ -15328,7 +11480,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // True if _Rep and source do not overlap.
-      bool
+bool
       _M_disjunct(const _CharT* __s) const
       {
 	return (less<const _CharT*>()(__s, _M_data())
@@ -15336,8 +11488,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // When __n = 1 way faster than the general multichar
-      // traits_type::copy/move/assign.
-      static void
+static void
       _M_copy(_CharT* __d, const _CharT* __s, size_type __n)
       {
 	if (__n == 1)
@@ -15365,14 +11516,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // _S_copy_chars is a separate template to permit specialization
-      // to optimize for the common case of pointers as iterators.
-      template<class _Iterator>
+template<class _Iterator>
         static void
         _S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
         {
 	  for (; __k1 != __k2; ++__k1, ++__p)
 	    traits_type::assign(*__p, *__k1); // These types are off.
-	}
+}
 
       static void
       _S_copy_chars(_CharT* __p, iterator __k1, iterator __k2)
@@ -15415,13 +11565,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     public:
       // Construct/copy/destroy:
-      // NB: We overload ctors in some cases instead of using default
-      // arguments, per 17.4.4.4 para. 2 item 2.
-
-      /**
-       *  @brief  Default constructor creates an empty string.
-       */
-      basic_string()
+basic_string()
       : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
 
       /**
@@ -15431,11 +11575,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       basic_string(const _Alloc& __a);
 
       // NB: per LWG issue 42, semantics different from IS:
-      /**
-       *  @brief  Construct string with copy of value of @a str.
-       *  @param  str  Source string.
-       */
-      basic_string(const basic_string& __str);
+basic_string(const basic_string& __str);
       /**
        *  @brief  Construct string as copy of a substring.
        *  @param  str  Source string.
@@ -15528,11 +11668,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
       // Iterators:
-      /**
-       *  Returns a read/write iterator that points to the first character in
-       *  the %string.  Unshares the string.
-       */
-      iterator
+iterator
       begin()
       {
 	_M_leak();
@@ -15605,20 +11741,17 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     public:
       // Capacity:
-      ///  Returns the number of characters in the string, not including any
-      ///  null-termination.
-      size_type
+size_type
       size() const
       { return _M_rep()->_M_length; }
 
       ///  Returns the number of characters in the string, not including any
-      ///  null-termination.
-      size_type
+size_type
       length() const
       { return _M_rep()->_M_length; }
 
       ///  Returns the size() of the largest possible %string.
-      size_type
+size_type
       max_size() const
       { return _Rep::_S_max_size; }
 
@@ -15694,17 +11827,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { return this->size() == 0; }
 
       // Element access:
-      /**
-       *  @brief  Subscript access to the data contained in the %string.
-       *  @param  pos  The index of the character to access.
-       *  @return  Read-only (constant) reference to the character.
-       *
-       *  This operator allows for easy, array-style, data access.
-       *  Note that data access with this operator is unchecked and
-       *  out_of_range lookups are not defined. (For checked lookups
-       *  see at().)
-       */
-      const_reference
+const_reference
       operator[] (size_type __pos) const
       {
 	;
@@ -15725,9 +11848,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       operator[](size_type __pos)
       {
         // allow pos == size() as v3 extension:
-	;
+;
         // but be strict in pedantic mode:
-	;
+;
 	_M_leak();
 	return _M_data()[__pos];
       }
@@ -15771,12 +11894,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // Modifiers:
-      /**
-       *  @brief  Append a string to this string.
-       *  @param str  The string to append.
-       *  @return  Reference to this string.
-       */
-      basic_string&
+basic_string&
       operator+=(const basic_string& __str)
       { return this->append(__str); }
 
@@ -16391,8 +12509,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	}
 
       // Specializations for the common case of pointer and iterator:
-      // useful to avoid the overhead of temporary buffering in _M_replace.
-      basic_string&
+basic_string&
       replace(iterator __i1, iterator __i2, _CharT* __k1, _CharT* __k2)
       {
 	;
@@ -16452,8 +12569,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		      size_type __n2);
 
       // _S_construct_aux is used to implement the 21.3.1 para 15 which
-      // requires special behaviour if _InIter is an integral type
-      template<class _InIterator>
+template<class _InIterator>
         static _CharT*
         _S_construct_aux(_InIterator __beg, _InIterator __end,
 			 const _Alloc& __a, __false_type)
@@ -16463,8 +12579,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	}
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 438. Ambiguity in the "do the right thing" clause
-      template<class _Integer>
+template<class _Integer>
         static _CharT*
         _S_construct_aux(_Integer __beg, _Integer __end,
 			 const _Alloc& __a, __true_type)
@@ -16484,14 +12599,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
         }
 
       // For Input Iterators, used in istreambuf_iterators, etc.
-      template<class _InIterator>
+template<class _InIterator>
         static _CharT*
          _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a,
 		      input_iterator_tag);
 
       // For forward_iterators up to random_access_iterators, used for
-      // string::iterator, _CharT*, etc.
-      template<class _FwdIterator>
+template<class _FwdIterator>
         static _CharT*
         _S_construct(_FwdIterator __beg, _FwdIterator __end, const _Alloc& __a,
 		     forward_iterator_tag);
@@ -16526,13 +12640,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       swap(basic_string& __s);
 
       // String operations:
-      /**
-       *  @brief  Return const pointer to null-terminated contents.
-       *
-       *  This is a handle to internal data.  Do not modify or dire things may
-       *  happen.
-      */
-      const _CharT*
+const _CharT*
       c_str() const
       { return _M_data(); }
 
@@ -17015,26 +13123,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       compare(const _CharT* __s) const;
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 5 String::compare specification questionable
-      /**
-       *  @brief  Compare substring to a C string.
-       *  @param pos  Index of first character of substring.
-       *  @param n1  Number of characters in substring.
-       *  @param s  C string to compare against.
-       *  @return  Integer < 0, 0, or > 0.
-       *
-       *  Form the substring of this string from the @a n1 characters starting
-       *  at @a pos.  Returns an integer < 0 if the substring is ordered
-       *  before @a s, 0 if their values are equivalent, or > 0 if the
-       *  substring is ordered after @a s.  Determines the effective length
-       *  rlen of the strings to compare as the smallest of the length of the 
-       *  substring and the length of a string constructed from @a s.  The
-       *  function then compares the two string by calling
-       *  traits::compare(substring.data(),s,rlen).  If the result of the
-       *  comparison is nonzero returns it, otherwise the shorter one is
-       *  ordered first.
-      */
-      int
+int
       compare(size_type __pos, size_type __n1, const _CharT* __s) const;
 
       /**
@@ -17065,13 +13154,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   };
 
   // operator+
-  /**
-   *  @brief  Concatenate two strings.
-   *  @param lhs  First string.
-   *  @param rhs  Last string.
-   *  @return  New string with value of @a lhs followed by @a rhs.
-   */
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -17136,13 +13219,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // operator ==
-  /**
-   *  @brief  Test equivalence of two strings.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
-   *  @return  True if @a lhs.compare(@a rhs) == 0.  False otherwise.
-   */
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     inline bool
     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -17182,13 +13259,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return __lhs.compare(__rhs) == 0; }
 
   // operator !=
-  /**
-   *  @brief  Test difference of two strings.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
-   *  @return  True if @a lhs.compare(@a rhs) != 0.  False otherwise.
-   */
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     inline bool
     operator!=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -17219,13 +13290,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return !(__lhs == __rhs); }
 
   // operator <
-  /**
-   *  @brief  Test if string precedes string.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
-   *  @return  True if @a lhs precedes @a rhs.  False otherwise.
-   */
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     inline bool
     operator<(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -17256,13 +13321,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return __rhs.compare(__lhs) > 0; }
 
   // operator >
-  /**
-   *  @brief  Test if string follows string.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
-   *  @return  True if @a lhs follows @a rhs.  False otherwise.
-   */
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     inline bool
     operator>(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -17293,13 +13352,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return __rhs.compare(__lhs) < 0; }
 
   // operator <=
-  /**
-   *  @brief  Test if string doesn't follow string.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
-   *  @return  True if @a lhs doesn't follow @a rhs.  False otherwise.
-   */
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     inline bool
     operator<=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -17330,13 +13383,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return __rhs.compare(__lhs) >= 0; }
 
   // operator >=
-  /**
-   *  @brief  Test if string doesn't precede string.
-   *  @param lhs  First string.
-   *  @param rhs  Second string.
-   *  @return  True if @a lhs doesn't precede @a rhs.  False otherwise.
-   */
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     inline bool
     operator>=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	       const basic_string<_CharT, _Traits, _Alloc>& __rhs)
@@ -17414,8 +13461,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	       const basic_string<_CharT, _Traits, _Alloc>& __str)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 586. string inserter not a formatted function
-      return __ostream_insert(__os, __str.data(), __str.size());
+return __ostream_insert(__os, __str.data(), __str.size());
     }
 
   /**
@@ -17471,44 +13517,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // Components for manipulating sequences of characters -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file basic_string.tcc
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 21  Strings library
-//
-
-// Written by Jason Merrill based upon the specification by Takanori Adachi
-// in ANSI X3J16/94-0013R2.  Rewritten by Nathan Myers to ISO-14882.
-
-
 #pragma GCC system_header
 
 
@@ -17529,18 +13537,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     basic_string<_CharT, _Traits, _Alloc>::npos;
 
   // Linker sets _S_empty_rep_storage to all 0s (one reference, empty string)
-  // at static init time (before static ctors are run).
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::_Rep::_S_empty_rep_storage[
     (sizeof(_Rep_base) + sizeof(_CharT) + sizeof(size_type) - 1) /
       sizeof(size_type)];
 
   // NB: This is the special case for Input Iterators, used in
-  // istreambuf_iterators, etc.
-  // Input Iterators have a cost structure very different from
-  // pointers, calling for a different coding style.
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     template<typename _InIterator>
       _CharT*
       basic_string<_CharT, _Traits, _Alloc>::
@@ -17550,7 +13554,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	if (__beg == __end && __a == _Alloc())
 	  return _S_empty_rep()._M_refdata();
 	// Avoid reallocation for common case.
-	_CharT __buf[128];
+_CharT __buf[128];
 	size_type __len = 0;
 	while (__beg != __end && __len < sizeof(__buf) / sizeof(_CharT))
 	  {
@@ -17566,7 +13570,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		if (__len == __r->_M_capacity)
 		  {
 		    // Allocate more space.
-		    _Rep* __another = _Rep::_S_create(__len + 1, __len, __a);
+_Rep* __another = _Rep::_S_create(__len + 1, __len, __a);
 		    _M_copy(__another->_M_refdata(), __r->_M_refdata(), __len);
 		    __r->_M_destroy(__a);
 		    __r = __another;
@@ -17594,13 +13598,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	if (__beg == __end && __a == _Alloc())
 	  return _S_empty_rep()._M_refdata();
 	// NB: Not required, but considered best practice.
-	if (__gnu_cxx::__is_null_pointer(__beg) && __beg != __end)
+if (__gnu_cxx::__is_null_pointer(__beg) && __beg != __end)
 	  __throw_logic_error(("basic_string::_S_construct NULL not valid"));
 
 	const size_type __dnew = static_cast<size_type>(std::distance(__beg,
 								      __end));
 	// Check for out_of_range and length_error exceptions.
-	_Rep* __r = _Rep::_S_create(__dnew, size_type(0), __a);
+_Rep* __r = _Rep::_S_create(__dnew, size_type(0), __a);
 	try
 	  { _S_copy_chars(__r->_M_refdata(), __beg, __end); }
 	catch(...)
@@ -17620,7 +13624,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       if (__n == 0 && __a == _Alloc())
 	return _S_empty_rep()._M_refdata();
       // Check for out_of_range and length_error exceptions.
-      _Rep* __r = _Rep::_S_create(__n, size_type(0), __a);
+_Rep* __r = _Rep::_S_create(__n, size_type(0), __a);
       if (__n)
 	_M_assign(__r->_M_refdata(), __n, __c);
 
@@ -17664,14 +13668,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { }
 
   // TBD: DPG annotate
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const _CharT* __s, size_type __n, const _Alloc& __a)
     : _M_dataplus(_S_construct(__s, __s + __n, __a), __a)
     { }
 
   // TBD: DPG annotate
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(const _CharT* __s, const _Alloc& __a)
     : _M_dataplus(_S_construct(__s, __s ? __s + traits_type::length(__s) :
@@ -17685,7 +13689,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { }
 
   // TBD: DPG annotate
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     template<typename _InputIterator>
     basic_string<_CharT, _Traits, _Alloc>::
     basic_string(_InputIterator __beg, _InputIterator __end, const _Alloc& __a)
@@ -17701,7 +13705,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       if (_M_rep() != __str._M_rep())
 	{
 	  // XXX MT
-	  const allocator_type __a = this->get_allocator();
+const allocator_type __a = this->get_allocator();
 	  _CharT* __tmp = __str._M_rep()->_M_grab(__a, __str.get_allocator());
 	  _M_rep()->_M_dispose(__a);
 	  _M_data(__tmp);
@@ -17721,7 +13725,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       else
 	{
 	  // Work in-place.
-	  const size_type __pos = __s - _M_data();
+const size_type __pos = __s - _M_data();
 	  if (__pos >= __n)
 	    _M_copy(_M_data(), __s, __n);
 	  else if (__pos)
@@ -17823,7 +13827,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
        else
          {
            // Work in-place.
-           const size_type __off = __s - _M_data();
+const size_type __off = __s - _M_data();
            _M_mutate(__pos, 0, __n);
            __s = _M_data() + __off;
            _CharT* __p = _M_data() + __pos;
@@ -17849,9 +13853,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
        ;
 
        // NB: This isn't just an optimization (bail out early when
-       // there is nothing to do, really), it's also a correctness
-       // issue vs MT, see libstdc++/40518.
-       const size_type __size = __last - __first;
+const size_type __size = __last - __first;
        if (__size)
 	 {
 	   const size_type __pos = __first - _M_ibegin();
@@ -17880,7 +13882,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		|| _M_data() + __pos + __n1 <= __s)
 	 {
 	   // Work in-place: non-overlapping case.
-	   size_type __off = __s - _M_data();
+size_type __off = __s - _M_data();
 	   __left ? __off : (__off += __n2 - __n1);
 	   _M_mutate(__pos, __n1, __n2);
 	   _M_copy(_M_data() + __pos, _M_data() + __off, __n2);
@@ -17889,7 +13891,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
        else
 	 {
 	   // Todo: overlapping case.
-	   const basic_string __tmp(__s, __n2);
+const basic_string __tmp(__s, __n2);
 	   return _M_replace_safe(__pos, __n1, __tmp._M_data(), __n2);
 	 }
      }
@@ -17928,7 +13930,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       if (__new_size > this->capacity() || _M_rep()->_M_is_shared())
 	{
 	  // Must reallocate.
-	  const allocator_type __a = get_allocator();
+const allocator_type __a = get_allocator();
 	  _Rep* __r = _Rep::_S_create(__new_size, this->capacity(), __a);
 
 	  if (__pos)
@@ -17943,7 +13945,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       else if (__how_much && __len1 != __len2)
 	{
 	  // Work in-place.
-	  _M_move(_M_data() + __pos + __len2,
+_M_move(_M_data() + __pos + __len2,
 		  _M_data() + __pos + __len1, __how_much);
 	}
       _M_rep()->_M_set_length_and_sharable(__new_size);
@@ -17957,7 +13959,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       if (__res != this->capacity() || _M_rep()->_M_is_shared())
         {
 	  // Make sure we don't shrink below the current size
-	  if (__res < this->size())
+if (__res < this->size())
 	    __res = this->size();
 	  const allocator_type __a = get_allocator();
 	  _CharT* __tmp = _M_rep()->_M_clone(__a, __res - this->size());
@@ -17982,7 +13984,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  __s._M_data(__tmp);
 	}
       // The code below can usually be optimized away.
-      else
+else
 	{
 	  const basic_string __tmp1(_M_ibegin(), _M_iend(),
 				    __s.get_allocator());
@@ -18000,49 +14002,19 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	      const _Alloc& __alloc)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 83.  String::npos vs. string::max_size()
-      if (__capacity > _S_max_size)
+if (__capacity > _S_max_size)
 	__throw_length_error(("basic_string::_S_create"));
 
       // The standard places no restriction on allocating more memory
-      // than is strictly needed within this layer at the moment or as
-      // requested by an explicit application call to reserve().
-
-      // Many malloc implementations perform quite poorly when an
-      // application attempts to allocate memory in a stepwise fashion
-      // growing each allocation size by only 1 char.  Additionally,
-      // it makes little sense to allocate less linear memory than the
-      // natural blocking size of the malloc implementation.
-      // Unfortunately, we would need a somewhat low-level calculation
-      // with tuned parameters to get this perfect for any particular
-      // malloc implementation.  Fortunately, generalizations about
-      // common features seen among implementations seems to suffice.
-
-      // __pagesize need not match the actual VM page size for good
-      // results in practice, thus we pick a common value on the low
-      // side.  __malloc_header_size is an estimate of the amount of
-      // overhead per memory allocation (in practice seen N * sizeof
-      // (void*) where N is 0, 2 or 4).  According to folklore,
-      // picking this value on the high side is better than
-      // low-balling it (especially when this algorithm is used with
-      // malloc implementations that allocate memory blocks rounded up
-      // to a size which is a power of 2).
-      const size_type __pagesize = 4096;
+const size_type __pagesize = 4096;
       const size_type __malloc_header_size = 4 * sizeof(void*);
 
       // The below implements an exponential growth policy, necessary to
-      // meet amortized linear time requirements of the library: see
-      // http://gcc.gnu.org/ml/libstdc++/2001-07/msg00085.html.
-      // It's active for allocations requiring an amount of memory above
-      // system pagesize. This is consistent with the requirements of the
-      // standard: http://gcc.gnu.org/ml/libstdc++/2001-07/msg00130.html
-      if (__capacity > __old_capacity && __capacity < 2 * __old_capacity)
+if (__capacity > __old_capacity && __capacity < 2 * __old_capacity)
 	__capacity = 2 * __old_capacity;
 
       // NB: Need an array of char_type[__capacity], plus a terminating
-      // null char_type() element, plus enough for the _Rep data structure.
-      // Whew. Seemingly so needy, yet so elemental.
-      size_type __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
+size_type __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
 
       const size_type __adj_size = __size + __malloc_header_size;
       if (__adj_size > __pagesize && __capacity > __old_capacity)
@@ -18050,24 +14022,17 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  const size_type __extra = __pagesize - __adj_size % __pagesize;
 	  __capacity += __extra / sizeof(_CharT);
 	  // Never allocate a string bigger than _S_max_size.
-	  if (__capacity > _S_max_size)
+if (__capacity > _S_max_size)
 	    __capacity = _S_max_size;
 	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
 	}
 
       // NB: Might throw, but no worries about a leak, mate: _Rep()
-      // does not throw.
-      void* __place = _Raw_bytes_alloc(__alloc).allocate(__size);
+void* __place = _Raw_bytes_alloc(__alloc).allocate(__size);
       _Rep *__p = new (__place) _Rep;
       __p->_M_capacity = __capacity;
       // ABI compatibility - 3.4.x set in _S_create both
-      // _M_refcount and _M_length.  All callers of _S_create
-      // in basic_string.tcc then set just _M_length.
-      // In 4.0.x and later both _M_refcount and _M_length
-      // are initialized in the callers, unfortunately we can
-      // have 3.4.x compiled code with _S_create callers inlined
-      // calling 4.0.x+ _S_create.
-      __p->_M_set_sharable();
+__p->_M_set_sharable();
       return __p;
     }
 
@@ -18077,7 +14042,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     _M_clone(const _Alloc& __alloc, size_type __res)
     {
       // Requested capacity of the clone.
-      const size_type __requested_cap = this->_M_length + __res;
+const size_type __requested_cap = this->_M_length + __res;
       _Rep* __r = _Rep::_S_create(__requested_cap, this->_M_capacity,
 				  __alloc);
       if (this->_M_length)
@@ -18099,7 +14064,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       else if (__n < __size)
 	this->erase(__n);
       // else nothing (in particular, avoid calling _M_mutate() unnecessarily.)
-    }
+}
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     template<typename _InputIterator>
@@ -18181,7 +14146,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       if (__n)
 	_M_copy(__s, _M_data() + __pos, __n);
       // 21.3.5.7 par 3: do not append null.  (good.)
-      return __n;
+return __n;
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -18444,7 +14409,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // 21.3.7.9 basic_string::getline and operators
-  template<typename _CharT, typename _Traits, typename _Alloc>
+template<typename _CharT, typename _Traits, typename _Alloc>
     basic_istream<_CharT, _Traits>&
     operator>>(basic_istream<_CharT, _Traits>& __in,
 	       basic_string<_CharT, _Traits, _Alloc>& __str)
@@ -18465,7 +14430,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  try
 	    {
 	      // Avoid reallocation for common case.
-	      __str.erase();
+__str.erase();
 	      _CharT __buf[128];
 	      __size_type __len = 0;	      
 	      const streamsize __w = __in.width();
@@ -18503,13 +14468,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  catch(...)
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 91. Description of operator>> and getline() for string<>
-	      // might cause endless loop
-	      __in._M_setstate(__ios_base::badbit);
+__in._M_setstate(__ios_base::badbit);
 	    }
 	}
       // 211.  operator>>(istream&, string&) doesn't set failbit
-      if (!__extracted)
+if (!__extracted)
 	__err |= __ios_base::failbit;
       if (__err)
 	__in.setstate(__err);
@@ -18567,9 +14530,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  catch(...)
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 91. Description of operator>> and getline() for string<>
-	      // might cause endless loop
-	      __in._M_setstate(__ios_base::badbit);
+__in._M_setstate(__ios_base::badbit);
 	    }
 	}
       if (!__extracted)
@@ -18580,9 +14541,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.
-  // NB: This syntax is a GNU extension.
-  extern template class basic_string<char>;
+extern template class basic_string<char>;
   extern template
     basic_istream<char>&
     operator>>(basic_istream<char>&, string&);
@@ -18617,29 +14576,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // 22.1.1 Class locale
-  /**
-   *  @brief  Container class for localization functionality.
-   *  @ingroup locales
-   *
-   *  The locale class is first a class wrapper for C library locales.  It is
-   *  also an extensible container for user-defined localization.  A locale is
-   *  a collection of facets that implement various localization features such
-   *  as money, time, and number printing.
-   *
-   *  Constructing C++ locales does not change the C library locale.
-   *
-   *  This library supports efficient construction and copying of locales
-   *  through a reference counting implementation of the locale class.
-  */
-  class locale
+class locale
   {
   public:
     // Types:
-    /// Definition of locale::category.
-    typedef int	category;
+typedef int	category;
 
     // Forward decls and friends:
-    class facet;
+class facet;
     class id;
     class _Impl;
 
@@ -18658,16 +14602,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       friend struct __use_cache;
 
     //@{
-    /**
-     *  @brief  Category values.
-     *
-     *  The standard category values are none, ctype, numeric, collate, time,
-     *  monetary, and messages.  They form a bitmask that supports union and
-     *  intersection.  The category all is the union of these values.
-     *
-     *  NB: Order must match _S_facet_categories definition in locale.cc
-    */
-    static const category none		= 0;
+static const category none		= 0;
     static const category ctype		= 1L << 0;
     static const category numeric	= 1L << 1;
     static const category collate	= 1L << 2;
@@ -18677,16 +14612,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     static const category all		= (ctype | numeric | collate |
 					   time  | monetary | messages);
     //@}
-
-    // Construct/copy/destroy:
-
-    /**
-     *  @brief  Default constructor.
-     *
-     *  Constructs a copy of the global locale.  If no locale has been
-     *  explicitly set, this is the C locale.
-    */
-    locale() throw();
+locale() throw();
 
     /**
      *  @brief  Copy constructor.
@@ -18749,7 +14675,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       locale(const locale& __other, _Facet* __f);
 
     /// Locale destructor.
-    ~locale() throw();
+~locale() throw();
 
     /**
      *  @brief  Assignment operator.
@@ -18779,11 +14705,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       combine(const locale& __other) const;
 
     // Locale operations:
-    /**
-     *  @brief  Return locale name.
-     *  @return  Locale name or "*" if unnamed.
-    */
-    string
+string
     name() const;
 
     /**
@@ -18827,17 +14749,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		 const basic_string<_Char, _Traits, _Alloc>& __s2) const;
 
     // Global locale objects:
-    /**
-     *  @brief  Set global locale
-     *
-     *  This function sets the global locale to the argument and returns a
-     *  copy of the previous global locale.  If the argument has a name, it
-     *  will also call std::setlocale(LC_ALL, loc.name()).
-     *
-     *  @param  locale  The new locale to make global.
-     *  @return  Copy of the old global locale.
-    */
-    static locale
+static locale
     global(const locale&);
 
     /**
@@ -18848,31 +14760,19 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
   private:
     // The (shared) implementation
-    _Impl*		_M_impl;
+_Impl*		_M_impl;
 
     // The "C" reference locale
-    static _Impl*       _S_classic;
+static _Impl*       _S_classic;
 
     // Current global locale
-    static _Impl*	_S_global;
+static _Impl*	_S_global;
 
     // Names of underlying locale categories.
-    // NB: locale::global() has to know how to modify all the
-    // underlying categories, not just the ones required by the C++
-    // standard.
-    static const char* const* const _S_categories;
+static const char* const* const _S_categories;
 
     // Number of standard categories. For C++, these categories are
-    // collate, ctype, monetary, numeric, time, and messages. These
-    // directly correspond to ISO C99 macros LC_COLLATE, LC_CTYPE,
-    // LC_MONETARY, LC_NUMERIC, and LC_TIME. In addition, POSIX (IEEE
-    // 1003.1-2001) specifies LC_MESSAGES.
-    // In addition to the standard categories, the underlying
-    // operating system is allowed to define extra LC_*
-    // macros. For GNU systems, the following are also valid:
-    // LC_PAPER, LC_NAME, LC_ADDRESS, LC_TELEPHONE, LC_MEASUREMENT,
-    // and LC_IDENTIFICATION.
-    enum { _S_categories_size = 6 + 6 };
+enum { _S_categories_size = 6 + 6 };
 
     static __gthread_once_t _S_once;
 
@@ -18894,17 +14794,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
   // 22.1.1.1.2  Class locale::facet
-  /**
-   *  @brief  Localization functionality base class.
-   *  @ingroup locales
-   *
-   *  The facet class is the base class for a localization feature, such as
-   *  money, time, and number printing.  It provides common support for facets
-   *  and reference management.
-   *
-   *  Facets may not be copied or assigned.
-  */
-  class locale::facet
+class locale::facet
   {
   private:
     friend class locale;
@@ -18913,10 +14803,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     mutable _Atomic_word		_M_refcount;
 
     // Contains data from the underlying "C" library for the classic locale.
-    static __c_locale                   _S_c_locale;
+static __c_locale                   _S_c_locale;
 
     // String literal for the name of the classic locale.
-    static const char			_S_c_name[2];
+static const char			_S_c_name[2];
 
     static __gthread_once_t		_S_once;
 
@@ -18938,7 +14828,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { }
 
     /// Facet destructor.
-    virtual
+virtual
     ~facet();
 
     static void
@@ -18955,8 +14845,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     _S_lc_ctype_c_locale(__c_locale __cloc, const char* __s);
 
     // Returns data from the underlying "C" library data for the
-    // classic locale.
-    static __c_locale
+static __c_locale
     _S_get_c_locale();
 
     __attribute__ ((__const__)) static const char*
@@ -18980,24 +14869,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
     facet(const facet&);  // Not defined.
-
-    facet&
+facet&
     operator=(const facet&);  // Not defined.
-  };
+};
 
 
   // 22.1.1.1.3 Class locale::id
-  /**
-   *  @brief  Facet ID class.
-   *  @ingroup locales
-   *
-   *  The ID class provides facets with an index used to identify them.
-   *  Every facet class must define a public static member locale::id, or be
-   *  derived from a facet that provides this member, otherwise the facet
-   *  cannot be used in a locale.  The locale::id ensures that each class
-   *  type gets a unique identifier.
-  */
-  class locale::id
+class locale::id
   {
   private:
     friend class locale;
@@ -19012,23 +14890,17 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       has_facet(const locale&) throw();
 
     // NB: There is no accessor for _M_index because it may be used
-    // before the constructor is run; the effect of calling a member
-    // function (even an inline) would be undefined.
-    mutable size_t		_M_index;
+mutable size_t		_M_index;
 
     // Last id number assigned.
-    static _Atomic_word		_S_refcount;
+static _Atomic_word		_S_refcount;
 
     void
     operator=(const id&);  // Not defined.
-
-    id(const id&);  // Not defined.
-
-  public:
+id(const id&);  // Not defined.
+public:
     // NB: This class is always a static data member, and thus can be
-    // counted on to be zero-initialized.
-    /// Constructor.
-    id() { }
+id() { }
 
     size_t
     _M_id() const throw();
@@ -19036,11 +14908,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
   // Implementation object for locale.
-  class locale::_Impl
+class locale::_Impl
   {
   public:
     // Friends.
-    friend class locale;
+friend class locale;
     friend class locale::facet;
 
     template<typename _Facet>
@@ -19056,7 +14928,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
   private:
     // Data Members.
-    _Atomic_word			_M_refcount;
+_Atomic_word			_M_refcount;
     const facet**			_M_facets;
     size_t				_M_facets_size;
     const facet**			_M_caches;
@@ -19092,17 +14964,15 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    ~_Impl() throw();
 
     _Impl(const _Impl&);  // Not defined.
-
-    void
+void
     operator=(const _Impl&);  // Not defined.
-
-    bool
+bool
     _M_check_same_name()
     {
       bool __ret = true;
       if (_M_names[1])
 	// We must actually compare all the _M_names: can be all equal!
-	for (size_t __i = 0; __ret && __i < _S_categories_size - 1; ++__i)
+for (size_t __i = 0; __ret && __i < _S_categories_size - 1; ++__i)
 	  __ret = __builtin_strcmp(_M_names[__i], _M_names[__i + 1]) == 0;
       return __ret;
     }
@@ -19179,20 +15049,16 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     {
     public:
       // Types:
-      //@{
-      /// Public typedefs
-      typedef _CharT			char_type;
+typedef _CharT			char_type;
       typedef basic_string<_CharT>	string_type;
       //@}
-
-    protected:
+protected:
       // Underlying "C" library locale information saved from
-      // initialization, needed by collate_byname as well.
-      __c_locale			_M_c_locale_collate;
+__c_locale			_M_c_locale_collate;
 
     public:
       /// Numpunct facet id.
-      static locale::id			id;
+static locale::id			id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -19270,7 +15136,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { return this->do_hash(__lo, __hi); }
 
       // Used to abstract out _CharT bits in virtual member functions, below.
-      int
+int
       _M_compare(const _CharT*, const _CharT*) const throw();
 
       size_t
@@ -19278,7 +15144,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
   protected:
       /// Destructor.
-      virtual
+virtual
       ~collate()
       { _S_destroy_c_locale(_M_c_locale_collate); }
 
@@ -19331,7 +15197,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     locale::id collate<_CharT>::id;
 
   // Specializations.
-  template<>
+template<>
     int
     collate<char>::_M_compare(const char*, const char*) const throw();
 
@@ -19348,17 +15214,15 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     collate<wchar_t>::_M_transform(wchar_t*, const wchar_t*, size_t) const throw();
 
   /// class collate_byname [22.2.4.2].
-  template<typename _CharT>
+template<typename _CharT>
     class collate_byname : public collate<_CharT>
     {
     public:
       //@{
-      /// Public typedefs
-      typedef _CharT               char_type;
+typedef _CharT               char_type;
       typedef basic_string<_CharT> string_type;
       //@}
-
-      explicit
+explicit
       collate_byname(const char* __s, size_t __refs = 0)
       : collate<_CharT>(__refs)
       {
@@ -19378,39 +15242,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // Locale support -*- C++ -*-
-
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file locale_classes.tcc
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 22.1  Locales
-//
-
-
 #pragma GCC system_header
 
 namespace std __attribute__ ((__visibility__ ("default"))) {
@@ -19430,7 +15261,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	}
       delete [] _M_impl->_M_names[0];
       _M_impl->_M_names[0] = 0;   // Unnamed.
-    }
+}
 
   template<typename _Facet>
     locale
@@ -19486,13 +15317,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
   // Generic version does nothing.
-  template<typename _CharT>
+template<typename _CharT>
     int
     collate<_CharT>::_M_compare(const _CharT*, const _CharT*) const throw ()
     { return 0; }
 
   // Generic version does nothing.
-  template<typename _CharT>
+template<typename _CharT>
     size_t
     collate<_CharT>::_M_transform(_CharT*, const _CharT*, size_t) const throw ()
     { return 0; }
@@ -19504,8 +15335,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	       const _CharT* __lo2, const _CharT* __hi2) const
     {
       // strcoll assumes zero-terminated strings so we make a copy
-      // and then put a zero at the end.
-      const string_type __one(__lo1, __hi1);
+const string_type __one(__lo1, __hi1);
       const string_type __two(__lo2, __hi2);
 
       const _CharT* __p = __one.c_str();
@@ -19514,9 +15344,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       const _CharT* __qend = __two.data() + __two.length();
 
       // strcoll stops when it sees a nul character so we break
-      // the strings into zero-terminated substrings and pass those
-      // to strcoll.
-      for (;;)
+for (;;)
 	{
 	  const int __res = _M_compare(__p, __q);
 	  if (__res)
@@ -19544,7 +15372,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       string_type __ret;
 
       // strxfrm assumes zero-terminated strings so we make a copy
-      const string_type __str(__lo, __hi);
+const string_type __str(__lo, __hi);
 
       const _CharT* __p = __str.c_str();
       const _CharT* __pend = __str.data() + __str.length();
@@ -19556,15 +15384,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       try
 	{
 	  // strxfrm stops when it sees a nul character so we break
-	  // the string into zero-terminated substrings and pass those
-	  // to strxfrm.
-	  for (;;)
+for (;;)
 	    {
 	      // First try a buffer perhaps big enough.
-	      size_t __res = _M_transform(__c, __p, __len);
+size_t __res = _M_transform(__c, __p, __len);
 	      // If the buffer was not large enough, try again with the
-	      // correct size.
-	      if (__res >= __len)
+if (__res >= __len)
 		{
 		  __len = __res + 1;
 		  delete [] __c, __c = 0;
@@ -19607,9 +15432,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.
-  // NB: This syntax is a GNU extension.
-  extern template class collate<char>;
+extern template class collate<char>;
   extern template class collate_byname<char>;
 
   extern template
@@ -19639,10 +15462,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // The following definitions of bitmask types are enums, not ints,
-  // as permitted (but not required) in the standard, in order to provide
-  // better type safety in iostream calls.  A side effect is that
-  // expressions involving them are no longer compile-time constants.
-  enum _Ios_Fmtflags 
+enum _Ios_Fmtflags 
     { 
       _S_boolalpha 	= 1L << 0,
       _S_dec 		= 1L << 1,
@@ -19780,16 +15600,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // 27.4.2  Class ios_base
-  /**
-   *  @brief  The base of the I/O class hierarchy.
-   *  @ingroup io
-   *
-   *  This class defines everything that can be defined about I/O that does
-   *  not depend on the type of characters being input or output.  Most
-   *  people will only see @c ios_base when they need to specify the full
-   *  name of the various I/O flags (e.g., the openmodes).
-  */
-  class ios_base
+class ios_base
   {
   public:
 
@@ -19803,13 +15614,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     {
     public:
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 48.  Use of non-existent exception constructor
-      explicit
+explicit
       failure(const string& __str) throw();
 
       // This declaration is not useless:
-      // http://gcc.gnu.org/onlinedocs/gcc-4.3.2/gcc/Vague-Linkage.html
-      virtual
+virtual
       ~failure() throw();
 
       virtual const char*
@@ -19820,182 +15629,112 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
     // 27.4.2.1.2  Type ios_base::fmtflags
-    /**
-     *  @brief This is a bitmask type.
-     *
-     *  @c @a _Ios_Fmtflags is implementation-defined, but it is valid to
-     *  perform bitwise operations on these values and expect the Right
-     *  Thing to happen.  Defined objects of type fmtflags are:
-     *  - boolalpha
-     *  - dec
-     *  - fixed
-     *  - hex
-     *  - internal
-     *  - left
-     *  - oct
-     *  - right
-     *  - scientific
-     *  - showbase
-     *  - showpoint
-     *  - showpos
-     *  - skipws
-     *  - unitbuf
-     *  - uppercase
-     *  - adjustfield
-     *  - basefield
-     *  - floatfield
-    */
-    typedef _Ios_Fmtflags fmtflags;
+typedef _Ios_Fmtflags fmtflags;
 
     /// Insert/extract @c bool in alphabetic rather than numeric format.
-    static const fmtflags boolalpha =   _S_boolalpha;
+static const fmtflags boolalpha =   _S_boolalpha;
 
     /// Converts integer input or generates integer output in decimal base.
-    static const fmtflags dec =         _S_dec;
+static const fmtflags dec =         _S_dec;
 
     /// Generate floating-point output in fixed-point notation.
-    static const fmtflags fixed =       _S_fixed;
+static const fmtflags fixed =       _S_fixed;
 
     /// Converts integer input or generates integer output in hexadecimal base.
-    static const fmtflags hex =         _S_hex;
+static const fmtflags hex =         _S_hex;
 
     /// Adds fill characters at a designated internal point in certain
-    /// generated output, or identical to @c right if no such point is
-    /// designated.
-    static const fmtflags internal =    _S_internal;
+static const fmtflags internal =    _S_internal;
 
     /// Adds fill characters on the right (final positions) of certain
-    /// generated output.  (I.e., the thing you print is flush left.)
-    static const fmtflags left =        _S_left;
+static const fmtflags left =        _S_left;
 
     /// Converts integer input or generates integer output in octal base.
-    static const fmtflags oct =         _S_oct;
+static const fmtflags oct =         _S_oct;
 
     /// Adds fill characters on the left (initial positions) of certain
-    /// generated output.  (I.e., the thing you print is flush right.)
-    static const fmtflags right =       _S_right;
+static const fmtflags right =       _S_right;
 
     /// Generates floating-point output in scientific notation.
-    static const fmtflags scientific =  _S_scientific;
+static const fmtflags scientific =  _S_scientific;
 
     /// Generates a prefix indicating the numeric base of generated integer
-    /// output.
-    static const fmtflags showbase =    _S_showbase;
+static const fmtflags showbase =    _S_showbase;
 
     /// Generates a decimal-point character unconditionally in generated
-    /// floating-point output.
-    static const fmtflags showpoint =   _S_showpoint;
+static const fmtflags showpoint =   _S_showpoint;
 
     /// Generates a + sign in non-negative generated numeric output.
-    static const fmtflags showpos =     _S_showpos;
+static const fmtflags showpos =     _S_showpos;
 
     /// Skips leading white space before certain input operations.
-    static const fmtflags skipws =      _S_skipws;
+static const fmtflags skipws =      _S_skipws;
 
     /// Flushes output after each output operation.
-    static const fmtflags unitbuf =     _S_unitbuf;
+static const fmtflags unitbuf =     _S_unitbuf;
 
     /// Replaces certain lowercase letters with their uppercase equivalents
-    /// in generated output.
-    static const fmtflags uppercase =   _S_uppercase;
+static const fmtflags uppercase =   _S_uppercase;
 
     /// A mask of left|right|internal.  Useful for the 2-arg form of @c setf.
-    static const fmtflags adjustfield = _S_adjustfield;
+static const fmtflags adjustfield = _S_adjustfield;
 
     /// A mask of dec|oct|hex.  Useful for the 2-arg form of @c setf.
-    static const fmtflags basefield =   _S_basefield;
+static const fmtflags basefield =   _S_basefield;
 
     /// A mask of scientific|fixed.  Useful for the 2-arg form of @c setf.
-    static const fmtflags floatfield =  _S_floatfield;
+static const fmtflags floatfield =  _S_floatfield;
 
     // 27.4.2.1.3  Type ios_base::iostate
-    /**
-     *  @brief This is a bitmask type.
-     *
-     *  @c @a _Ios_Iostate is implementation-defined, but it is valid to
-     *  perform bitwise operations on these values and expect the Right
-     *  Thing to happen.  Defined objects of type iostate are:
-     *  - badbit
-     *  - eofbit
-     *  - failbit
-     *  - goodbit
-    */
-    typedef _Ios_Iostate iostate;
+typedef _Ios_Iostate iostate;
 
     /// Indicates a loss of integrity in an input or output sequence (such
-    /// as an irrecoverable read error from a file).
-    static const iostate badbit =	_S_badbit;
+static const iostate badbit =	_S_badbit;
 
     /// Indicates that an input operation reached the end of an input sequence.
-    static const iostate eofbit =	_S_eofbit;
+static const iostate eofbit =	_S_eofbit;
 
     /// Indicates that an input operation failed to read the expected
-    /// characters, or that an output operation failed to generate the
-    /// desired characters.
-    static const iostate failbit =	_S_failbit;
+static const iostate failbit =	_S_failbit;
 
     /// Indicates all is well.
-    static const iostate goodbit =	_S_goodbit;
+static const iostate goodbit =	_S_goodbit;
 
     // 27.4.2.1.4  Type ios_base::openmode
-    /**
-     *  @brief This is a bitmask type.
-     *
-     *  @c @a _Ios_Openmode is implementation-defined, but it is valid to
-     *  perform bitwise operations on these values and expect the Right
-     *  Thing to happen.  Defined objects of type openmode are:
-     *  - app
-     *  - ate
-     *  - binary
-     *  - in
-     *  - out
-     *  - trunc
-    */
-    typedef _Ios_Openmode openmode;
+typedef _Ios_Openmode openmode;
 
     /// Seek to end before each write.
-    static const openmode app =		_S_app;
+static const openmode app =		_S_app;
 
     /// Open and seek to end immediately after opening.
-    static const openmode ate =		_S_ate;
+static const openmode ate =		_S_ate;
 
     /// Perform input and output in binary mode (as opposed to text mode).
-    /// This is probably not what you think it is; see
-    /// http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch27s02.html
-    static const openmode binary =	_S_bin;
+static const openmode binary =	_S_bin;
 
     /// Open for input.  Default for @c ifstream and fstream.
-    static const openmode in =		_S_in;
+static const openmode in =		_S_in;
 
     /// Open for output.  Default for @c ofstream and fstream.
-    static const openmode out =		_S_out;
+static const openmode out =		_S_out;
 
     /// Open for input.  Default for @c ofstream.
-    static const openmode trunc =	_S_trunc;
+static const openmode trunc =	_S_trunc;
 
     // 27.4.2.1.5  Type ios_base::seekdir
-    /**
-     *  @brief This is an enumerated type.
-     *
-     *  @c @a _Ios_Seekdir is implementation-defined.  Defined values
-     *  of type seekdir are:
-     *  - beg
-     *  - cur, equivalent to @c SEEK_CUR in the C standard library.
-     *  - end, equivalent to @c SEEK_END in the C standard library.
-    */
-    typedef _Ios_Seekdir seekdir;
+typedef _Ios_Seekdir seekdir;
 
     /// Request a seek relative to the beginning of the stream.
-    static const seekdir beg =		_S_beg;
+static const seekdir beg =		_S_beg;
 
     /// Request a seek relative to the current position within the sequence.
-    static const seekdir cur =		_S_cur;
+static const seekdir cur =		_S_cur;
 
     /// Request a seek relative to the current end of the sequence.
-    static const seekdir end =		_S_end;
+static const seekdir end =		_S_end;
 
     // Annex D.6
-    typedef int io_state;
+typedef int io_state;
     typedef int open_mode;
     typedef int seek_dir;
 
@@ -20003,13 +15742,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     typedef std::streamoff streamoff;
 
     // Callbacks;
-    /**
-     *  @brief  The set of events that may be passed to an event callback.
-     *
-     *  erase_event is used during ~ios() and copyfmt().  imbue_event is used
-     *  during imbue().  copyfmt_event is used during copyfmt().
-    */
-    enum event
+enum event
     {
       erase_event,
       imbue_event,
@@ -20049,16 +15782,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     iostate		_M_streambuf_state;
 
     // 27.4.2.6  Members for callbacks
-    // 27.4.2.6  ios_base callbacks
-    struct _Callback_list
+struct _Callback_list
     {
       // Data Members
-      _Callback_list*		_M_next;
+_Callback_list*		_M_next;
       ios_base::event_callback	_M_fn;
       int			_M_index;
       _Atomic_word		_M_refcount;  // 0 means one reference.
-
-      _Callback_list(ios_base::event_callback __fn, int __index,
+_Callback_list(ios_base::event_callback __fn, int __index,
 		     _Callback_list* __cb)
       : _M_next(__cb), _M_fn(__fn), _M_index(__index), _M_refcount(0) { }
 
@@ -20066,7 +15797,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       _M_add_reference() { __gnu_cxx::__atomic_add_dispatch(&_M_refcount, 1); }
 
       // 0 => OK to delete.
-      int
+int
       _M_remove_reference() 
       { return __gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1); }
     };
@@ -20080,7 +15811,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     _M_dispose_callbacks(void) throw();
 
     // 27.4.2.5  Members for iword/pword storage
-    struct _Words
+struct _Words
     {
       void*	_M_pword;
       long	_M_iword;
@@ -20088,22 +15819,21 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
     // Only for failed iword/pword calls.
-    _Words		_M_word_zero;
+_Words		_M_word_zero;
 
     // Guaranteed storage.
-    // The first 5 iword and pword slots are reserved for internal use.
-    enum { _S_local_word_size = 8 };
+enum { _S_local_word_size = 8 };
     _Words		_M_local_word[_S_local_word_size];
 
     // Allocated storage.
-    int			_M_word_size;
+int			_M_word_size;
     _Words*		_M_word;
 
     _Words&
     _M_grow_words(int __index, bool __iword);
 
     // Members for locale and locale caching.
-    locale		_M_ios_locale;
+locale		_M_ios_locale;
 
     void
     _M_init() throw();
@@ -20111,10 +15841,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   public:
 
     // 27.4.2.1.6  Class ios_base::Init
-    // Used to initialize standard streams. In theory, g++ could use
-    // -finit-priority to order this stuff correctly without going
-    // through these machinations.
-    class Init
+class Init
     {
       friend class ios_base;
     public:
@@ -20127,11 +15854,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
     // [27.4.2.2] fmtflags state functions
-    /**
-     *  @brief  Access to format flags.
-     *  @return  The format control flags for both input and output.
-    */
-    fmtflags
+fmtflags
     flags() const
     { return _M_flags; }
 
@@ -20242,29 +15965,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
     // [27.4.2.4] ios_base static members
-    /**
-     *  @brief  Interaction with the standard C I/O objects.
-     *  @param  sync  Whether to synchronize or not.
-     *  @return  True if the standard streams were previously synchronized.
-     *
-     *  The synchronization referred to is @e only that between the standard
-     *  C facilities (e.g., stdout) and the standard C++ objects (e.g.,
-     *  cout).  User-declared streams are unaffected.  See
-     *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch28s02.html
-    */
-    static bool
+static bool
     sync_with_stdio(bool __sync = true);
 
     // [27.4.2.3] ios_base locale functions
-    /**
-     *  @brief  Setting a new locale.
-     *  @param  loc  The new locale.
-     *  @return  The previous locale.
-     *
-     *  Sets the new locale for this stream, and then invokes each callback
-     *  with imbue_event.
-    */
-    locale
+locale
     imbue(const locale& __loc) throw();
 
     /**
@@ -20291,21 +15996,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return _M_ios_locale; }
 
     // [27.4.2.5] ios_base storage functions
-    /**
-     *  @brief  Access to unique indices.
-     *  @return  An integer different from all previous calls.
-     *
-     *  This function returns a unique integer every time it is called.  It
-     *  can be used for any purpose, but is primarily intended to be a unique
-     *  index for the iword and pword functions.  The expectation is that an
-     *  application calls xalloc in order to obtain an index in the iword and
-     *  pword arrays that can be used without fear of conflict.
-     *
-     *  The implementation maintains a static variable that is incremented and
-     *  returned on each invocation.  xalloc is guaranteed to return an index
-     *  that is safe to use in the iword and pword arrays.
-    */
-    static int
+static int
     xalloc() throw();
 
     /**
@@ -20351,22 +16042,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
     // Destructor
-    /**
-     *  Invokes each callback with erase_event.  Destroys local storage.
-     *
-     *  Note that the ios_base object for the standard streams never gets
-     *  destroyed.  As a result, any callbacks registered with the standard
-     *  streams will not get invoked with erase_event (unless copyfmt is
-     *  used).
-    */
-    virtual ~ios_base();
+virtual ~ios_base();
 
   protected:
     ios_base() throw ();
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // 50.  Copy constructor and assignment operator of ios_base
-  private:
+private:
     ios_base(const ios_base&);
 
     ios_base&
@@ -20374,8 +16056,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   };
 
   // [27.4.5.1] fmtflags manipulators
-  /// Calls base.setf(ios_base::boolalpha).
-  inline ios_base&
+inline ios_base&
   boolalpha(ios_base& __base)
   {
     __base.setf(ios_base::boolalpha);
@@ -20383,7 +16064,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.unsetf(ios_base::boolalpha).
-  inline ios_base&
+inline ios_base&
   noboolalpha(ios_base& __base)
   {
     __base.unsetf(ios_base::boolalpha);
@@ -20391,7 +16072,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.setf(ios_base::showbase).
-  inline ios_base&
+inline ios_base&
   showbase(ios_base& __base)
   {
     __base.setf(ios_base::showbase);
@@ -20399,7 +16080,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.unsetf(ios_base::showbase).
-  inline ios_base&
+inline ios_base&
   noshowbase(ios_base& __base)
   {
     __base.unsetf(ios_base::showbase);
@@ -20407,7 +16088,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.setf(ios_base::showpoint).
-  inline ios_base&
+inline ios_base&
   showpoint(ios_base& __base)
   {
     __base.setf(ios_base::showpoint);
@@ -20415,7 +16096,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.unsetf(ios_base::showpoint).
-  inline ios_base&
+inline ios_base&
   noshowpoint(ios_base& __base)
   {
     __base.unsetf(ios_base::showpoint);
@@ -20423,7 +16104,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.setf(ios_base::showpos).
-  inline ios_base&
+inline ios_base&
   showpos(ios_base& __base)
   {
     __base.setf(ios_base::showpos);
@@ -20431,7 +16112,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.unsetf(ios_base::showpos).
-  inline ios_base&
+inline ios_base&
   noshowpos(ios_base& __base)
   {
     __base.unsetf(ios_base::showpos);
@@ -20439,7 +16120,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.setf(ios_base::skipws).
-  inline ios_base&
+inline ios_base&
   skipws(ios_base& __base)
   {
     __base.setf(ios_base::skipws);
@@ -20447,7 +16128,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.unsetf(ios_base::skipws).
-  inline ios_base&
+inline ios_base&
   noskipws(ios_base& __base)
   {
     __base.unsetf(ios_base::skipws);
@@ -20455,7 +16136,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.setf(ios_base::uppercase).
-  inline ios_base&
+inline ios_base&
   uppercase(ios_base& __base)
   {
     __base.setf(ios_base::uppercase);
@@ -20463,7 +16144,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.unsetf(ios_base::uppercase).
-  inline ios_base&
+inline ios_base&
   nouppercase(ios_base& __base)
   {
     __base.unsetf(ios_base::uppercase);
@@ -20471,7 +16152,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.setf(ios_base::unitbuf).
-  inline ios_base&
+inline ios_base&
   unitbuf(ios_base& __base)
   {
      __base.setf(ios_base::unitbuf);
@@ -20479,7 +16160,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.unsetf(ios_base::unitbuf).
-  inline ios_base&
+inline ios_base&
   nounitbuf(ios_base& __base)
   {
      __base.unsetf(ios_base::unitbuf);
@@ -20487,8 +16168,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   // [27.4.5.2] adjustfield manipulators
-  /// Calls base.setf(ios_base::internal, ios_base::adjustfield).
-  inline ios_base&
+inline ios_base&
   internal(ios_base& __base)
   {
      __base.setf(ios_base::internal, ios_base::adjustfield);
@@ -20496,7 +16176,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.setf(ios_base::left, ios_base::adjustfield).
-  inline ios_base&
+inline ios_base&
   left(ios_base& __base)
   {
     __base.setf(ios_base::left, ios_base::adjustfield);
@@ -20504,7 +16184,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.setf(ios_base::right, ios_base::adjustfield).
-  inline ios_base&
+inline ios_base&
   right(ios_base& __base)
   {
     __base.setf(ios_base::right, ios_base::adjustfield);
@@ -20512,8 +16192,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   // [27.4.5.3] basefield manipulators
-  /// Calls base.setf(ios_base::dec, ios_base::basefield).
-  inline ios_base&
+inline ios_base&
   dec(ios_base& __base)
   {
     __base.setf(ios_base::dec, ios_base::basefield);
@@ -20521,7 +16200,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.setf(ios_base::hex, ios_base::basefield).
-  inline ios_base&
+inline ios_base&
   hex(ios_base& __base)
   {
     __base.setf(ios_base::hex, ios_base::basefield);
@@ -20529,7 +16208,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.setf(ios_base::oct, ios_base::basefield).
-  inline ios_base&
+inline ios_base&
   oct(ios_base& __base)
   {
     __base.setf(ios_base::oct, ios_base::basefield);
@@ -20537,8 +16216,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   // [27.4.5.4] floatfield manipulators
-  /// Calls base.setf(ios_base::fixed, ios_base::floatfield).
-  inline ios_base&
+inline ios_base&
   fixed(ios_base& __base)
   {
     __base.setf(ios_base::fixed, ios_base::floatfield);
@@ -20546,7 +16224,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   }
 
   /// Calls base.setf(ios_base::scientific, ios_base::floatfield).
-  inline ios_base&
+inline ios_base&
   scientific(ios_base& __base)
   {
     __base.setf(ios_base::scientific, ios_base::floatfield);
@@ -20558,39 +16236,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // Stream buffer classes -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file streambuf
- *  This is a Standard C++ Library header.
- */
-
-//
-// ISO C++ 14882: 27.5  Stream buffers
-//
-
-
 #pragma GCC system_header
 
 
@@ -20667,24 +16312,15 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     {
     public:
       //@{
-      /**
-       *  These are standard types.  They permit a standardized way of
-       *  referring to names of (or names dependant on) the template
-       *  parameters, which are specific to the implementation.
-      */
-      typedef _CharT 					char_type;
+typedef _CharT 					char_type;
       typedef _Traits 					traits_type;
       typedef typename traits_type::int_type 		int_type;
       typedef typename traits_type::pos_type 		pos_type;
       typedef typename traits_type::off_type 		off_type;
       //@}
-
-      //@{
-      /// This is a non-standard type.
-      typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
+typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
       //@}
-      
-      friend class basic_ios<char_type, traits_type>;
+friend class basic_ios<char_type, traits_type>;
       friend class basic_istream<char_type, traits_type>;
       friend class basic_ostream<char_type, traits_type>;
       friend class istreambuf_iterator<char_type, traits_type>;
@@ -20721,38 +16357,22 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     protected:
       //@{
-      /**
-       *  This is based on _IO_FILE, just reordered to be more consistent,
-       *  and is intended to be the most minimal abstraction for an
-       *  internal buffer.
-       *  -  get == input == read
-       *  -  put == output == write
-      */
-      char_type* 		_M_in_beg;     // Start of get area. 
-      char_type* 		_M_in_cur;     // Current read area. 
-      char_type* 		_M_in_end;     // End of get area. 
-      char_type* 		_M_out_beg;    // Start of put area. 
-      char_type* 		_M_out_cur;    // Current put area. 
-      char_type* 		_M_out_end;    // End of put area.
-
-      /// Current locale setting.
-      locale 			_M_buf_locale;	
+char_type* 		_M_in_beg;     // Start of get area. 
+char_type* 		_M_in_cur;     // Current read area. 
+char_type* 		_M_in_end;     // End of get area. 
+char_type* 		_M_out_beg;    // Start of put area. 
+char_type* 		_M_out_cur;    // Current put area. 
+char_type* 		_M_out_end;    // End of put area.
+locale 			_M_buf_locale;	
 
   public:
       /// Destructor deallocates no buffer space.
-      virtual 
+virtual 
       ~basic_streambuf() 
       { }
 
       // [27.5.2.2.1] locales
-      /**
-       *  @brief  Entry point for imbue().
-       *  @param  loc  The new locale.
-       *  @return  The previous locale.
-       *
-       *  Calls the derived imbue(loc).
-      */
-      locale 
+locale 
       pubimbue(const locale &__loc)
       {
 	locale __tmp(this->getloc());
@@ -20774,15 +16394,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { return _M_buf_locale; } 
 
       // [27.5.2.2.2] buffer management and positioning
-      //@{
-      /**
-       *  @brief  Entry points for derived buffer functions.
-       *
-       *  The public versions of @c pubfoo dispatch to the protected
-       *  derived @c foo member functions, passing the arguments (if any)
-       *  and returning the result unchanged.
-      */
-      __streambuf_type* 
+__streambuf_type* 
       pubsetbuf(char_type* __s, streamsize __n) 
       { return this->setbuf(__s, __n); }
 
@@ -20799,17 +16411,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       int 
       pubsync() { return this->sync(); }
       //@}
-
-      // [27.5.2.2.3] get area
-      /**
-       *  @brief  Looking ahead into the stream.
-       *  @return  The number of characters available.
-       *
-       *  If a read position is available, returns the number of characters
-       *  available for reading before the buffer must be refilled.
-       *  Otherwise returns the derived @c showmanyc().
-      */
-      streamsize 
+streamsize 
       in_avail() 
       { 
 	const streamsize __ret = this->egptr() - this->gptr();
@@ -20887,17 +16489,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { return this->xsgetn(__s, __n); }
 
       // [27.5.2.2.4] putback
-      /**
-       *  @brief  Pushing characters back into the input stream.
-       *  @param  c  The character to push back.
-       *  @return  The previous character, if possible.
-       *
-       *  Similar to sungetc(), but @a c is pushed onto the stream
-       *  instead of <em>the previous character.</em> If successful,
-       *  the next character fetched from the input stream will be @a
-       *  c.
-      */
-      int_type 
+int_type 
       sputbackc(char_type __c)
       {
 	int_type __ret;
@@ -20937,19 +16529,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // [27.5.2.2.5] put area
-      /**
-       *  @brief  Entry point for all single-character output functions.
-       *  @param  c  A character to output.
-       *  @return  @a c, if possible.
-       *
-       *  One of two public output functions.
-       *
-       *  If a write position is available for the output sequence (i.e.,
-       *  the buffer is not full), stores @a c in that position, increments
-       *  the position, and returns @c traits::to_int_type(c).  If a write
-       *  position is not available, returns @c overflow(c).
-      */
-      int_type 
+int_type 
       sputc(char_type __c)
       {
 	int_type __ret;
@@ -20996,18 +16576,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { }
 
       // [27.5.2.3.1] get area access
-      //@{
-      /**
-       *  @brief  Access to the get area.
-       *
-       *  These functions are only available to other protected functions,
-       *  including derived classes.
-       *
-       *  - eback() returns the beginning pointer for the input sequence
-       *  - gptr() returns the next pointer for the input sequence
-       *  - egptr() returns the end pointer for the input sequence
-      */
-      char_type* 
+char_type* 
       eback() const { return _M_in_beg; }
 
       char_type* 
@@ -21016,14 +16585,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       char_type* 
       egptr() const { return _M_in_end; }
       //@}
-
-      /**
-       *  @brief  Moving the read position.
-       *  @param  n  The delta by which to move.
-       *
-       *  This just advances the read position without returning any data.
-      */
-      void 
+void 
       gbump(int __n) { _M_in_cur += __n; }
 
       /**
@@ -21043,18 +16605,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // [27.5.2.3.2] put area access
-      //@{
-      /**
-       *  @brief  Access to the put area.
-       *
-       *  These functions are only available to other protected functions,
-       *  including derived classes.
-       *
-       *  - pbase() returns the beginning pointer for the output sequence
-       *  - pptr() returns the next pointer for the output sequence
-       *  - epptr() returns the end pointer for the output sequence
-      */
-      char_type* 
+char_type* 
       pbase() const { return _M_out_beg; }
 
       char_type* 
@@ -21063,14 +16614,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       char_type* 
       epptr() const { return _M_out_end; }
       //@}
-
-      /**
-       *  @brief  Moving the write position.
-       *  @param  n  The delta by which to move.
-       *
-       *  This just advances the write position without returning any data.
-      */
-      void 
+void 
       pbump(int __n) { _M_out_cur += __n; }
 
       /**
@@ -21088,35 +16632,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // [27.5.2.4] virtual functions
-      // [27.5.2.4.1] locales
-      /**
-       *  @brief  Changes translations.
-       *  @param  loc  A new locale.
-       *
-       *  Translations done during I/O which depend on the current
-       *  locale are changed by this call.  The standard adds,
-       *  <em>Between invocations of this function a class derived
-       *  from streambuf can safely cache results of calls to locale
-       *  functions and to members of facets so obtained.</em>
-       *
-       *  @note  Base class version does nothing.
-      */
-      virtual void 
+virtual void 
       imbue(const locale&) 
       { }
 
       // [27.5.2.4.2] buffer management and positioning
-      /**
-       *  @brief  Manipulates the buffer.
-       *
-       *  Each derived class provides its own appropriate behavior.  See
-       *  the next-to-last paragraph of 
-       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25s02.html
-       *  for more on this function.
-       *
-       *  @note  Base class version does nothing, returns @c this.
-      */
-      virtual basic_streambuf<char_type,_Traits>* 
+virtual basic_streambuf<char_type,_Traits>* 
       setbuf(char_type*, streamsize)
       {	return this; }
       
@@ -21156,25 +16677,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       sync() { return 0; }
 
       // [27.5.2.4.3] get area
-      /**
-       *  @brief  Investigating the data available.
-       *  @return  An estimate of the number of characters available in the
-       *           input sequence, or -1.
-       *
-       *  <em>If it returns a positive value, then successive calls to
-       *  @c underflow() will not return @c traits::eof() until at
-       *  least that number of characters have been supplied.  If @c
-       *  showmanyc() returns -1, then calls to @c underflow() or @c
-       *  uflow() will fail.</em> [27.5.2.4.3]/1
-       *
-       *  @note  Base class version does nothing, returns zero.
-       *  @note  The standard adds that <em>the intention is not only that the
-       *         calls [to underflow or uflow] will not return @c eof() but
-       *         that they will return immediately.</em>
-       *  @note  The standard adds that <em>the morphemes of @c showmanyc are
-       *         @b es-how-many-see, not @b show-manic.</em>
-      */
-      virtual streamsize 
+virtual streamsize 
       showmanyc() { return 0; }
 
       /**
@@ -21240,34 +16743,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // [27.5.2.4.4] putback
-      /**
-       *  @brief  Tries to back up the input sequence.
-       *  @param  c  The character to be inserted back into the sequence.
-       *  @return  eof() on failure, <em>some other value</em> on success
-       *  @post  The constraints of @c gptr(), @c eback(), and @c pptr()
-       *         are the same as for @c underflow().
-       *
-       *  @note  Base class version does nothing, returns eof().
-      */
-      virtual int_type 
+virtual int_type 
       pbackfail(int_type /* __c */  = traits_type::eof())
       { return traits_type::eof(); }
 
       // Put area:
-      /**
-       *  @brief  Multiple character insertion.
-       *  @param  s  A buffer area.
-       *  @param  n  Maximum number of characters to write.
-       *  @return  The number of characters written.
-       *
-       *  Writes @a s[0] through @a s[n-1] to the output sequence, as if
-       *  by @c sputc().  Stops when either @a n characters have been
-       *  copied, or when @c sputc() would return @c traits::eof().
-       *
-       *  It is expected that derived classes provide a more efficient
-       *  implementation by overriding this definition.
-      */
-      virtual streamsize 
+virtual streamsize 
       xsputn(const char_type* __s, streamsize __n);
 
       /**
@@ -21298,7 +16779,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { return traits_type::eof(); }
 
     // Annex D.6
-    public:
+public:
       /**
        *  @brief  Tosses a character.
        *
@@ -21318,8 +16799,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     private:
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // Side effect of DR 50. 
-      basic_streambuf(const __streambuf_type& __sb)
+basic_streambuf(const __streambuf_type& __sb)
       : _M_in_beg(__sb._M_in_beg), _M_in_cur(__sb._M_in_cur), 
       _M_in_end(__sb._M_in_end), _M_out_beg(__sb._M_out_beg), 
       _M_out_cur(__sb._M_out_cur), _M_out_end(__sb._M_out_cur),
@@ -21331,7 +16811,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // Explicit specialization declarations, defined in src/streambuf.cc.
-  template<>
+template<>
     streamsize
     __copy_streambufs_eof(basic_streambuf<char>* __sbin,
 			  basic_streambuf<char>* __sbout, bool& __ineof);
@@ -21343,40 +16823,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // Stream buffer classes -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2009  Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file streambuf.tcc
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 27.5  Stream buffers
-//
-
-
 #pragma GCC system_header
 
 namespace std __attribute__ ((__visibility__ ("default"))) {
@@ -21450,9 +16896,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Conceivably, this could be used to implement buffer-to-buffer
-  // copies, if this was ever desired in an un-ambiguous way by the
-  // standard.
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     streamsize
     __copy_streambufs_eof(basic_streambuf<_CharT, _Traits>* __sbin,
 			  basic_streambuf<_CharT, _Traits>* __sbout,
@@ -21485,9 +16929,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.
-  // NB:  This syntax is a GNU extension.
-  extern template class basic_streambuf<char>;
+extern template class basic_streambuf<char>;
   extern template
     streamsize
     __copy_streambufs(basic_streambuf<char>*,
@@ -21511,117 +16953,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // Iostreams base classes -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file basic_ios.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
 #pragma GCC system_header
 
 // Locale support -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file locale_facets.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 22.1  Locales
-//
-
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cwctype
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c wctype.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: <cwctype>
-//
-
 #pragma GCC system_header
 
 
@@ -21936,8 +17273,6 @@ extern wint_t towctrans_l (wint_t __wc, wctrans_t __desc,
 
 
 // Get rid of those macros defined in <wctype.h> in lieu of real functions.
-
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   using ::wctrans_t;
@@ -21968,95 +17303,20 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cctype
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c ctype.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: <ccytpe>
-//
-
 #pragma GCC system_header
 
 
 // Locale support -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-//
-// ISO C++ 14882: 22.1  Locales
-//
-  
-/** @file ctype_base.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-// Information as gleaned from /usr/include/ctype.h
-  
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   /// @brief  Base class for ctype.
-  struct ctype_base
+struct ctype_base
   {
     // Non-standard typedefs.
-    typedef const int* 		__to_type;
+typedef const int* 		__to_type;
 
     // NB: Offsets into ctype<char>::_M_table force a particular size
-    // on the mask type. Because of this, we don't use an enum.
-    typedef unsigned short 	mask;   
+typedef unsigned short 	mask;   
     static const mask upper    	= _ISupper;
     static const mask lower 	= _ISlower;
     static const mask alpha 	= _ISalpha;
@@ -22072,37 +17332,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 }
 // Streambuf iterators
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file streambuf_iterator.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
 #pragma GCC system_header
 
 
@@ -22114,24 +17343,20 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    */
 
   // 24.5.3 Template class istreambuf_iterator
-  /// Provides input iterator semantics for streambufs.
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     class istreambuf_iterator
     : public iterator<input_iterator_tag, _CharT, typename _Traits::off_type,
 		      _CharT*, _CharT&>
     {
     public:
       // Types:
-      //@{
-      /// Public typedefs
-      typedef _CharT					char_type;
+typedef _CharT					char_type;
       typedef _Traits					traits_type;
       typedef typename _Traits::int_type		int_type;
       typedef basic_streambuf<_CharT, _Traits>		streambuf_type;
       typedef basic_istream<_CharT, _Traits>		istream_type;
       //@}
-
-      template<typename _CharT2>
+template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
 		                    ostreambuf_iterator<_CharT2> >::__type
 	copy(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
@@ -22151,39 +17376,31 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     private:
       // 24.5.3 istreambuf_iterator
-      // p 1
-      // If the end of stream is reached (streambuf_type::sgetc()
-      // returns traits_type::eof()), the iterator becomes equal to
-      // the "end of stream" iterator value.
-      // NB: This implementation assumes the "end of stream" value
-      // is EOF, or -1.
-      mutable streambuf_type*	_M_sbuf;
+mutable streambuf_type*	_M_sbuf;
       mutable int_type		_M_c;
 
     public:
       ///  Construct end of input stream iterator.
-      istreambuf_iterator() throw()
+istreambuf_iterator() throw()
       : _M_sbuf(0), _M_c(traits_type::eof()) { }
 
       ///  Construct start of input stream iterator.
-      istreambuf_iterator(istream_type& __s) throw()
+istreambuf_iterator(istream_type& __s) throw()
       : _M_sbuf(__s.rdbuf()), _M_c(traits_type::eof()) { }
 
       ///  Construct start of streambuf iterator.
-      istreambuf_iterator(streambuf_type* __s) throw()
+istreambuf_iterator(streambuf_type* __s) throw()
       : _M_sbuf(__s), _M_c(traits_type::eof()) { }
 
       ///  Return the current character pointed to by iterator.  This returns
-      ///  streambuf.sgetc().  It cannot be assigned.  NB: The result of
-      ///  operator*() on an end of stream is undefined.
-      char_type
+char_type
       operator*() const
       {
 	return traits_type::to_char_type(_M_get());
       }
 
       /// Advance the iterator.  Calls streambuf.sbumpc().
-      istreambuf_iterator&
+istreambuf_iterator&
       operator++()
       {
 	;
@@ -22196,7 +17413,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       /// Advance the iterator.  Calls streambuf.sbumpc().
-      istreambuf_iterator
+istreambuf_iterator
       operator++(int)
       {
 	;
@@ -22211,10 +17428,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 110 istreambuf_iterator::equal not const
-      // NB: there is also number 111 (NAD, Future) pending on this function.
-      /// Return true both iterators are end or both are not end.
-      bool
+bool
       equal(const istreambuf_iterator& __b) const
       { return _M_at_eof() == __b._M_at_eof(); }
 
@@ -22258,21 +17472,18 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return !__a.equal(__b); }
 
   /// Provides output iterator semantics for streambufs.
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     class ostreambuf_iterator
     : public iterator<output_iterator_tag, void, void, void, void>
     {
     public:
       // Types:
-      //@{
-      /// Public typedefs
-      typedef _CharT                           char_type;
+typedef _CharT                           char_type;
       typedef _Traits                          traits_type;
       typedef basic_streambuf<_CharT, _Traits> streambuf_type;
       typedef basic_ostream<_CharT, _Traits>   ostream_type;
       //@}
-
-      template<typename _CharT2>
+template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
 		                    ostreambuf_iterator<_CharT2> >::__type
 	copy(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
@@ -22284,15 +17495,15 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     public:
       ///  Construct output iterator from ostream.
-      ostreambuf_iterator(ostream_type& __s) throw ()
+ostreambuf_iterator(ostream_type& __s) throw ()
       : _M_sbuf(__s.rdbuf()), _M_failed(!_M_sbuf) { }
 
       ///  Construct output iterator from streambuf.
-      ostreambuf_iterator(streambuf_type* __s) throw ()
+ostreambuf_iterator(streambuf_type* __s) throw ()
       : _M_sbuf(__s), _M_failed(!_M_sbuf) { }
 
       ///  Write character to streambuf.  Calls streambuf.sputc().
-      ostreambuf_iterator&
+ostreambuf_iterator&
       operator=(_CharT __c)
       {
 	if (!_M_failed &&
@@ -22302,22 +17513,22 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       /// Return *this.
-      ostreambuf_iterator&
+ostreambuf_iterator&
       operator*()
       { return *this; }
 
       /// Return *this.
-      ostreambuf_iterator&
+ostreambuf_iterator&
       operator++(int)
       { return *this; }
 
       /// Return *this.
-      ostreambuf_iterator&
+ostreambuf_iterator&
       operator++()
       { return *this; }
 
       /// Return true if previous operator=() failed.
-      bool
+bool
       failed() const throw()
       { return _M_failed; }
 
@@ -22333,7 +17544,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // Overloads for streambuf iterators.
-  template<typename _CharT>
+template<typename _CharT>
     typename __gnu_cxx::__enable_if<__is_char<_CharT>::__value,
     	                 	    ostreambuf_iterator<_CharT> >::__type
     copy(istreambuf_iterator<_CharT> __first,
@@ -22451,24 +17662,19 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
 // @} group iterators
-
 }
 
 
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // NB: Don't instantiate required wchar_t facets if no wchar_t support.
-
-  // Convert string to numeric value of type _Tp and store results.
-  // NB: This is specialized for all required types, there is no
-  // generic definition.
-  template<typename _Tp>
+template<typename _Tp>
     void
     __convert_to_v(const char*, _Tp&, ios_base::iostate&,
 		   const __c_locale&) throw();
 
   // Explicit specializations for required types.
-  template<>
+template<>
     void
     __convert_to_v(const char*, float&, ios_base::iostate&,
 		   const __c_locale&) throw();
@@ -22484,8 +17690,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		   const __c_locale&) throw();
 
   // NB: __pad is a struct, rather than a function, so it can be
-  // partially-specialized.
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     struct __pad
     {
       static void
@@ -22494,20 +17699,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // Used by both numeric and monetary facets.
-  // Inserts "group separator" characters into an array of characters.
-  // It's recursive, one iteration per group.  It moves the characters
-  // in the buffer this way: "xxxx12345" -> "12,345xxx".  Call this
-  // only with __gsize != 0.
-  template<typename _CharT>
+template<typename _CharT>
     _CharT*
     __add_grouping(_CharT* __s, _CharT __sep,
 		   const char* __gbeg, size_t __gsize,
 		   const _CharT* __first, const _CharT* __last);
 
   // This template permits specializing facet output code for
-  // ostreambuf_iterator.  For ostreambuf_iterator, sputn is
-  // significantly more efficient than incrementing iterators.
-  template<typename _CharT>
+template<typename _CharT>
     inline
     ostreambuf_iterator<_CharT>
     __write(ostreambuf_iterator<_CharT> __s, const _CharT* __ws, int __len)
@@ -22517,7 +17716,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // This is the unspecialized form of the template.
-  template<typename _CharT, typename _OutIter>
+template<typename _CharT, typename _OutIter>
     inline
     _OutIter
     __write(_OutIter __s, const _CharT* __ws, int __len)
@@ -22529,24 +17728,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
   // 22.2.1.1  Template class ctype
-  // Include host and configuration specific ctype enums for ctype_base.
-
-  /**
-   *  @brief  Common base for ctype facet
-   *
-   *  This template class provides implementations of the public functions
-   *  that forward to the protected virtual functions.
-   *
-   *  This template also provides abstract stubs for the protected virtual
-   *  functions.
-  */
-  template<typename _CharT>
+template<typename _CharT>
     class __ctype_abstract_base : public locale::facet, public ctype_base
     {
     public:
       // Types:
-      /// Typedef for the template parameter
-      typedef _CharT char_type;
+typedef _CharT char_type;
 
       /**
        *  @brief  Test char_type classification.
@@ -23006,11 +18193,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     {
     public:
       // Types:
-      typedef _CharT			char_type;
+typedef _CharT			char_type;
       typedef typename __ctype_abstract_base<_CharT>::mask mask;
 
       /// The facet id for ctype<char_type>
-      static locale::id			id;
+static locale::id			id;
 
       explicit
       ctype(size_t __refs = 0) : __ctype_abstract_base<_CharT>(__refs) { }
@@ -23075,12 +18262,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     {
     public:
       // Types:
-      /// Typedef for the template parameter char.
-      typedef char		char_type;
+typedef char		char_type;
 
     protected:
       // Data Members:
-      __c_locale		_M_c_locale_ctype;
+__c_locale		_M_c_locale_ctype;
       bool			_M_del;
       __to_type			_M_toupper;
       __to_type			_M_tolower;
@@ -23089,13 +18275,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       mutable char		_M_widen[1 + static_cast<unsigned char>(-1)];
       mutable char		_M_narrow[1 + static_cast<unsigned char>(-1)];
       mutable char		_M_narrow_ok;	// 0 uninitialized, 1 init,
-						// 2 memcpy can't be used
-
-    public:
+public:
       /// The facet id for ctype<char>
-      static locale::id        id;
+static locale::id        id;
       /// The size of the mask table.  It is SCHAR_MAX + 1.
-      static const size_t      table_size = 1 + static_cast<unsigned char>(-1);
+static const size_t      table_size = 1 + static_cast<unsigned char>(-1);
 
       /**
        *  @brief  Constructor performs initialization.
@@ -23367,15 +18551,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // DR 695. ctype<char>::classic_table() not accessible.
-      /// Returns a pointer to the mask table provided to the constructor, or
-      /// the default from classic_table() if none was provided.
-      const mask*
+const mask*
       table() const throw()
       { return _M_table; }
 
       /// Returns a pointer to the C locale mask table.
-      static const mask*
+static const mask*
       classic_table() throw();
     protected:
 
@@ -23575,26 +18756,24 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     {
     public:
       // Types:
-      /// Typedef for the template parameter wchar_t.
-      typedef wchar_t		char_type;
+typedef wchar_t		char_type;
       typedef wctype_t		__wmask_type;
 
     protected:
       __c_locale		_M_c_locale_ctype;
 
       // Pre-computed narrowed and widened chars.
-      bool                      _M_narrow_ok;
+bool                      _M_narrow_ok;
       char                      _M_narrow[128];
       wint_t                    _M_widen[1 + static_cast<unsigned char>(-1)];
 
       // Pre-computed elements for do_is.
-      mask                      _M_bit[16];
+mask                      _M_bit[16];
       __wmask_type              _M_wmask[16];
 
     public:
       // Data Members:
-      /// The facet id for ctype<wchar_t>
-      static locale::id		id;
+static locale::id		id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -23622,7 +18801,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       _M_convert_to_wmask(const mask __m) const throw();
 
       /// Destructor
-      virtual
+virtual
       ~ctype();
 
       /**
@@ -23856,12 +19035,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		char __dfault, char* __dest) const;
 
       // For use at construction time only.
-      void
+void
       _M_initialize_ctype() throw();
     };
 
   /// class ctype_byname [22.2.1.2].
-  template<typename _CharT>
+template<typename _CharT>
     class ctype_byname : public ctype<_CharT>
     {
     public:
@@ -23876,7 +19055,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   /// 22.2.1.4  Class ctype_byname specializations.
-  template<>
+template<>
     class ctype_byname<char> : public ctype<char>
     {
     public:
@@ -23903,42 +19082,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // Include host and configuration specific ctype inlines.
-// Locale support -*- C++ -*-
-
-// Copyright (C) 2000, 2002, 2009 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file ctype_inline.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 22.1  Locales
-//
-  
-// ctype bits to be inlined go here. Non-inlinable (ie virtual do_*)
-// functions go in ctype.cc
-  
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   bool
@@ -23980,12 +19123,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // 22.2.2  The numeric category.
-  class __num_base
+class __num_base
   {
   public:
     // NB: Code depends on the order of _S_atoms_out elements.
-    // Below are the indices into _S_atoms_out.
-    enum
+enum
       {
         _S_ominus,
         _S_oplus,
@@ -23996,20 +19138,15 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
         _S_oudigits = _S_odigits_end,
         _S_oudigits_end = _S_oudigits + 16,
         _S_oe = _S_odigits + 14,  // For scientific notation, 'e'
-        _S_oE = _S_oudigits + 14, // For scientific notation, 'E'
-	_S_oend = _S_oudigits_end
+_S_oE = _S_oudigits + 14, // For scientific notation, 'E'
+_S_oend = _S_oudigits_end
       };
 
     // A list of valid numeric literals for output.  This array
-    // contains chars that will be passed through the current locale's
-    // ctype<_CharT>.widen() and then used to render numbers.
-    // For the standard "C" locale, this is
-    // "-+xX0123456789abcdef0123456789ABCDEF".
-    static const char* _S_atoms_out;
+static const char* _S_atoms_out;
 
     // String literal of acceptable (narrow) input, for num_get.
-    // "-+xX0123456789abcdefABCDEF"
-    static const char* _S_atoms_in;
+static const char* _S_atoms_in;
 
     enum
     {
@@ -24024,8 +19161,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
     // num_put
-    // Construct and return valid scanf format for floating point types.
-    static void
+static void
     _S_format_float(const ios_base& __io, char* __fptr, char __mod) throw();
   };
 
@@ -24043,16 +19179,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       _CharT				_M_thousands_sep;
 
       // A list of valid numeric literals for output: in the standard
-      // "C" locale, this is "-+xX0123456789abcdef0123456789ABCDEF".
-      // This array contains the chars after having been passed
-      // through the current locale's ctype<_CharT>.widen().
-      _CharT				_M_atoms_out[__num_base::_S_oend];
+_CharT				_M_atoms_out[__num_base::_S_oend];
 
       // A list of valid numeric literals for input: in the standard
-      // "C" locale, this is "-+xX0123456789abcdefABCDEF"
-      // This array contains the chars after having been passed
-      // through the current locale's ctype<_CharT>.widen().
-      _CharT				_M_atoms_in[__num_base::_S_iend];
+_CharT				_M_atoms_in[__num_base::_S_iend];
 
       bool				_M_allocated;
 
@@ -24106,19 +19236,17 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     {
     public:
       // Types:
-      //@{
-      /// Public typedefs
-      typedef _CharT			char_type;
+typedef _CharT			char_type;
       typedef basic_string<_CharT>	string_type;
       //@}
-      typedef __numpunct_cache<_CharT>  __cache_type;
+typedef __numpunct_cache<_CharT>  __cache_type;
 
     protected:
       __cache_type*			_M_data;
 
     public:
       /// Numpunct facet id.
-      static locale::id			id;
+static locale::id			id;
 
       /**
        *  @brief  Numpunct constructor.
@@ -24242,7 +19370,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     protected:
       /// Destructor.
-      virtual
+virtual
       ~numpunct();
 
       /**
@@ -24309,7 +19437,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { return _M_data->_M_falsename; }
 
       // For use at construction time only.
-      void
+void
       _M_initialize_numpunct(__c_locale __cloc = (__null));
     };
 
@@ -24331,7 +19459,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     numpunct<wchar_t>::_M_initialize_numpunct(__c_locale __cloc);
 
   /// class numpunct_byname [22.2.3.2].
-  template<typename _CharT>
+template<typename _CharT>
     class numpunct_byname : public numpunct<_CharT>
     {
     public:
@@ -24377,14 +19505,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     {
     public:
       // Types:
-      //@{
-      /// Public typedefs
-      typedef _CharT			char_type;
+typedef _CharT			char_type;
       typedef _InIter			iter_type;
       //@}
-
-      /// Numpunct facet id.
-      static locale::id			id;
+static locale::id			id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -24425,37 +19549,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { return this->do_get(__in, __end, __io, __err, __v); }
 
       //@{
-      /**
-       *  @brief  Numeric parsing.
-       *
-       *  Parses the input stream into the integral variable @a v.  It does so
-       *  by calling num_get::do_get().
-       *
-       *  Parsing is affected by the flag settings in @a io.
-       *
-       *  The basic parse is affected by the value of io.flags() &
-       *  ios_base::basefield.  If equal to ios_base::oct, parses like the
-       *  scanf %o specifier.  Else if equal to ios_base::hex, parses like %X
-       *  specifier.  Else if basefield equal to 0, parses like the %i
-       *  specifier.  Otherwise, parses like %d for signed and %u for unsigned
-       *  types.  The matching type length modifier is also used.
-       *
-       *  Digit grouping is interpreted according to numpunct::grouping() and
-       *  numpunct::thousands_sep().  If the pattern of digit groups isn't
-       *  consistent, sets err to ios_base::failbit.
-       *
-       *  If parsing the string yields a valid value for @a v, @a v is set.
-       *  Otherwise, sets err to ios_base::failbit and leaves @a v unaltered.
-       *  Sets err to ios_base::eofbit if the stream is emptied.
-       *
-       *  @param  in  Start of input stream.
-       *  @param  end  End of input stream.
-       *  @param  io  Source of locale and flags.
-       *  @param  err  Error flags to set.
-       *  @param  v  Value to format and insert.
-       *  @return  Iterator after reading.
-      */
-      iter_type
+iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, long& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
@@ -24485,34 +19579,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  ios_base::iostate& __err, unsigned long long& __v)  const
       { return this->do_get(__in, __end, __io, __err, __v); }
       //@}
-
-      //@{
-      /**
-       *  @brief  Numeric parsing.
-       *
-       *  Parses the input stream into the integral variable @a v.  It does so
-       *  by calling num_get::do_get().
-       *
-       *  The input characters are parsed like the scanf %g specifier.  The
-       *  matching type length modifier is also used.
-       *
-       *  The decimal point character used is numpunct::decimal_point().
-       *  Digit grouping is interpreted according to numpunct::grouping() and
-       *  numpunct::thousands_sep().  If the pattern of digit groups isn't
-       *  consistent, sets err to ios_base::failbit.
-       *
-       *  If parsing the string yields a valid value for @a v, @a v is set.
-       *  Otherwise, sets err to ios_base::failbit and leaves @a v unaltered.
-       *  Sets err to ios_base::eofbit if the stream is emptied.
-       *
-       *  @param  in  Start of input stream.
-       *  @param  end  End of input stream.
-       *  @param  io  Source of locale and flags.
-       *  @param  err  Error flags to set.
-       *  @param  v  Value to format and insert.
-       *  @return  Iterator after reading.
-      */
-      iter_type
+iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, float& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
@@ -24527,41 +19594,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  ios_base::iostate& __err, long double& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
       //@}
-
-      /**
-       *  @brief  Numeric parsing.
-       *
-       *  Parses the input stream into the pointer variable @a v.  It does so
-       *  by calling num_get::do_get().
-       *
-       *  The input characters are parsed like the scanf %p specifier.
-       *
-       *  Digit grouping is interpreted according to numpunct::grouping() and
-       *  numpunct::thousands_sep().  If the pattern of digit groups isn't
-       *  consistent, sets err to ios_base::failbit.
-       *
-       *  Note that the digit grouping effect for pointers is a bit ambiguous
-       *  in the standard and shouldn't be relied on.  See DR 344.
-       *
-       *  If parsing the string yields a valid value for @a v, @a v is set.
-       *  Otherwise, sets err to ios_base::failbit and leaves @a v unaltered.
-       *  Sets err to ios_base::eofbit if the stream is emptied.
-       *
-       *  @param  in  Start of input stream.
-       *  @param  end  End of input stream.
-       *  @param  io  Source of locale and flags.
-       *  @param  err  Error flags to set.
-       *  @param  v  Value to format and insert.
-       *  @return  Iterator after reading.
-      */
-      iter_type
+iter_type
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, void*& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
 
     protected:
       /// Destructor.
-      virtual ~num_get() { }
+virtual ~num_get() { }
 
       iter_type
       _M_extract_float(iter_type, iter_type, ios_base&, ios_base::iostate&,
@@ -24611,21 +19651,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	}
 
       //@{
-      /**
-       *  @brief  Numeric parsing.
-       *
-       *  Parses the input stream into the variable @a v.  This function is a
-       *  hook for derived classes to change the value returned.  @see get()
-       *  for more details.
-       *
-       *  @param  in  Start of input stream.
-       *  @param  end  End of input stream.
-       *  @param  io  Source of locale and flags.
-       *  @param  err  Error flags to set.
-       *  @param  v  Value to format and insert.
-       *  @return  Iterator after reading.
-      */
-      virtual iter_type
+virtual iter_type
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const;
 
       virtual iter_type
@@ -24667,7 +19693,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	     double&) const;
 
       // XXX GLIBCXX_ABI Deprecated
-      virtual iter_type
+virtual iter_type
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err,
 	     long double&) const;
 
@@ -24676,8 +19702,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	     void*&) const;
 
       // XXX GLIBCXX_ABI Deprecated
-      //@}
-    };
+};
 
   template<typename _CharT, typename _InIter>
     locale::id num_get<_CharT, _InIter>::id;
@@ -24700,14 +19725,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     {
     public:
       // Types:
-      //@{
-      /// Public typedefs
-      typedef _CharT		char_type;
+typedef _CharT		char_type;
       typedef _OutIter		iter_type;
       //@}
-
-      /// Numpunct facet id.
-      static locale::id		id;
+static locale::id		id;
 
       /**
        *  @brief  Constructor performs initialization.
@@ -24739,44 +19760,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { return this->do_put(__s, __f, __fill, __v); }
 
       //@{
-      /**
-       *  @brief  Numeric formatting.
-       *
-       *  Formats the integral value @a v and inserts it into a
-       *  stream.  It does so by calling num_put::do_put().
-       *
-       *  Formatting is affected by the flag settings in @a io.
-       *
-       *  The basic format is affected by the value of io.flags() &
-       *  ios_base::basefield.  If equal to ios_base::oct, formats like the
-       *  printf %o specifier.  Else if equal to ios_base::hex, formats like
-       *  %x or %X with ios_base::uppercase unset or set respectively.
-       *  Otherwise, formats like %d, %ld, %lld for signed and %u, %lu, %llu
-       *  for unsigned values.  Note that if both oct and hex are set, neither
-       *  will take effect.
-       *
-       *  If ios_base::showpos is set, '+' is output before positive values.
-       *  If ios_base::showbase is set, '0' precedes octal values (except 0)
-       *  and '0[xX]' precedes hex values.
-       *
-       *  Thousands separators are inserted according to numpunct::grouping()
-       *  and numpunct::thousands_sep().  The decimal point character used is
-       *  numpunct::decimal_point().
-       *
-       *  If io.width() is non-zero, enough @a fill characters are inserted to
-       *  make the result at least that wide.  If
-       *  (io.flags() & ios_base::adjustfield) == ios_base::left, result is
-       *  padded at the end.  If ios_base::internal, then padding occurs
-       *  immediately after either a '+' or '-' or after '0x' or '0X'.
-       *  Otherwise, padding occurs at the beginning.
-       *
-       *  @param  s  Stream to write to.
-       *  @param  io  Source of locale and flags.
-       *  @param  fill  Char_type to use for filling.
-       *  @param  v  Value to format and insert.
-       *  @return  Iterator after writing.
-      */
-      iter_type
+iter_type
       put(iter_type __s, ios_base& __f, char_type __fill, long __v) const
       { return this->do_put(__s, __f, __fill, __v); }
 
@@ -24794,50 +19778,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  unsigned long long __v) const
       { return this->do_put(__s, __f, __fill, __v); }
       //@}
-
-      //@{
-      /**
-       *  @brief  Numeric formatting.
-       *
-       *  Formats the floating point value @a v and inserts it into a stream.
-       *  It does so by calling num_put::do_put().
-       *
-       *  Formatting is affected by the flag settings in @a io.
-       *
-       *  The basic format is affected by the value of io.flags() &
-       *  ios_base::floatfield.  If equal to ios_base::fixed, formats like the
-       *  printf %f specifier.  Else if equal to ios_base::scientific, formats
-       *  like %e or %E with ios_base::uppercase unset or set respectively.
-       *  Otherwise, formats like %g or %G depending on uppercase.  Note that
-       *  if both fixed and scientific are set, the effect will also be like
-       *  %g or %G.
-       *
-       *  The output precision is given by io.precision().  This precision is
-       *  capped at numeric_limits::digits10 + 2 (different for double and
-       *  long double).  The default precision is 6.
-       *
-       *  If ios_base::showpos is set, '+' is output before positive values.
-       *  If ios_base::showpoint is set, a decimal point will always be
-       *  output.
-       *
-       *  Thousands separators are inserted according to numpunct::grouping()
-       *  and numpunct::thousands_sep().  The decimal point character used is
-       *  numpunct::decimal_point().
-       *
-       *  If io.width() is non-zero, enough @a fill characters are inserted to
-       *  make the result at least that wide.  If
-       *  (io.flags() & ios_base::adjustfield) == ios_base::left, result is
-       *  padded at the end.  If ios_base::internal, then padding occurs
-       *  immediately after either a '+' or '-' or after '0x' or '0X'.
-       *  Otherwise, padding occurs at the beginning.
-       *
-       *  @param  s  Stream to write to.
-       *  @param  io  Source of locale and flags.
-       *  @param  fill  Char_type to use for filling.
-       *  @param  v  Value to format and insert.
-       *  @return  Iterator after writing.
-      */
-      iter_type
+iter_type
       put(iter_type __s, ios_base& __f, char_type __fill, double __v) const
       { return this->do_put(__s, __f, __fill, __v); }
 
@@ -24846,23 +19787,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  long double __v) const
       { return this->do_put(__s, __f, __fill, __v); }
       //@}
-
-      /**
-       *  @brief  Numeric formatting.
-       *
-       *  Formats the pointer value @a v and inserts it into a stream.  It
-       *  does so by calling num_put::do_put().
-       *
-       *  This function formats @a v as an unsigned long with ios_base::hex
-       *  and ios_base::showbase set.
-       *
-       *  @param  s  Stream to write to.
-       *  @param  io  Source of locale and flags.
-       *  @param  fill  Char_type to use for filling.
-       *  @param  v  Value to format and insert.
-       *  @return  Iterator after writing.
-      */
-      iter_type
+iter_type
       put(iter_type __s, ios_base& __f, char_type __fill,
 	  const void* __v) const
       { return this->do_put(__s, __f, __fill, __v); }
@@ -24893,24 +19818,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	     char_type* __new, const char_type* __cs, int& __len) const;
 
       /// Destructor.
-      virtual
+virtual
       ~num_put() { };
 
       //@{
-      /**
-       *  @brief  Numeric formatting.
-       *
-       *  These functions do the work of formatting numeric values and
-       *  inserting them into a stream. This function is a hook for derived
-       *  classes to change the value returned.
-       *
-       *  @param  s  Stream to write to.
-       *  @param  io  Source of locale and flags.
-       *  @param  fill  Char_type to use for filling.
-       *  @param  v  Value to format and insert.
-       *  @return  Iterator after writing.
-      */
-      virtual iter_type
+virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, bool __v) const;
 
       virtual iter_type
@@ -24936,15 +19848,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       do_put(iter_type, ios_base&, char_type __fill, double __v) const;
 
       // XXX GLIBCXX_ABI Deprecated
-      virtual iter_type
+virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, long double __v) const;
 
       virtual iter_type
       do_put(iter_type, ios_base&, char_type __fill, const void* __v) const;
 
       // XXX GLIBCXX_ABI Deprecated
-      //@}
-    };
+};
 
   template <typename _CharT, typename _OutIter>
     locale::id num_put<_CharT, _OutIter>::id;
@@ -24952,84 +19863,79 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
   // Subclause convenience interfaces, inlines.
-  // NB: These are inline because, when used in a loop, some compilers
-  // can hoist the body out of the loop; then it's just as fast as the
-  // C is*() function.
-
-  /// Convenience interface to ctype.is(ctype_base::space, __c).
-  template<typename _CharT>
+template<typename _CharT>
     inline bool
     isspace(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::space, __c); }
 
   /// Convenience interface to ctype.is(ctype_base::print, __c).
-  template<typename _CharT>
+template<typename _CharT>
     inline bool
     isprint(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::print, __c); }
 
   /// Convenience interface to ctype.is(ctype_base::cntrl, __c).
-  template<typename _CharT>
+template<typename _CharT>
     inline bool
     iscntrl(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::cntrl, __c); }
 
   /// Convenience interface to ctype.is(ctype_base::upper, __c).
-  template<typename _CharT>
+template<typename _CharT>
     inline bool
     isupper(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::upper, __c); }
 
   /// Convenience interface to ctype.is(ctype_base::lower, __c).
-  template<typename _CharT>
+template<typename _CharT>
     inline bool 
     islower(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::lower, __c); }
 
   /// Convenience interface to ctype.is(ctype_base::alpha, __c).
-  template<typename _CharT>
+template<typename _CharT>
     inline bool
     isalpha(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::alpha, __c); }
 
   /// Convenience interface to ctype.is(ctype_base::digit, __c).
-  template<typename _CharT>
+template<typename _CharT>
     inline bool
     isdigit(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::digit, __c); }
 
   /// Convenience interface to ctype.is(ctype_base::punct, __c).
-  template<typename _CharT>
+template<typename _CharT>
     inline bool
     ispunct(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::punct, __c); }
 
   /// Convenience interface to ctype.is(ctype_base::xdigit, __c).
-  template<typename _CharT>
+template<typename _CharT>
     inline bool
     isxdigit(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::xdigit, __c); }
 
   /// Convenience interface to ctype.is(ctype_base::alnum, __c).
-  template<typename _CharT>
+template<typename _CharT>
     inline bool
     isalnum(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::alnum, __c); }
 
   /// Convenience interface to ctype.is(ctype_base::graph, __c).
-  template<typename _CharT>
+template<typename _CharT>
     inline bool
     isgraph(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).is(ctype_base::graph, __c); }
 
   /// Convenience interface to ctype.toupper(__c).
-  template<typename _CharT>
+template<typename _CharT>
     inline _CharT
     toupper(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).toupper(__c); }
 
   /// Convenience interface to ctype.tolower(__c).
-  template<typename _CharT>
+template<typename _CharT>
     inline _CharT
     tolower(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).tolower(__c); }
@@ -25037,44 +19943,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // Locale support -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file locale_facets.tcc
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
 #pragma GCC system_header
 
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // Routine to access a cache for the facet.  If the cache didn't
-  // exist before, it gets constructed on the fly.
-  template<typename _Facet>
+template<typename _Facet>
     struct __use_cache
     {
       const _Facet*
@@ -25082,7 +19956,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // Specializations.
-  template<typename _CharT>
+template<typename _CharT>
     struct __use_cache<__numpunct_cache<_CharT> >
     {
       const __numpunct_cache<_CharT>*
@@ -25162,14 +20036,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Used by both numeric and monetary facets.
-  // Check to make sure that the __grouping_tmp string constructed in
-  // money_get or num_get matches the canonical grouping for a given
-  // locale.
-  // __grouping_tmp is parsed L to R
-  // 1,222,444 == __grouping_tmp of "\1\3\3"
-  // __grouping is parsed R to L
-  // 1,222,444 == __grouping of "\3" == "\3\3\3"
-  __attribute__ ((__pure__)) bool
+__attribute__ ((__pure__)) bool
   __verify_grouping(const char* __grouping, size_t __grouping_size,
 		    const string& __grouping_tmp) throw ();
 
@@ -25190,10 +20057,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       char_type __c = char_type();
 
       // True if __beg becomes equal to __end.
-      bool __testeof = __beg == __end;
+bool __testeof = __beg == __end;
 
       // First check for sign.
-      if (!__testeof)
+if (!__testeof)
 	{
 	  __c = *__beg;
 	  const bool __plus = __c == __lit[__num_base::_S_iplus];
@@ -25210,7 +20077,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	}
 
       // Next, look for leading zeros.
-      bool __found_mantissa = false;
+bool __found_mantissa = false;
       int __sep_pos = 0;
       while (!__testeof)
 	{
@@ -25236,7 +20103,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	}
 
       // Only need acceptable digits for floating point numbers.
-      bool __found_dec = false;
+bool __found_dec = false;
       bool __found_sci = false;
       string __found_grouping;
       if (__lc->_M_use_grouping)
@@ -25245,7 +20112,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
       if (!__lc->_M_allocated)
 	// "C" locale
-	while (!__testeof)
+while (!__testeof)
 	  {
 	    const int __digit = _M_find(__lit_zero, 10, __c);
 	    if (__digit != -1)
@@ -25264,11 +20131,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		     && !__found_sci && __found_mantissa)
 	      {
 		// Scientific notation.
-		__xtrc += 'e';
+__xtrc += 'e';
 		__found_sci = true;
 		
 		// Remove optional plus or minus sign, if they exist.
-		if (++__beg != __end)
+if (++__beg != __end)
 		  {
 		    __c = *__beg;
 		    const bool __plus = __c == __lit[__num_base::_S_iplus];
@@ -25295,14 +20162,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	while (!__testeof)
 	  {
 	    // According to 22.2.2.1.2, p8-9, first look for thousands_sep
-	    // and decimal_point.
-	    if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
+if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 	      {
 		if (!__found_dec && !__found_sci)
 		  {
 		    // NB: Thousands separator at the beginning of a string
-		    // is a no-no, as is two consecutive thousands separators.
-		    if (__sep_pos)
+if (__sep_pos)
 		      {
 			__found_grouping += static_cast<char>(__sep_pos);
 			__sep_pos = 0;
@@ -25310,8 +20175,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		    else
 		      {
 			// NB: __convert_to_v will not assign __v and will
-			// set the failbit.
-			__xtrc.clear();
+__xtrc.clear();
 			break;
 		      }
 		  }
@@ -25323,9 +20187,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		if (!__found_dec && !__found_sci)
 		  {
 		    // If no grouping chars are seen, no grouping check
-		    // is applied. Therefore __found_grouping is adjusted
-		    // only if decimal_point comes after some thousands_sep.
-		    if (__found_grouping.size())
+if (__found_grouping.size())
 		      __found_grouping += static_cast<char>(__sep_pos);
 		    __xtrc += '.';
 		    __found_dec = true;
@@ -25348,13 +20210,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 			 && !__found_sci && __found_mantissa)
 		  {
 		    // Scientific notation.
-		    if (__found_grouping.size() && !__found_dec)
+if (__found_grouping.size() && !__found_dec)
 		      __found_grouping += static_cast<char>(__sep_pos);
 		    __xtrc += 'e';
 		    __found_sci = true;
 		    
 		    // Remove optional plus or minus sign, if they exist.
-		    if (++__beg != __end)
+if (++__beg != __end)
 		      {
 			__c = *__beg;
 			const bool __plus = __c == __lit[__num_base::_S_iplus];
@@ -25383,11 +20245,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  }
 
       // Digit grouping is checked. If grouping and found_grouping don't
-      // match, then get very very upset, and set failbit.
-      if (__found_grouping.size())
+if (__found_grouping.size())
         {
           // Add the ending grouping if a decimal or 'e'/'E' wasn't found.
-	  if (!__found_dec && !__found_sci)
+if (!__found_dec && !__found_sci)
 	    __found_grouping += static_cast<char>(__sep_pos);
 
           if (!std::__verify_grouping(__lc->_M_grouping, 
@@ -25417,16 +20278,16 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	char_type __c = char_type();
 
 	// NB: Iff __basefield == 0, __base can change based on contents.
-	const ios_base::fmtflags __basefield = __io.flags()
+const ios_base::fmtflags __basefield = __io.flags()
 	                                       & ios_base::basefield;
 	const bool __oct = __basefield == ios_base::oct;
 	int __base = __oct ? 8 : (__basefield == ios_base::hex ? 16 : 10);
 
 	// True if __beg becomes equal to __end.
-	bool __testeof = __beg == __end;
+bool __testeof = __beg == __end;
 
 	// First check for sign.
-	bool __negative = false;
+bool __negative = false;
 	if (!__testeof)
 	  {
 	    __c = *__beg;
@@ -25443,8 +20304,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  }
 
 	// Next, look for leading zeros and check required digits
-	// for base formats.
-	bool __found_zero = false;
+bool __found_zero = false;
 	int __sep_pos = 0;
 	while (!__testeof)
 	  {
@@ -25489,12 +20349,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  }
 	
 	// At this point, base is determined. If not hex, only allow
-	// base digits as valid input.
-	const size_t __len = (__base == 16 ? __num_base::_S_iend
+const size_t __len = (__base == 16 ? __num_base::_S_iend
 			      - __num_base::_S_izero : __base);
 
 	// Extract.
-	string __found_grouping;
+string __found_grouping;
 	if (__lc->_M_use_grouping)
 	  __found_grouping.reserve(32);
 	bool __testfail = false;
@@ -25510,7 +20369,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 	if (!__lc->_M_allocated)
 	  // "C" locale
-	  while (!__testeof)
+while (!__testeof)
 	    {
 	      __digit = _M_find(__lit_zero, __len, __c);
 	      if (__digit == -1)
@@ -25535,12 +20394,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  while (!__testeof)
 	    {
 	      // According to 22.2.2.1.2, p8-9, first look for thousands_sep
-	      // and decimal_point.
-	      if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
+if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 		{
 		  // NB: Thousands separator at the beginning of a string
-		  // is a no-no, as is two consecutive thousands separators.
-		  if (__sep_pos)
+if (__sep_pos)
 		    {
 		      __found_grouping += static_cast<char>(__sep_pos);
 		      __sep_pos = 0;
@@ -25581,11 +20438,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	    }
 	
 	// Digit grouping is checked. If grouping and found_grouping don't
-	// match, then get very very upset, and set failbit.
-	if (__found_grouping.size())
+if (__found_grouping.size())
 	  {
 	    // Add the ending grouping.
-	    __found_grouping += static_cast<char>(__sep_pos);
+__found_grouping += static_cast<char>(__sep_pos);
 
 	    if (!std::__verify_grouping(__lc->_M_grouping,
 					__lc->_M_grouping_size,
@@ -25594,8 +20450,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  }
 
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 23. Num_get overflow result.
-	if ((!__sep_pos && !__found_zero && !__found_grouping.size())
+if ((!__sep_pos && !__found_zero && !__found_grouping.size())
 	    || __testfail)
 	  {
 	    __v = 0;
@@ -25619,8 +20474,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // 17.  Bad bool parsing
-  template<typename _CharT, typename _InIter>
+template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::
     do_get(iter_type __beg, iter_type __end, ios_base& __io,
@@ -25629,17 +20483,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       if (!(__io.flags() & ios_base::boolalpha))
         {
 	  // Parse bool values as long.
-          // NB: We can't just call do_get(long) here, as it might
-          // refer to a derived class.
-	  long __l = -1;
+long __l = -1;
           __beg = _M_extract_int(__beg, __end, __io, __err, __l);
 	  if (__l == 0 || __l == 1)
 	    __v = bool(__l);
 	  else
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 23. Num_get overflow result.
-	      __v = true;
+__v = true;
 	      __err = ios_base::failbit;
 	      if (__beg == __end)
 		__err |= ios_base::eofbit;
@@ -25648,7 +20499,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       else
         {
 	  // Parse bool values as alphanumeric.
-	  typedef __numpunct_cache<_CharT>  __cache_type;
+typedef __numpunct_cache<_CharT>  __cache_type;
 	  __use_cache<__cache_type> __uc;
 	  const locale& __loc = __io._M_getloc();
 	  const __cache_type* __lc = __uc(__loc);
@@ -25706,8 +20557,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  else
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 23. Num_get overflow result.
-	      __v = false;
+__v = false;
 	      __err = ios_base::failbit;
 	      if (__testeof)
 		__err |= ios_base::eofbit;
@@ -25769,7 +20619,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
            ios_base::iostate& __err, void*& __v) const
     {
       // Prepare for hex formatted input.
-      typedef ios_base::fmtflags        fmtflags;
+typedef ios_base::fmtflags        fmtflags;
       const fmtflags __fmt = __io.flags();
       __io.flags((__fmt & ~ios_base::basefield) | ios_base::hex);
 
@@ -25781,23 +20631,21 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       __beg = _M_extract_int(__beg, __end, __io, __err, __ul);
 
       // Reset from hex formatted input.
-      __io.flags(__fmt);
+__io.flags(__fmt);
 
       __v = reinterpret_cast<void*>(__ul);
       return __beg;
     }
 
   // For use by integer and floating-point types after they have been
-  // converted into a char_type string.
-  template<typename _CharT, typename _OutIter>
+template<typename _CharT, typename _OutIter>
     void
     num_put<_CharT, _OutIter>::
     _M_pad(_CharT __fill, streamsize __w, ios_base& __io,
 	   _CharT* __new, const _CharT* __cs, int& __len) const
     {
       // [22.2.2.2.2] Stage 3.
-      // If necessary, pad.
-      __pad<_CharT, char_traits<_CharT> >::_S_pad(__io, __fill, __new,
+__pad<_CharT, char_traits<_CharT> >::_S_pad(__io, __fill, __new,
 						  __cs, __w, __len);
       __len = static_cast<int>(__w);
     }
@@ -25813,7 +20661,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       if (__builtin_expect(__dec, true))
 	{
 	  // Decimal.
-	  do
+do
 	    {
 	      *--__buf = __lit[(__v % 10) + __num_base::_S_odigits];
 	      __v /= 10;
@@ -25823,7 +20671,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       else if ((__flags & ios_base::basefield) == ios_base::oct)
 	{
 	  // Octal.
-	  do
+do
 	    {
 	      *--__buf = __lit[(__v & 0x7) + __num_base::_S_odigits];
 	      __v >>= 3;
@@ -25833,7 +20681,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       else
 	{
 	  // Hex.
-	  const bool __uppercase = __flags & ios_base::uppercase;
+const bool __uppercase = __flags & ios_base::uppercase;
 	  const int __case_offset = __uppercase ? __num_base::_S_oudigits
 	                                        : __num_base::_S_odigits;
 	  do
@@ -25876,13 +20724,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	const ios_base::fmtflags __flags = __io.flags();
 
 	// Long enough to hold hex, dec, and octal representations.
-	const int __ilen = 5 * sizeof(_ValueT);
+const int __ilen = 5 * sizeof(_ValueT);
 	_CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
 							     * __ilen));
 
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
-	// Result is returned right-justified in the buffer.
-	const ios_base::fmtflags __basefield = __flags & ios_base::basefield;
+const ios_base::fmtflags __basefield = __flags & ios_base::basefield;
 	const bool __dec = (__basefield != ios_base::oct
 			    && __basefield != ios_base::hex);
 	const __unsigned_type __u = ((__v > 0 || !__dec)
@@ -25892,11 +20739,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	__cs += __ilen - __len;
 
 	// Add grouping, if necessary.
-	if (__lc->_M_use_grouping)
+if (__lc->_M_use_grouping)
 	  {
 	    // Grouping can add (almost) as many separators as the number
-	    // of digits + space is reserved for numeric base or sign.
-	    _CharT* __cs2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+_CharT* __cs2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
 								  * (__len + 1)
 								  * 2));
 	    _M_group_int(__lc->_M_grouping, __lc->_M_grouping_size,
@@ -25905,10 +20751,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  }
 
 	// Complete Stage 1, prepend numeric base or sign.
-	if (__builtin_expect(__dec, true))
+if (__builtin_expect(__dec, true))
 	  {
 	    // Decimal.
-	    if (__v >= 0)
+if (__v >= 0)
 	      {
 		if (bool(__flags & ios_base::showpos)
 		    && __gnu_cxx::__numeric_traits<_ValueT>::__is_signed)
@@ -25924,16 +20770,16 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	    else
 	      {
 		// 'x' or 'X'
-		const bool __uppercase = __flags & ios_base::uppercase;
+const bool __uppercase = __flags & ios_base::uppercase;
 		*--__cs = __lit[__num_base::_S_ox + __uppercase];
 		// '0'
-		*--__cs = __lit[__num_base::_S_odigits];
+*--__cs = __lit[__num_base::_S_odigits];
 		__len += 2;
 	      }
 	  }
 
 	// Pad.
-	const streamsize __w = __io.width();
+const streamsize __w = __io.width();
 	if (__w > static_cast<streamsize>(__len))
 	  {
 	    _CharT* __cs3 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
@@ -25944,8 +20790,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	__io.width(0);
 
 	// [22.2.2.2.2] Stage 4.
-	// Write resulting, fully-formatted string to output iterator.
-	return std::__write(__s, __cs, __len);
+return std::__write(__s, __cs, __len);
       }
 
   template<typename _CharT, typename _OutIter>
@@ -25956,15 +20801,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		   _CharT* __cs, int& __len) const
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 282. What types does numpunct grouping refer to?
-      // Add grouping, if necessary.
-      const int __declen = __p ? __p - __cs : __len;
+const int __declen = __p ? __p - __cs : __len;
       _CharT* __p2 = std::__add_grouping(__new, __sep, __grouping,
 					 __grouping_size,
 					 __cs, __cs + __declen);
 
       // Tack on decimal part.
-      int __newlen = __p2 - __new;
+int __newlen = __p2 - __new;
       if (__p)
 	{
 	  char_traits<_CharT>::copy(__p2, __p, __len - __declen);
@@ -25974,16 +20817,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // The following code uses vsnprintf (or vsprintf(), when
-  // _GLIBCXX_USE_C99 is not defined) to convert floating point values
-  // for insertion into a stream.  An optimization would be to replace
-  // them with code that works directly on a wide buffer and then use
-  // __pad to do the padding.  It would be good to replace them anyway
-  // to gain back the efficiency that C++ provides by knowing up front
-  // the type of the values to insert.  Also, sprintf is dangerous
-  // since may lead to accidental buffer overruns.  This
-  // implementation follows the C++ standard fairly directly as
-  // outlined in 22.2.2.2 [lib.locale.num.put]
-  template<typename _CharT, typename _OutIter>
+template<typename _CharT, typename _OutIter>
     template<typename _ValueT>
       _OutIter
       num_put<_CharT, _OutIter>::
@@ -25996,26 +20830,25 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	const __cache_type* __lc = __uc(__loc);
 
 	// Use default precision if out of range.
-	const streamsize __prec = __io.precision() < 0 ? 6 : __io.precision();
+const streamsize __prec = __io.precision() < 0 ? 6 : __io.precision();
 
 	const int __max_digits =
 	  __gnu_cxx::__numeric_traits<_ValueT>::__digits10;
 
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
-	int __len;
+int __len;
 	// Long enough for the max format spec.
-	char __fbuf[16];
+char __fbuf[16];
 	__num_base::_S_format_float(__io, __fbuf, __mod);
 
 	// First try a buffer perhaps big enough (most probably sufficient
-	// for non-ios_base::fixed outputs)
-	int __cs_size = __max_digits * 3;
+int __cs_size = __max_digits * 3;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 	__len = std::__convert_from_v(_S_get_c_locale(), __cs, __cs_size,
 				      __fbuf, __prec, __v);
 
 	// If the buffer was not large enough, try again with the correct size.
-	if (__len >= __cs_size)
+if (__len >= __cs_size)
 	  {
 	    __cs_size = __len + 1;
 	    __cs = static_cast<char*>(__builtin_alloca(__cs_size));
@@ -26024,15 +20857,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  }
 
 	// [22.2.2.2.2] Stage 2, convert to char_type, using correct
-	// numpunct.decimal_point() values for '.' and adding grouping.
-	const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
 	
 	_CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
 							     * __len));
 	__ctype.widen(__cs, __cs + __len, __ws);
 	
 	// Replace decimal point.
-	_CharT* __wp = 0;
+_CharT* __wp = 0;
 	const char* __p = char_traits<char>::find(__cs, __len, '.');
 	if (__p)
 	  {
@@ -26041,15 +20873,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  }
 	
 	// Add grouping, if necessary.
-	// N.B. Make sure to not group things like 2e20, i.e., no decimal
-	// point, scientific notation.
-	if (__lc->_M_use_grouping
+if (__lc->_M_use_grouping
 	    && (__wp || __len < 3 || (__cs[1] <= '9' && __cs[2] <= '9'
 				      && __cs[1] >= '0' && __cs[2] >= '0')))
 	  {
 	    // Grouping can add (almost) as many separators as the
-	    // number of digits, but no more.
-	    _CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+_CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
 								  * __len * 2));
 	    
 	    streamsize __off = 0;
@@ -26069,7 +20898,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  }
 
 	// Pad.
-	const streamsize __w = __io.width();
+const streamsize __w = __io.width();
 	if (__w > static_cast<streamsize>(__len))
 	  {
 	    _CharT* __ws3 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
@@ -26080,8 +20909,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	__io.width(0);
 	
 	// [22.2.2.2.2] Stage 4.
-	// Write resulting, fully-formatted string to output iterator.
-	return std::__write(__s, __ws, __len);
+return std::__write(__s, __ws, __len);
       }
   
   template<typename _CharT, typename _OutIter>
@@ -26174,13 +21002,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
   // Construct correctly padded string, as per 22.2.2.2.2
-  // Assumes
-  // __newlen > __oldlen
-  // __news is allocated for __newlen size
-
-  // NB: Of the two parameters, _CharT can be deduced from the
-  // function arguments. The other (_Traits) has to be explicitly specified.
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     void
     __pad<_CharT, _Traits>::_S_pad(ios_base& __io, _CharT __fill,
 				   _CharT* __news, const _CharT* __olds,
@@ -26190,7 +21012,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       const ios_base::fmtflags __adjust = __io.flags() & ios_base::adjustfield;
 
       // Padding last.
-      if (__adjust == ios_base::left)
+if (__adjust == ios_base::left)
 	{
 	  _Traits::copy(__news, __olds, __oldlen);
 	  _Traits::assign(__news + __oldlen, __plen, __fill);
@@ -26201,9 +21023,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       if (__adjust == ios_base::internal)
 	{
 	  // Pad after the sign, if there is one.
-	  // Pad after 0[xX], if there is one.
-	  // Who came up with these rules, anyway? Jeeze.
-          const locale& __loc = __io._M_getloc();
+const locale& __loc = __io._M_getloc();
 	  const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
 
 	  if (__ctype.widen('-') == __olds[0]
@@ -26224,7 +21044,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	      __news += 2;
 	    }
 	  // else Padding first.
-	}
+}
       _Traits::assign(__news, __plen, __fill);
       _Traits::copy(__news + __plen, __olds + __mod, __oldlen - __mod);
     }
@@ -26267,9 +21087,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.
-  // NB: This syntax is a GNU extension.
-  extern template class numpunct<char>;
+extern template class numpunct<char>;
   extern template class numpunct_byname<char>;
   extern template class  num_get<char>;
   extern template class  num_put<char>;
@@ -26361,79 +21179,46 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // 27.4.5  Template class basic_ios
-  /**
-   *  @brief  Virtual base class for all stream classes.
-   *  @ingroup io
-   *
-   *  Most of the member functions called dispatched on stream objects
-   *  (e.g., @c std::cout.foo(bar);) are consolidated in this class.
-  */
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     class basic_ios : public ios_base
     {
     public:
       //@{
-      /**
-       *  These are standard types.  They permit a standardized way of
-       *  referring to names of (or names dependant on) the template
-       *  parameters, which are specific to the implementation.
-      */
-      typedef _CharT                                 char_type;
+typedef _CharT                                 char_type;
       typedef typename _Traits::int_type             int_type;
       typedef typename _Traits::pos_type             pos_type;
       typedef typename _Traits::off_type             off_type;
       typedef _Traits                                traits_type;
       //@}
-
-      //@{
-      /**
-       *  These are non-standard types.
-      */
-      typedef ctype<_CharT>                          __ctype_type;
+typedef ctype<_CharT>                          __ctype_type;
       typedef num_put<_CharT, ostreambuf_iterator<_CharT, _Traits> >
 						     __num_put_type;
       typedef num_get<_CharT, istreambuf_iterator<_CharT, _Traits> >
 						     __num_get_type;
       //@}
-
-      // Data members:
-    protected:
+protected:
       basic_ostream<_CharT, _Traits>*                _M_tie;
       mutable char_type                              _M_fill;
       mutable bool                                   _M_fill_init;
       basic_streambuf<_CharT, _Traits>*              _M_streambuf;
 
       // Cached use_facet<ctype>, which is based on the current locale info.
-      const __ctype_type*                            _M_ctype;
+const __ctype_type*                            _M_ctype;
       // For ostream.
-      const __num_put_type*                          _M_num_put;
+const __num_put_type*                          _M_num_put;
       // For istream.
-      const __num_get_type*                          _M_num_get;
+const __num_get_type*                          _M_num_get;
 
     public:
       //@{
-      /**
-       *  @brief  The quick-and-easy status check.
-       *
-       *  This allows you to write constructs such as
-       *  <code>if (!a_stream) ...</code> and <code>while (a_stream) ...</code>
-      */
-      operator void*() const
+operator void*() const
       { return this->fail() ? 0 : const_cast<basic_ios*>(this); }
 
       bool
       operator!() const
       { return this->fail(); }
       //@}
-
-      /**
-       *  @brief  Returns the error state of the stream buffer.
-       *  @return  A bit pattern (well, isn't everything?)
-       *
-       *  See std::ios_base::iostate for the possible bit values.  Most
-       *  users will call one of the interpreting wrappers, e.g., good().
-      */
-      iostate
+iostate
       rdstate() const
       { return _M_streambuf_state; }
 
@@ -26458,14 +21243,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { this->clear(this->rdstate() | __state); }
 
       // Flip the internal state on for the proper state bits, then re
-      // throws the propagated exception if bit also set in
-      // exceptions().
-      void
+void
       _M_setstate(iostate __state)
       {
 	// 27.6.1.2.1 Common requirements.
-	// Turn this on without causing an ios::failure to be thrown.
-	_M_streambuf_state |= __state;
+_M_streambuf_state |= __state;
 	if (this->exceptions() & __state)
 	  throw;
       }
@@ -26561,12 +21343,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // Constructor/destructor:
-      /**
-       *  @brief  Constructor performs initialization.
-       *
-       *  The parameter is passed by derived streams.
-      */
-      explicit
+explicit
       basic_ios(basic_streambuf<_CharT, _Traits>* __sb)
       : ios_base(), _M_tie(0), _M_fill(), _M_fill_init(false), _M_streambuf(0),
 	_M_ctype(0), _M_num_put(0), _M_num_get(0)
@@ -26582,16 +21359,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       ~basic_ios() { }
 
       // Members:
-      /**
-       *  @brief  Fetches the current @e tied stream.
-       *  @return  A pointer to the tied stream, or NULL if the stream is
-       *           not tied.
-       *
-       *  A stream may be @e tied (or synchronized) to a second output
-       *  stream.  When this stream performs any I/O, the tied stream is
-       *  first flushed.  For example, @c std::cin is tied to @c std::cout.
-      */
-      basic_ostream<_CharT, _Traits>*
+basic_ostream<_CharT, _Traits>*
       tie() const
       { return _M_tie; }
 
@@ -26695,18 +21463,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       }
 
       // Locales:
-      /**
-       *  @brief  Moves to a new locale.
-       *  @param  loc  The new locale.
-       *  @return  The previous locale.
-       *
-       *  Calls @c ios_base::imbue(loc), and if a stream buffer is associated
-       *  with this stream, calls that buffer's @c pubimbue(loc).
-       *
-       *  Additional l10n notes are at
-       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/localization.html
-      */
-      locale
+locale
       imbue(const locale& __loc);
 
       /**
@@ -26751,13 +21508,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     protected:
       // 27.4.5.1  basic_ios constructors
-      /**
-       *  @brief  Empty.
-       *
-       *  The default constructor does nothing and is not normally
-       *  accessible to users.
-      */
-      basic_ios()
+basic_ios()
       : ios_base(), _M_tie(0), _M_fill(char_type()), _M_fill_init(false), 
 	_M_streambuf(0), _M_ctype(0), _M_num_put(0), _M_num_get(0)
       { }
@@ -26778,36 +21529,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // basic_ios member functions -*- C++ -*-
-
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-// 2009  Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file basic_ios.tcc
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-
 #pragma GCC system_header
 
 namespace std __attribute__ ((__visibility__ ("default"))) {
@@ -26839,18 +21560,14 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     basic_ios<_CharT, _Traits>::copyfmt(const basic_ios& __rhs)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 292. effects of a.copyfmt (a)
-      if (this != &__rhs)
+if (this != &__rhs)
 	{
 	  // Per 27.1.1, do not call imbue, yet must trash all caches
-	  // associated with imbue()
-
-	  // Alloc any new word array first, so if it fails we have "rollback".
-	  _Words* __words = (__rhs._M_word_size <= _S_local_word_size) ?
+_Words* __words = (__rhs._M_word_size <= _S_local_word_size) ?
 	                     _M_local_word : new _Words[__rhs._M_word_size];
 
 	  // Bump refs before doing callbacks, for safety.
-	  _Callback_list* __cb = __rhs._M_callbacks;
+_Callback_list* __cb = __rhs._M_callbacks;
 	  if (__cb)
 	    __cb->_M_add_reference();
 	  _M_call_callbacks(erase_event);
@@ -26862,7 +21579,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  _M_dispose_callbacks();
 
 	  // NB: Don't want any added during above.
-	  _M_callbacks = __cb;
+_M_callbacks = __cb;
 	  for (int __i = 0; __i < __rhs._M_word_size; ++__i)
 	    __words[__i] = __rhs._M_word[__i];
 	  _M_word = __words;
@@ -26879,13 +21596,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  _M_call_callbacks(copyfmt_event);
 
 	  // The next is required to be the last assignment.
-	  this->exceptions(__rhs.exceptions());
+this->exceptions(__rhs.exceptions());
 	}
       return *this;
     }
 
   // Locales:
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     locale
     basic_ios<_CharT, _Traits>::imbue(const locale& __loc)
     {
@@ -26902,24 +21619,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     basic_ios<_CharT, _Traits>::init(basic_streambuf<_CharT, _Traits>* __sb)
     {
       // NB: This may be called more than once on the same object.
-      ios_base::_M_init();
+ios_base::_M_init();
 
       // Cache locale data and specific facets used by iostreams.
-      _M_cache_locale(_M_ios_locale);
+_M_cache_locale(_M_ios_locale);
 
       // NB: The 27.4.4.1 Postconditions Table specifies requirements
-      // after basic_ios::init() has been called. As part of this,
-      // fill() must return widen(' ') any time after init() has been
-      // called, which needs an imbued ctype facet of char_type to
-      // return without throwing an exception. Unfortunately,
-      // ctype<char_type> is not necessarily a required facet, so
-      // streams with char_type != [char, wchar_t] will not have it by
-      // default. Because of this, the correct value for _M_fill is
-      // constructed on the first call of fill(). That way,
-      // unformatted input and output with non-required basic_ios
-      // instantiations is possible even without imbuing the expected
-      // ctype<char_type> facet.
-      _M_fill = _CharT();
+_M_fill = _CharT();
       _M_fill_init = false;
 
       _M_tie = 0;
@@ -26949,9 +21655,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.
-  // NB:  This syntax is a GNU extension.
-  extern template class basic_ios<char>;
+extern template class basic_ios<char>;
 
   extern template class basic_ios<wchar_t>;
 
@@ -26963,27 +21667,19 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // [27.6.2.1] Template class basic_ostream
-  /**
-   *  @brief  Controlling output.
-   *  @ingroup io
-   *
-   *  This is the base class for all output streams.  It provides text
-   *  formatting of all builtin types, and communicates with any class
-   *  derived from basic_streambuf to do the actual output.
-  */
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     class basic_ostream : virtual public basic_ios<_CharT, _Traits>
     {
     public:
       // Types (inherited from basic_ios (27.4.4)):
-      typedef _CharT                     		char_type;
+typedef _CharT                     		char_type;
       typedef typename _Traits::int_type 		int_type;
       typedef typename _Traits::pos_type 		pos_type;
       typedef typename _Traits::off_type 		off_type;
       typedef _Traits                    		traits_type;
       
       // Non-standard Types:
-      typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
+typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
       typedef basic_ios<_CharT, _Traits>		__ios_type;
       typedef basic_ostream<_CharT, _Traits>		__ostream_type;
       typedef num_put<_CharT, ostreambuf_iterator<_CharT, _Traits> >        
@@ -26991,14 +21687,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       typedef ctype<_CharT>           			__ctype_type;
 
       // [27.6.2.2] constructor/destructor
-      /**
-       *  @brief  Base constructor.
-       *
-       *  This ctor is almost never called by the user directly, rather from
-       *  derived classes' initialization lists, which pass a pointer to
-       *  their own stream buffer.
-      */
-      explicit 
+explicit 
       basic_ostream(__streambuf_type* __sb)
       { this->init(__sb); }
 
@@ -27011,35 +21700,22 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       ~basic_ostream() { }
 
       // [27.6.2.3] prefix/suffix
-      class sentry;
+class sentry;
       friend class sentry;
       
       // [27.6.2.5] formatted output
-      // [27.6.2.5.3]  basic_ostream::operator<<
-      //@{
-      /**
-       *  @brief  Interface for manipulators.
-       *
-       *  Manipulators such as @c std::endl and @c std::hex use these
-       *  functions in constructs like "std::cout << std::endl".  For more
-       *  information, see the iomanip header.
-      */
-      __ostream_type&
+__ostream_type&
       operator<<(__ostream_type& (*__pf)(__ostream_type&))
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// DR 60. What is a formatted input function?
-	// The inserters for manipulators are *not* formatted output functions.
-	return __pf(*this);
+return __pf(*this);
       }
 
       __ostream_type&
       operator<<(__ios_type& (*__pf)(__ios_type&))
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// DR 60. What is a formatted input function?
-	// The inserters for manipulators are *not* formatted output functions.
-	__pf(*this);
+__pf(*this);
 	return *this;
       }
 
@@ -27047,41 +21723,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       operator<<(ios_base& (*__pf) (ios_base&))
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// DR 60. What is a formatted input function?
-	// The inserters for manipulators are *not* formatted output functions.
-	__pf(*this);
+__pf(*this);
 	return *this;
       }
       //@}
-
-      // [27.6.2.5.2] arithmetic inserters
-      /**
-       *  @name Arithmetic Inserters
-       *
-       *  All the @c operator<< functions (aka <em>formatted output
-       *  functions</em>) have some common behavior.  Each starts by
-       *  constructing a temporary object of type std::basic_ostream::sentry.
-       *  This can have several effects, concluding with the setting of a
-       *  status flag; see the sentry documentation for more.
-       *
-       *  If the sentry status is good, the function tries to generate
-       *  whatever data is appropriate for the type of the argument.
-       *
-       *  If an exception is thrown during insertion, ios_base::badbit
-       *  will be turned on in the stream's error state without causing an
-       *  ios_base::failure to be thrown.  The original exception will then
-       *  be rethrown.
-      */
-      //@{
-      /**
-       *  @brief  Basic arithmetic inserters
-       *  @param  A variable of builtin type.
-       *  @return  @c *this if successful
-       *
-       *  These functions use the stream's current locale (specifically, the
-       *  @c num_get facet) to perform numeric formatting.
-      */
-      __ostream_type& 
+__ostream_type& 
       operator<<(long __n)
       { return _M_insert(__n); }
       
@@ -27100,8 +21746,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       operator<<(unsigned short __n)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 117. basic_ostream uses nonexistent num_put member functions.
-	return _M_insert(static_cast<unsigned long>(__n));
+return _M_insert(static_cast<unsigned long>(__n));
       }
 
       __ostream_type& 
@@ -27111,8 +21756,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       operator<<(unsigned int __n)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 117. basic_ostream uses nonexistent num_put member functions.
-	return _M_insert(static_cast<unsigned long>(__n));
+return _M_insert(static_cast<unsigned long>(__n));
       }
 
       __ostream_type& 
@@ -27131,8 +21775,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       operator<<(float __f)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 117. basic_ostream uses nonexistent num_put member functions.
-	return _M_insert(static_cast<double>(__f));
+return _M_insert(static_cast<double>(__f));
       }
 
       __ostream_type& 
@@ -27167,41 +21810,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       __ostream_type& 
       operator<<(__streambuf_type* __sb);
       //@}
-
-      // [27.6.2.6] unformatted output functions
-      /**
-       *  @name Unformatted Output Functions
-       *
-       *  All the unformatted output functions have some common behavior.
-       *  Each starts by constructing a temporary object of type
-       *  std::basic_ostream::sentry.  This has several effects, concluding
-       *  with the setting of a status flag; see the sentry documentation
-       *  for more.
-       *
-       *  If the sentry status is good, the function tries to generate
-       *  whatever data is appropriate for the type of the argument.
-       *
-       *  If an exception is thrown during insertion, ios_base::badbit
-       *  will be turned on in the stream's error state.  If badbit is on in
-       *  the stream's exceptions mask, the exception will be rethrown
-       *  without completing its actions.
-      */
-      //@{
-      /**
-       *  @brief  Simple insertion.
-       *  @param  c  The character to insert.
-       *  @return  *this
-       *
-       *  Tries to insert @a c.
-       *
-       *  @note  This function is not overloaded on signed char and
-       *         unsigned char.
-      */
-      __ostream_type& 
+__ostream_type& 
       put(char_type __c);
 
       // Core write functionality, without sentry.
-      void
+void
       _M_write(const char_type* __s, streamsize __n)
       {
 	const streamsize __put = this->rdbuf()->sputn(__s, __n);
@@ -27228,28 +21841,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       __ostream_type& 
       write(const char_type* __s, streamsize __n);
       //@}
-
-      /**
-       *  @brief  Synchronizing the stream buffer.
-       *  @return  *this
-       *
-       *  If @c rdbuf() is a null pointer, changes nothing.
-       *
-       *  Otherwise, calls @c rdbuf()->pubsync(), and if that returns -1,
-       *  sets badbit.
-      */
-      __ostream_type& 
+__ostream_type& 
       flush();
 
       // [27.6.2.4] seek members
-      /**
-       *  @brief  Getting the current write position.
-       *  @return  A file position object.
-       *
-       *  If @c fail() is not false, returns @c pos_type(-1) to indicate
-       *  failure.  Otherwise returns @c rdbuf()->pubseekoff(0,cur,out).
-      */
-      pos_type 
+pos_type 
       tellp();
 
       /**
@@ -27295,7 +21891,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     class basic_ostream<_CharT, _Traits>::sentry
     {
       // Data Members.
-      bool 				_M_ok;
+bool 				_M_ok;
       basic_ostream<_CharT, _Traits>& 	_M_os;
       
     public:
@@ -27323,10 +21919,10 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       ~sentry()
       {
 	// XXX MT
-	if (bool(_M_os.flags() & ios_base::unitbuf) && !uncaught_exception())
+if (bool(_M_os.flags() & ios_base::unitbuf) && !uncaught_exception())
 	  {
 	    // Can't call flush directly or else will get into recursive lock.
-	    if (_M_os.rdbuf() && _M_os.rdbuf()->pubsync() == -1)
+if (_M_os.rdbuf() && _M_os.rdbuf()->pubsync() == -1)
 	      _M_os.setstate(ios_base::badbit);
 	  }
       }
@@ -27343,23 +21939,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // [27.6.2.5.4] character insertion templates
-  //@{
-  /**
-   *  @brief  Character inserters
-   *  @param  out  An output stream.
-   *  @param  c  A character.
-   *  @return  out
-   *
-   *  Behaves like one of the formatted arithmetic inserters described in
-   *  std::basic_ostream.  After constructing a sentry object with good
-   *  status, this function inserts a single character and any required
-   *  padding (as determined by [22.2.2.2.2]).  @c out.width(0) is then
-   *  called.
-   *
-   *  If @a c is of type @c char and the character type of the stream is not
-   *  @c char, the character is widened before insertion.
-  */
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __out, _CharT __c)
     { return __ostream_insert(__out, &__c, 1); }
@@ -27370,13 +21950,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     { return (__out << __out.widen(__c)); }
 
   // Specialization
-  template <class _Traits> 
+template <class _Traits> 
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, char __c)
     { return __ostream_insert(__out, &__c, 1); }
 
   // Signed and unsigned
-  template<class _Traits>
+template<class _Traits>
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, signed char __c)
     { return (__out << static_cast<char>(__c)); }
@@ -27386,22 +21966,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     operator<<(basic_ostream<char, _Traits>& __out, unsigned char __c)
     { return (__out << static_cast<char>(__c)); }
   //@}
-  
-  //@{
-  /**
-   *  @brief  String inserters
-   *  @param  out  An output stream.
-   *  @param  s  A character string.
-   *  @return  out
-   *  @pre  @a s must be a non-NULL pointer
-   *
-   *  Behaves like one of the formatted arithmetic inserters described in
-   *  std::basic_ostream.  After constructing a sentry object with good
-   *  status, this function inserts @c traits::length(s) characters starting
-   *  at @a s, widened if necessary, followed by any required padding (as
-   *  determined by [22.2.2.2.2]).  @c out.width(0) is then called.
-  */
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __out, const _CharT* __s)
     {
@@ -27418,7 +21983,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     operator<<(basic_ostream<_CharT, _Traits>& __out, const char* __s);
 
   // Partial specializations
-  template<class _Traits>
+template<class _Traits>
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, const char* __s)
     {
@@ -27431,7 +21996,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Signed and unsigned
-  template<class _Traits>
+template<class _Traits>
     inline basic_ostream<char, _Traits>&
     operator<<(basic_ostream<char, _Traits>& __out, const signed char* __s)
     { return (__out << reinterpret_cast<const char*>(__s)); }
@@ -27441,17 +22006,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     operator<<(basic_ostream<char, _Traits>& __out, const unsigned char* __s)
     { return (__out << reinterpret_cast<const char*>(__s)); }
   //@}
-
-  // [27.6.2.7] standard basic_ostream manipulators
-  /**
-   *  @brief  Write a newline and flush the stream.
-   *
-   *  This manipulator is often mistakenly used when a simple newline is
-   *  desired, leading to poor buffering performance.  See
-   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25s02.html
-   *  for more on this subject.
-  */
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     inline basic_ostream<_CharT, _Traits>& 
     endl(basic_ostream<_CharT, _Traits>& __os)
     { return flush(__os.put(__os.widen('\n'))); }
@@ -27481,41 +22036,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // ostream classes -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file ostream.tcc
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 27.6.2  Output streams
-//
-
-
 #pragma GCC system_header
 
 
@@ -27527,7 +22047,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     : _M_ok(false), _M_os(__os)
     {
       // XXX MT
-      if (__os.tie() && __os.good())
+if (__os.tie() && __os.good())
 	__os.tie()->flush();
 
       if (__os.good())
@@ -27571,8 +22091,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     operator<<(short __n)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 117. basic_ostream uses nonexistent num_put member functions.
-      const ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
+const ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
       if (__fmt == ios_base::oct || __fmt == ios_base::hex)
 	return _M_insert(static_cast<long>(static_cast<unsigned short>(__n)));
       else
@@ -27585,8 +22104,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     operator<<(int __n)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 117. basic_ostream uses nonexistent num_put member functions.
-      const ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
+const ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
       if (__fmt == ios_base::oct || __fmt == ios_base::hex)
 	return _M_insert(static_cast<long>(static_cast<unsigned int>(__n)));
       else
@@ -27628,12 +22146,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     put(char_type __c)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // DR 60. What is a formatted input function?
-      // basic_ostream::put(char_type) is an unformatted output function.
-      // DR 63. Exception-handling policy for unformatted output.
-      // Unformatted output functions should catch exceptions thrown
-      // from streambuf members.
-      sentry __cerb(*this);
+sentry __cerb(*this);
       if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
@@ -27662,13 +22175,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     write(const _CharT* __s, streamsize __n)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // DR 60. What is a formatted input function?
-      // basic_ostream::write(const char_type*, streamsize) is an
-      // unformatted output function.
-      // DR 63. Exception-handling policy for unformatted output.
-      // Unformatted output functions should catch exceptions thrown
-      // from streambuf members.
-      sentry __cerb(*this);
+sentry __cerb(*this);
       if (__cerb)
 	{
 	  try
@@ -27690,9 +22197,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     flush()
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // DR 60. What is a formatted input function?
-      // basic_ostream::flush() is *not* an unformatted output function.
-      ios_base::iostate __err = ios_base::goodbit;
+ios_base::iostate __err = ios_base::goodbit;
       try
 	{
 	  if (this->rdbuf() && this->rdbuf()->pubsync() == -1)
@@ -27742,12 +22247,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  if (!this->fail())
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 136.  seekp, seekg setting wrong streams?
-	      const pos_type __p = this->rdbuf()->pubseekpos(__pos,
+const pos_type __p = this->rdbuf()->pubseekpos(__pos,
 							     ios_base::out);
 
 	      // 129. Need error indication from seekp() and seekg()
-	      if (__p == pos_type(off_type(-1)))
+if (__p == pos_type(off_type(-1)))
 		__err |= ios_base::failbit;
 	    }
 	}
@@ -27774,12 +22278,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  if (!this->fail())
 	    {
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 136.  seekp, seekg setting wrong streams?
-	      const pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
+const pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
 							     ios_base::out);
 
 	      // 129. Need error indication from seekp() and seekg()
-	      if (__p == pos_type(off_type(-1)))
+if (__p == pos_type(off_type(-1)))
 		__err |= ios_base::failbit;
 	    }
 	}
@@ -27804,8 +22307,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       else
 	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	  // 167.  Improper use of traits_type::length()
-	  const size_t __clen = char_traits<char>::length(__s);
+const size_t __clen = char_traits<char>::length(__s);
 	  try
 	    {
 	      struct __ptr_guard
@@ -27833,9 +22335,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.
-  // NB:  This syntax is a GNU extension.
-  extern template class basic_ostream<char>;
+extern template class basic_ostream<char>;
   extern template ostream& endl(ostream&);
   extern template ostream& ends(ostream&);
   extern template ostream& flush(ostream&);
@@ -27877,67 +22377,25 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // Input streams -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-//
-// ISO C++ 14882: 27.6.1  Input streams
-//
-
-/** @file istream
- *  This is a Standard C++ Library header.
- */
-
-
 #pragma GCC system_header
 
 
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // [27.6.1.1] Template class basic_istream
-  /**
-   *  @brief  Controlling input.
-   *  @ingroup io
-   *
-   *  This is the base class for all input streams.  It provides text
-   *  formatting of all builtin types, and communicates with any class
-   *  derived from basic_streambuf to do the actual input.
-  */
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     class basic_istream : virtual public basic_ios<_CharT, _Traits>
     {
     public:
       // Types (inherited from basic_ios (27.4.4)):
-      typedef _CharT                     		char_type;
+typedef _CharT                     		char_type;
       typedef typename _Traits::int_type 		int_type;
       typedef typename _Traits::pos_type 		pos_type;
       typedef typename _Traits::off_type 		off_type;
       typedef _Traits                    		traits_type;
       
       // Non-standard Types:
-      typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
+typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
       typedef basic_ios<_CharT, _Traits>		__ios_type;
       typedef basic_istream<_CharT, _Traits>		__istream_type;
       typedef num_get<_CharT, istreambuf_iterator<_CharT, _Traits> >        
@@ -27946,22 +22404,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
     protected:
       // Data Members:
-      /**
-       *  The number of characters extracted in the previous unformatted
-       *  function; see gcount().
-      */
-      streamsize 		_M_gcount;
+streamsize 		_M_gcount;
 
     public:
       // [27.6.1.1.1] constructor/destructor
-      /**
-       *  @brief  Base constructor.
-       *
-       *  This ctor is almost never called by the user directly, rather from
-       *  derived classes' initialization lists, which pass a pointer to
-       *  their own stream buffer.
-      */
-      explicit
+explicit
       basic_istream(__streambuf_type* __sb)
       : _M_gcount(streamsize(0))
       { this->init(__sb); }
@@ -27976,21 +22423,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       { _M_gcount = streamsize(0); }
 
       // [27.6.1.1.2] prefix/suffix
-      class sentry;
+class sentry;
       friend class sentry;
 
       // [27.6.1.2] formatted input
-      // [27.6.1.2.3] basic_istream::operator>>
-      //@{
-      /**
-       *  @brief  Interface for manipulators.
-       *
-       *  Manipulators such as @c std::ws and @c std::dec use these
-       *  functions in constructs like 
-       *  <code>std::cin >> std::ws</code>. 
-       *  For more information, see the iomanip header.
-      */
-      __istream_type&
+__istream_type&
       operator>>(__istream_type& (*__pf)(__istream_type&))
       { return __pf(*this); }
 
@@ -28008,36 +22445,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	return *this;
       }
       //@}
-      
-      // [27.6.1.2.2] arithmetic extractors
-      /**
-       *  @name Arithmetic Extractors
-       *
-       *  All the @c operator>> functions (aka <em>formatted input
-       *  functions</em>) have some common behavior.  Each starts by
-       *  constructing a temporary object of type std::basic_istream::sentry
-       *  with the second argument (noskipws) set to false.  This has several
-       *  effects, concluding with the setting of a status flag; see the
-       *  sentry documentation for more.
-       *
-       *  If the sentry status is good, the function tries to extract
-       *  whatever data is appropriate for the type of the argument.
-       *
-       *  If an exception is thrown during extraction, ios_base::badbit
-       *  will be turned on in the stream's error state without causing an
-       *  ios_base::failure to be thrown.  The original exception will then
-       *  be rethrown.
-      */
-      //@{
-      /**
-       *  @brief  Basic arithmetic extractors
-       *  @param  A variable of builtin type.
-       *  @return  @c *this if successful
-       *
-       *  These functions use the stream's current locale (specifically, the
-       *  @c num_get facet) to parse the input data.
-      */
-      __istream_type& 
+__istream_type& 
       operator>>(bool& __n)
       { return _M_extract(__n); }
       
@@ -28110,14 +22518,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       __istream_type& 
       operator>>(__streambuf_type* __sb);
       //@}
-      
-      // [27.6.1.3] unformatted input
-      /**
-       *  @brief  Character counting
-       *  @return  The number of characters extracted by the previous
-       *           unformatted input function dispatched for this stream.
-      */
-      streamsize 
+streamsize 
       gcount() const 
       { return _M_gcount; }
       
@@ -28142,14 +22543,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
        *  be rethrown.
       */
       //@{
-      /**
-       *  @brief  Simple extraction.
-       *  @return  A character, or eof().
-       *
-       *  Tries to extract a character.  If none are available, sets failbit
-       *  and returns traits::eof().
-      */
-      int_type 
+int_type 
       get();
 
       /**
@@ -28449,8 +22843,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       __istream_type& 
       seekg(off_type, ios_base::seekdir);
       //@}
-
-    protected:
+protected:
       basic_istream()
       : _M_gcount(streamsize(0))
       { this->init(0); }
@@ -28461,7 +22854,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // Explicit specialization declarations, defined in src/istream.cc.
-  template<> 
+template<> 
     basic_istream<char>& 
     basic_istream<char>::
     getline(char_type* __s, streamsize __n, char_type __delim);
@@ -28503,11 +22896,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     class basic_istream<_CharT, _Traits>::sentry
     {
       // Data Members.
-      bool _M_ok;
+bool _M_ok;
 
     public:
       /// Easy access to dependant types.
-      typedef _Traits 					traits_type;
+typedef _Traits 					traits_type;
       typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
       typedef basic_istream<_CharT, _Traits> 		__istream_type;
       typedef typename __istream_type::__ctype_type 	__ctype_type;
@@ -28550,19 +22943,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // [27.6.1.2.3] character extraction templates
-  //@{
-  /**
-   *  @brief  Character extractors
-   *  @param  in  An input stream.
-   *  @param  c  A character reference.
-   *  @return  in
-   *
-   *  Behaves like one of the formatted arithmetic extractors described in
-   *  std::basic_istream.  After constructing a sentry object with good
-   *  status, this function extracts a character (if one is available) and
-   *  stores it in @a c.  Otherwise, sets failbit in the input stream.
-  */
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>&
     operator>>(basic_istream<_CharT, _Traits>& __in, _CharT& __c);
 
@@ -28576,40 +22957,12 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     operator>>(basic_istream<char, _Traits>& __in, signed char& __c)
     { return (__in >> reinterpret_cast<char&>(__c)); }
   //@}
-
-  //@{
-  /**
-   *  @brief  Character string extractors
-   *  @param  in  An input stream.
-   *  @param  s  A pointer to a character array.
-   *  @return  in
-   *
-   *  Behaves like one of the formatted arithmetic extractors described in
-   *  std::basic_istream.  After constructing a sentry object with good
-   *  status, this function extracts up to @c n characters and stores them
-   *  into the array starting at @a s.  @c n is defined as:
-   *
-   *  - if @c width() is greater than zero, @c n is width() otherwise
-   *  - @c n is <em>the number of elements of the largest array of *
-   *  - @c char_type that can store a terminating @c eos.</em>
-   *  - [27.6.1.2.3]/6
-   *
-   *  Characters are extracted and stored until one of the following happens:
-   *  - @c n-1 characters are stored
-   *  - EOF is reached
-   *  - the next character is whitespace according to the current locale
-   *  - the next character is a null byte (i.e., @c charT() )
-   *
-   *  @c width(0) is then called for the input stream.
-   *
-   *  If no characters are extracted, sets failbit.
-  */
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>&
     operator>>(basic_istream<_CharT, _Traits>& __in, _CharT* __s);
 
   // Explicit specialization declaration, defined in src/istream.cc.
-  template<>
+template<>
     basic_istream<char>&
     operator>>(basic_istream<char>& __in, char* __s);
 
@@ -28623,32 +22976,21 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     operator>>(basic_istream<char, _Traits>& __in, signed char* __s)
     { return (__in >> reinterpret_cast<char*>(__s)); }
   //@}
-
-  // 27.6.1.5 Template class basic_iostream
-  /**
-   *  @brief  Merging istream and ostream capabilities.
-   *  @ingroup io
-   *
-   *  This class multiply inherits from the input and output stream classes
-   *  simply to provide a single interface.
-  */
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     class basic_iostream
     : public basic_istream<_CharT, _Traits>, 
       public basic_ostream<_CharT, _Traits>
     {
     public:
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 271. basic_iostream missing typedefs
-      // Types (inherited):
-      typedef _CharT                     		char_type;
+typedef _CharT                     		char_type;
       typedef typename _Traits::int_type 		int_type;
       typedef typename _Traits::pos_type 		pos_type;
       typedef typename _Traits::off_type 		off_type;
       typedef _Traits                    		traits_type;
 
       // Non-standard Types:
-      typedef basic_istream<_CharT, _Traits>		__istream_type;
+typedef basic_istream<_CharT, _Traits>		__istream_type;
       typedef basic_ostream<_CharT, _Traits>		__ostream_type;
 
       /**
@@ -28673,27 +23015,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     };
 
   // [27.6.1.4] standard basic_istream manipulators
-  /**
-   *  @brief  Quick and easy way to eat whitespace
-   *
-   *  This manipulator extracts whitespace characters, stopping when the
-   *  next character is non-whitespace, or when the input sequence is empty.
-   *  If the sequence is empty, @c eofbit is set in the stream, but not
-   *  @c failbit.
-   *
-   *  The current locale is used to distinguish whitespace characters.
-   *
-   *  Example:
-   *  @code
-   *     MyClass   mc;
-   *
-   *     std::cin >> std::ws >> mc;
-   *  @endcode
-   *  will skip leading whitespace before calling operator>> on cin and your
-   *  object.  Note that the same effect can be achieved by creating a
-   *  std::basic_istream::sentry inside your definition of operator>>.
-  */
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>& 
     ws(basic_istream<_CharT, _Traits>& __is);
 
@@ -28701,41 +23023,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // istream classes -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file istream.tcc
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
-
-//
-// ISO C++ 14882: 27.6.1  Input streams
-//
-
-
 #pragma GCC system_header
 
 
@@ -28763,9 +23050,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		__c = __sb->snextc();
 
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 195. Should basic_istream::sentry's constructor ever
-	      // set eofbit?
-	      if (traits_type::eq_int_type(__c, __eof))
+if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
 	    }
 	}
@@ -28813,8 +23098,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     operator>>(short& __n)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 118. basic_istream uses nonexistent num_get member functions.
-      sentry __cerb(*this, false);
+sentry __cerb(*this, false);
       if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
@@ -28825,8 +23109,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	      __ng.get(*this, 0, *this, __err, __l);
 
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 696. istream::operator>>(int&) broken.
-	      if (__l < __gnu_cxx::__numeric_traits<short>::__min)
+if (__l < __gnu_cxx::__numeric_traits<short>::__min)
 		{
 		  __err |= ios_base::failbit;
 		  __n = __gnu_cxx::__numeric_traits<short>::__min;
@@ -28858,8 +23141,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     operator>>(int& __n)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 118. basic_istream uses nonexistent num_get member functions.
-      sentry __cerb(*this, false);
+sentry __cerb(*this, false);
       if (__cerb)
 	{
 	  ios_base::iostate __err = ios_base::goodbit;
@@ -28870,8 +23152,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	      __ng.get(*this, 0, *this, __err, __l);
 
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 696. istream::operator>>(int&) broken.
-	      if (__l < __gnu_cxx::__numeric_traits<int>::__min)
+if (__l < __gnu_cxx::__numeric_traits<int>::__min)
 		{
 		  __err |= ios_base::failbit;
 		  __n = __gnu_cxx::__numeric_traits<int>::__min;
@@ -28945,7 +23226,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	    {
 	      __c = this->rdbuf()->sbumpc();
 	      // 27.6.1.1 paragraph 3
-	      if (!traits_type::eq_int_type(__c, __eof))
+if (!traits_type::eq_int_type(__c, __eof))
 		_M_gcount = 1;
 	      else
 		__err |= ios_base::eofbit;
@@ -28979,7 +23260,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	    {
 	      const int_type __cb = this->rdbuf()->sbumpc();
 	      // 27.6.1.1 paragraph 3
-	      if (!traits_type::eq_int_type(__cb, traits_type::eof()))
+if (!traits_type::eq_int_type(__cb, traits_type::eof()))
 		{
 		  _M_gcount = 1;
 		  __c = traits_type::to_char_type(__cb);
@@ -29039,8 +23320,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	    { this->_M_setstate(ios_base::badbit); }
 	}
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 243. get and getline when sentry reports failure.
-      if (__n > 0)
+if (__n > 0)
 	*__s = char_type();
       if (!_M_gcount)
 	__err |= ios_base::failbit;
@@ -29140,8 +23420,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
             { this->_M_setstate(ios_base::badbit); }
         }
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 243. get and getline when sentry reports failure.
-      if (__n > 0)
+if (__n > 0)
 	*__s = char_type();
       if (!_M_gcount)
         __err |= ios_base::failbit;
@@ -29151,9 +23430,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // We provide three overloads, since the first two are much simpler
-  // than the general case. Also, the latter two can thus adopt the
-  // same "batchy" strategy used by getline above.
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>&
     basic_istream<_CharT, _Traits>::
     ignore(void)
@@ -29203,13 +23480,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
               int_type __c = __sb->sgetc();
 
 	      // N.B. On LFS-enabled platforms streamsize is still 32 bits
-	      // wide: if we want to implement the standard mandated behavior
-	      // for n == max() (see 27.6.1.3/24) we are at risk of signed
-	      // integer overflow: thus these contortions. Also note that,
-	      // by definition, when more than 2G chars are actually ignored,
-	      // _M_gcount (the return value of gcount, that is) cannot be
-	      // really correct, being unavoidably too small.
-	      bool __large_ignore = false;
+bool __large_ignore = false;
 	      while (true)
 		{
 		  while (_M_gcount < __n
@@ -29265,7 +23536,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
               int_type __c = __sb->sgetc();
 
 	      // See comment above.
-	      bool __large_ignore = false;
+bool __large_ignore = false;
 	      while (true)
 		{
 		  while (_M_gcount < __n
@@ -29385,7 +23656,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  try
 	    {
 	      // Cannot compare int_type with streamsize generically.
-	      const streamsize __num = this->rdbuf()->in_avail();
+const streamsize __num = this->rdbuf()->in_avail();
 	      if (__num > 0)
 		_M_gcount = this->rdbuf()->sgetn(__s, std::min(__num, __n));
 	      else if (__num == -1)
@@ -29410,8 +23681,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     putback(char_type __c)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 60. What is a formatted input function?
-      _M_gcount = 0;
+_M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb)
 	{
@@ -29443,8 +23713,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     unget(void)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 60. What is a formatted input function?
-      _M_gcount = 0;
+_M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb)
 	{
@@ -29476,8 +23745,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     sync(void)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // DR60.  Do not change _M_gcount.
-      int __ret = -1;
+int __ret = -1;
       sentry __cerb(*this, true);
       if (__cerb)
 	{
@@ -29512,8 +23780,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     tellg(void)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // DR60.  Do not change _M_gcount.
-      pos_type __ret = pos_type(-1);
+pos_type __ret = pos_type(-1);
       try
 	{
 	  if (!this->fail())
@@ -29536,18 +23803,17 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     seekg(pos_type __pos)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // DR60.  Do not change _M_gcount.
-      ios_base::iostate __err = ios_base::goodbit;
+ios_base::iostate __err = ios_base::goodbit;
       try
 	{
 	  if (!this->fail())
 	    {
 	      // 136.  seekp, seekg setting wrong streams?
-	      const pos_type __p = this->rdbuf()->pubseekpos(__pos,
+const pos_type __p = this->rdbuf()->pubseekpos(__pos,
 							     ios_base::in);
 	      
 	      // 129.  Need error indication from seekp() and seekg()
-	      if (__p == pos_type(off_type(-1)))
+if (__p == pos_type(off_type(-1)))
 		__err |= ios_base::failbit;
 	    }
 	}
@@ -29569,18 +23835,17 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     seekg(off_type __off, ios_base::seekdir __dir)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // DR60.  Do not change _M_gcount.
-      ios_base::iostate __err = ios_base::goodbit;
+ios_base::iostate __err = ios_base::goodbit;
       try
 	{
 	  if (!this->fail())
 	    {
 	      // 136.  seekp, seekg setting wrong streams?
-	      const pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
+const pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
 							     ios_base::in);
 	      
 	      // 129.  Need error indication from seekp() and seekg()
-	      if (__p == pos_type(off_type(-1)))
+if (__p == pos_type(off_type(-1)))
 		__err |= ios_base::failbit;
 	    }
 	}
@@ -29597,7 +23862,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // 27.6.1.2.3 Character extraction templates
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>&
     operator>>(basic_istream<_CharT, _Traits>& __in, _CharT& __c)
     {
@@ -29647,7 +23912,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	  try
 	    {
 	      // Figure out how many characters to extract.
-	      streamsize __num = __in.width();
+streamsize __num = __in.width();
 	      if (__num <= 0)
 		__num = __gnu_cxx::__numeric_traits<streamsize>::__max;
 
@@ -29670,8 +23935,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 		__err |= ios_base::eofbit;
 
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-	      // 68.  Extractors for char* should store null at end
-	      *__s = char_type();
+*__s = char_type();
 	      __in.width(0);
 	    }
 	  catch(__cxxabiv1::__forced_unwind&)
@@ -29690,7 +23954,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // 27.6.1.4 Standard basic_istream manipulators
-  template<typename _CharT, typename _Traits>
+template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>&
     ws(basic_istream<_CharT, _Traits>& __in)
     {
@@ -29714,9 +23978,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.
-  // NB:  This syntax is a GNU extension.
-  extern template class basic_istream<char>;
+extern template class basic_istream<char>;
   extern template istream& ws(istream&);
   extern template istream& operator>>(istream&, char&);
   extern template istream& operator>>(istream&, char*);
@@ -29778,104 +24040,22 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    *  linked to above.
   */
   //@{
-  extern istream cin;		///< Linked to standard input
-  extern ostream cout;		///< Linked to standard output
-  extern ostream cerr;		///< Linked to standard error (unbuffered)
-  extern ostream clog;		///< Linked to standard error (buffered)
-
-  extern wistream wcin;		///< Linked to standard input
-  extern wostream wcout;	///< Linked to standard output
-  extern wostream wcerr;	///< Linked to standard error (unbuffered)
-  extern wostream wclog;	///< Linked to standard error (buffered)
-  //@}
-
-  // For construction of filebuffers for cout, cin, cerr, clog et. al.
-  static ios_base::Init __ioinit;
+extern istream cin;		///< Linked to standard input
+extern ostream cout;		///< Linked to standard output
+extern ostream cerr;		///< Linked to standard error (unbuffered)
+extern ostream clog;		///< Linked to standard error (buffered)
+extern wistream wcin;		///< Linked to standard input
+extern wostream wcout;	///< Linked to standard output
+extern wostream wcerr;	///< Linked to standard error (unbuffered)
+extern wostream wclog;	///< Linked to standard error (buffered)
+static ios_base::Init __ioinit;
 
 }
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cstdlib
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stdlib.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 20.4.6  C library
-//
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -30837,8 +25017,6 @@ extern void abort (void) throw () __attribute__ ((__noreturn__));
 extern int atexit (void (*__func) (void)) throw () __attribute__ ((__nonnull__ (1)));
 
 // XXX There should be a macro to signal with C++ revision is used.
-// XXX This function is in the C++1x revision.
-/* Register a function to be called when `quick_exit' is called.  */
 extern "C++" int at_quick_exit (void (*__func) (void))
      throw () __asm ("at_quick_exit") __attribute__ ((__nonnull__ (1)));
 
@@ -30855,10 +25033,6 @@ extern int on_exit (void (*__func) (int __status, void *__arg), void *__arg)
 extern void exit (int __status) throw () __attribute__ ((__noreturn__));
 
 // XXX There should be a macro to signal with C++ revision is used.
-// XXX This function is in the C++1x revision.
-/* Call all functions registered with `at_quick_exit' in the reverse
-   of the order in which they were registered and terminate program
-   execution with STATUS.  */
 extern void quick_exit (int __status) throw () __attribute__ ((__noreturn__));
 
 
@@ -31165,7 +25339,6 @@ extern int getloadavg (double __loadavg[], int __nelem)
 
 
 // Get rid of those macros defined in <stdlib.h> in lieu of real functions.
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   using ::div_t;
@@ -31401,45 +25574,6 @@ extern int futimesat (int __fd, __const char *__file,
 }
 
 // -*- C++ -*- C forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cmath
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c math.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 26.5  C library
-//
-
 #pragma GCC system_header
 
 /* file: math.h */
@@ -33138,12 +27272,10 @@ extern _LIB_VERSION_TYPE  _LIB_VERSIONIMF;
 
 
 // Get rid of those macros defined in <math.h> in lieu of real functions.
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // Forward declaration of a helper function.  This really should be
-  // an `exported' forward declaration.
-  template<typename _Tp>
+template<typename _Tp>
     _Tp __cmath_power(_Tp, unsigned int);
 
   template<typename _Tp>
@@ -33434,8 +27566,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   { return __builtin_powl(__x, __y); }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // DR 550. What should the return type of pow(float,int) be?
-  inline double
+inline double
   pow(double __x, int __i)
   { return __builtin_powi(__x, __i); }
 
@@ -33543,7 +27674,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // These are possible macros imported from C99-land.
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   template<typename _Tp>
@@ -33659,37 +27789,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // -*- C++ -*- C math library.
-
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-// This file was written by Gabriel Dos Reis <gdr@codesourcery.com>
-
-/** @file cmath.tcc
- *  This is a Standard C++ Library file.
- */
-
-
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   template<typename _Tp>
@@ -33766,87 +27865,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cstdio
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stdio.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 27.8.2  C Library files
-//
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -33878,45 +27899,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // -*- C++ -*- C forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cmath
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c math.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 26.5  C library
-//
-
 #pragma GCC system_header
 
 /* file: math.h */
@@ -33936,87 +27918,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cstdlib
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stdlib.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 20.4.6  C library
-//
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -34218,40 +28122,6 @@ static inline void klein_region(grid_info<2> & grid, grid_info<2> const & initia
  ********************************************************************************/
 
 // Standard stream manipulators -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file iomanip
- *  This is a Standard C++ Library header.
- */
-
-//
-// ISO C++ 14882: 27.6.3  Standard manipulators
-//
-
-
 #pragma GCC system_header
 
 
@@ -34259,9 +28129,7 @@ static inline void klein_region(grid_info<2> & grid, grid_info<2> const & initia
 namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // [27.6.3] standard manipulators
-  // Also see DR 183.
-
-  struct _Resetiosflags { ios_base::fmtflags _M_mask; };
+struct _Resetiosflags { ios_base::fmtflags _M_mask; };
 
   /**
    *  @brief  Manipulator for @c setf.
@@ -34451,9 +28319,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
   // Inhibit implicit instantiations for required instantiations,
-  // which are defined via explicit instantiations elsewhere.  
-  // NB:  This syntax is a GNU extension.
-  extern template ostream& operator<<(ostream&, _Setfill<char>);
+extern template ostream& operator<<(ostream&, _Setfill<char>);
   extern template ostream& operator<<(ostream&, _Setiosflags);
   extern template ostream& operator<<(ostream&, _Resetiosflags);
   extern template ostream& operator<<(ostream&, _Setbase);
@@ -34482,87 +28348,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 }
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cstdio
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stdio.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 27.8.2  C Library files
-//
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -34594,87 +28382,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cstdlib
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stdlib.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 20.4.6  C library
-//
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -34732,45 +28442,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -34801,47 +28472,6 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 /*#endif*/ /* _STDDEF */
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cassert
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c assert.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 19.2  Assertions
-//
-
-// No include guards on this header...
-
 #pragma GCC system_header
 
 /* Copyright (C) 1991,1992,1994-2001,2003,2004,2007
@@ -34876,35 +28506,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    If not, and EXPRESSION is zero, print an error message and abort.  */
 
 
-extern "C" {
 
-/* This prints an "Assertion failed" message and aborts.  */
-extern void __assert_fail (__const char *__assertion, __const char *__file,
-			   unsigned int __line, __const char *__function)
-     throw () __attribute__ ((__noreturn__));
+/* void assert_perror (int errnum);
 
-/* Likewise, but prints the error text for ERRNUM.  */
-extern void __assert_perror_fail (int __errnum, __const char *__file,
-				  unsigned int __line,
-				  __const char *__function)
-     throw () __attribute__ ((__noreturn__));
+   If NDEBUG is defined, do nothing.  If not, and ERRNUM is not zero, print an
+   error message with the error text for ERRNUM and abort.
+   (This is a GNU extension.) */
 
-
-/* The following is not at all used here but needed for standard
-   compliance.  */
-extern void __assert (const char *__assertion, const char *__file, int __line)
-     throw () __attribute__ ((__noreturn__));
-
-
-}
-
-
-
-/* Version 2.4 and later of GCC define a magical variable `__PRETTY_FUNCTION__'
-   which contains the name of the function currently being defined.
-   This is broken in G++ before version 2.6.
-   C9x has a similar variable called __func__, but prefer the GCC one since
-   it demangles C++ function names.  */
 
 
 /* unit-stride Range */
@@ -34999,118 +28607,6 @@ class Pochoir_Domain {
  ********************************************************************************/
 
 
-// -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cstdio
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stdio.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 27.8.2  C Library files
-//
-
-#pragma GCC system_header
-
-// -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-
 
 /*
  **********************************************************************************
@@ -35138,87 +28634,9 @@ class Pochoir_Domain {
 
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cstdlib
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stdlib.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 20.4.6  C library
-//
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -35250,87 +28668,9 @@ class Pochoir_Domain {
 
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cstdio
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stdio.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 27.8.2  C Library files
-//
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -35362,47 +28702,6 @@ class Pochoir_Domain {
 
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cassert
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c assert.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 19.2  Assertions
-//
-
-// No include guards on this header...
-
 #pragma GCC system_header
 
 /* Copyright (C) 1991,1992,1994-2001,2003,2004,2007
@@ -35441,13 +28740,12 @@ class Pochoir_Domain {
 
 
 
+/* void assert_perror (int errnum);
 
+   If NDEBUG is defined, do nothing.  If not, and ERRNUM is not zero, print an
+   error message with the error text for ERRNUM and abort.
+   (This is a GNU extension.) */
 
-/* Version 2.4 and later of GCC define a magical variable `__PRETTY_FUNCTION__'
-   which contains the name of the function currently being defined.
-   This is broken in G++ before version 2.6.
-   C9x has a similar variable called __func__, but prefer the GCC one since
-   it demangles C++ function names.  */
 
 /*  cilk.h                  -*-C++-*-
  *
@@ -35534,47 +28832,6 @@ class Pochoir_Domain {
 
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cassert
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c assert.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 19.2  Assertions
-//
-
-// No include guards on this header...
-
 #pragma GCC system_header
 
 /* Copyright (C) 1991,1992,1994-2001,2003,2004,2007
@@ -35613,13 +28870,12 @@ class Pochoir_Domain {
 
 
 
+/* void assert_perror (int errnum);
 
+   If NDEBUG is defined, do nothing.  If not, and ERRNUM is not zero, print an
+   error message with the error text for ERRNUM and abort.
+   (This is a GNU extension.) */
 
-/* Version 2.4 and later of GCC define a magical variable `__PRETTY_FUNCTION__'
-   which contains the name of the function currently being defined.
-   This is broken in G++ before version 2.6.
-   C9x has a similar variable called __func__, but prefer the GCC one since
-   it demangles C++ function names.  */
 
 
 /* Prefix standard library function and type names with __STDNS in order to
@@ -35645,14 +28901,9 @@ class Pochoir_Domain {
  * interferes with vectorization.  Since NDEBUG is not reliable (it must be
  * set by the user), we must use a platform-specific detection of debug mode.
  */
-  /* Unix non-optimized */
+  /* C++ non-debug */
 
 // Try to determine if compiler supports rvalue references.
-        // __cplusplus has a non-standard definition.  In the absence of a
-        // proper definition, look for the C++0x macro, __STDC_HOSTED__.
-
-
-
 extern "C" {
 
 /**
@@ -35811,87 +29062,9 @@ extern "C" {
 
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file include/cstdlib
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stdlib.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 20.4.6  C library
-//
-
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -35923,45 +29096,6 @@ extern "C" {
 
 
 // -*- C++ -*- forwarding header.
-
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009, 2010
-// Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// Under Section 7 of GPL version 3, you are granted additional
-// permissions described in the GCC Runtime Library Exception, version
-// 3.1, as published by the Free Software Foundation.
-
-// You should have received a copy of the GNU General Public License and
-// a copy of the GCC Runtime Library Exception along with this program;
-// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
-// <http://www.gnu.org/licenses/>.
-
-/** @file cstddef
- *  This is a Standard C++ Library file.  You should @c \#include this file
- *  in your programs, rather than any of the @a *.h implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c stddef.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std (except for names which are defined
- *  as macros in C).
- */
-
-//
-// ISO C++ 14882: 18.1  Types
-//
-
 #pragma GCC system_header
 
 /**
@@ -36062,65 +29196,33 @@ typedef struct __cilkrts_hyperobject_base
 
 
 //===================== C++ interfaces ===================================
-
-
-
-// MONOID CONCEPT AND monoid_base CLASS TEMPLATE
-//
-// In mathematics, a "monoid" comprises a set of values (type), an associative
-// operation on that set, and an identity value for that set and that
-// operation.  So for example (integer, +, 0) is a monoid, as is (real, *, 1).
-// The 'Monoid' concept in Cilk++ has a typedef and three functions that
-// represent a that map to a monoid, (T, OP, IDENTITY), as follows:
-//..
-//  value_type          is a typedef for T
-//  reduce(left,right)  evaluates '*left = *left OP *right'
-//  identity(p)         constructs IDENTITY value into the uninitilized '*p'
-//  destroy(p)          calls the destructor on the object pointed-to by 'p'
-//  allocate(size)      return a pointer to size bytes of raw memory
-//  deallocate(p)       deallocate the raw memory at p
-//..
-// 'left', 'right', and 'p' are all pointers to objects of type 'value_type'.
-// All functions must be either 'static' or 'const'.  A class that meets the
-// requirements of the 'Monoid' concept is usually stateless, but will
-// sometimes contain state used to initialize the identity object.
-
 namespace cilk {
 
 /// The 'monoid_base' class template is a useful base class for a large set
-/// of monoid classes for which the identity value is a default-constructed
-/// value of type 'T', allocated using operator new.  A derived class of
-/// 'monoid_base' need only declare and implement the 'reduce' function.
 template <class T>
 class monoid_base
 {
 public:
     /// Type of value for this monoid
-    typedef T value_type;
+typedef T value_type;
 
     /// Constructs IDENTITY value into the uninitilized '*p'
-    void identity(T* p) const { new ((void*) p) T(); }
+void identity(T* p) const { new ((void*) p) T(); }
 
     /// Calls the destructor on the object pointed-to by 'p'
-    void destroy(T* p) const { p->~T(); }
+void destroy(T* p) const { p->~T(); }
 
     /// Return a pointer to size bytes of raw memory
-    void* allocate(size_t s) const { return operator new(s); }
+void* allocate(size_t s) const { return operator new(s); }
 
     /// Deallocate the raw memory at p
-    void deallocate(void* p) const { operator delete(p); }
+void deallocate(void* p) const { operator delete(p); }
 };
 
 } // end namspace cilk
-
-
 namespace cilk {
 
 /// reducer CLASS TEMPLATE
-///
-/// A reducer is instantiated on a Monoid.  The Monoid provides the value type,
-/// associative reduce function, and identity for the reducer.  Function view()
-/// and operator()() return the current view of the reducer.
 template <class Monoid>
 class reducer
 {
@@ -36128,12 +29230,11 @@ class reducer
 
     __cilkrts_hyperobject_base  base_;
     const Monoid                monoid_; // implementation of monoid interface
-    void*                       initialThis_; // Sanity checker
-
-    __declspec(align(64)) value_type leftmost_;
+void*                       initialThis_; // Sanity checker
+__declspec(align(64)) value_type leftmost_;
 
     // Wrappers around C monoid dispatch functions
-    static void reduce_wrapper(void* r, void* lhs, void* rhs);
+static void reduce_wrapper(void* r, void* lhs, void* rhs);
     static void identity_wrapper(void* r, void* view);
     static void destroy_wrapper(void* r, void* view);
     static void* allocate_wrapper(void* r, std:: size_t bytes);
@@ -36152,9 +29253,7 @@ class reducer
     }
 
     /// Special case: allow reducer(A) construction from both const and
-    /// non-const reference to A.  Allowing this for all argument combinations
-    /// is desirable but would result in at least 93 overloads.
-    template <typename A>
+template <typename A>
     explicit reducer(A& a)
         : base_(), monoid_(), leftmost_(a)
     {
@@ -36197,11 +29296,7 @@ class reducer
     }
 
     // Special case: both const and non-const Monoid reference are needed
-    // so that reducer(Monoid&) is more specialised than
-    // template <typename A> explicit reducer(A& a) and
-    // reducer(const Monoid&) is more specialised than
-    // template <typename A> explicit reducer(const A& a)
-    explicit reducer(Monoid& hmod)
+explicit reducer(Monoid& hmod)
         : base_(), monoid_(hmod), leftmost_()
     {
         init();
@@ -36214,9 +29309,7 @@ class reducer
     }
 
     // Special case: allow reducer(Monoid,A) construction from both const and
-    // non-const references to A.  Allowing this for all argument combinations
-    // is desirable but would result in at least 93 overloads.
-    template <typename A>
+template <typename A>
     reducer(const Monoid& hmod, A& a)
       : base_(), monoid_(hmod), leftmost_(a)
     {
@@ -36339,50 +29432,11 @@ template <typename Monoid>
 reducer<Monoid> ::~reducer()
 {
     // Make sure we haven't been memcopy'd or corrupted
-    ((this == initialThis_) ? static_cast<void> (0) : __assert_fail ("this == initialThis_", "/opt/intel/composerxe-2011.4.191/compiler/include/cilk/reducer.h", 326, __PRETTY_FUNCTION__));
+static_cast<void>(0);
     __cilkrts_hyper_destroy(&base_);
 }
 
 } // end namespace cilk
-
-
-
-/*===================== C interfaces ===================================*/
-
-
-/* MACROS FOR DEFINING AND USING C REDUCERS
- *
- * Example use of these macros
- *
- *  double array[ARRAY_LEN];
- *  double sum()
- *  {
- *      extern void* double_summing_identity();
- *      extern void double_summing_reduce(void* lhs, void* rhs);
- *
- *      CILK_C_DECLARE_REDUCER(double) total =
- *          CILK_C_INIT_REDUCER(sizeof(double),
- *                              double_summing_reduce,
- *                              double_summing_identity,
- *                              free,
- *                              0);
- *      int i;
- *
- *      CILK_C_REGISTER_REDUCER(total);
- *
- *      cilk_for (i = 0; i < ARRAY_LEN; ++i)
- *          REDUCER_VIEW(total) += array[i];
- *
- *      CILK_C_UNREGISTER_REDUCER(total);
- *
- *      return total.value;
- *  }
- */
-
-/***************************************************************************
- *              Common to real and stub implementations
- ***************************************************************************/
-
 extern "C" {
 
 
@@ -36550,20 +29604,20 @@ class reducer_opadd
 {
 public:
     /// Definition of data view, operation, and identity for reducer_opadd
-    class Monoid : public monoid_base<Type>
+class Monoid : public monoid_base<Type>
     {
       public:
         static void reduce(Type* left, Type* right);
     };
 
     /// "PRIVATE" HELPER CLASS
-    class temp_sum {
+class temp_sum {
         friend class reducer_opadd;
 
         Type* valuePtr_;
 
         // Default copy constructor, no assignment operator
-        temp_sum& operator=(const temp_sum&);
+temp_sum& operator=(const temp_sum&);
 
         explicit temp_sum(Type* valuePtr);
 
@@ -36575,82 +29629,56 @@ public:
   public:
 
     /// Construct an 'reducer_opadd' object with a value of 'Type()'.
-    reducer_opadd();
+reducer_opadd();
 
     /// Construct an 'reducer_opadd' object with the specified initial value.
-    explicit reducer_opadd(const Type& initial_value);
+explicit reducer_opadd(const Type& initial_value);
 
     /// Return a const reference to the current value of this object.
-    ///
-    /// @warning If this method is called before the parallel calculation is
-    /// complete, the value returned by this method will be a partial result.
-    const Type& get_value() const;
+const Type& get_value() const;
 
     /// Set the value of this object.
-    ///
-    /// @warning Setting the value of a reducer such that it violates the 
-    /// associative operation algebra will yield results that are likely to
-    /// differ from serial execution and may differ from run to run.
-    void set_value(const Type& value);
+void set_value(const Type& value);
 
     /// Add 'x' to the value of this reducer and produce a temporary sum object.
-    /// The temporary sum can be used for additional arithmetic or assigned back
-    /// to this reducer.
-    temp_sum operator+(const Type& x) const;
+temp_sum operator+(const Type& x) const;
 
     /// Subtract 'x' from the value of this reducer and produce a temporary sum
-    /// object.  The temporary sum can be used for additional arithmetic or
-    /// assigned back to this reducer.
-    temp_sum operator-(const Type& x) const;
+temp_sum operator-(const Type& x) const;
 
     /// Add 'x' to the value of this object.
-    reducer_opadd& operator+=(const Type& x);
+reducer_opadd& operator+=(const Type& x);
 
     /// Subtract 'x' from the value of this object.
-    reducer_opadd& operator-=(const Type& x);
+reducer_opadd& operator-=(const Type& x);
 
     /// Increment the value of this object using pre-increment syntax.
-    reducer_opadd& operator++();
+reducer_opadd& operator++();
 
     /// Increment the value of this object using post-increment syntax.  
-    /// Because the reducer is not copy-constructible, it is not possible to
-    /// return the previous value.
-    void operator++(int);
+void operator++(int);
 
     /// Decrement the value of this object using pre-decrement syntax.
-    reducer_opadd& operator--();
+reducer_opadd& operator--();
 
     /// Decrement the value of this object using post-decrement syntax.  
-    /// Because the reducer is not copy-constructible, it is not possible to
-    /// return the previous value.
-    void operator--(int);
+void operator--(int);
 
     /// Merge the result of an addition into this object.  The addition
-    /// must involve this reducer, i.e., x = x + 5; not x = y + 5;
-    reducer_opadd& operator=(const temp_sum& temp);
+reducer_opadd& operator=(const temp_sum& temp);
 
   private:
     friend class temp_sum;
 
     // Hyperobject to serve up views
-    reducer<Monoid> imp_;
+reducer<Monoid> imp_;
 
     // Not copyable
-    reducer_opadd(const reducer_opadd&);
+reducer_opadd(const reducer_opadd&);
     reducer_opadd& operator=(const reducer_opadd&);
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// Implementation of inline and template functions
-/////////////////////////////////////////////////////////////////////////////
-
-// ------------------------------------
-// template class reducer_opadd::Monoid
-// ------------------------------------
-
-/**
- * Combines two views of the data.
- */
 template <typename Type>
 void
 reducer_opadd<Type>::Monoid::reduce(Type* left, Type* right)
@@ -36659,9 +29687,6 @@ reducer_opadd<Type>::Monoid::reduce(Type* left, Type* right)
 }
 
 // ----------------------------
-// template class reducer_opadd
-// ----------------------------
-
 template <typename Type>
 inline
 reducer_opadd<Type>::reducer_opadd()
@@ -36763,14 +29788,11 @@ reducer_opadd<Type>::operator=(
     const typename reducer_opadd<Type>::temp_sum& temp)
 {
     // No-op.  Just test that temp was constructed from this.
-    ((&imp_ . view() == temp . valuePtr_) ? static_cast<void> (0) : __assert_fail ("&imp_.view() == temp.valuePtr_", "/opt/intel/composerxe-2011.4.191/compiler/include/cilk/reducer_opadd.h", 385, __PRETTY_FUNCTION__));
+static_cast<void>(0);
     return *this;
 }
 
 // --------------------------------------
-// template class reducer_opadd::temp_sum
-// --------------------------------------
-
 template <typename Type>
 inline
 reducer_opadd<Type>::temp_sum::temp_sum(Type *valuePtr)
@@ -36797,11 +29819,6 @@ reducer_opadd<Type>::temp_sum::operator-(const Type& x)
 }
 
 } // namespace cilk
-
-
-/* C Interface
- */
-
 extern "C" {
 
 
@@ -37228,9 +30245,9 @@ struct Algorithm {
             slope_[i] = _slope[i];
             dx_recursive_boundary_[i] = _slope[i];
 //            dx_recursive_boundary_[i] = tune_dx_boundary;
-            ulb_boundary[i] = uub_boundary[i] = lub_boundary[i] = 0;
+ulb_boundary[i] = uub_boundary[i] = lub_boundary[i] = 0;
             // dx_recursive_boundary_[i] = 10;
-        }
+}
         Z = 10000;
         boundarySet = false;
         physGridSet = false;
@@ -37239,10 +30256,9 @@ struct Algorithm {
         unroll_ = 1;
         /* ALGOR_QUEUE_SIZE = 3^N_RANK */
         // ALGOR_QUEUE_SIZE = power<N_RANK>::value;
-        N_CORES = __cilkrts_get_nworkers();
+N_CORES = __cilkrts_get_nworkers();
 //        cout << " N_CORES = " << N_CORES << endl;
-
-    }
+}
 
     /* README!!!: set_phys_grid()/set_stride() must be called before call to 
      * - walk_adaptive 
@@ -37252,9 +30268,9 @@ struct Algorithm {
     inline void set_thres(int arr_type_size) {
         dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((100 * sizeof(double))/arr_type_size)) : (int)floor(float((600 * sizeof(double))/arr_type_size));
 //        dx_recursive_[0] = 30;
-        for (int i = N_RANK-1; i >= 1; --i)
+for (int i = N_RANK-1; i >= 1; --i)
             dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(100 * sizeof(double))/arr_type_size): 10;
-        ((slope_[0] != 0) ? static_cast<void> (0) : __assert_fail ("slope_[0] != 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk.hpp", 468, __PRETTY_FUNCTION__));
+        (static_cast<void> (0));
         dt_recursive_ = (N_RANK == 1) ? floor(dx_recursive_[0]/(2 * slope_[0])) : ((N_RANK == 2) ? floor(dx_recursive_[0]/(2 * slope_[0])) : 5);
         printf("arr_type_size = %d\n", arr_type_size);
         printf("dt_thres = %d, ", dt_recursive_);
@@ -37269,7 +30285,7 @@ struct Algorithm {
 
     void set_phys_grid(grid_info<N_RANK> const & grid);
     // void set_stride(int const stride[]);
-    void set_slope(int const slope[]);
+void set_slope(int const slope[]);
     void set_unroll(int const unroll);
     inline bool touch_boundary(int i, int lt, grid_info<N_RANK> & grid);
 
@@ -37395,20 +30411,19 @@ void Algorithm<N_RANK>::set_unroll(int const unroll)
 {
     unroll_ = unroll;
     unrollSet = true;
-    printf("Algorithm::unroll = %d\n", unroll_);
 }
 
 template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::base_case_kernel_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f) {
 	grid_info<N_RANK> l_grid = grid;
 	for (int t = t0; t < t1; ++t) {
-            /* execute one single time step */
-            meta_grid_interior<N_RANK>::single_step(t, l_grid, phys_grid_, f);
+        /* execute one single time step */
+        meta_grid_interior<N_RANK>::single_step(t, l_grid, phys_grid_, f);
 
-            /* because the shape is trapezoid! */
-            for (int i = 0; i < N_RANK; ++i) {
-                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-            }
+        /* because the shape is trapezoid! */
+        for (int i = 0; i < N_RANK; ++i) {
+            l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+        }
 	}
 }
 
@@ -37416,30 +30431,31 @@ template <int N_RANK> template <typename BF>
 inline void Algorithm<N_RANK>::base_case_kernel_boundary(int t0, int t1, grid_info<N_RANK> const grid, BF const & bf) {
 	grid_info<N_RANK> l_grid = grid;
 	for (int t = t0; t < t1; ++t) {
-            home_cell_[0] = t;
-            /* execute one single time step */
-            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, bf);
+        home_cell_[0] = t;
+        /* execute one single time step */
+        meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, bf);
 
-            /* because the shape is trapezoid! */
-            for (int i = 0; i < N_RANK; ++i) {
-                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-            }
+        /* because the shape is trapezoid! */
+        for (int i = 0; i < N_RANK; ++i) {
+            l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+        }
 	}
 }
 
 template <int N_RANK> template <typename G1, typename F1, typename G2, typename F2>
 inline void Algorithm<N_RANK>::base_case_kernel_stagger(int t0, int t1, grid_info<N_RANK> const grid, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2) {
 	grid_info<N_RANK> l_grid = grid;
-    auto merged_kernel = [&](int t, int i) { 
-        if (g1(t, i)) 
-            f1(t, i); 
-        else if (g2(t, i)) 
-            f2(t, i); 
-        else {
-            printf("Error! Exit!\n");
-            exit (-1);
-        }
-    };
+    /* known! */ auto merged_kernel = [&] (int t, int i) {
+	if ((g1(t, i))) {
+	f1(t, i);
+	} else {if ((g2(t, i))) {
+	f2(t, i);
+	} else {{printf("Error! Exit!\n");	/* Unrecognized! */
+	exit (-1);
+	
+	}}}
+	
+	};
 	for (int t = t0; t < t1; ++t) {
             home_cell_[0] = t;
             /* execute one single time step */
@@ -37456,23 +30472,24 @@ template <int N_RANK> template <typename F1, typename F2>
 inline void Algorithm<N_RANK>::base_case_kernel_unroll(int t0, int t1, grid_info<N_RANK> const grid, F1 const & f1, F2 const & f2) {
 	grid_info<N_RANK> l_grid = grid;
 	for (int t = t0; t < t1; ++t) {
-            home_cell_[0] = t;
-            /* execute one single time step */
-            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, f1);
+        home_cell_[0] = t;
+        /* execute one single time step */
+        meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, f1);
 
-            /* because the shape is trapezoid! */
-            for (int i = 0; i < N_RANK; ++i) {
-                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-            }
+        /* because the shape is trapezoid! */
+        for (int i = 0; i < N_RANK; ++i) {
+            l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+        }
 
-            home_cell_[0] = ++t;
-            /* execute one single time step */
-            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, f2);
+        ++t;
+        home_cell_[0] = t;
+        /* execute one single time step */
+        meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, f2);
 
-            /* because the shape is trapezoid! */
-            for (int i = 0; i < N_RANK; ++i) {
-                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-            }
+        /* because the shape is trapezoid! */
+        for (int i = 0; i < N_RANK; ++i) {
+            l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+        }
 	}
 }
 
@@ -37566,7 +30583,7 @@ void Algorithm<N_RANK>::print_index(int t, int const idx[])
 template <int N_RANK>
 void Algorithm<N_RANK>::print_region(int t, int const head[], int const tail[])
 {
-    printf("%s:%lu t=%lu, {", __FUNCTION__, 794, t);
+    printf("%s:%lu t=%lu, {", __FUNCTION__, 795, t);
     for (int i = 0; i < N_RANK; ++i) {
         printf("{%lu, %lu} ", head[i], tail[i]);
     }
@@ -37708,7 +30725,6 @@ inline void Algorithm<N_RANK>::walk_bicut(int t0, int t1, grid_info<N_RANK> cons
 		if (lb[i] >= thres[i] && lb[i] > dx_recursive_[i]) { 
 			l_grid = grid;
 			const int sep = (int)lb[i]/2;
-//			printf("initial_cut = %s, lb[%d] = %d, sep = %d, r = %d\n", initial_cut(i) ? "True" : "False", i, lb[i], sep, r);
 			l_grid.x0[i] = grid.x0[i];
 			l_grid.dx0[i] = slope_[i];
 			l_grid.x1[i] = grid.x0[i] + sep;
@@ -37720,7 +30736,6 @@ inline void Algorithm<N_RANK>::walk_bicut(int t0, int t1, grid_info<N_RANK> cons
 			l_grid.x1[i] = grid.x1[i];
 			l_grid.dx1[i] = -slope_[i];
 			_Cilk_spawn walk_bicut(t0, t1, l_grid, f);
-//			print_sync(stdout);
 			_Cilk_sync;
 			if (grid.dx0[i] != slope_[i]) {
 				l_grid.x0[i] = grid.x0[i]; l_grid.dx0[i] = grid.dx0[i];
@@ -37739,8 +30754,6 @@ inline void Algorithm<N_RANK>::walk_bicut(int t0, int t1, grid_info<N_RANK> cons
 				l_grid.x1[i] = grid.x1[i]; l_grid.dx1[i] = grid.dx1[i];
 				_Cilk_spawn walk_bicut(t0, t1, l_grid, f);
 			}
-			printf("%s:%d cut into %d dim\n", __FUNCTION__, 198, i);
-			fflush(stdout);
             return;
 		}/* end if */
 	} /* end for */
@@ -37748,7 +30761,6 @@ inline void Algorithm<N_RANK>::walk_bicut(int t0, int t1, grid_info<N_RANK> cons
 		int halflt = lt / 2;
 		l_grid = grid;
 		walk_bicut(t0, t0+halflt, l_grid, f);
-//		print_sync(stdout);
 		for (int i = 0; i < N_RANK; ++i) {
 			l_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
 			l_grid.dx0[i] = grid.dx0[i];
@@ -37756,13 +30768,9 @@ inline void Algorithm<N_RANK>::walk_bicut(int t0, int t1, grid_info<N_RANK> cons
 			l_grid.dx1[i] = grid.dx1[i];
 		}
 		walk_bicut(t0+halflt, t1, l_grid, f);
-//		printf("%s:%d cut into time dim\n", __FUNCTION__, __LINE__);
-		fflush(stdout);
         return;
 	}
     /* base case */
-//    printf("call Adaptive! ");
-//	  print_grid(stdout, t0, t1, grid);
 	base_case_kernel_interior(t0, t1, grid, f);
 	return;
 }
@@ -37785,22 +30793,22 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
     }
 
     /* set up the initial grid */
-    do { ((queue_len_[0] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[0] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 272, __PRETTY_FUNCTION__)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
+    do { (static_cast<void> (0)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
     for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
         const int curr_dep_pointer = (curr_dep & 0x1);
         while (queue_len_[curr_dep_pointer] > 0) {
-            do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 276, __PRETTY_FUNCTION__)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
+            do { (static_cast<void> (0)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
             if (l_father->level < 0) {
                 /* spawn all the grids in circular_queue_[curr_dep][] */
                 /* use cilk_spawn to spawn all the sub-grid */
-                do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 293, __PRETTY_FUNCTION__)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
                 if (queue_len_[curr_dep_pointer] == 0)
                     shorter_duo_sim_obase_bicut(l_father->t0, l_father->t1, l_father->grid, f);
                 else
                     _Cilk_spawn shorter_duo_sim_obase_bicut(l_father->t0, l_father->t1, l_father->grid, f);
             } else {
                 /* performing a space cut on dimension 'level' */
-                do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 301, __PRETTY_FUNCTION__)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
                 const grid_info<N_RANK> l_father_grid = l_father->grid;
                 const int t0 = l_father->t0, t1 = l_father->t1;
                 const int lt = (t1 - t0);
@@ -37816,7 +30824,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
                     /* if we can't cut into this dimension, just directly push 
                      * it into the circular queue 
                      */
-                    do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 317, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                 } else {
                     /* can_cut! */
                     if (cut_lb) {
@@ -37832,7 +30840,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
                         l_son_grid.dx0[level] = l_slope;
                         l_son_grid.x1[level] = l_start + mid + delta_x;
                         l_son_grid.dx1[level] = -l_slope;
-                        do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 333, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                         /* cilk_sync */
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
@@ -37843,7 +30851,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
                         l_son_grid.x1[level] = l_start + mid - delta_x;
                         l_son_grid.dx1[level] = l_slope;
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 344, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                         /* push the right big trapezoid (black)
                          * into circular queue of (curr_dep + 1)
@@ -37852,7 +30860,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 353, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                     } /* end if (cut_lb) */
                     else {
@@ -37868,14 +30876,14 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
                         l_son_grid.x1[level] = ul_start + mid;
                         l_son_grid.dx1[level] = -l_slope;
-                        do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 369, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                         /* push right black sub-grid into circular queue of (curr_dep) */
                         l_son_grid.x0[level] = ul_start + mid;;
                         l_son_grid.dx0[level] = l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
-                        do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 376, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                         /* cilk_sync */
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
@@ -37886,13 +30894,13 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = ul_start + mid;
                         l_son_grid.dx1[level] = l_slope;
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 387, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                     } /* end else (cut_tb) */
                 } /* end if (can_cut) */
             } /* end if (performing a space cut) */
         } /* end while (queue_len_[curr_dep] > 0) */
         _Cilk_sync;
-        ((queue_len_[curr_dep_pointer] == 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] == 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 395, __PRETTY_FUNCTION__));
+        (static_cast<void> (0));
     } /* end for (curr_dep < N_RANK+1) */
 }
 
@@ -37910,15 +30918,15 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
     }
 
     /* set up the initial grid */
-    do { ((queue_len_[0] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[0] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 413, __PRETTY_FUNCTION__)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
+    do { (static_cast<void> (0)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
     for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
         const int curr_dep_pointer = (curr_dep & 0x1);
         while (queue_len_[curr_dep_pointer] > 0) {
-            do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 417, __PRETTY_FUNCTION__)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
+            do { (static_cast<void> (0)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
             if (l_father->level < 0) {
                 /* spawn all the grids in circular_queue_[curr_dep][] */
                 /* use cilk_spawn to spawn all the sub-grid */
-                do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 434, __PRETTY_FUNCTION__)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
                 if (queue_len_[curr_dep_pointer] == 0) {
                     shorter_duo_sim_obase_bicut_p(l_father->t0, l_father->t1, l_father->grid, f, bf);
                 } else {
@@ -37926,7 +30934,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
                 }
             } else {
                 /* performing a space cut on dimension 'level' */
-                do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 443, __PRETTY_FUNCTION__)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
                 grid_info<N_RANK> l_father_grid = l_father->grid;
                 const int t0 = l_father->t0, t1 = l_father->t1;
                 const int lt = (t1 - t0);
@@ -37943,12 +30951,12 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
                     /* if we can't cut into this dimension, just directly push
                      * it into the circular queue
                     */
-                    do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 460, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                 } else {
                     /* can_cut */
                     if (cut_lb) {
                         /* if cutting lb, there's no initial cut! */
-                        ((lb != phys_length_[level] || l_father_grid . dx0[level] != 0 || l_father_grid . dx1[level] != 0) ? static_cast<void> (0) : __assert_fail ("lb != phys_length_[level] || l_father_grid.dx0[level] != 0 || l_father_grid.dx1[level] != 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 465, __PRETTY_FUNCTION__));
+                        (static_cast<void> (0));
                         const int mid = lb/2;
                         grid_info<N_RANK> l_son_grid = l_father_grid;
                         const int l_start = (l_father_grid.x0[level]);
@@ -37961,7 +30969,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
                         l_son_grid.dx0[level] = l_slope;
                         l_son_grid.x1[level] = l_start + mid + delta_x;
                         l_son_grid.dx1[level] = -l_slope;
-                        do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 478, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                         /* cilk_sync */
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
@@ -37970,19 +30978,19 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
                         l_son_grid.x1[level] = l_start + mid - delta_x;
                         l_son_grid.dx1[level] = l_slope;
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 487, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
                         l_son_grid.x0[level] = l_start + mid + delta_x;
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 494, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                     } /* end if (cut_lb) */
                     else { /* cut_tb */
                         if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
-                            ((l_father_grid . dx0[level] == 0) ? static_cast<void> (0) : __assert_fail ("l_father_grid.dx0[level] == 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 498, __PRETTY_FUNCTION__));
-                            ((l_father_grid . dx1[level] == 0) ? static_cast<void> (0) : __assert_fail ("l_father_grid.dx1[level] == 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 499, __PRETTY_FUNCTION__));
+                            (static_cast<void> (0));
+                            (static_cast<void> (0));
                             const int mid = tb/2;
                             grid_info<N_RANK> l_son_grid = l_father_grid;
                             const int l_start = (l_father_grid.x0[level]);
@@ -37993,7 +31001,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
                             l_son_grid.dx0[level] = l_slope;
                             l_son_grid.x1[level] = l_end + (ul_start - l_start) + mid;
                             l_son_grid.dx1[level] = -l_slope;
-                            do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 510, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                             /* cilk_sync */
                             const int next_dep_pointer = (curr_dep + 1) & 0x1;
@@ -38002,7 +31010,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
                             l_son_grid.dx0[level] = -l_slope;
                             l_son_grid.x1[level] = ul_start + mid;
                             l_son_grid.dx1[level] = l_slope;
-                            do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 519, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                         } else { /* NOT the initial cut! */
                             const int mid = tb/2;
                             grid_info<N_RANK> l_son_grid = l_father_grid;
@@ -38014,14 +31022,14 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
                             l_son_grid.dx0[level] = l_father_grid.dx0[level];
                             l_son_grid.x1[level] = ul_start + mid;
                             l_son_grid.dx1[level] = -l_slope;
-                            do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 531, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                             /* push one sub-grid into circular queue of (curr_dep) */
                             l_son_grid.x0[level] = ul_start + mid;
                             l_son_grid.dx0[level] = l_slope;
                             l_son_grid.x1[level] = l_end;
                             l_son_grid.dx1[level] = l_father_grid.dx1[level];
-                            do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 538, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                             /* cilk_sync */
                             const int next_dep_pointer = (curr_dep + 1) & 0x1;
@@ -38030,14 +31038,14 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
                             l_son_grid.dx0[level] = -l_slope;
                             l_son_grid.x1[level] = ul_start + mid;
                             l_son_grid.dx1[level] = l_slope;
-                            do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 547, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                         }                    
                     } /* end if (cut_tb) */
                 } /* end if (can_cut) */
             } /* end if (performing a space cut) */
         } /* end while (queue_len_[curr_dep] > 0) */
         _Cilk_sync;
-        ((queue_len_[curr_dep_pointer] == 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] == 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 556, __PRETTY_FUNCTION__));
+        (static_cast<void> (0));
     } /* end for (curr_dep < N_RANK+1) */
 }
 
@@ -38054,22 +31062,22 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut(int t0, int t1, grid_info
     }
 
     /* set up the initial grid */
-    do { ((queue_len_[0] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[0] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 573, __PRETTY_FUNCTION__)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
+    do { (static_cast<void> (0)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
     for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
         const int curr_dep_pointer = (curr_dep & 0x1);
         while (queue_len_[curr_dep_pointer] > 0) {
-            do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 577, __PRETTY_FUNCTION__)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
+            do { (static_cast<void> (0)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
             if (l_father->level < 0) {
                 /* spawn all the grids in circular_queue_[curr_dep][] */
                 /* use cilk_spawn to spawn all the sub-grid */
-                do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 594, __PRETTY_FUNCTION__)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
                 if (queue_len_[curr_dep_pointer] == 0)
                     duo_sim_obase_bicut(l_father->t0, l_father->t1, l_father->grid, f);
                 else
                     _Cilk_spawn duo_sim_obase_bicut(l_father->t0, l_father->t1, l_father->grid, f);
             } else {
                 /* performing a space cut on dimension 'level' */
-                do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 602, __PRETTY_FUNCTION__)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
                 const grid_info<N_RANK> l_father_grid = l_father->grid;
                 const int t0 = l_father->t0, t1 = l_father->t1;
                 const int lt = (t1 - t0);
@@ -38085,7 +31093,7 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut(int t0, int t1, grid_info
                     /* if we can't cut into this dimension, just directly push 
                      * it into the circular queue 
                      */
-                    do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 618, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                 } else {
                     /* can_cut! */
                     if (cut_lb) {
@@ -38099,14 +31107,14 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut(int t0, int t1, grid_info
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
                         l_son_grid.x1[level] = l_start + mid;
                         l_son_grid.dx1[level] = -l_slope;
-                        do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 632, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                         /* push one sub-grid into circular queue of (curr_dep) */
                         l_son_grid.x0[level] = l_start + mid;
                         l_son_grid.dx0[level] = l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
-                        do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 639, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                         /* cilk_sync */
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
@@ -38115,7 +31123,7 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut(int t0, int t1, grid_info
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_start + mid;
                         l_son_grid.dx1[level] = l_slope;
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 648, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                     } /* end if (cut_lb) */
                     else {
@@ -38131,7 +31139,7 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut(int t0, int t1, grid_info
                         l_son_grid.dx0[level] = l_slope;
                         l_son_grid.x1[level] = l_start + mid + delta_x;
                         l_son_grid.dx1[level] = -l_slope;
-                        do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 664, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                         /* cilk_sync */
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
@@ -38140,20 +31148,20 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut(int t0, int t1, grid_info
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
                         l_son_grid.x1[level] = l_start + mid - delta_x;
                         l_son_grid.dx1[level] = l_slope;
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 673, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
                         l_son_grid.x0[level] = l_start + mid + delta_x;
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 680, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                     } /* end else (cut_tb) */
                 } /* end if (can_cut) */
             } /* end if (performing a space cut) */
         } /* end while (queue_len_[curr_dep] > 0) */
         _Cilk_sync;
-        ((queue_len_[curr_dep_pointer] == 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] == 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 688, __PRETTY_FUNCTION__));
+        (static_cast<void> (0));
     } /* end for (curr_dep < N_RANK+1) */
 }
 
@@ -38171,15 +31179,15 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut_p(int t0, int t1, grid_in
     }
 
     /* set up the initial grid */
-    do { ((queue_len_[0] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[0] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 706, __PRETTY_FUNCTION__)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
+    do { (static_cast<void> (0)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
     for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
         const int curr_dep_pointer = (curr_dep & 0x1);
         while (queue_len_[curr_dep_pointer] > 0) {
-            do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 710, __PRETTY_FUNCTION__)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
+            do { (static_cast<void> (0)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
             if (l_father->level < 0) {
                 /* spawn all the grids in circular_queue_[curr_dep][] */
                 /* use cilk_spawn to spawn all the sub-grid */
-                do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 727, __PRETTY_FUNCTION__)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
                 if (queue_len_[curr_dep_pointer] == 0) {
                     duo_sim_obase_bicut_p(l_father->t0, l_father->t1, l_father->grid, f, bf);
                 } else {
@@ -38187,7 +31195,7 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut_p(int t0, int t1, grid_in
                 }
             } else {
                 /* performing a space cut on dimension 'level' */
-                do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 736, __PRETTY_FUNCTION__)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
                 grid_info<N_RANK> l_father_grid = l_father->grid;
                 const int t0 = l_father->t0, t1 = l_father->t1;
                 const int lt = (t1 - t0);
@@ -38204,7 +31212,7 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut_p(int t0, int t1, grid_in
                     /* if we can't cut into this dimension, just directly push
                      * it into the circular queue
                     */
-                    do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 753, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                 } else {
                     /* can_cut */
                     if (cut_lb) {
@@ -38219,14 +31227,14 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut_p(int t0, int t1, grid_in
                             l_son_grid.dx0[level] = l_slope;
                             l_son_grid.x1[level] = l_start + mid;
                             l_son_grid.dx1[level] = -l_slope;
-                            do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 768, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                             /* push one sub-grid into circular queue of (curr_dep) */
                             l_son_grid.x0[level] = l_start + mid;
                             l_son_grid.dx0[level] = l_slope;
                             l_son_grid.x1[level] = l_end - l_slope;
                             l_son_grid.dx1[level] = -l_slope;
-                            do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 775, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                             /* cilk_sync */
                             const int next_dep_pointer = (curr_dep + 1) & 0x1;
@@ -38235,14 +31243,14 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut_p(int t0, int t1, grid_in
                             l_son_grid.dx0[level] = -l_slope;
                             l_son_grid.x1[level] = l_start + mid;
                             l_son_grid.dx1[level] = l_slope;
-                            do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 784, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                             /* initial cut - merge triangles! */
                             l_son_grid.x0[level] = l_end - l_slope;
                             l_son_grid.dx0[level] = -l_slope;
                             l_son_grid.x1[level] = l_end + l_slope;
                             l_son_grid.dx1[level] = l_slope;
-                            do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 791, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                         } else { /* NOT the initial cut! */
                             const int mid = (int)lb/2;
                             grid_info<N_RANK> l_son_grid = l_father_grid;
@@ -38254,14 +31262,14 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut_p(int t0, int t1, grid_in
                             l_son_grid.dx0[level] = l_father_grid.dx0[level];
                             l_son_grid.x1[level] = l_start + mid;
                             l_son_grid.dx1[level] = -l_slope;
-                            do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 803, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                             /* push one sub-grid into circular queue of (curr_dep) */
                             l_son_grid.x0[level] = l_start + mid;
                             l_son_grid.dx0[level] = l_slope;
                             l_son_grid.x1[level] = l_end;
                             l_son_grid.dx1[level] = l_father_grid.dx1[level];
-                            do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 810, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                             /* cilk_sync */
                             const int next_dep_pointer = (curr_dep + 1) & 0x1;
@@ -38270,12 +31278,12 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut_p(int t0, int t1, grid_in
                             l_son_grid.dx0[level] = -l_slope;
                             l_son_grid.x1[level] = l_start + mid;
                             l_son_grid.dx1[level] = l_slope;
-                            do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 819, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                         }
                     } /* end if (cut_lb) */
                     else { /* cut_tb */
                         /* if cutting tb, there's no initial cut! */
-                        ((tb != phys_length_[level]) ? static_cast<void> (0) : __assert_fail ("tb != phys_length_[level]", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 824, __PRETTY_FUNCTION__));
+                        (static_cast<void> (0));
                         const int mid = (int)lb/2;
                         const int delta_x = (lt * l_slope);
                         grid_info<N_RANK> l_son_grid = l_father_grid;
@@ -38287,7 +31295,7 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut_p(int t0, int t1, grid_in
                         l_son_grid.dx0[level] = l_slope;
                         l_son_grid.x1[level] = l_start + mid + delta_x;
                         l_son_grid.dx1[level] = -l_slope;
-                        do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 836, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                         /* cilk_sync */
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
@@ -38296,20 +31304,20 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut_p(int t0, int t1, grid_in
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
                         l_son_grid.x1[level] = l_start + mid - delta_x;
                         l_son_grid.dx1[level] = l_slope;
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 845, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
                         l_son_grid.x0[level] = l_start + mid + delta_x;
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 852, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                     } /* end if (cut_tb) */
                 } /* end if (can_cut) */
             } /* end if (performing a space cut) */
         } /* end while (queue_len_[curr_dep] > 0) */
         _Cilk_sync;
-        ((queue_len_[curr_dep_pointer] == 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] == 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 860, __PRETTY_FUNCTION__));
+        (static_cast<void> (0));
     } /* end for (curr_dep < N_RANK+1) */
 }
 /* following are the procedures for obase */
@@ -38325,22 +31333,22 @@ inline void Algorithm<N_RANK>::sim_obase_space_cut(int t0, int t1, grid_info<N_R
     }
 
     /* set up the initial grid */
-    do { ((queue_len_[0] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[0] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 876, __PRETTY_FUNCTION__)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
+    do { (static_cast<void> (0)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
     for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
         const int curr_dep_pointer = (curr_dep & 0x1);
         while (queue_len_[curr_dep_pointer] > 0) {
-            do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 880, __PRETTY_FUNCTION__)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
+            do { (static_cast<void> (0)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
             if (l_father->level < 0) {
                 /* spawn all the grids in circular_queue_[curr_dep][] */
                 /* use cilk_spawn to spawn all the sub-grid */
-                do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 897, __PRETTY_FUNCTION__)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
                 if (queue_len_[curr_dep_pointer] == 0)
                     sim_obase_bicut(l_father->t0, l_father->t1, l_father->grid, f);
                 else
                     _Cilk_spawn sim_obase_bicut(l_father->t0, l_father->t1, l_father->grid, f);
             } else {
                 /* performing a space cut on dimension 'level' */
-                do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 905, __PRETTY_FUNCTION__)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
                 const grid_info<N_RANK> l_father_grid = l_father->grid;
                 const int t0 = l_father->t0, t1 = l_father->t1;
                 const int lt = (t1 - t0);
@@ -38353,7 +31361,7 @@ inline void Algorithm<N_RANK>::sim_obase_space_cut(int t0, int t1, grid_info<N_R
                     /* if we can't cut into this dimension, just directly push 
                      * it into the circular queue 
                      */
-                    do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 918, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                 } else {
                     /* can_cut! */
                     const int mid = (int)lb/2;
@@ -38366,16 +31374,16 @@ inline void Algorithm<N_RANK>::sim_obase_space_cut(int t0, int t1, grid_info<N_R
                     l_son_grid.dx0[level] = l_slope;
                     l_son_grid.x1[level] = l_start + mid;
                     l_son_grid.dx1[level] = -l_slope;
-                    ((l_son_grid . x0[level] <= l_son_grid . x1[level]) ? static_cast<void> (0) : __assert_fail ("l_son_grid.x0[level] <= l_son_grid.x1[level]", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 931, __PRETTY_FUNCTION__));
-                    do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 932, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    (static_cast<void> (0));
+                    do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                     /* push one sub-grid into circular queue of (curr_dep) */
                     l_son_grid.x0[level] = l_start + mid;
                     l_son_grid.dx0[level] = l_slope;
                     l_son_grid.x1[level] = l_end;
                     l_son_grid.dx1[level] = -l_slope;
-                    ((l_son_grid . x0[level] <= l_son_grid . x1[level]) ? static_cast<void> (0) : __assert_fail ("l_son_grid.x0[level] <= l_son_grid.x1[level]", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 939, __PRETTY_FUNCTION__));
-                    do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 940, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    (static_cast<void> (0));
+                    do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                     /* cilk_sync */
                     const int next_dep_pointer = (curr_dep + 1) & 0x1;
@@ -38384,30 +31392,30 @@ inline void Algorithm<N_RANK>::sim_obase_space_cut(int t0, int t1, grid_info<N_R
                     l_son_grid.dx0[level] = -l_slope;
                     l_son_grid.x1[level] = l_start + mid;
                     l_son_grid.dx1[level] = l_slope;
-                    ((l_son_grid . x0[level] <= l_son_grid . x1[level]) ? static_cast<void> (0) : __assert_fail ("l_son_grid.x0[level] <= l_son_grid.x1[level]", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 949, __PRETTY_FUNCTION__));
-                    do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 950, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    (static_cast<void> (0));
+                    do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                     if (l_father_grid.dx0[level] != l_slope) {
                         l_son_grid.x0[level] = l_start;
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
                         l_son_grid.x1[level] = l_start;
                         l_son_grid.dx1[level] = l_slope;
-                        ((l_son_grid . x0[level] <= l_son_grid . x1[level]) ? static_cast<void> (0) : __assert_fail ("l_son_grid.x0[level] <= l_son_grid.x1[level]", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 957, __PRETTY_FUNCTION__));
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 958, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        (static_cast<void> (0));
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                     }
                     if (l_father_grid.dx1[level] != -l_slope) {
                         l_son_grid.x0[level] = l_end;
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
-                        ((l_son_grid . x0[level] <= l_son_grid . x1[level]) ? static_cast<void> (0) : __assert_fail ("l_son_grid.x0[level] <= l_son_grid.x1[level]", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 965, __PRETTY_FUNCTION__));
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 966, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        (static_cast<void> (0));
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                     }
                 } /* end if (can_cut) */
             } /* end if (performing a space cut) */
         } /* end while (queue_len_[curr_dep] > 0) */
         _Cilk_sync;
-        ((queue_len_[curr_dep_pointer] == 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] == 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 974, __PRETTY_FUNCTION__));
+        (static_cast<void> (0));
     } /* end for (curr_dep < N_RANK+1) */
 }
 
@@ -38424,15 +31432,15 @@ inline void Algorithm<N_RANK>::sim_obase_space_cut_p(int t0, int t1, grid_info<N
     }
 
     /* set up the initial grid */
-    do { ((queue_len_[0] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[0] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 991, __PRETTY_FUNCTION__)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
+    do { (static_cast<void> (0)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
     for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
         const int curr_dep_pointer = (curr_dep & 0x1);
         while (queue_len_[curr_dep_pointer] > 0) {
-            do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 995, __PRETTY_FUNCTION__)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
+            do { (static_cast<void> (0)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
             if (l_father->level < 0) {
                 /* spawn all the grids in circular_queue_[curr_dep][] */
                 /* use cilk_spawn to spawn all the sub-grid */
-                do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1012, __PRETTY_FUNCTION__)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
                 if (queue_len_[curr_dep_pointer] == 0) {
                     sim_obase_bicut_p(l_father->t0, l_father->t1, l_father->grid, f, bf);
                 } else {
@@ -38440,7 +31448,7 @@ inline void Algorithm<N_RANK>::sim_obase_space_cut_p(int t0, int t1, grid_info<N
                 }
             } else {
                 /* performing a space cut on dimension 'level' */
-                do { ((queue_len_[curr_dep_pointer] > 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] > 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1021, __PRETTY_FUNCTION__)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
                 grid_info<N_RANK> l_father_grid = l_father->grid;
                 const int t0 = l_father->t0, t1 = l_father->t1;
                 const int lt = (t1 - t0);
@@ -38454,7 +31462,7 @@ inline void Algorithm<N_RANK>::sim_obase_space_cut_p(int t0, int t1, grid_info<N
                     /* if we can't cut into this dimension, just directly push
                      * it into the circular queue
                     */
-                    do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1035, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                 } else {
                     /* can_cut */
                     const int mid = (int)lb/2;
@@ -38467,16 +31475,16 @@ inline void Algorithm<N_RANK>::sim_obase_space_cut_p(int t0, int t1, grid_info<N
                     l_son_grid.dx0[level] = l_slope;
                     l_son_grid.x1[level] = l_start + mid;
                     l_son_grid.dx1[level] = -l_slope;
-                    ((l_son_grid . x0[level] <= l_son_grid . x1[level]) ? static_cast<void> (0) : __assert_fail ("l_son_grid.x0[level] <= l_son_grid.x1[level]", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1048, __PRETTY_FUNCTION__));
-                    do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1049, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    (static_cast<void> (0));
+                    do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                     /* push one sub-grid into circular queue of (curr_dep) */
                     l_son_grid.x0[level] = l_start + mid;
                     l_son_grid.dx0[level] = l_slope;
                     l_son_grid.x1[level] = l_end;
                     l_son_grid.dx1[level] = -l_slope;
-                    ((l_son_grid . x0[level] <= l_son_grid . x1[level]) ? static_cast<void> (0) : __assert_fail ("l_son_grid.x0[level] <= l_son_grid.x1[level]", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1056, __PRETTY_FUNCTION__));
-                    do { ((queue_len_[curr_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1057, __PRETTY_FUNCTION__)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    (static_cast<void> (0));
+                    do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                     /* cilk_sync */
                     const int next_dep_pointer = (curr_dep + 1) & 0x1;
@@ -38485,8 +31493,8 @@ inline void Algorithm<N_RANK>::sim_obase_space_cut_p(int t0, int t1, grid_info<N
                     l_son_grid.dx0[level] = -l_slope;
                     l_son_grid.x1[level] = l_start + mid;
                     l_son_grid.dx1[level] = l_slope;
-                    ((l_son_grid . x0[level] <= l_son_grid . x1[level]) ? static_cast<void> (0) : __assert_fail ("l_son_grid.x0[level] <= l_son_grid.x1[level]", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1066, __PRETTY_FUNCTION__));
-                    do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1067, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    (static_cast<void> (0));
+                    do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
 
                     if (lb == phys_length_[level]) {
                         /* initial cut - merge triangles! */
@@ -38494,31 +31502,31 @@ inline void Algorithm<N_RANK>::sim_obase_space_cut_p(int t0, int t1, grid_info<N
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_slope;
-                        ((l_son_grid . x0[level] <= l_son_grid . x1[level]) ? static_cast<void> (0) : __assert_fail ("l_son_grid.x0[level] <= l_son_grid.x1[level]", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1075, __PRETTY_FUNCTION__));
-                        do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1076, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        (static_cast<void> (0));
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                     } else {
                         if (l_father_grid.dx0[level] != l_slope) {
                             l_son_grid.x0[level] = l_start;
                             l_son_grid.dx0[level] = l_father_grid.dx0[level];
                             l_son_grid.x1[level] = l_start;
                             l_son_grid.dx1[level] = l_slope;
-                            ((l_son_grid . x0[level] <= l_son_grid . x1[level]) ? static_cast<void> (0) : __assert_fail ("l_son_grid.x0[level] <= l_son_grid.x1[level]", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1083, __PRETTY_FUNCTION__));
-                            do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1084, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            (static_cast<void> (0));
+                            do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                         }
                         if (l_father_grid.dx1[level] != -l_slope) {
                             l_son_grid.x0[level] = l_end;
                             l_son_grid.dx0[level] = -l_slope;
                             l_son_grid.x1[level] = l_end;
                             l_son_grid.dx1[level] = l_father_grid.dx1[level];
-                            ((l_son_grid . x0[level] <= l_son_grid . x1[level]) ? static_cast<void> (0) : __assert_fail ("l_son_grid.x0[level] <= l_son_grid.x1[level]", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1091, __PRETTY_FUNCTION__));
-                            do { ((queue_len_[next_dep_pointer] < (power<N_RANK> ::value)) ? static_cast<void> (0) : __assert_fail ("queue_len_[next_dep_pointer] < (power<N_RANK>::value)", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1092, __PRETTY_FUNCTION__)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                            (static_cast<void> (0));
+                            do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
                         }
                     }
                 } /* end if (can_cut) */
             } /* end if (performing a space cut) */
         } /* end while (queue_len_[curr_dep] > 0) */
         _Cilk_sync;
-        ((queue_len_[curr_dep_pointer] == 0) ? static_cast<void> (0) : __assert_fail ("queue_len_[curr_dep_pointer] == 0", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1101, __PRETTY_FUNCTION__));
+        (static_cast<void> (0));
     } /* end for (curr_dep < N_RANK+1) */
 }
 
@@ -38548,14 +31556,13 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
         shorter_duo_sim_obase_space_cut(t0, t1, grid, f);
         return;
     // } else if (lt > dt_recursive_ && l_total_points > Z) {
-    } else if (lt > dt_recursive_) {
+} else if (lt > dt_recursive_) {
         /* cut into time */
 //        assert(dt_recursive_ >= r_t);
-        ((lt > dt_recursive_) ? static_cast<void> (0) : __assert_fail ("lt > dt_recursive_", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1150, __PRETTY_FUNCTION__));
+(static_cast<void> (0));
         int halflt = lt / 2;
         /* cutting halflt align to unroll_ factor */
         halflt -= (halflt % unroll_);
-        printf("halflt = %d\n", halflt);
         l_son_grid = grid;
         shorter_duo_sim_obase_bicut(t0, t0+halflt, l_son_grid, f);
 
@@ -38569,12 +31576,9 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
         return;
     } else {
         // base case
-        printf("call interior!\n");
-        print_grid(stdout, t0, t1, grid);
-        // fprintf(stderr, "l_total_points = %d\n", l_total_points);
-        f(t0, t1, grid);
+f(t0, t1, grid);
 //        base_case_kernel_interior(t0, t1, grid, f);
-        return;
+return;
     }  
 }
 
@@ -38605,10 +31609,10 @@ inline void Algorithm<N_RANK>::duo_sim_obase_bicut(int t0, int t1, grid_info<N_R
         duo_sim_obase_space_cut(t0, t1, grid, f);
         return;
     // } else if (lt > dt_recursive_ && l_total_points > Z) {
-    } else if (lt > dt_recursive_) {
+} else if (lt > dt_recursive_) {
         /* cut into time */
 //        assert(dt_recursive_ >= r_t);
-        ((lt > dt_recursive_) ? static_cast<void> (0) : __assert_fail ("lt > dt_recursive_", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1230, __PRETTY_FUNCTION__));
+(static_cast<void> (0));
         int halflt = lt / 2;
         l_son_grid = grid;
         duo_sim_obase_bicut(t0, t0+halflt, l_son_grid, f);
@@ -38623,12 +31627,9 @@ inline void Algorithm<N_RANK>::duo_sim_obase_bicut(int t0, int t1, grid_info<N_R
         return;
     } else {
         // base case
-        printf("call interior!\n");
-        print_grid(stdout, t0, t1, grid);
-        // fprintf(stderr, "l_total_points = %d\n", l_total_points);
-        f(t0, t1, grid);
+f(t0, t1, grid);
 //        base_case_kernel_interior(t0, t1, grid, f);
-        return;
+return;
     }  
 }
 
@@ -38672,7 +31673,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
     } 
 
     if (call_boundary)
-        l_dt_stop = dt_recursive_boundary_;
+        l_dt_stop = ((dt_recursive_boundary_) > (unroll_) ? (dt_recursive_boundary_) : (unroll_));
     else
         l_dt_stop = dt_recursive_;
 
@@ -38681,7 +31682,6 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
         int halflt = lt / 2;
         /* cut halflt align to unroll_ */
         halflt -= (halflt % unroll_);
-        printf("halflt = %d\n", halflt);
         l_son_grid = l_father_grid;
         if (call_boundary) {
             shorter_duo_sim_obase_bicut_p(t0, t0+halflt, l_son_grid, f, bf);
@@ -38704,16 +31704,10 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
     } 
 
     // if (l_total_area <= Z || base_cube_t) {
-        /* for base_cube_t: -- prevent too small time cut! 
-         *      (cut_lb && lb > dx_recursive_boundary_ && lb < 2 * thres)
-         *  ||  (!cut_lb && tb > dx_recursive_boundary_ && lb < thres)
-         */
-        // base case
-        printf("call boundary!\n");
-        print_grid(stdout, t0, t1, l_father_grid);
-        if (call_boundary) {
-            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-        } else {
+if (call_boundary) {
+            bf(t0, t1, l_father_grid);
+//            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+} else {
             f(t0, t1, l_father_grid);
         }
         return;
@@ -38789,16 +31783,10 @@ inline void Algorithm<N_RANK>::duo_sim_obase_bicut_p(int t0, int t1, grid_info<N
     } 
 
     // if (l_total_area <= Z || base_cube_t) {
-        /* for base_cube_t: -- prevent too small time cut! 
-         *      (cut_lb && lb > dx_recursive_boundary_ && lb < 2 * thres)
-         *  ||  (!cut_lb && tb > dx_recursive_boundary_ && lb < thres)
-         */
-        // base case
-        printf("call boundary!\n");
-        print_grid(stdout, t0, t1, l_father_grid);
-        if (call_boundary) {
-            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-        } else {
+if (call_boundary) {
+            bf(t0, t1, l_father_grid);
+//            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+} else {
             f(t0, t1, l_father_grid);
         }
         return;
@@ -38827,10 +31815,10 @@ inline void Algorithm<N_RANK>::sim_obase_bicut(int t0, int t1, grid_info<N_RANK>
         sim_obase_space_cut(t0, t1, grid, f);
         return;
     // } else if (lt > dt_recursive_ && l_total_points > Z) {
-    } else if (lt > dt_recursive_) {
+} else if (lt > dt_recursive_) {
         /* cut into time */
 //        assert(dt_recursive_ >= r_t);
-        ((lt > dt_recursive_) ? static_cast<void> (0) : __assert_fail ("lt > dt_recursive_", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1523, __PRETTY_FUNCTION__));
+(static_cast<void> (0));
         int halflt = lt / 2;
         l_son_grid = grid;
         sim_obase_bicut(t0, t0+halflt, l_son_grid, f);
@@ -38845,12 +31833,9 @@ inline void Algorithm<N_RANK>::sim_obase_bicut(int t0, int t1, grid_info<N_RANK>
         return;
     } else {
         // base case
-        printf("call interior!\n");
-        print_grid(stdout, t0, t1, grid);
-        // fprintf(stderr, "l_total_points = %d\n", l_total_points);
-        f(t0, t1, grid);
+f(t0, t1, grid);
 //        base_case_kernel_interior(t0, t1, grid, f);
-        return;
+return;
     }  
 }
 
@@ -38920,16 +31905,10 @@ inline void Algorithm<N_RANK>::sim_obase_bicut_p(int t0, int t1, grid_info<N_RAN
     } 
 
     // if (l_total_area <= Z || base_cube_t) {
-        /* for base_cube_t: -- prevent too small time cut! 
-         *      (cut_lb && lb > dx_recursive_boundary_ && lb < 2 * thres)
-         *  ||  (!cut_lb && tb > dx_recursive_boundary_ && lb < thres)
-         */
-        // base case
-        printf("call boundary!\n");
-        print_grid(stdout, t0, t1, l_father_grid);
-        if (call_boundary) {
-            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-        } else {
+if (call_boundary) {
+            bf(t0, t1, l_father_grid);
+//            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+} else {
             f(t0, t1, l_father_grid);
         }
         return;
@@ -38947,8 +31926,7 @@ inline void Algorithm<N_RANK>::walk_adaptive(int t0, int t1, grid_info<N_RANK> c
 	bool base_cube = (lt <= dt_recursive_); /* dt_recursive_ : temporal dimension stop */
 	bool cut_yet = false;
 	//int lb[N_RANK];
-	//int thres[N_RANK];
-	index_info lb, thres;
+index_info lb, thres;
 	grid_info<N_RANK> l_grid;
 
 	for (int i = 0; i < N_RANK; ++i) {
@@ -38956,20 +31934,17 @@ inline void Algorithm<N_RANK>::walk_adaptive(int t0, int t1, grid_info<N_RANK> c
 		thres[i] = ((lb[i] == phys_length_[i])) ? N_CORES * (2 * slope_[i] * lt) : 2 * (2 * slope_[i] * lt);
 		base_cube = base_cube && (lb[i] <= dx_recursive_[i] || lb[i] < thres[i]); 
 //		base_cube = base_cube && (lb[i] < thres[i]); 
-	}	
+}	
 	if (base_cube) {
-        printf("call Adaptive! ");
-		print_grid(stdout, t0, t1, grid);
 		base_case_kernel_interior(t0, t1, grid, f);
 		return;
 	} else  {
 		for (int i = N_RANK-1; i >= 0 && !cut_yet; --i) {
 			if (lb[i] >= thres[i] && lb[i] > dx_recursive_[i]) { 
 //			if (lb[i] >= thres[i]) { 
-				l_grid = grid;
+l_grid = grid;
 				int sep = ((lb[i] == phys_length_[i])) ? lb[i]/N_CORES : (2 * slope_[i] * lt);
 				int r = ((lb[i] == phys_length_[i])) ? N_CORES : (lb[i]/sep);
-				printf("initial_cut = %s, lb[%d] = %d, sep = %d, r = %d\n", (lb[i] == phys_length_[i]) ? "True" : "False", i, lb[i], sep, r);
 				int j;
 				for (j = 0; j < r-1; ++j) {
 					l_grid.x0[i] = grid.x0[i] + sep * j;
@@ -38979,12 +31954,11 @@ inline void Algorithm<N_RANK>::walk_adaptive(int t0, int t1, grid_info<N_RANK> c
 					_Cilk_spawn walk_adaptive(t0, t1, l_grid, f);
 				}
 	//			j_loc = r-1;
-				l_grid.x0[i] = grid.x0[i] + sep * (r-1);
+l_grid.x0[i] = grid.x0[i] + sep * (r-1);
 				l_grid.dx0[i] = slope_[i];
 				l_grid.x1[i] = grid.x1[i];
 				l_grid.dx1[i] = -slope_[i];
 				_Cilk_spawn walk_adaptive(t0, t1, l_grid, f);
-//				print_sync(stdout);
 				_Cilk_sync;
 				if (grid.dx0[i] != slope_[i]) {
 					l_grid.x0[i] = grid.x0[i]; l_grid.dx0[i] = grid.dx0[i];
@@ -39010,7 +31984,6 @@ inline void Algorithm<N_RANK>::walk_adaptive(int t0, int t1, grid_info<N_RANK> c
 			int halflt = lt / 2;
 			l_grid = grid;
 			walk_adaptive(t0, t0+halflt, l_grid, f);
-//			print_sync(stdout);
 			for (int i = 0; i < N_RANK; ++i) {
 				l_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
 				l_grid.dx0[i] = grid.dx0[i];
@@ -39020,13 +31993,11 @@ inline void Algorithm<N_RANK>::walk_adaptive(int t0, int t1, grid_info<N_RANK> c
 			walk_adaptive(t0+halflt, t1, l_grid, f);
 			cut_yet = true;
 		}
-		((cut_yet) ? static_cast<void> (0) : __assert_fail ("cut_yet", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 1759, __PRETTY_FUNCTION__));
+		(static_cast<void> (0));
 		return;
 	}
 }
 
-static int count_boundary = 0;
-static int count_internal = 0;
 
 /* walk_ncores_boundary_p() will be called for -split-shadow mode */
 template <int N_RANK> template <typename F, typename BF>
@@ -39077,7 +32048,6 @@ inline void Algorithm<N_RANK>::walk_bicut_boundary_p(int t0, int t1, grid_info<N
             } else {
                 walk_bicut(t0, t1, l_son_grid, f);
             }
-			print_sync(stdout);
 			_Cilk_sync;
 
 			l_son_grid.x0[i] = l_start + sep;
@@ -39092,7 +32062,7 @@ inline void Algorithm<N_RANK>::walk_bicut_boundary_p(int t0, int t1, grid_info<N
 
 			if (l_start == phys_grid_.x0[i] && l_end == phys_grid_.x1[i]) {
         //        printf("merge triagles!\n");
-				l_son_grid.x0[i] = l_end;
+l_son_grid.x0[i] = l_end;
 				l_son_grid.dx0[i] = -slope_[i];
 				l_son_grid.x1[i] = l_end;
 				l_son_grid.dx1[i] = slope_[i];
@@ -39140,7 +32110,6 @@ inline void Algorithm<N_RANK>::walk_bicut_boundary_p(int t0, int t1, grid_info<N
         } else {
             walk_bicut(t0, t0+halflt, l_son_grid, f);
         }
-		print_sync(stdout);
 		for (int i = 0; i < N_RANK; ++i) {
 			l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
 			l_son_grid.dx0[i] = l_father_grid.dx0[i];
@@ -39155,17 +32124,13 @@ inline void Algorithm<N_RANK>::walk_bicut_boundary_p(int t0, int t1, grid_info<N
 	    return;
 	} 
     // base cube
-	if (call_boundary) {
+if (call_boundary) {
         /* for periodic stencils, all elements falling into boundary region
          * requires special treatment of 'BF' (usually requires modulo operation
          * to wrap-up the index)
          */
-        printf("call Boundary! ");
-        print_grid(stdout, t0, t1, l_father_grid);
 		base_case_kernel_boundary(t0, t1, l_father_grid, bf);
     } else {
-        printf("call Interior! ");
-	    print_grid(stdout, t0, t1, l_father_grid);
 	    base_case_kernel_interior(t0, t1, l_father_grid, f);
     }
     return;
@@ -39202,12 +32167,8 @@ inline void Algorithm<N_RANK>::walk_ncores_boundary_p(int t0, int t1, grid_info<
              * requires special treatment of 'BF' (usually requires modulo operation
              * to wrap-up the index)
              */
-	        printf("call Boundary! ");
-            print_grid(stdout, t0, t1, l_father_grid);
 			base_case_kernel_boundary(t0, t1, l_father_grid, bf);
         } else {
-            printf("call Interior! ");
-	    	print_grid(stdout, t0, t1, l_father_grid);
 			base_case_kernel_interior(t0, t1, l_father_grid, f);
         }
 		return;
@@ -39241,7 +32202,6 @@ inline void Algorithm<N_RANK>::walk_ncores_boundary_p(int t0, int t1, grid_info<
                 } else {
                     walk_adaptive(t0, t1, l_son_grid, f);
                 }
-//				print_sync(stdout);
 				_Cilk_sync;
 				for (j = 1; j < r; ++j) {
 					l_son_grid.x0[i] = l_start + sep * j;
@@ -39256,7 +32216,7 @@ inline void Algorithm<N_RANK>::walk_ncores_boundary_p(int t0, int t1, grid_info<
 				}
 				if (l_start == phys_grid_.x0[i] && l_end == phys_grid_.x1[i]) {
             //        printf("merge triagles!\n");
-					l_son_grid.x0[i] = l_end;
+l_son_grid.x0[i] = l_end;
 					l_son_grid.dx0[i] = -slope_[i];
 					l_son_grid.x1[i] = l_end;
 					l_son_grid.dx1[i] = slope_[i];
@@ -39300,7 +32260,6 @@ inline void Algorithm<N_RANK>::walk_ncores_boundary_p(int t0, int t1, grid_info<
             } else {
                 walk_adaptive(t0, t0+halflt, l_son_grid, f);
             }
-//			print_sync(stdout);
 			for (int i = 0; i < N_RANK; ++i) {
 				l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
 				l_son_grid.dx0[i] = l_father_grid.dx0[i];
@@ -39314,7 +32273,7 @@ inline void Algorithm<N_RANK>::walk_ncores_boundary_p(int t0, int t1, grid_info<
             }
 			cut_yet = true;
 		}
-		((cut_yet) ? static_cast<void> (0) : __assert_fail ("cut_yet", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 2071, __PRETTY_FUNCTION__));
+		(static_cast<void> (0));
 		return;
 	}
 }
@@ -39339,7 +32298,6 @@ inline void Algorithm<N_RANK>::obase_bicut(int t0, int t1, grid_info<N_RANK> con
 			l_grid = grid;
 			int sep = (int)lb[i]/2;
 			int r = 2;
-			printf("initial_cut = %s, lb[%d] = %d, sep = %d, r = %d\n", (lb[i] == phys_length_[i]) ? "True" : "False", i, lb[i], sep, r);
 			l_grid.x0[i] = grid.x0[i];
 			l_grid.dx0[i] = slope_[i];
 			l_grid.x1[i] = grid.x0[i] + sep;
@@ -39351,7 +32309,6 @@ inline void Algorithm<N_RANK>::obase_bicut(int t0, int t1, grid_info<N_RANK> con
 			l_grid.x1[i] = grid.x1[i];
 			l_grid.dx1[i] = -slope_[i];
 			_Cilk_spawn obase_bicut(t0, t1, l_grid, f);
-//			print_sync(stdout);
 			_Cilk_sync;
 			if (grid.dx0[i] != slope_[i]) {
 				l_grid.x0[i] = grid.x0[i]; l_grid.dx0[i] = grid.dx0[i];
@@ -39370,8 +32327,6 @@ inline void Algorithm<N_RANK>::obase_bicut(int t0, int t1, grid_info<N_RANK> con
 				l_grid.x1[i] = grid.x1[i]; l_grid.dx1[i] = grid.dx1[i];
 				_Cilk_spawn obase_bicut(t0, t1, l_grid, f);
 			}
-			printf("%s:%d cut into %d dim\n", __FUNCTION__, 2132, i);
-			fflush(stdout);
             return;
 		}/* end if */
 	} /* end for */
@@ -39379,7 +32334,6 @@ inline void Algorithm<N_RANK>::obase_bicut(int t0, int t1, grid_info<N_RANK> con
 		int halflt = lt / 2;
 		l_grid = grid;
 		obase_bicut(t0, t0+halflt, l_grid, f);
-//		print_sync(stdout);
 		for (int i = 0; i < N_RANK; ++i) {
 			l_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
 			l_grid.dx0[i] = grid.dx0[i];
@@ -39387,12 +32341,8 @@ inline void Algorithm<N_RANK>::obase_bicut(int t0, int t1, grid_info<N_RANK> con
 			l_grid.dx1[i] = grid.dx1[i];
 		}
 		obase_bicut(t0+halflt, t1, l_grid, f);
-		printf("%s:%d cut into time dim\n", __FUNCTION__, 2153);
-		fflush(stdout);
         return;
 	}
-    printf("call obase_bicut! ");
-    print_grid(stdout, t0, t1, grid);
 	f(t0, t1, grid);
 	return;
 }
@@ -39409,8 +32359,7 @@ inline void Algorithm<N_RANK>::obase_m(int t0, int t1, grid_info<N_RANK> const g
 	bool base_cube = (lt <= dt_recursive_); /* dt_recursive_ : temporal dimension stop */
 	bool cut_yet = false;
 	//int lb[N_RANK];
-	//int thres[N_RANK];
-	index_info lb, thres, tb;
+index_info lb, thres, tb;
     bool cut_lb[N_RANK];
 	grid_info<N_RANK> l_grid;
 
@@ -39422,8 +32371,6 @@ inline void Algorithm<N_RANK>::obase_m(int t0, int t1, grid_info<N_RANK> const g
 		base_cube = base_cube && (lb[i] <= dx_recursive_[i] || lb[i] < thres[i]); 
 	}	
 	if (base_cube) {
-        printf("call Obase_m! ");
-		print_grid(stdout, t0, t1, grid);
 		f(t0, t1, grid);
 		return;
 	} else  {
@@ -39432,7 +32379,6 @@ inline void Algorithm<N_RANK>::obase_m(int t0, int t1, grid_info<N_RANK> const g
 				l_grid = grid;
 				int sep = (2 * slope_[i] * lt);
 				int r = (lb[i]/sep);
-				printf("initial_cut = %s, lb[%d] = %d, sep = %d, r = %d\n", (lb[i] == phys_length_[i]) ? "True" : "False", i, lb[i], sep, r);
 				int j;
 				for (j = 0; j < r-1; ++j) {
 					l_grid.x0[i] = grid.x0[i] + sep * j;
@@ -39442,12 +32388,11 @@ inline void Algorithm<N_RANK>::obase_m(int t0, int t1, grid_info<N_RANK> const g
 					_Cilk_spawn obase_m(t0, t1, l_grid, f);
 				}
 	//			j_loc = r-1;
-				l_grid.x0[i] = grid.x0[i] + sep * (r-1);
+l_grid.x0[i] = grid.x0[i] + sep * (r-1);
 				l_grid.dx0[i] = slope_[i];
 				l_grid.x1[i] = grid.x1[i];
 				l_grid.dx1[i] = -slope_[i];
 				_Cilk_spawn obase_m(t0, t1, l_grid, f);
-//				print_sync(stdout);
 				_Cilk_sync;
 				if (grid.dx0[i] != slope_[i]) {
 					l_grid.x0[i] = grid.x0[i]; l_grid.dx0[i] = grid.dx0[i];
@@ -39473,7 +32418,6 @@ inline void Algorithm<N_RANK>::obase_m(int t0, int t1, grid_info<N_RANK> const g
 			int halflt = lt / 2;
 			l_grid = grid;
 			obase_m(t0, t0+halflt, l_grid, f);
-//			print_sync(stdout);
 			for (int i = 0; i < N_RANK; ++i) {
 				l_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
 				l_grid.dx0[i] = grid.dx0[i];
@@ -39483,7 +32427,7 @@ inline void Algorithm<N_RANK>::obase_m(int t0, int t1, grid_info<N_RANK> const g
 			obase_m(t0+halflt, t1, l_grid, f);
 			cut_yet = true;
 		}
-		((cut_yet) ? static_cast<void> (0) : __assert_fail ("cut_yet", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 2268, __PRETTY_FUNCTION__));
+		(static_cast<void> (0));
 		return;
 	}
 }
@@ -39499,8 +32443,7 @@ inline void Algorithm<N_RANK>::obase_adaptive(int t0, int t1, grid_info<N_RANK> 
 	bool base_cube = (lt <= dt_recursive_); /* dt_recursive_ : temporal dimension stop */
 	bool cut_yet = false;
 	//int lb[N_RANK];
-	//int thres[N_RANK];
-	index_info lb, thres;
+index_info lb, thres;
 	grid_info<N_RANK> l_grid;
 
 	for (int i = 0; i < N_RANK; ++i) {
@@ -39509,8 +32452,6 @@ inline void Algorithm<N_RANK>::obase_adaptive(int t0, int t1, grid_info<N_RANK> 
 		base_cube = base_cube && (lb[i] <= dx_recursive_[i] || lb[i] < thres[i]); 
 	}	
 	if (base_cube) {
-        printf("call Adaptive! ");
-		print_grid(stdout, t0, t1, grid);
 		f(t0, t1, grid);
 		return;
 	} else  {
@@ -39519,7 +32460,6 @@ inline void Algorithm<N_RANK>::obase_adaptive(int t0, int t1, grid_info<N_RANK> 
 				l_grid = grid;
 				int sep = ((lb[i] == phys_length_[i])) ? lb[i]/N_CORES : (2 * slope_[i] * lt);
 				int r = ((lb[i] == phys_length_[i])) ? N_CORES : (lb[i]/sep);
-				printf("initial_cut = %s, lb[%d] = %d, sep = %d, r = %d\n", (lb[i] == phys_length_[i]) ? "True" : "False", i, lb[i], sep, r);
 				int j;
 				for (j = 0; j < r-1; ++j) {
 					l_grid.x0[i] = grid.x0[i] + sep * j;
@@ -39529,12 +32469,11 @@ inline void Algorithm<N_RANK>::obase_adaptive(int t0, int t1, grid_info<N_RANK> 
 					_Cilk_spawn obase_adaptive(t0, t1, l_grid, f);
 				}
 	//			j_loc = r-1;
-				l_grid.x0[i] = grid.x0[i] + sep * (r-1);
+l_grid.x0[i] = grid.x0[i] + sep * (r-1);
 				l_grid.dx0[i] = slope_[i];
 				l_grid.x1[i] = grid.x1[i];
 				l_grid.dx1[i] = -slope_[i];
 				_Cilk_spawn obase_adaptive(t0, t1, l_grid, f);
-//				print_sync(stdout);
 				_Cilk_sync;
 				if (grid.dx0[i] != slope_[i]) {
 					l_grid.x0[i] = grid.x0[i]; l_grid.dx0[i] = grid.dx0[i];
@@ -39560,7 +32499,6 @@ inline void Algorithm<N_RANK>::obase_adaptive(int t0, int t1, grid_info<N_RANK> 
 			int halflt = lt / 2;
 			l_grid = grid;
 			obase_adaptive(t0, t0+halflt, l_grid, f);
-//			print_sync(stdout);
 			for (int i = 0; i < N_RANK; ++i) {
 				l_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
 				l_grid.dx0[i] = grid.dx0[i];
@@ -39570,7 +32508,7 @@ inline void Algorithm<N_RANK>::obase_adaptive(int t0, int t1, grid_info<N_RANK> 
 			obase_adaptive(t0+halflt, t1, l_grid, f);
 			cut_yet = true;
 		}
-		((cut_yet) ? static_cast<void> (0) : __assert_fail ("cut_yet", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 2371, __PRETTY_FUNCTION__));
+		(static_cast<void> (0));
 		return;
 	}
 }
@@ -39615,7 +32553,6 @@ inline void Algorithm<N_RANK>::obase_bicut_boundary_p(int t0, int t1, grid_info<
 			l_son_grid.x1[i] = l_end;
 			l_son_grid.dx1[i] = -slope_[i];
             obase_bicut_boundary_p(t0, t1, l_son_grid, bf);
-//			print_sync(stdout);
 			_Cilk_sync;
 			l_son_grid.x0[i] = l_start + sep;
 			l_son_grid.dx0[i] = -slope_[i];
@@ -39624,7 +32561,7 @@ inline void Algorithm<N_RANK>::obase_bicut_boundary_p(int t0, int t1, grid_info<
             _Cilk_spawn obase_bicut_boundary_p(t0, t1, l_son_grid, bf);
 			if (l_start == phys_grid_.x0[i] && l_end == phys_grid_.x1[i]) {
         //        printf("merge triagles!\n");
-				l_son_grid.x0[i] = l_end;
+l_son_grid.x0[i] = l_end;
 				l_son_grid.dx0[i] = -slope_[i];
 				l_son_grid.x1[i] = l_end;
 				l_son_grid.dx1[i] = slope_[i];
@@ -39652,7 +32589,6 @@ inline void Algorithm<N_RANK>::obase_bicut_boundary_p(int t0, int t1, grid_info<
 		int halflt = lt / 2;
 		l_son_grid = l_father_grid;
         obase_bicut_boundary_p(t0, t0+halflt, l_son_grid, bf);
-//		print_sync(stdout);
 		for (int i = 0; i < N_RANK; ++i) {
 			l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
 			l_son_grid.dx0[i] = l_father_grid.dx0[i];
@@ -39701,7 +32637,7 @@ inline void Algorithm<N_RANK>::obase_boundary_p(int t0, int t1, grid_info<N_RANK
 				l_son_grid = l_father_grid;
                 int sep = ((lb[i] == phys_length_[i])) ? lb[i]/N_CORES : (2 * slope_[i] * lt);
                 //int r = (initial_cut(i)) ? N_CORES : (lb[i]/sep);
-                int r = lb[i]/sep;
+int r = lb[i]/sep;
 				int l_start = (l_father_grid.x0[i]);
 				int l_end = (l_father_grid.x1[i]);
 				int j;
@@ -39717,7 +32653,6 @@ inline void Algorithm<N_RANK>::obase_boundary_p(int t0, int t1, grid_info<N_RANK
 				l_son_grid.x1[i] = l_end;
 				l_son_grid.dx1[i] = -slope_[i];
                 obase_boundary_p(t0, t1, l_son_grid, bf);
-//				print_sync(stdout);
 				_Cilk_sync;
 				for (j = 1; j < r; ++j) {
 					l_son_grid.x0[i] = l_start + sep * j;
@@ -39728,7 +32663,7 @@ inline void Algorithm<N_RANK>::obase_boundary_p(int t0, int t1, grid_info<N_RANK
 				}
 				if (l_start == phys_grid_.x0[i] && l_end == phys_grid_.x1[i]) {
             //        printf("merge triagles!\n");
-					l_son_grid.x0[i] = l_end;
+l_son_grid.x0[i] = l_end;
 					l_son_grid.dx0[i] = -slope_[i];
 					l_son_grid.x1[i] = l_end;
 					l_son_grid.dx1[i] = slope_[i];
@@ -39756,7 +32691,6 @@ inline void Algorithm<N_RANK>::obase_boundary_p(int t0, int t1, grid_info<N_RANK
 			int halflt = lt / 2;
 			l_son_grid = l_father_grid;
             obase_boundary_p(t0, t0+halflt, l_son_grid, bf);
-//			print_sync(stdout);
 			for (int i = 0; i < N_RANK; ++i) {
 				l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
 				l_son_grid.dx0[i] = l_father_grid.dx0[i];
@@ -39766,7 +32700,7 @@ inline void Algorithm<N_RANK>::obase_boundary_p(int t0, int t1, grid_info<N_RANK
             obase_boundary_p(t0+halflt, t1, l_son_grid, bf);
 			cut_yet = true;
 		}
-		((cut_yet) ? static_cast<void> (0) : __assert_fail ("cut_yet", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 2575, __PRETTY_FUNCTION__));
+		(static_cast<void> (0));
 		return;
 	}
 }
@@ -39833,7 +32767,7 @@ inline void Algorithm<N_RANK>::obase_bicut_boundary_p(int t0, int t1, grid_info<
 
 			if (l_start == phys_grid_.x0[i] && l_end == phys_grid_.x1[i]) {
         //        printf("merge triagles!\n");
-				l_son_grid.x0[i] = l_end;
+l_son_grid.x0[i] = l_end;
 				l_son_grid.dx0[i] = -slope_[i];
 				l_son_grid.x1[i] = l_end;
 				l_son_grid.dx1[i] = slope_[i];
@@ -39899,13 +32833,9 @@ inline void Algorithm<N_RANK>::obase_bicut_boundary_p(int t0, int t1, grid_info<
         /* for periodic stencils, all elements falling within boundary region
          * requires special treatment 'BF' (usually requires modulo operation)
         */
-	    printf("call Boundary! ");
-        print_grid(stdout, t0, t1, l_father_grid);
 		//bf(t0, t1, grid);
-		base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+base_case_kernel_boundary(t0, t1, l_father_grid, bf);
     } else {
-        printf("call Interior! ");
-		print_grid(stdout, t0, t1, l_father_grid);
 		f(t0, t1, l_father_grid);
     }
 	return;
@@ -39940,13 +32870,9 @@ inline void Algorithm<N_RANK>::obase_boundary_p(int t0, int t1, grid_info<N_RANK
             /* for periodic stencils, all elements falling within boundary region
              * requires special treatment 'BF' (usually requires modulo operation)
             */
-	        printf("call Boundary! ");
-            print_grid(stdout, t0, t1, l_father_grid);
 			//bf(t0, t1, grid);
-			base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+base_case_kernel_boundary(t0, t1, l_father_grid, bf);
         } else {
-            printf("call Interior! ");
-	    	print_grid(stdout, t0, t1, l_father_grid);
 			f(t0, t1, l_father_grid);
         }
 		return;
@@ -39957,7 +32883,7 @@ inline void Algorithm<N_RANK>::obase_boundary_p(int t0, int t1, grid_info<N_RANK
                 l_son_grid = l_father_grid;
                 int sep = ((lb[i] == phys_length_[i])) ? lb[i]/N_CORES : (2 * slope_[i] * lt);
                 //int r = (initial_cut(i)) ? N_CORES : (lb[i]/sep);
-                int r = lb[i]/sep;
+int r = lb[i]/sep;
 				int l_start = (l_father_grid.x0[i]);
 				int l_end = (l_father_grid.x1[i]);
 				int j;
@@ -39981,7 +32907,6 @@ inline void Algorithm<N_RANK>::obase_boundary_p(int t0, int t1, grid_info<N_RANK
                 } else {
                     obase_adaptive(t0, t1, l_son_grid, f);
                 }
-//				print_sync(stdout);
 				_Cilk_sync;
 				for (j = 1; j < r; ++j) {
 					l_son_grid.x0[i] = l_start + sep * j;
@@ -39996,7 +32921,7 @@ inline void Algorithm<N_RANK>::obase_boundary_p(int t0, int t1, grid_info<N_RANK
 				}
 				if (l_start == phys_grid_.x0[i] && l_end == phys_grid_.x1[i]) {
             //        printf("merge triagles!\n");
-					l_son_grid.x0[i] = l_end;
+l_son_grid.x0[i] = l_end;
 					l_son_grid.dx0[i] = -slope_[i];
 					l_son_grid.x1[i] = l_end;
 					l_son_grid.dx1[i] = slope_[i];
@@ -40040,7 +32965,6 @@ inline void Algorithm<N_RANK>::obase_boundary_p(int t0, int t1, grid_info<N_RANK
             } else {
                 obase_adaptive(t0, t0+halflt, l_son_grid, f);
             }
-//			print_sync(stdout);
 			for (int i = 0; i < N_RANK; ++i) {
 				l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
 				l_son_grid.dx0[i] = l_father_grid.dx0[i];
@@ -40054,7 +32978,7 @@ inline void Algorithm<N_RANK>::obase_boundary_p(int t0, int t1, grid_info<N_RANK
             }
 			cut_yet = true;
 		}
-		((cut_yet) ? static_cast<void> (0) : __assert_fail ("cut_yet", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_recursive.hpp", 2875, __PRETTY_FUNCTION__));
+		(static_cast<void> (0));
 		return;
 	}
 }
@@ -40099,22 +33023,17 @@ inline void Algorithm<N_RANK>::naive_cut_space_mp(int dim, int t0, int t1, grid_
 	int lx = (dim < N_RANK) ? (grid.x1[dim] - grid.x0[dim]) : 0;
 	bool can_cut = (dim < N_RANK) ? (lx/bl >= 2) : false;
 
-//	printf("dim = %d :", dim);
-//	print_grid(stdout, t0, t1, grid);
-//	fflush(stdout);
 	if (!can_cut || dim == N_RANK) {
 		if (dim < N_RANK)
 			naive_cut_space_mp(dim+1, t0, t1, grid, f);
 		else {
-			((dim == N_RANK) ? static_cast<void> (0) : __assert_fail ("dim == N_RANK", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_loops.hpp", 53, __PRETTY_FUNCTION__));
-	//		printf("%s:%d base_case_kernel\n", __FUNCTION__, __LINE__);
-	//		fflush(stdout);
+			(static_cast<void> (0));
 //			base_case_kernel(t0, t1, grid);
-			base_case_kernel(t0, t1, grid, f);
+base_case_kernel(t0, t1, grid, f);
 		}
 		return;
 	} else {
-		((can_cut) ? static_cast<void> (0) : __assert_fail ("can_cut", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_loops.hpp", 63, __PRETTY_FUNCTION__));
+		(static_cast<void> (0));
 		grid_info<N_RANK> l_grid = grid;
 		int r = lx / bl;
 		int sep = bl;
@@ -40167,22 +33086,18 @@ inline void Algorithm<N_RANK>::naive_cut_space_ncores(int dim, int t0, int t1, g
 	int lx = (dim < N_RANK) ? (grid.x1[dim] - grid.x0[dim]) : 0;
 	bool can_cut = (dim < N_RANK) ? (N_CORES * 2 * slope_[dim] * lt <= lx) : false;
 	//printf("TILE_NCORES\n");
-//	printf("dim = %d :", dim);
-//	print_grid(stdout, t0, t1, grid);
-//	fflush(stdout);
-	if (!can_cut || dim == N_RANK) {
+if (!can_cut || dim == N_RANK) {
 		if (dim < N_RANK)
 			naive_cut_space_ncores(dim+1, t0, t1, grid, f);
 		else {
-			((dim == N_RANK) ? static_cast<void> (0) : __assert_fail ("dim == N_RANK", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_loops.hpp", 125, __PRETTY_FUNCTION__));
-//			print_grid(stdout, t0, t1, grid);
+			(static_cast<void> (0));
 //			base_case_kernel(t0, t1, grid);
-			base_case_kernel(t0, t1, grid, f);
+base_case_kernel(t0, t1, grid, f);
 
 		}
 		return;
 	} else {
-		((can_cut) ? static_cast<void> (0) : __assert_fail ("can_cut", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_loops.hpp", 135, __PRETTY_FUNCTION__));
+		(static_cast<void> (0));
 		grid_info<N_RANK> l_grid = grid;
 		int sep = lx / N_CORES;
 		for (i = 0; i < N_CORES - 1; i++) {
@@ -40197,8 +33112,6 @@ inline void Algorithm<N_RANK>::naive_cut_space_ncores(int dim, int t0, int t1, g
 		l_grid.x1[dim] = grid.x1[dim];
 		l_grid.dx1[dim] = -slope_[dim];
 		naive_cut_space_ncores(dim+1, t0, t1, l_grid, f);
-//		fprintf(stdout, "cilk_sync\n");
-//		fflush(stdout);
 		_Cilk_sync;
 
 		if (grid.dx0[dim] != slope_[dim]) {
@@ -40242,29 +33155,24 @@ inline void Algorithm<N_RANK>::cut_space_ncores_boundary(int dim, int t0, int t1
 		lx = 0;
 	can_cut = (dim < N_RANK) ? (N_CORES * 2 * slope_[dim] * lt <= lx) : false;
 	//printf("TILE_NCORES\n");
-//	printf("dim = %d :", dim);
-//	print_grid(stdout, t0, t1, grid);
-//	fflush(stdout);
-	if (!can_cut || dim == N_RANK) {
+if (!can_cut || dim == N_RANK) {
 		if (dim < N_RANK) {
 			cut_space_ncores_boundary(dim+1, t0, t1, grid, f);
 		} else {
-			((dim == N_RANK) ? static_cast<void> (0) : __assert_fail ("dim == N_RANK", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_loops.hpp", 206, __PRETTY_FUNCTION__));
-//			print_grid(stdout, t0, t1, grid);
+			(static_cast<void> (0));
 			call_boundary = false;
 			for (int i = 0; i < N_RANK; i++) {
 				call_boundary |= (grid.x0[i] == initial_grid_.x0[i] || grid.x1[i] == initial_grid_.x1[i]);
 			}
 			if (call_boundary) 
                 //we will defer the processing of boundary condition later
-				//base_case_kernel_boundary(t0, t1, grid, f);
-				base_case_kernel(t0, t1, grid, f);
+base_case_kernel(t0, t1, grid, f);
 			else
 				base_case_kernel(t0, t1, grid, f);
 		}
 		return;
 	} else {
-		((can_cut) ? static_cast<void> (0) : __assert_fail ("can_cut", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_loops.hpp", 223, __PRETTY_FUNCTION__));
+		(static_cast<void> (0));
 		grid_info<N_RANK> l_grid = grid;
 		int sep = lx / N_CORES;
 		int l_start = (grid.x0[dim]);
@@ -40281,8 +33189,6 @@ inline void Algorithm<N_RANK>::cut_space_ncores_boundary(int dim, int t0, int t1
 		l_grid.x1[dim] = l_end;
 		l_grid.dx1[dim] = -slope_[dim];
 		cut_space_ncores_boundary(dim+1, t0, t1, l_grid, f);
-//		fprintf(stdout, "cilk_sync\n");
-//		fflush(stdout);
 		_Cilk_sync;
 
 		if (grid.dx0[dim] != slope_[dim]) {
@@ -40333,13 +33239,11 @@ inline void Algorithm<N_RANK>::cut_time(algor_type algor, int t0, int t1, grid_i
 		}
 		return;
 	} else {
-		((r_t >= 2) ? static_cast<void> (0) : __assert_fail ("r_t >= 2", "/home/yuantang/Git/Pochoir/ExecSpec_v2.0/pochoir_walk_loops.hpp", 294, __PRETTY_FUNCTION__));
+		(static_cast<void> (0));
 		for (i = 0; i < r_t; i++) {
 			switch(algor) {
 			case TILE_NCORES: 
 				naive_cut_space_ncores(0, t0+i*dt_recursive_, t0+(i+1)*dt_recursive_, grid, f);
-//				fprintf(stdout, "cilk_sync\n");
-//				fflush(stdout);
 				break;
 			case TILE_BOUNDARY:
 				cut_space_ncores_boundary(0, t0+i*dt_recursive_, t0+(i+1)*dt_recursive_, grid, f);
@@ -40410,8 +33314,7 @@ void pochoir(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Dom
     l_grid.dx0[1] = 0; l_grid.dx1[1] = 0;
     l_stride[0] = _iR.stride(); l_stride[1] = _jR.stride();
 	//algor.walk_serial(l_t0, l_t1, l_grid, f);
-	//algor.base_case_kernel(l_t0, l_t1, l_grid, f);
-    algor.set_initial_grid(l_grid);
+algor.set_initial_grid(l_grid);
     algor.set_stride(l_stride);
     algor.walk_ncores_adaptive(l_t0, l_t1, l_grid, f);
 }
@@ -40427,8 +33330,7 @@ void pochoir(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_
     l_grid.dx0[0] = 0; l_grid.dx1[0] = 0;
     l_stride[0] = _iR.stride();
 	//algor.walk_serial(l_t0, l_t1, l_grid, f);
-	//algor.base_case_kernel(l_t0, l_t1, l_grid, f);
-    algor.set_initial_grid(l_grid);
+algor.set_initial_grid(l_grid);
     algor.set_stride(l_stride);
     algor.walk_ncores_adaptive(l_t0, l_t1, l_grid, f);
 }
@@ -40447,8 +33349,7 @@ void pochoir(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Dom
     l_grid.dx0[1] = 0; l_grid.dx1[1] = 0;
     l_stride[0] = _iR.stride(); l_stride[1] = _jR.stride();
 	//algor.walk_serial(l_t0, l_t1, l_grid, f);
-	//algor.base_case_kernel(l_t0, l_t1, l_grid, f);
-    algor.set_initial_grid(l_grid);
+algor.set_initial_grid(l_grid);
     algor.set_stride(l_stride);
     algor.walk_ncores_boundary(l_t0, l_t1, l_grid, f, bf);
 }
@@ -40464,8 +33365,7 @@ void pochoir(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_
     l_grid.dx0[0] = 0; l_grid.dx1[0] = 0;
     l_stride[0] = _iR.stride();
 	//algor.walk_serial(l_t0, l_t1, l_grid, f);
-	//algor.base_case_kernel(l_t0, l_t1, l_grid, f);
-    algor.set_initial_grid(l_grid);
+algor.set_initial_grid(l_grid);
     algor.set_stride(l_stride);
     algor.walk_ncores_boundary(l_t0, l_t1, l_grid, f, bf);
 }
@@ -40487,8 +33387,7 @@ void pochoir_p(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_D
     l_grid.dx0[1] = 0; l_grid.dx1[1] = 0;
     l_stride[0] = _iR.stride(); l_stride[1] = _jR.stride();
 	//algor.walk_serial(l_t0, l_t1, l_grid, f);
-	//algor.base_case_kernel(l_t0, l_t1, l_grid, f);
-    algor.set_initial_grid(l_grid);
+algor.set_initial_grid(l_grid);
     algor.set_stride(l_stride);
     algor.walk_ncores_boundary_p(l_t0, l_t1, l_grid, f, bf);
 }
@@ -40504,8 +33403,7 @@ void pochoir_p(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const siz
     l_grid.dx0[0] = 0; l_grid.dx1[0] = 0;
     l_stride[0] = _iR.stride();
 	//algor.walk_serial(l_t0, l_t1, l_grid, f);
-	//algor.base_case_kernel(l_t0, l_t1, l_grid, f);
-    algor.set_initial_grid(l_grid);
+algor.set_initial_grid(l_grid);
     algor.set_stride(l_stride);
     algor.walk_ncores_boundary_p(l_t0, l_t1, l_grid, f, bf);
 }
@@ -40524,8 +33422,7 @@ void obase(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Domai
     l_grid.dx0[1] = 0; l_grid.dx1[1] = 0;
     l_stride[0] = _iR.stride(); l_stride[1] = _jR.stride();
 	//algor.walk_serial(l_t0, l_t1, l_grid, f);
-	//algor.base_case_kernel(l_t0, l_t1, l_grid, f);
-    algor.set_initial_grid(l_grid);
+algor.set_initial_grid(l_grid);
     algor.set_stride(l_stride);
     algor.obase_adaptive(l_t0, l_t1, l_grid, f);
 }
@@ -40541,8 +33438,7 @@ void obase(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_t 
     l_grid.dx0[0] = 0; l_grid.dx1[0] = 0;
     l_stride[0] = _iR.stride();
 	//algor.walk_serial(l_t0, l_t1, l_grid, f);
-	//algor.base_case_kernel(l_t0, l_t1, l_grid, f);
-    algor.set_initial_grid(l_grid);
+algor.set_initial_grid(l_grid);
     algor.set_stride(l_stride);
     algor.obase_adaptive(l_t0, l_t1, l_grid, f);
 }
@@ -40561,8 +33457,7 @@ void obase(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Domai
     l_grid.dx0[1] = 0; l_grid.dx1[1] = 0;
     l_stride[0] = _iR.stride(); l_stride[1] = _jR.stride();
 	//algor.walk_serial(l_t0, l_t1, l_grid, f);
-	//algor.base_case_kernel(l_t0, l_t1, l_grid, f);
-    algor.set_initial_grid(l_grid);
+algor.set_initial_grid(l_grid);
     algor.set_stride(l_stride);
     algor.obase_boundary(l_t0, l_t1, l_grid, f, bf);
 }
@@ -40578,8 +33473,7 @@ void obase(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_t 
     l_grid.dx0[0] = 0; l_grid.dx1[0] = 0;
     l_stride[0] = _iR.stride();
 	//algor.walk_serial(l_t0, l_t1, l_grid, f);
-	//algor.base_case_kernel(l_t0, l_t1, l_grid, f);
-    algor.set_initial_grid(l_grid);
+algor.set_initial_grid(l_grid);
     algor.set_stride(l_stride);
     algor.obase_boundary(l_t0, l_t1, l_grid, f, bf);
 }
@@ -40601,8 +33495,7 @@ void obase_p(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Dom
     l_grid.dx0[1] = 0; l_grid.dx1[1] = 0;
     l_stride[0] = _iR.stride(); l_stride[1] = _jR.stride();
 	//algor.walk_serial(l_t0, l_t1, l_grid, f);
-	//algor.base_case_kernel(l_t0, l_t1, l_grid, f);
-    algor.set_initial_grid(l_grid);
+algor.set_initial_grid(l_grid);
     algor.set_stride(l_stride);
     algor.obase_boundary_p(l_t0, l_t1, l_grid, f, bf);
 }
@@ -40618,8 +33511,7 @@ void obase_p(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_
     l_grid.dx0[0] = 0; l_grid.dx1[0] = 0;
     l_stride[0] = _iR.stride();
 	//algor.walk_serial(l_t0, l_t1, l_grid, f);
-	//algor.base_case_kernel(l_t0, l_t1, l_grid, f);
-    algor.set_initial_grid(l_grid);
+algor.set_initial_grid(l_grid);
     algor.set_stride(l_stride);
     algor.obase_boundary_p(l_t0, l_t1, l_grid, f, bf);
 }
@@ -40682,13 +33574,13 @@ template <typename T, int N_RANK>
 class Pochoir_Array {
 	private:
 		Storage<T> * view_; // real storage of elements
-        T * data_; /* begining data pointer of view_, reserved for iterator! */
+T * data_; /* begining data pointer of view_, reserved for iterator! */
 		typedef int size_info[N_RANK];
 		size_info logic_size_; // logical of elements in each dimension
-		size_info logic_start_, logic_end_; 
+size_info logic_start_, logic_end_; 
 		size_info phys_size_; // physical of elements in each dimension
-		size_info stride_; // stride of each dimension
-        bool allocMemFlag_;
+size_info stride_; // stride of each dimension
+bool allocMemFlag_;
 		int total_size_;
         int slope_[N_RANK], toggle_, unroll_;
         Pochoir_Shape<N_RANK> * shape_;
@@ -40726,8 +33618,7 @@ class Pochoir_Array {
             l_null = (T*) calloc(1, sizeof(T));
             allocMemFlag_ = false;
 //            view_ = new Storage<T>(TOGGLE * total_size_);
-//            data_ = view_->data();
-        }
+}
 
 		explicit Pochoir_Array (int sz1, int sz0) {
 			logic_size_[1] = sz1; logic_size_[0] = sz0; 
@@ -40742,8 +33633,7 @@ class Pochoir_Array {
             l_null = (T*) calloc(1, sizeof(T));
             allocMemFlag_ = false;
 //			  view_ = new Storage<T>(TOGGLE * total_size_) ;
-//            data_ = view_->data();
-		}
+}
 
 		explicit Pochoir_Array (int sz2, int sz1, int sz0) {
 			logic_size_[2] = sz2; logic_size_[1] = sz1; logic_size_[0] = sz0; 
@@ -40764,8 +33654,7 @@ class Pochoir_Array {
             l_null = (T*) calloc(1, sizeof(T));
             allocMemFlag_ = false;
 //  		  view_ = new Storage<T>(TOGGLE*total_size_) ;
-//            data_ = view_->data();
-		}
+}
 
 		explicit Pochoir_Array (int sz3, int sz2, int sz1, int sz0) {
 			logic_size_[3] = sz3; logic_size_[2] = sz2; logic_size_[1] = sz1; logic_size_[0] = sz0; 
@@ -40787,8 +33676,7 @@ class Pochoir_Array {
             l_null = (T*) calloc(1, sizeof(T));
             allocMemFlag_ = false;
 //			  view_ = new Storage<T>(TOGGLE*total_size_) ;
-//            data_ = view_->data();
-		}
+}
 
 		explicit Pochoir_Array (int sz4, int sz3, int sz2, int sz1, int sz0) {
 			logic_size_[4] = sz4; logic_size_[3] = sz3; logic_size_[2] = sz2; logic_size_[1] = sz1; logic_size_[0] = sz0; 
@@ -40811,8 +33699,7 @@ class Pochoir_Array {
             l_null = (T*) calloc(1, sizeof(T));
             allocMemFlag_ = false;
 //			  view_ = new Storage<T>(TOGGLE*total_size_) ;
-//            data_ = view_->data();
-		}
+}
 
 		explicit Pochoir_Array (int sz5, int sz4, int sz3, int sz2, int sz1, int sz0) {
 			logic_size_[5] = sz5; logic_size_[4] = sz4; logic_size_[3] = sz3; logic_size_[2] = sz2; logic_size_[1] = sz1; logic_size_[0] = sz0; 
@@ -40836,8 +33723,7 @@ class Pochoir_Array {
             l_null = (T*) calloc(1, sizeof(T));
             allocMemFlag_ = false;
 //			  view_ = new Storage<T>(TOGGLE*total_size_) ;
-//            data_ = view_->data();
-		}
+}
 
 		explicit Pochoir_Array (int sz6, int sz5, int sz4, int sz3, int sz2, int sz1, int sz0) {
 			logic_size_[6] = sz6; logic_size_[5] = sz5; logic_size_[4] = sz4; logic_size_[3] = sz3; logic_size_[2] = sz2; logic_size_[1] = sz1; logic_size_[0] = sz0; 
@@ -40862,8 +33748,7 @@ class Pochoir_Array {
             l_null = (T*) calloc(1, sizeof(T));
             allocMemFlag_ = false;
 //			  view_ = new Storage<T>(TOGGLE*total_size_) ;
-//            data_ = view_->data();
-		}
+}
 
 		explicit Pochoir_Array (int sz7, int sz6, int sz5, int sz4, int sz3, int sz2, int sz1, int sz0) {
 			logic_size_[7] = sz7; logic_size_[6] = sz6; logic_size_[5] = sz5; logic_size_[4] = sz4; logic_size_[3] = sz3; logic_size_[2] = sz2; logic_size_[1] = sz1; logic_size_[0] = sz0; 
@@ -40889,8 +33774,7 @@ class Pochoir_Array {
             l_null = (T*) calloc(1, sizeof(T));
             allocMemFlag_ = false;
 //			  view_ = new Storage<T>(TOGGLE*total_size_) ;
-//            data_ = view_->data();
-		}
+}
 
 		/* Copy constructor -- create another view of the
 		 * same array
@@ -41023,11 +33907,6 @@ class Pochoir_Array {
                      */
                 }
             }
-            printf("toggle = %d, unroll = %d\n", toggle_, unroll_);
-            for (int r = 0; r < N_RANK; ++r) {
-                printf("slope[%d] = %d, ", r, slope_[r]);
-            }
-            printf("\n");
             if (!allocMemFlag_) {
                 alloc_mem();
             }
@@ -41062,11 +33941,6 @@ class Pochoir_Array {
                     slope_[N_RANK-r] = ((slope_[N_RANK-r]) > (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))) ? (slope_[N_RANK-r]) : (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))));
                 }
             }
-            printf("toggle = %d, unroll = %d\n", toggle_, unroll_);
-            for (int r = 0; r < N_RANK; ++r) {
-                printf("slope[%d] = %d, ", r, slope_[r]);
-            }
-            printf("\n");
             if (!allocMemFlag_) {
                 alloc_mem();
             }
@@ -41111,11 +33985,6 @@ class Pochoir_Array {
                     slope_[N_RANK-r] = ((slope_[N_RANK-r]) > (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))) ? (slope_[N_RANK-r]) : (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))));
                 }
             }
-            printf("toggle = %d, unroll = %d\n", toggle_, unroll_);
-            for (int r = 0; r < N_RANK; ++r) {
-                printf("slope[%d] = %d, ", r, slope_[r]);
-            }
-            printf("\n");
             if (!allocMemFlag_) {
                 alloc_mem();
             }
@@ -41936,19 +34805,20 @@ class Pochoir {
     /* register boundary value function with corresponding Pochoir_Array object directly */
     template <typename T_Array, typename RET>
     void registerBoundaryFn(T_Array & arr, RET (*_bv)(T_Array &, int, int, int)) {
-        arr.Register_Boundary(_bv);
-        Register_Array(arr);
+        arr.Register_Boundary(_bv); /* UNKNOWN Register_Boundary with arr*/
+	Register_Array(arr);
     } 
+    grid_info<N_RANK> get_phys_grid(void);
     /* Executable Spec */
     template <typename BF>
     void Run(int timestep, BF const & bf);
     /* safe/unsafe Executable Spec */
     template <typename F, typename BF>
-    void Run(int timestep, F const & f, BF const & bf);
+    void Run_Split_Scope(int timestep, F const & f, BF const & bf);
     template <typename G1, typename F1, typename G2, typename F2>
     void Run_Leap_Frog(int timestep, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2);
     template <typename F1, typename F2>
-    void Run_Unroll(int timestep, F1 const & f1, F2 const & f2);
+    void Run(int timestep, F1 const & f1, F2 const & f2);
     /* obase for zero-padded region */
     template <typename F>
     void Run_Obase(int timestep, F const & f);
@@ -42012,7 +34882,6 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & arr) {
     if (num_arr_ == 0) {
         arr_type_size_ = sizeof(T);
         ++num_arr_;
-        printf("arr_type_size = %d\n", arr_type_size_);
     } 
     if (!regPhysDomainFlag) {
         getPhysDomainFromArray(arr);
@@ -42047,11 +34916,6 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
             slope_[N_RANK-r] = ((slope_[N_RANK-r]) > (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))) ? (slope_[N_RANK-r]) : (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))));
         }
     }
-    cout << "time_shift_ = " << time_shift_ << ", toggle = " << toggle_ << endl;
-    for (int r = 0; r < N_RANK; ++r) {
-        printf("slope[%d] = %d, ", r, slope_[r]);
-    }
-    printf("\n");
     regShapeFlag = true;
 }
 
@@ -42089,11 +34953,6 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape1)[N_SIZE1], 
             slope_[N_RANK-r] = ((slope_[N_RANK-r]) > (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))) ? (slope_[N_RANK-r]) : (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))));
         }
     }
-    cout << "time_shift_ = " << time_shift_ << ", toggle = " << toggle_ << endl;
-    for (int r = 0; r < N_RANK; ++r) {
-        printf("slope[%d] = %d, ", r, slope_[r]);
-    }
-    printf("\n");
     regShapeFlag = true;
 }
 
@@ -42209,6 +35068,11 @@ void Pochoir<N_RANK>::Register_Domain(Domain const & r_i) {
     regLogicDomainFlag = true;
 }
 
+template <int N_RANK> 
+grid_info<N_RANK> Pochoir<N_RANK>::get_phys_grid(void) {
+    return phys_grid_;
+}
+
 /* Executable Spec */
 template <int N_RANK> template <typename BF>
 void Pochoir<N_RANK>::Run(int timestep, BF const & bf) {
@@ -42224,10 +35088,6 @@ void Pochoir<N_RANK>::Run(int timestep, BF const & bf) {
     algor.base_case_kernel_boundary(0 + time_shift_, timestep + time_shift_, logic_grid_, bf);
     inRun = false;
     // algor.sim_bicut_zero(0 + time_shift_, timestep + time_shift_, logic_grid_, bf);
-    /* obase_boundary_p() is a parallel divide-and-conquer algorithm, which checks
-     * boundary for every point
-     */
-    // algor.obase_boundary_p(0, timestep, logic_grid_, bf);
 }
 
 /* Executable Spec for staggered grid/leap frog scheme */
@@ -42248,7 +35108,7 @@ void Pochoir<N_RANK>::Run_Leap_Frog(int timestep, G1 const & g1, F1 const & f1, 
 
 /* Executable Spec for unrolled staggered grid/leap frog scheme */
 template <int N_RANK> template <typename F1, typename F2>
-void Pochoir<N_RANK>::Run_Unroll(int timestep, F1 const & f1, F2 const & f2) {
+void Pochoir<N_RANK>::Run(int timestep, F1 const & f1, F2 const & f2) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
@@ -42262,10 +35122,9 @@ void Pochoir<N_RANK>::Run_Unroll(int timestep, F1 const & f1, F2 const & f2) {
     inRun = false;
 }
 
-
 /* safe/non-safe ExecSpec */
 template <int N_RANK> template <typename F, typename BF>
-void Pochoir<N_RANK>::Run(int timestep, F const & f, BF const & bf) {
+void Pochoir<N_RANK>::Run_Split_Scope(int timestep, F const & f, BF const & bf) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
@@ -42275,7 +35134,7 @@ void Pochoir<N_RANK>::Run(int timestep, F const & f, BF const & bf) {
      */
     timestep_ = timestep;
     checkFlags();
-    algor.walk_bicut_boundary_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+    algor.shorter_duo_sim_obase_bicut_p(0 + time_shift_, timestep + time_shift_, logic_grid_, f, bf);
 }
 
 /* obase for zero-padded area! */
@@ -42288,8 +35147,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f) {
     timestep_ = timestep;
     checkFlags();
 //     fprintf(stderr, "Call shorter_duo_sim_obase_bicut\n");
-   // algor.sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
-    algor.shorter_duo_sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
+algor.shorter_duo_sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
     // algor.duo_sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
 }
 
@@ -42307,14 +35165,8 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
     timestep_ = timestep;
     checkFlags();
 //    fprintf(stderr, "Call sim_obase_bicut_P\n");
-//    hyper-space cut
-    // algor.sim_obase_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
-    // cutting based on shorter bar
-    algor.shorter_duo_sim_obase_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+algor.shorter_duo_sim_obase_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
     // cutting based on longer bar
-    // algor.duo_sim_obase_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
-    // serial space cut
-    // algor.obase_bicut_boundary_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 }
 
 
@@ -42324,12 +35176,13 @@ void check_result(int t, int i, double a, double b)
 {
     if (abs(a - b) < (1e-6)) {
 //      printf("a(%d, %d) == b(%d, %d) == %f : passed!\n", t, i, t, i, a);
-    } else {
+} else {
         printf("a(%d, %d) = %f, b(%d, %d) = %f : FAILED!\n", t, i, a, t, i, b);
     }
 }
 
-template <typename T> T periodic_1D (Pochoir_Array<T, 1> & arr, int t, int i) {
+template <typename T> T periodic_1D (
+	/* Known*/ Pochoir_Array <T, 1> &arr, int t, int i) {
     const int arr_size_0 = arr.size(0);
 
     int new_i = (i >= arr_size_0) ? (i - arr_size_0) : (i < 0 ? i + arr_size_0 : i);
@@ -42337,7 +35190,8 @@ template <typename T> T periodic_1D (Pochoir_Array<T, 1> & arr, int t, int i) {
     return arr.get(t, new_i);
 }
 
-template <typename T> T aperiodic_1D (Pochoir_Array<T, 1> & arr, int t, int i) {
+template <typename T> T aperiodic_1D (
+	/* Known*/ Pochoir_Array <T, 1> &arr, int t, int i) {
     return 0;
 }
 
@@ -42361,22 +35215,38 @@ int main(int argc, char * argv[])
     }
     M = StrToInt(argv[1]);
     // nt = round(ct / (cdtdx * dx));
-    nt = StrToInt(argv[2]);
+nt = StrToInt(argv[2]);
     printf("M = %d, nt = %d\n", M, nt);
-    Pochoir_Shape<1> oned_uv[] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
-    Pochoir_Shape<1> oned_v[] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
-    Pochoir_Shape<1> oned_u[] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
-    Pochoir_Shape<1> oned_4pt[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {-2, 0}};
-    Pochoir_Array<double, 1> u(M), v(M);
-    Pochoir_Array<double, 1> b(M);
-    Pochoir<1> leap_frog(oned_v, oned_u);
-    leap_frog.Register_Array(u);
-    leap_frog.Register_Array(v);
-    u.Register_Boundary(periodic_1D);
-    v.Register_Boundary(periodic_1D);
-    b.Register_Shape(oned_4pt);
-    b.Register_Boundary(periodic_1D);
-    double * x = new double[M];
+    
+	/* Known */ Pochoir_Shape <1> oned_uv [4] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
+
+	/* toggle: 2; slopes: [1] */
+	
+	/* Known */ Pochoir_Shape <1> oned_v [4] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
+
+	/* toggle: 2; slopes: [1] */
+	
+	/* Known */ Pochoir_Shape <1> oned_u [4] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
+
+	/* toggle: 2; slopes: [1] */
+	
+	/* Known */ Pochoir_Shape <1> oned_4pt [5] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {-2, 0}};
+
+	/* toggle: 3; slopes: [0] */
+	
+	/* Known*/ Pochoir_Array <double, 1> u ( M ) , v ( M ) ;
+
+	/* Known*/ Pochoir_Array <double, 1> b ( M ) ;
+
+	/* Known */ Pochoir <1> leap_frog ( oned_v, oned_u ) ;
+/* toggles = [2,2]*/
+	leap_frog.Register_Array (u); /* register Array */
+	leap_frog.Register_Array (v); /* register Array */
+	u.Register_Boundary(periodic_1D); /* Register_Boundary */
+	v.Register_Boundary(periodic_1D); /* Register_Boundary */
+	/* Known */b.Register_Shape(oned_4pt);
+	b.Register_Boundary(periodic_1D); /* Register_Boundary */
+	double * x = new double[M];
 
     /* we can define an arbitrary function here, and transfer it to the animwave
      * function as a templated input
@@ -42402,21 +35272,104 @@ int main(int argc, char * argv[])
         return (!(t & 0x1));
     };
 
-    auto update_v = [&](int t, int i) {
-        /* update v */
-        v(t/2+1, i) = v(t/2, i) + cdtdx * (u(t/2, i+1) - u(t/2, i));
-    };
-
-    auto update_u = [&](int t, int i) {
-        /* update u */
-        u(t/2, i) = u(t/2-1, i) + cdtdx * (v(t/2, i) - v(t/2, i-1));
-    };
-
-    for (int times = 0; times < 1; ++times) {
+    /* known! */ auto update_v = [&] (int t, int i) {
+	v(t / 2 + 1, i) = v(t / 2, i) + cdtdx * (u(t / 2, i + 1) - u(t / 2, i));
+	
+	};
+	/* known! */ auto update_u = [&] (int t, int i) {
+	u(t / 2, i) = u(t / 2 - 1, i) + cdtdx * (v(t / 2, i) - v(t / 2, i - 1));
+	
+	};
+	for (int times = 0; times < 1; ++times) {
         gettimeofday(&start, 0);
-//        leap_frog.Run_Leap_Frog(2*nt, guard_v, update_v, guard_u, update_u);
-        leap_frog.Run_Unroll(2*nt, update_v, update_u);
-        gettimeofday(&end, 0);
+        {
+	#define v(t, i) v.boundary(t, i)
+	#define u(t, i) u.boundary(t, i)
+	/* known! */ auto boundary_update_v = [&] (int t, int i) {
+	v(t / 2 + 1, i) = v(t / 2, i) + cdtdx * (u(t / 2, i + 1) - u(t / 2, i));
+	
+	};
+	#undef v(t, i)
+	#undef u(t, i)
+	#define u(t, i) u.boundary(t, i)
+	#define v(t, i) v.boundary(t, i)
+	/* known! */ auto boundary_update_u = [&] (int t, int i) {
+	u(t / 2, i) = u(t / 2 - 1, i) + cdtdx * (v(t / 2, i) - v(t / 2, i - 1));
+	
+	};
+	#undef u(t, i)
+	#undef v(t, i)
+	
+	#define v(t, i) v.interior(t, i)
+	#define u(t, i) u.interior(t, i)
+	/* known! */ auto interior_update_v = [&] (int t, int i) {
+	v(t / 2 + 1, i) = v(t / 2, i) + cdtdx * (u(t / 2, i + 1) - u(t / 2, i));
+	
+	};
+	#undef v(t, i)
+	#undef u(t, i)
+	#define u(t, i) u.interior(t, i)
+	#define v(t, i) v.interior(t, i)
+	/* known! */ auto interior_update_u = [&] (int t, int i) {
+	u(t / 2, i) = u(t / 2 - 1, i) + cdtdx * (v(t / 2, i) - v(t / 2, i - 1));
+	
+	};
+	#undef u(t, i)
+	#undef v(t, i)
+	
+	
+	/* known! */ auto macro_boundary_update_v_update_u = [&] (int t0, int t1, grid_info<1> const & grid) {
+	grid_info<1> l_grid = grid;
+	grid_info<1> l_phys_grid = leap_frog.get_phys_grid();
+	for (int t = t0; t < t1; ++t) {
+	
+	meta_grid_boundary<1>::single_step(t, l_grid, l_phys_grid, boundary_update_v);
+	
+	/* Adjust sub-trapezoid! */
+	for (int i = 0; i < 1; ++i) {
+		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+	}
+	++t;
+	
+	meta_grid_boundary<1>::single_step(t, l_grid, l_phys_grid, boundary_update_u);
+	
+	/* Adjust sub-trapezoid! */
+	for (int i = 0; i < 1; ++i) {
+		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+	}
+	
+	
+	} /* end for t */
+	};
+
+	
+	/* known! */ auto macro_interior_update_v_update_u = [&] (int t0, int t1, grid_info<1> const & grid) {
+	grid_info<1> l_grid = grid;
+	grid_info<1> l_phys_grid = leap_frog.get_phys_grid();
+	for (int t = t0; t < t1; ++t) {
+	
+	meta_grid_interior<1>::single_step(t, l_grid, l_phys_grid, interior_update_v);
+	
+	/* Adjust sub-trapezoid! */
+	for (int i = 0; i < 1; ++i) {
+		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+	}
+	++t;
+	
+	meta_grid_interior<1>::single_step(t, l_grid, l_phys_grid, interior_update_u);
+	
+	/* Adjust sub-trapezoid! */
+	for (int i = 0; i < 1; ++i) {
+		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+	}
+	
+	
+	} /* end for t */
+	};
+
+	leap_frog.Run_Split_Scope(2 * nt, macro_interior_update_v_update_u, macro_boundary_update_v_update_u);
+	}
+	gettimeofday(&end, 0);
         min_tdiff = ((min_tdiff) < ((1.0e3 * tdiff(&end, &start))) ? (min_tdiff) : ((1.0e3 * tdiff(&end, &start))));
     }
     std::cout << "Pochoir time : " << min_tdiff << " ms" << std::endl;
@@ -42450,4 +35403,5 @@ int main(int argc, char * argv[])
 
     return 0;
 }
+
 

@@ -90,6 +90,14 @@ updateStencilBoundary l_id l_regBound parserState =
                 else Nothing
     in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
 
+updateStencilUnroll :: String -> Int -> ParserState -> ParserState
+updateStencilUnroll l_id l_unroll parserState =
+    let f k x =
+            if sName x == l_id
+                then Just $ x { sUnroll = l_unroll }
+                else Nothing
+    in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
+
 updateStencilToggle :: String -> Int -> ParserState -> ParserState
 updateStencilToggle l_id l_toggle parserState =
     let f k x =
@@ -129,10 +137,16 @@ getArrayRegBound l_state l_pArray =
         Nothing -> False
         Just l_array -> aRegBound l_array
     
+getValidKernel :: ParserState -> String -> (Bool, PKernel)
+getValidKernel l_state l_kernel =
+    case Map.lookup l_kernel $ pKernel l_state of
+        Nothing -> (False, emptyKernel) 
+        Just l_pKernel -> (True, l_pKernel)
+
 getPShape :: ParserState -> String -> PShape
 getPShape l_state l_shape =
     case Map.lookup l_shape $ pShape l_state of
-        Nothing -> PShape{shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shape = []}
+        Nothing -> emptyShape
         Just l_pShape -> l_pShape
 
 getPStencil :: String -> ParserState -> PStencil -> PStencil

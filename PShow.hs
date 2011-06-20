@@ -182,7 +182,7 @@ pDefMacroArrayInUse _ [] _ = ""
 pDefMacroArrayInUse l_macro (a:as) pL = pDefMacroShadowItem l_macro a pL ++ pDefMacroArrayInUse l_macro as pL
     where pDefMacroShadowItem l_macro a pL = 
             let l_arrayName = aName a
-                l_arrayMacroName = l_arrayName ++ l_macro
+                l_arrayMacroName = l_arrayName ++ "." ++ l_macro
             in  "#define " ++ pShowArrayTerm l_arrayName pL ++ " " ++
                 pShowArrayTerm l_arrayMacroName pL ++ breakline
 
@@ -196,21 +196,13 @@ pUndefMacroArrayInUse (a:as) pL = pUndefMacroShadowItem a pL ++ pUndefMacroArray
             let l_arrayName = aName a
             in  "#undef " ++ pShowArrayTerm l_arrayName pL ++ breakline
 
+{-
 pShowKernel :: String -> PKernel -> String
 pShowKernel l_name l_kernel = "Pochoir_Kernel_" ++ show dim ++ "D(" ++ l_name ++ ", " ++
     pShowKernelParams (kParams l_kernel) ++ ")" ++ show (kStmt l_kernel) ++
     breakline ++ "Pochoir_Kernel_end" ++ breakline
         where dim = length (kParams l_kernel) - 1
-
--- AutoKernel is a de-sugared kernel
-pShowAutoKernel :: String -> PKernel -> String
-pShowAutoKernel l_name l_kernel = 
-    let l_params = zipWith (++) (repeat "int ") (kParams l_kernel)
-    in  "/* known! */ auto " ++ l_name ++ " = [&] (" ++ 
-        pShowKernelParams l_params ++ ") {" ++ breakline ++
-        show (kStmt l_kernel) ++
-        breakline ++ "};" ++ breakline
-
+-}
 pShowKernelParams :: [String] -> String
 pShowKernelParams l_kernel_params = intercalate ", " l_kernel_params
 
@@ -219,6 +211,7 @@ pShowArrayGaps _ [] = ""
 pShowArrayGaps l_rank l_array = breakline ++ "int " ++ 
         intercalate ", " (map (getArrayGaps (l_rank-1)) l_array) ++ ";"
 
+{-
 pShowInteriorKernel :: String -> PKernel -> String
 pShowInteriorKernel l_name l_kernel =
     let l_iter = kIter l_kernel
@@ -234,17 +227,48 @@ pShowInteriorKernel l_name l_kernel =
 pShowTypeKernel :: [PArray] -> String -> PKernel -> String
 pShowTypeKernel l_sArrayInUse l_name l_kernel =
     let l_iter = kIter l_kernel
-        l_array = unionArrayIter l_iter
     --  in  pShowShadowArrayInUse l_array ++ pShowAutoKernel l_name l_kernel 
     in  pShowShadowArrayInUse l_sArrayInUse ++ pShowAutoKernel l_name l_kernel 
+-}
 
-pShowMacroKernel :: PName -> [PArray] -> String -> PKernel -> String
-pShowMacroKernel l_macro l_sArrayInUse l_name l_kernel =
-    let l_iter = kIter l_kernel
-        l_array = unionArrayIter l_iter
-        -- shadowArrayInUse = pDefMacroArrayInUse l_array (kParams l_kernel)
+-- AutoKernel is a de-sugared kernel
+pShowAutoKernel :: String -> PKernel -> String
+pShowAutoKernel l_name l_kernel = 
+    let l_params = zipWith (++) (repeat "int ") (kParams l_kernel)
+    in  "/* known! */ auto " ++ l_name ++ " = [&] (" ++ 
+        pShowKernelParams l_params ++ ") {" ++ breakline ++
+        show (kStmt l_kernel) ++
+        breakline ++ "};" ++ breakline
+
+pShowUnrolledMacroKernels :: String -> String -> PStencil -> [PName] -> String
+pShowUnrolledMacroKernels _ _ _ [] = ""
+pShowUnrolledMacroKernels l_macro l_name l_stencil l_kL@(l_kernel:l_kernels) = 
+    let l_t = "t"
+        l_rank = sRank l_stencil
+    in  breakline ++ "/* known! */ auto " ++ l_name ++ " = [&] (" ++
+        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++
+        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        breakline ++ "grid_info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
+        sName l_stencil ++ ".get_phys_grid();" ++
+        breakline ++ pShowTimeLoopHeader l_t ++ breakline ++
+        pShowSingleKernelIteration l_t l_macro l_rank l_kL ++
+        breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
+    
+pShowSingleKernelIteration :: String -> String -> Int -> [PName] -> String
+pShowSingleKernelIteration _ _ _ [] = ""
+pShowSingleKernelIteration l_t l_macro l_rank (l_kernel:l_kernels) =
+    breakline ++ "meta_grid_" ++ l_macro ++ "<" ++ show l_rank ++ ">::single_step(" ++
+    l_t ++ ", l_grid, l_phys_grid, " ++ l_kernel ++ ");" ++ 
+    breakline ++ pAdjustTrape l_rank ++ breakline ++ pAdjustT ++ 
+    breakline ++ pShowSingleKernelIteration l_t l_macro l_rank l_kernels
+        where pAdjustT = if null l_kernels then "" else "++t;" 
+
+pShowMacroKernel :: PName -> PKernel -> String
+pShowMacroKernel l_macro l_kernel =
+    let l_iters = kIter l_kernel
+        l_name = l_macro ++ "_" ++ kName l_kernel
+        l_sArrayInUse = unionArrayIter l_iters
         shadowArrayInUse = pDefMacroArrayInUse l_macro l_sArrayInUse (kParams l_kernel)
-        -- unshadowArrayInUse = pUndefMacroArrayInUse l_array (kParams l_kernel)
         unshadowArrayInUse = pUndefMacroArrayInUse l_sArrayInUse (kParams l_kernel)
     in  shadowArrayInUse ++ pShowAutoKernel l_name l_kernel ++ unshadowArrayInUse
 

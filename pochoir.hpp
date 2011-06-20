@@ -115,16 +115,17 @@ class Pochoir {
         arr.Register_Boundary(_bv);
         Register_Array(arr);
     } 
+    grid_info<N_RANK> get_phys_grid(void);
     /* Executable Spec */
     template <typename BF>
     void Run(int timestep, BF const & bf);
     /* safe/unsafe Executable Spec */
     template <typename F, typename BF>
-    void Run(int timestep, F const & f, BF const & bf);
+    void Run_Split_Scope(int timestep, F const & f, BF const & bf);
     template <typename G1, typename F1, typename G2, typename F2>
     void Run_Leap_Frog(int timestep, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2);
     template <typename F1, typename F2>
-    void Run_Unroll(int timestep, F1 const & f1, F2 const & f2);
+    void Run(int timestep, F1 const & f1, F2 const & f2);
     /* obase for zero-padded region */
     template <typename F>
     void Run_Obase(int timestep, F const & f);
@@ -396,6 +397,11 @@ void Pochoir<N_RANK>::Register_Domain(Domain const & r_i) {
     regLogicDomainFlag = true;
 }
 
+template <int N_RANK> 
+grid_info<N_RANK> Pochoir<N_RANK>::get_phys_grid(void) {
+    return phys_grid_;
+}
+
 /* Executable Spec */
 template <int N_RANK> template <typename BF>
 void Pochoir<N_RANK>::Run(int timestep, BF const & bf) {
@@ -435,7 +441,7 @@ void Pochoir<N_RANK>::Run_Leap_Frog(int timestep, G1 const & g1, F1 const & f1, 
 
 /* Executable Spec for unrolled staggered grid/leap frog scheme */
 template <int N_RANK> template <typename F1, typename F2>
-void Pochoir<N_RANK>::Run_Unroll(int timestep, F1 const & f1, F2 const & f2) {
+void Pochoir<N_RANK>::Run(int timestep, F1 const & f1, F2 const & f2) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
@@ -449,10 +455,9 @@ void Pochoir<N_RANK>::Run_Unroll(int timestep, F1 const & f1, F2 const & f2) {
     inRun = false;
 }
 
-
 /* safe/non-safe ExecSpec */
 template <int N_RANK> template <typename F, typename BF>
-void Pochoir<N_RANK>::Run(int timestep, F const & f, BF const & bf) {
+void Pochoir<N_RANK>::Run_Split_Scope(int timestep, F const & f, BF const & bf) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
@@ -462,15 +467,7 @@ void Pochoir<N_RANK>::Run(int timestep, F const & f, BF const & bf) {
      */
     timestep_ = timestep;
     checkFlags();
-#if BICUT
-#if 1
-    algor.walk_bicut_boundary_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
-#else
-    algor.sim_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
-#endif
-#else
-    algor.walk_ncores_boundary_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
-#endif
+    algor.shorter_duo_sim_obase_bicut_p(0 + time_shift_, timestep + time_shift_, logic_grid_, f, bf);
 }
 
 /* obase for zero-padded area! */
