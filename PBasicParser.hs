@@ -312,8 +312,8 @@ pSplitScope (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showKernel =
         oldKernelName = intercalate "_" oldKernelNames
         bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
         obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
-        bdryKernel = pShowUnrolledMacroKernels "boundary" bdryKernelName l_stencil bdryKernelNames
-        obaseKernel = pShowUnrolledMacroKernels "interior" obaseKernelName l_stencil obaseKernelNames
+        bdryKernel = pShowUnrolledMacroKernels True bdryKernelName l_stencil l_kernels bdryKernelNames
+        obaseKernel = pShowUnrolledMacroKernels False obaseKernelName l_stencil l_kernels obaseKernelNames
         runKernel = obaseKernelName ++ ", " ++ bdryKernelName
     in  return ("{" ++ breakline ++ 
                 bdryKernels ++ breakline ++ obaseKernels ++ breakline ++ 

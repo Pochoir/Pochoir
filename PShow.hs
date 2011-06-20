@@ -240,9 +240,9 @@ pShowAutoKernel l_name l_kernel =
         show (kStmt l_kernel) ++
         breakline ++ "};" ++ breakline
 
-pShowUnrolledMacroKernels :: String -> String -> PStencil -> [PName] -> String
-pShowUnrolledMacroKernels _ _ _ [] = ""
-pShowUnrolledMacroKernels l_macro l_name l_stencil l_kL@(l_kernel:l_kernels) = 
+pShowUnrolledMacroKernels :: Bool -> String -> PStencil -> [PKernel] -> [String] -> String
+pShowUnrolledMacroKernels _ _ _ [] [] = ""
+pShowUnrolledMacroKernels l_boundary l_name l_stencil l_kL@(l_kernel:l_kernels) l_nL@(n:ns) = 
     let l_t = "t"
         l_rank = sRank l_stencil
     in  breakline ++ "/* known! */ auto " ++ l_name ++ " = [&] (" ++
@@ -250,19 +250,62 @@ pShowUnrolledMacroKernels l_macro l_name l_stencil l_kL@(l_kernel:l_kernels) =
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
         sName l_stencil ++ ".get_phys_grid();" ++
+        breakline ++ pShowPMODLU l_boundary ++
         breakline ++ pShowTimeLoopHeader l_t ++ breakline ++
-        pShowSingleKernelIteration l_t l_macro l_rank l_kL ++
+        pShowSingleKernelIteration l_boundary l_t l_kL l_nL ++
         breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
     
-pShowSingleKernelIteration :: String -> String -> Int -> [PName] -> String
-pShowSingleKernelIteration _ _ _ [] = ""
-pShowSingleKernelIteration l_t l_macro l_rank (l_kernel:l_kernels) =
-    breakline ++ "meta_grid_" ++ l_macro ++ "<" ++ show l_rank ++ ">::single_step(" ++
-    l_t ++ ", l_grid, l_phys_grid, " ++ l_kernel ++ ");" ++ 
-    breakline ++ pAdjustTrape l_rank ++ breakline ++ pAdjustT ++ 
-    breakline ++ pShowSingleKernelIteration l_t l_macro l_rank l_kernels
-        where pAdjustT = if null l_kernels then "" else "++t;" 
+pShowPMODLU :: Bool -> String
+pShowPMODLU l_boundary = 
+    if l_boundary 
+        then "#define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -((a)>=(ub))))"
+        else ""
 
+pShowSingleKernelIteration :: Bool -> String -> [PKernel] -> [String] -> String
+pShowSingleKernelIteration _ _ [] [] = ""
+pShowSingleKernelIteration l_boundary l_t (l_kernel:l_kernels) (l_kName:l_kNames)=
+    let l_params = tail $ kParams l_kernel
+        l_rank = length (kParams l_kernel) - 1
+    in  breakline ++ pShowMetaGridHeader l_boundary l_params ++
+        breakline ++ pShowSingleKernel l_boundary l_t l_kernel l_kName ++
+        breakline ++ pShowMetaGridTail l_params ++ 
+        breakline ++ pAdjustTrape l_rank ++ breakline ++ pAdjustT ++ 
+        breakline ++ pShowSingleKernelIteration l_boundary l_t l_kernels l_kNames
+            where pAdjustT = if null l_kernels then "" else "++" ++ l_t ++ ";" 
+
+pShowSingleKernel :: Bool -> String -> PKernel -> String -> String
+pShowSingleKernel l_boundary l_t l_kernel l_name =
+    let l_params = tail $ kParams l_kernel
+        l_rank = length l_params
+        l_new_params = if l_boundary 
+            then zipWith (++) (replicate l_rank "new_") l_params
+            else l_params
+    in  l_name ++ "(" ++ l_t ++ ", " ++ intercalate ", " l_new_params ++ ");"
+
+pShowMetaGridHeader :: Bool -> [String] -> String
+pShowMetaGridHeader _ [] = ""
+pShowMetaGridHeader l_boundary pL@(p:ps) =
+    let l_rank = show (length pL - 1)
+        l_iter = p
+        l_start = "l_grid.x0[" ++ l_rank ++ "]"
+        l_end = "l_grid.x1[" ++ l_rank ++ "]"
+        l_new_iter = "new_" ++ l_iter
+        l_phys_start = "l_phys_grid.x0[" ++ l_rank ++ "]"
+        l_phys_end = "l_phys_grid.x1[" ++ l_rank ++ "]"
+        l_adjust_iter = if l_boundary 
+                            then breakline ++ "int " ++ l_new_iter ++ 
+                                 " = pmod_lu(" ++ l_iter ++ ", " ++ 
+                                 l_phys_start ++ ", " ++ 
+                                 l_phys_end ++ ");"
+                            else ""
+    in  breakline ++ "for (int " ++ l_iter ++ " = " ++ l_start ++ "; " ++
+        l_iter ++ " < " ++ l_end ++ "; ++" ++ l_iter ++ ") {" ++ l_adjust_iter ++
+        pShowMetaGridHeader l_boundary ps 
+
+pShowMetaGridTail :: [String] -> String
+pShowMetaGridTail [] = ""
+pShowMetaGridTail pL@(p:ps) = "} " ++ pShowMetaGridTail ps
+    
 pShowMacroKernel :: PName -> PKernel -> String
 pShowMacroKernel l_macro l_kernel =
     let l_iters = kIter l_kernel

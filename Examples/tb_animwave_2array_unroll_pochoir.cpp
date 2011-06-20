@@ -35321,9 +35321,14 @@ nt = StrToInt(argv[2]);
 	/* known! */ auto macro_boundary_update_v_update_u = [&] (int t0, int t1, grid_info<1> const & grid) {
 	grid_info<1> l_grid = grid;
 	grid_info<1> l_phys_grid = leap_frog.get_phys_grid();
+	#define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -((a)>=(ub))))
 	for (int t = t0; t < t1; ++t) {
 	
-	meta_grid_boundary<1>::single_step(t, l_grid, l_phys_grid, boundary_update_v);
+	
+	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
+	int new_i = pmod_lu(i, l_phys_grid.x0[0], l_phys_grid.x1[0]);
+	boundary_update_v(t, new_i);
+	} 
 	
 	/* Adjust sub-trapezoid! */
 	for (int i = 0; i < 1; ++i) {
@@ -35331,7 +35336,11 @@ nt = StrToInt(argv[2]);
 	}
 	++t;
 	
-	meta_grid_boundary<1>::single_step(t, l_grid, l_phys_grid, boundary_update_u);
+	
+	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
+	int new_i = pmod_lu(i, l_phys_grid.x0[0], l_phys_grid.x1[0]);
+	boundary_update_u(t, new_i);
+	} 
 	
 	/* Adjust sub-trapezoid! */
 	for (int i = 0; i < 1; ++i) {
@@ -35346,9 +35355,13 @@ nt = StrToInt(argv[2]);
 	/* known! */ auto macro_interior_update_v_update_u = [&] (int t0, int t1, grid_info<1> const & grid) {
 	grid_info<1> l_grid = grid;
 	grid_info<1> l_phys_grid = leap_frog.get_phys_grid();
+	
 	for (int t = t0; t < t1; ++t) {
 	
-	meta_grid_interior<1>::single_step(t, l_grid, l_phys_grid, interior_update_v);
+	
+	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
+	interior_update_v(t, i);
+	} 
 	
 	/* Adjust sub-trapezoid! */
 	for (int i = 0; i < 1; ++i) {
@@ -35356,7 +35369,10 @@ nt = StrToInt(argv[2]);
 	}
 	++t;
 	
-	meta_grid_interior<1>::single_step(t, l_grid, l_phys_grid, interior_update_u);
+	
+	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
+	interior_update_u(t, i);
+	} 
 	
 	/* Adjust sub-trapezoid! */
 	for (int i = 0; i < 1; ++i) {
