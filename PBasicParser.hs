@@ -307,8 +307,6 @@ pSplitScope (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showKernel =
     let oldKernelNames = map kName l_kernels
         bdryKernelNames = map ((++) "boundary_") oldKernelNames
         obaseKernelNames = map ((++) "interior_") oldKernelNames
-        bdryKernels = concatMap (pShowMacroKernel "boundary") l_kernels
-        obaseKernels = concatMap (l_showKernel "interior") l_kernels
         oldKernelName = intercalate "_" oldKernelNames
         bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
         obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
@@ -316,7 +314,6 @@ pSplitScope (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showKernel =
         obaseKernel = pShowUnrolledMacroKernels False obaseKernelName l_stencil l_kernels obaseKernelNames
         runKernel = obaseKernelName ++ ", " ++ bdryKernelName
     in  return ("{" ++ breakline ++ 
-                bdryKernels ++ breakline ++ obaseKernels ++ breakline ++ 
                 bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
                 l_id ++ ".Run_Split_Scope(" ++ l_tstep ++ ", " ++ runKernel ++ 
                 ");" ++ breakline ++ "}" ++ breakline)

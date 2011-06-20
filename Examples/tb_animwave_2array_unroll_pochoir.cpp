@@ -35283,51 +35283,21 @@ nt = StrToInt(argv[2]);
 	for (int times = 0; times < 1; ++times) {
         gettimeofday(&start, 0);
         {
+	
+	
 	#define v(t, i) v.boundary(t, i)
 	#define u(t, i) u.boundary(t, i)
-	/* known! */ auto boundary_update_v = [&] (int t, int i) {
-	v(t / 2 + 1, i) = v(t / 2, i) + cdtdx * (u(t / 2, i + 1) - u(t / 2, i));
-	
-	};
-	#undef v(t, i)
-	#undef u(t, i)
-	#define u(t, i) u.boundary(t, i)
-	#define v(t, i) v.boundary(t, i)
-	/* known! */ auto boundary_update_u = [&] (int t, int i) {
-	u(t / 2, i) = u(t / 2 - 1, i) + cdtdx * (v(t / 2, i) - v(t / 2, i - 1));
-	
-	};
-	#undef u(t, i)
-	#undef v(t, i)
-	
-	#define v(t, i) v.interior(t, i)
-	#define u(t, i) u.interior(t, i)
-	/* known! */ auto interior_update_v = [&] (int t, int i) {
-	v(t / 2 + 1, i) = v(t / 2, i) + cdtdx * (u(t / 2, i + 1) - u(t / 2, i));
-	
-	};
-	#undef v(t, i)
-	#undef u(t, i)
-	#define u(t, i) u.interior(t, i)
-	#define v(t, i) v.interior(t, i)
-	/* known! */ auto interior_update_u = [&] (int t, int i) {
-	u(t / 2, i) = u(t / 2 - 1, i) + cdtdx * (v(t / 2, i) - v(t / 2, i - 1));
-	
-	};
-	#undef u(t, i)
-	#undef v(t, i)
-	
-	
+	#define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -((a)>=(ub))))
 	/* known! */ auto macro_boundary_update_v_update_u = [&] (int t0, int t1, grid_info<1> const & grid) {
 	grid_info<1> l_grid = grid;
 	grid_info<1> l_phys_grid = leap_frog.get_phys_grid();
-	#define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -((a)>=(ub))))
 	for (int t = t0; t < t1; ++t) {
 	
 	
-	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
-	int new_i = pmod_lu(i, l_phys_grid.x0[0], l_phys_grid.x1[0]);
-	boundary_update_v(t, new_i);
+	for (int old_i = l_grid.x0[0]; old_i < l_grid.x1[0]; ++old_i) {
+	int i = pmod_lu(old_i, l_phys_grid.x0[0], l_phys_grid.x1[0]);
+	v(t / 2 + 1, i) = v(t / 2, i) + cdtdx * (u(t / 2, i + 1) - u(t / 2, i));
+	
 	} 
 	
 	/* Adjust sub-trapezoid! */
@@ -35336,10 +35306,10 @@ nt = StrToInt(argv[2]);
 	}
 	++t;
 	
+	for (int old_i = l_grid.x0[0]; old_i < l_grid.x1[0]; ++old_i) {
+	int i = pmod_lu(old_i, l_phys_grid.x0[0], l_phys_grid.x1[0]);
+	u(t / 2, i) = u(t / 2 - 1, i) + cdtdx * (v(t / 2, i) - v(t / 2, i - 1));
 	
-	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
-	int new_i = pmod_lu(i, l_phys_grid.x0[0], l_phys_grid.x1[0]);
-	boundary_update_u(t, new_i);
 	} 
 	
 	/* Adjust sub-trapezoid! */
@@ -35347,20 +35317,25 @@ nt = StrToInt(argv[2]);
 		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
 	}
 	
-	
 	} /* end for t */
 	};
-
+	
+	#undef v(t, i)
+	#undef u(t, i)
+	
+	
+	#define v(t, i) v.interior(t, i)
+	#define u(t, i) u.interior(t, i)
 	
 	/* known! */ auto macro_interior_update_v_update_u = [&] (int t0, int t1, grid_info<1> const & grid) {
 	grid_info<1> l_grid = grid;
-	grid_info<1> l_phys_grid = leap_frog.get_phys_grid();
 	
 	for (int t = t0; t < t1; ++t) {
 	
 	
 	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
-	interior_update_v(t, i);
+	v(t / 2 + 1, i) = v(t / 2, i) + cdtdx * (u(t / 2, i + 1) - u(t / 2, i));
+	
 	} 
 	
 	/* Adjust sub-trapezoid! */
@@ -35369,9 +35344,9 @@ nt = StrToInt(argv[2]);
 	}
 	++t;
 	
-	
 	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
-	interior_update_u(t, i);
+	u(t / 2, i) = u(t / 2 - 1, i) + cdtdx * (v(t / 2, i) - v(t / 2, i - 1));
+	
 	} 
 	
 	/* Adjust sub-trapezoid! */
@@ -35379,10 +35354,11 @@ nt = StrToInt(argv[2]);
 		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
 	}
 	
-	
 	} /* end for t */
 	};
-
+	
+	#undef v(t, i)
+	#undef u(t, i)
 	leap_frog.Run_Split_Scope(2 * nt, macro_interior_update_v_update_u, macro_boundary_update_v_update_u);
 	}
 	gettimeofday(&end, 0);
