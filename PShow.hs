@@ -280,7 +280,7 @@ pShowSingleKernelIteration l_boundary l_t (l_kernel:l_kernels) (l_kName:l_kNames
     let l_params = tail $ kParams l_kernel
         l_rank = length (kParams l_kernel) - 1
     in  breakline ++ pShowMetaGridHeader l_boundary l_params ++
-        breakline ++ pShowSingleKernel l_boundary l_t l_kernel l_kName ++
+        breakline ++ show (kStmt l_kernel) ++
         breakline ++ pShowMetaGridTail l_params ++ 
         breakline ++ pAdjustTrape l_rank ++ breakline ++ pAdjustT ++ 
         pShowSingleKernelIteration l_boundary l_t l_kernels l_kNames

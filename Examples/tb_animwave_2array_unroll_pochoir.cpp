@@ -35293,7 +35293,6 @@ nt = StrToInt(argv[2]);
 	grid_info<1> l_phys_grid = leap_frog.get_phys_grid();
 	for (int t = t0; t < t1; ++t) {
 	
-	
 	for (int old_i = l_grid.x0[0]; old_i < l_grid.x1[0]; ++old_i) {
 	int i = pmod_lu(old_i, l_phys_grid.x0[0], l_phys_grid.x1[0]);
 	v(t / 2 + 1, i) = v(t / 2, i) + cdtdx * (u(t / 2, i + 1) - u(t / 2, i));
@@ -35331,7 +35330,6 @@ nt = StrToInt(argv[2]);
 	grid_info<1> l_grid = grid;
 	
 	for (int t = t0; t < t1; ++t) {
-	
 	
 	for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
 	v(t / 2 + 1, i) = v(t / 2, i) + cdtdx * (u(t / 2, i + 1) - u(t / 2, i));
