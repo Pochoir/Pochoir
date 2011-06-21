@@ -225,14 +225,14 @@ getArrayName (a:as) = (aName a) : (getArrayName as)
 pGetReadIters :: [Iter] -> [Iter]
 pGetReadIters [] = []
 pGetReadIters iL@(i:is) = 
-    if isReadIter i == True then (i:pGetReadIters is) else pGetReadIters is
+    if isReadIter i == True then union [i] (pGetReadIters is) else pGetReadIters is
        where isReadIter (iName, iArray, iDims, iRW) =
                if iRW == PRead then True else False
 
 pGetWriteIters :: [Iter] -> [Iter]
 pGetWriteIters [] = []
 pGetWriteIters iL@(i:is) = 
-    if isWriteIter i == True then (i:pGetWriteIters is) else pGetWriteIters is
+    if isWriteIter i == True then union [i] (pGetWriteIters is) else pGetWriteIters is
        where isWriteIter (iName, iArray, iDims, iRW) =
                if iRW == PWrite then True else False
 

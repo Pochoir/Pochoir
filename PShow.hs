@@ -264,7 +264,7 @@ pShowUnrolledMacroKernels l_name l_kL@(l_kernel:l_kernels)  =
         l_defMacro = pDefMacroArrayInUse "interior" l_arrayInUse l_kParams
         l_undefMacro = pUndefMacroArrayInUse l_arrayInUse l_kParams
     in  breakline ++ l_defMacro ++
-        breakline ++ "/* known! */ auto " ++ l_name ++ " = [&] (" ++
+        breakline ++ "auto " ++ l_name ++ " = [&] (" ++
         "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ pShowTimeLoopHeader l_t ++ 
@@ -272,12 +272,73 @@ pShowUnrolledMacroKernels l_name l_kL@(l_kernel:l_kernels)  =
         breakline ++ pShowTimeLoopTail ++ breakline ++ "};" ++
         breakline ++ l_undefMacro
 
-        -- bookmark
+------------------------------------------------------------------------------
+-- so far, the split-caching mode doesn't work for multiple-kernel case!!!! --
+------------------------------------------------------------------------------
+pShowUnrolledCachingKernels :: PStencil -> String -> [PKernel] -> String
+pShowUnrolledCachingKernels l_stencil l_name l_kL@(l_kernel:l_kernels) = 
+    let l_rank = length (kParams l_kernel) - 1
+        l_iter = concatMap kIter l_kL
+        l_rdIters = pGetReadIters l_iter
+        l_wrIters = pGetWriteIters l_iter 
+        l_arrayInUse = unionArrayIter l_iter
+        l_t = "t"
+    in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
+        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
+        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++
+        breakline ++ pShowRankAttr l_rank "stride" l_arrayInUse ++ 
+        -- Additional copy-in info for caching kernel ---------------------------
+        pShowDeltaT ++ breakline ++ pAllocStack l_arrayInUse ++ breakline ++ 
+        pShowLocalCacheAttr l_rank l_arrayInUse l_stencil ++ breakline ++ 
+        pShowLocalCopyIn l_rank (kParams l_kernel) l_arrayInUse l_rdIters ++ breakline ++ 
+        pShowLocalGridForComp l_rank (head l_arrayInUse) ++ breakline ++
+        -------------------------------------------------------------------------
+        pShowTimeLoopHeader l_t ++ breakline ++
+        pShowSingleCachingKernel l_t l_kL ++
+        pShowTimeLoopTail ++ breakline ++ 
+        -- Additional copy-out info for caching kernel ---------------------------
+        pShowLocalCopyOut l_rank (kParams l_kernel) l_arrayInUse l_wrIters ++ 
+        breakline ++ pFreeStack l_arrayInUse ++ 
+        ---------------------------------------------------------------------------
+        breakline ++ "};\n"
+
+pShowUnrolledCPointerKernels :: String -> [PKernel] -> String
+pShowUnrolledCPointerKernels l_name l_kL@(l_kernel:l_kernels) = 
+    let l_rank = length (kParams l_kernel) - 1
+        l_iter = concatMap kIter l_kL
+        l_arrayInUse = unionArrayIter l_iter
+        l_t = "t"
+    in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
+        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
+        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++ 
+        breakline ++ pShowRankAttr l_rank "stride" l_arrayInUse ++ 
+        breakline ++ pShowTimeLoopHeader l_t ++ 
+        pShowSingleCPointerKernel l_t l_kL ++
+        breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
+
+pShowUnrolledOptPointerKernels :: String -> [PKernel] -> String
+pShowUnrolledOptPointerKernels _ [] = ""
+pShowUnrolledOptPointerKernels l_name l_kL@(l_kernel:l_kernels) = 
+    let l_rank = length (kParams l_kernel) - 1
+        l_iter = concatMap kIter l_kL
+        l_arrayInUse = unionArrayIter l_iter
+        l_t = "t"
+    in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
+        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
+        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++
+        breakline ++ pShowRankAttr l_rank "stride" l_arrayInUse ++ 
+        breakline ++ pShowTimeLoopHeader l_t ++ 
+        pShowSingleOptPointerKernel l_t l_kL ++ 
+        breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
+
 pShowUnrolledPointerKernels :: PName -> [PKernel] -> String
 pShowUnrolledPointerKernels _ [] = ""
 pShowUnrolledPointerKernels l_name l_kL@(l_kernel:l_kernels) = 
     let l_rank = length (kParams l_kernel) - 1
-        l_iter = kIter l_kernel
+        l_iter = concatMap kIter l_kL
         l_arrayInUse = unionArrayIter l_iter
         l_t = "t"
     in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
@@ -314,20 +375,65 @@ pShowUnrolledBoundaryKernels l_name l_stencil l_kL@(l_kernel:l_kernels) =
 pShowPMODLU :: String
 pShowPMODLU = "#define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -((a)>=(ub))))"
 
+pShowSingleCachingKernel :: String -> [PKernel] -> String
+pShowSingleCachingKernel _ [] = ""
+pShowSingleCachingKernel l_t l_kL@(l_kernel:l_kernels) =
+    let l_rank = length (kParams l_kernel) - 1
+        l_iter = kIter l_kernel
+        l_arrayInUse = unionArrayIter l_iter
+    in  breakline ++ "{" ++
+        breakline ++ pShowPointers l_iter ++ 
+        breakline ++ pShowPointerSetLocal l_iter (kParams l_kernel) ++
+        pShowPointerForHeader l_rank False l_iter (tail $ kParams l_kernel) ++
+        breakline ++ pShowPointerStmt False l_kernel ++ breakline ++ 
+        pShowObaseForTail l_rank ++ 
+        pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++
+        breakline ++ "}" ++ pShowSingleCachingKernel l_t l_kernels
+
+pShowSingleCPointerKernel :: String -> [PKernel] -> String
+pShowSingleCPointerKernel _ [] = ""
+pShowSingleCPointerKernel l_t l_kL@(l_kernel:l_kernels) = 
+    let l_rank = length (kParams l_kernel) - 1
+        l_iter = kIter l_kernel
+        l_arrayInUse = unionArrayIter l_iter
+    in  breakline ++ "{" ++
+        breakline ++ pShowRawForHeader (tail $ kParams l_kernel) ++
+        breakline ++ pShowRefMacro (kParams l_kernel) l_arrayInUse ++
+        breakline ++ pShowCPointerStmt l_kernel ++ breakline ++ 
+        breakline ++ pShowRefUnMacro l_arrayInUse ++
+        pShowObaseForTail l_rank ++
+        pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++
+        breakline ++ "}" ++ pShowSingleCPointerKernel l_t l_kernels
+
+pShowSingleOptPointerKernel :: String -> [PKernel] -> String
+pShowSingleOptPointerKernel _ [] = ""
+pShowSingleOptPointerKernel l_t l_kL@(l_kernel:l_kernels) =
+    let l_rank = length (kParams l_kernel) - 1
+        l_iter = kIter l_kernel
+        l_arrayInUse = unionArrayIter l_iter
+    in  breakline ++ "{" ++
+        pShowPointers l_iter ++ breakline ++ 
+        pShowOptPointerSet l_iter (kParams l_kernel)++ breakline ++ 
+        pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
+        breakline ++ pShowOptPointerStmt l_kernel ++ breakline ++ 
+        pShowObaseForTail l_rank ++
+        pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++
+        breakline ++ "}" ++ pShowSingleOptPointerKernel l_t l_kernels
+ 
 pShowSinglePointerKernel :: String -> [PKernel] -> String
 pShowSinglePointerKernel _ [] = ""
 pShowSinglePointerKernel l_t l_kL@(l_kernel:l_kernels) =
     let l_rank = length (kParams l_kernel) - 1
         l_iter = kIter l_kernel
         l_arrayInUse = unionArrayIter l_iter
-        l_t = "t"
-    in  pShowPointers l_iter ++ breakline ++ 
+    in  breakline ++ "{" ++ 
+        pShowPointers l_iter ++ breakline ++ 
         pShowPointerSet l_iter (kParams l_kernel)++ breakline ++ 
         pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowPointerStmt True l_kernel ++ breakline ++ 
         pShowObaseForTail l_rank ++
         pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++
-        pShowSinglePointerKernel l_t l_kernels
+        breakline ++ "}" ++ pShowSinglePointerKernel l_t l_kernels
  
 pShowSingleKernelIteration :: Bool -> String -> [PKernel] -> String
 pShowSingleKernelIteration _ _ [] = ""
@@ -384,35 +490,6 @@ pShowObaseKernel l_name l_kernel =
         breakline ++ pShowObaseForHeader l_rank l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowObaseStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
         pAdjustTrape l_rank ++ breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
-
-pShowCachingKernel :: String -> PKernel -> String
-pShowCachingKernel l_name l_kernel = 
-    let l_rank = length (kParams l_kernel) - 1
-        l_iters = kIter l_kernel
-        l_stmts = kStmt l_kernel
-        l_rdIters = pGetReadIters l_iters
-        l_wrIters = pGetWriteIters l_iters 
-        l_arrays = unionArrayIter l_iters
-        l_t = head $ kParams l_kernel
-    in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
-        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
-        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
-        pShowPointers l_iters ++ breakline ++ 
-        pShowArrayInfo l_arrays ++ pShowArrayGaps l_rank l_arrays ++
-        breakline ++ pShowRankAttr l_rank "stride" l_arrays ++ breakline ++
-        pShowDeltaT ++ breakline ++ pAllocStack l_arrays ++ breakline ++ 
-        pShowLocalCacheAttr l_rank l_arrays ++ breakline ++ 
-        pShowLocalCopyIn l_rank (kParams l_kernel) l_arrays l_rdIters ++ breakline ++ 
-        pShowLocalGridForComp l_rank (head l_arrays) ++ breakline ++
-        pShowTimeLoopHeader l_t ++ breakline ++
-        pShowPointerSetLocal l_iters (kParams l_kernel) ++
-        breakline ++ pShowPointerForHeader l_rank False l_iters (tail $ kParams l_kernel) ++
-        breakline ++ pShowPointerStmt False l_kernel ++ breakline ++ 
-        pShowObaseForTail l_rank ++ pAdjustTrape l_rank ++ breakline ++ 
-        pShowTimeLoopTail ++ breakline ++ 
-        pShowLocalCopyOut l_rank (kParams l_kernel) l_arrays l_wrIters ++ breakline ++ 
-        pFreeStack l_arrays ++ breakline ++ 
-        "};\n"
 
 -- we assume all Pochoir_Array associated with the same Pochoir object has the same size,
 -- otherwise we will trigger an error at run-time!
@@ -684,10 +761,10 @@ pAllocStack l_arrays = concatMap pAllocStackItem l_arrays
                 l_cache = " lc_" ++ l_a
             in  l_type ++ l_cache ++ " [ " ++ l_size ++ " ];" ++ breakline
 
-pShowLocalCacheAttr :: Int -> [PArray] -> String
-pShowLocalCacheAttr l_rank l_arrays = 
+pShowLocalCacheAttr :: Int -> [PArray] -> PStencil -> String
+pShowLocalCacheAttr l_rank l_arrays l_stencil = 
     pShowColor l_rank ++ breakline ++ 
-    pShowSlopes l_rank ++ breakline ++ 
+    pShowSlopes l_rank l_stencil ++ breakline ++ 
     (intercalate breakline $ map (pShowEndIndex l_rank 0) l_arrays) ++ breakline ++ 
     (intercalate breakline $ map (pShowEndIndex l_rank 1) l_arrays) ++ breakline ++
     (intercalate breakline $ map (pShowLocalArraySize l_rank) l_arrays) ++ breakline ++
@@ -748,10 +825,10 @@ pShowLocalArraySize n l_array =
     in  "const int " ++ l_var ++ " = " ++ l_end ++ " - " ++ l_begin ++ " + 1;" ++ 
         breakline ++ pShowLocalArraySize (n-1) l_array
 
-pShowSlopes :: Int -> String
-pShowSlopes l_rank = 
+pShowSlopes :: Int -> PStencil -> String
+pShowSlopes l_rank l_stencil = 
     let l_dxs = pGenRankList "const int l_dx_" l_rank
-        l_slopes = pGenRankListFull "a.slope(" l_rank ")"
+        l_slopes = pGenRankListFull ((sName l_stencil) ++ ".slope(") l_rank ")"
         l_rs = map (flip (++) ";")  l_slopes
     in  intercalate breakline $ zipWith (pIns " = ") l_dxs l_rs
 
@@ -789,43 +866,6 @@ pShowEndIndex l_rank l_end l_array =
         l_rr1s = zipWith (pIns " : ") l_rr0s l_r2s
         l_rights = map (flip (++) ";") l_rr1s
     in  intercalate breakline $ zipWith (pIns " = ") l_lefts l_rights
-
-pShowOptPointerKernel :: String -> PKernel -> String
-pShowOptPointerKernel l_name l_kernel = 
-    let l_rank = length (kParams l_kernel) - 1
-        l_iter = kIter l_kernel
-        l_array = unionArrayIter l_iter
-        l_t = head $ kParams l_kernel
-    in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
-        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
-        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
-        pShowPointers l_iter ++ breakline ++ 
-        pShowArrayInfo l_array ++ pShowArrayGaps l_rank l_array ++
-        breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
-        pShowTimeLoopHeader l_t ++ breakline ++
-        pShowOptPointerSet l_iter (kParams l_kernel)++
-        breakline ++ pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
-        breakline ++ pShowOptPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
-        pAdjustTrape l_rank ++ breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
-
-pShowCPointerKernel :: String -> PKernel -> String
-pShowCPointerKernel l_name l_kernel = 
-    let l_rank = length (kParams l_kernel) - 1
-        l_iter = kIter l_kernel
-        l_array = unionArrayIter l_iter
-        l_t = head $ kParams l_kernel
-    in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
-        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
-        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
-        pShowArrayInfo l_array ++ 
-        breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
-        pShowRefMacro (kParams l_kernel) l_array ++
-        "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
-        pShowTimeLoopHeader l_t ++ breakline ++
-        breakline ++ pShowRawForHeader (tail $ kParams l_kernel) ++
-        breakline ++ pShowCPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
-        pAdjustTrape l_rank ++ breakline ++ pShowRefUnMacro l_array ++ pShowTimeLoopTail ++ 
-        breakline ++ "};\n"
 
 pShowCPointerStmt :: PKernel -> String
 pShowCPointerStmt l_kernel = 

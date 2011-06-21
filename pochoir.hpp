@@ -57,6 +57,8 @@ class Pochoir {
         int arr_type_size_;
 
     public:
+    // get slope(s)
+    int slope(int const _idx) { return slope_[_idx]; }
     template <size_t N_SIZE>
     Pochoir(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
         for (int i = 0; i < N_RANK; ++i) {

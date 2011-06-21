@@ -55,7 +55,7 @@ animwave_2array : tb_animwave_2array.cpp
 
 animwave_2array_unroll : tb_animwave_2array_unroll.cpp
 #   Phase-II compilation
-	${CC} -o animwave_2array_unroll_pochoir ${OPT_FLAGS} -split-pointer tb_animwave_2array_unroll.cpp
+	${CC} -o animwave_2array_unroll_pochoir ${OPT_FLAGS} -split-caching tb_animwave_2array_unroll.cpp
 #	${ICC} -o animwave_2array_unroll_pochoir ${ICC_DEBUG_FLAGS} tb_animwave_2array_unroll_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o animwave_2array_unroll_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave_2array_unroll.cpp

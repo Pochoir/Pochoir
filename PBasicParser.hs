@@ -255,20 +255,20 @@ ppStencil l_id l_state =
                                             l_newStencil) 
                                           pShowUnrolledPointerKernels
                                     POptPointer -> 
-                                         pSplitObase 
+                                         pSplitScope 
                                           ("Opt_Pointer_", l_id, l_tstep, l_revKernels,
                                             l_newStencil) 
-                                          pShowOptPointerKernel
+                                          pShowUnrolledOptPointerKernels
                                     PCaching -> 
-                                         pSplitObase 
+                                         pSplitScope 
                                           ("Caching_", l_id, l_tstep, l_revKernels, 
                                             l_newStencil) 
-                                          pShowCachingKernel
+                                          (pShowUnrolledCachingKernels l_newStencil)
                                     PCPointer -> 
-                                         pSplitObase 
+                                         pSplitScope 
                                           ("C_Pointer_", l_id, l_tstep, l_revKernels, 
                                             l_newStencil) 
-                                          pShowCPointerKernel
+                                          pShowUnrolledCPointerKernels
     <|> do return (l_id)
 
 -- get all iterators from Kernel
