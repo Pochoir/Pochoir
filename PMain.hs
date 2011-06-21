@@ -149,6 +149,9 @@ parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL
         let l_mode = PDefault
             aL' = delete "-auto-optimize" aL
         in  (inFiles, inDirs, l_mode, debug, showFile, aL')
+------------------------------------------------------------------------------
+-- so far, the split-caching mode doesn't work for multiple-kernel case!!!! --
+------------------------------------------------------------------------------
     | elem "-split-caching" aL =
         let l_mode = PCaching
             aL' = delete "-split-caching" aL
