@@ -30,16 +30,16 @@
 #include <cstdio>
 #include <cmath>
 #include <cstdlib>
-#include <string>
+// #include <string>
 
 static inline double tdiff (struct timeval *a, struct timeval *b)
 {
 	    return a->tv_sec - b->tv_sec + 1e-6 * (a->tv_usec - b->tv_usec);
 }
 
-static inline int StrToInt(const std::string& s)
+static inline int StrToInt(const char * s)
 {
-  return std::atoi(s.c_str());
+  return atoi(s);
 }
 
 #define ARRAY_LENGTH(x) (int)(sizeof(x)/sizeof(x[0]))

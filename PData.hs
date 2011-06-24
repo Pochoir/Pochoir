@@ -164,6 +164,23 @@ data DimExpr = DimVAR String
           | DimINT Int
           deriving Eq
 
+instance Ord DimExpr where
+    (<) a b = (<) (transDimExprFloat a) (transDimExprFloat b)
+    (>) a b = (>) (transDimExprFloat a) (transDimExprFloat b)
+    (<=) a b = (<=) (transDimExprFloat a) (transDimExprFloat b)
+    (>=) a b = (>=) (transDimExprFloat a) (transDimExprFloat b)
+    compare a b = compare (transDimExprFloat a) (transDimExprFloat b)
+
+transDimExprFloat :: DimExpr -> Float
+transDimExprFloat (DimVAR v) = 1
+transDimExprFloat (DimDuo "+" a b) = (transDimExprFloat a) + (transDimExprFloat b)
+transDimExprFloat (DimDuo "-" a b) = (transDimExprFloat a) - (transDimExprFloat b)
+transDimExprFloat (DimDuo "*" a b) = (transDimExprFloat a) * (transDimExprFloat b)
+transDimExprFloat (DimDuo "/" a b) = (transDimExprFloat a) / (transDimExprFloat b)
+transDimExprFloat (DimParen e) = (transDimExprFloat e)
+transDimExprFloat (DimINT n) = fromIntegral n
+transDimExprFloat _ = 0
+
 instance Show PMode where
     show PHelp = "-help" 
     show PDefault = "-default" 

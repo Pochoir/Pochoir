@@ -236,3 +236,15 @@ pGetWriteIters iL@(i:is) =
        where isWriteIter (iName, iArray, iDims, iRW) =
                if iRW == PWrite then True else False
 
+pGetMinIters :: [Iter] -> [Iter]
+pGetMinIters iL@(i:is) = map (minimumBy cmpDim) $ groupIterByArray $ sortIterByArray iL
+    where cmpDim (iName, iArray, iDims, iRW) (jName, jArray, jDims, jRW) = compare iDims jDims 
+
+groupIterByArray :: [Iter] -> [[Iter]]
+groupIterByArray iL@(i:is) = groupBy eqArray iL
+    where eqArray (iName, iArray, iDims, iRW) (jName, jArray, jDims, jRW) = aName iArray == aName jArray 
+
+sortIterByArray :: [Iter] -> [Iter]
+sortIterByArray iL@(i:is) = sortBy cmpArray iL
+    where cmpArray (iName, iArray, iDims, iRW) (jName, jArray, jDims, jRW) = compare (aName iArray) (aName jArray)
+

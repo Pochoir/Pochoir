@@ -27,7 +27,7 @@
 
 #include <cstddef>
 #include <cassert>
-#include <iostream>
+// #include <iostream>
 
 /* unit-stride Range */
 class Pochoir_Domain {
@@ -91,8 +91,9 @@ class Pochoir_Domain {
 		inline int operator[] (int _idx) const {
 			return (first_ + _idx);
 		}
-
+#if 0
 		friend std::ostream& operator<<(std::ostream& os, Pochoir_Domain const & range);
+#endif
 };
 
 #if 0

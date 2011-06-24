@@ -237,38 +237,37 @@ ppStencil l_id l_state =
                                     PDefault -> 
                                         let l_showKernel = 
                                               if sRank l_newStencil < 3
-                                                 -- then pShowOptPointerKernel
-                                                 then pShowUnrolledPointerKernels
-                                                 else pShowUnrolledPointerKernels
-                                        in  pSplitScope
+                                                 then pShowSingleOptPointerKernel
+                                                 else pShowSinglePointerKernel
+                                        in  pSplitKernel
                                              ("Default_", l_id, l_tstep, l_revKernels, 
                                                l_newStencil) 
                                              l_showKernel
                                     PMacroShadow -> 
-                                        pSplitScope 
+                                        pSplitKernels 
                                           ("macro_", l_id, l_tstep, l_revKernels, 
                                             l_newStencil) 
                                           pShowUnrolledMacroKernels
                                     PPointer -> 
-                                         pSplitScope
+                                         pSplitKernel
                                           ("Pointer_", l_id, l_tstep, l_revKernels, 
                                             l_newStencil) 
-                                          pShowUnrolledPointerKernels
+                                          pShowSinglePointerKernel
                                     POptPointer -> 
-                                         pSplitScope 
+                                         pSplitKernel 
                                           ("Opt_Pointer_", l_id, l_tstep, l_revKernels,
                                             l_newStencil) 
-                                          pShowUnrolledOptPointerKernels
+                                          pShowSingleOptPointerKernel
                                     PCaching -> 
-                                         pSplitScope 
+                                         pSplitKernels 
                                           ("Caching_", l_id, l_tstep, l_revKernels, 
                                             l_newStencil) 
                                           (pShowUnrolledCachingKernels l_newStencil)
                                     PCPointer -> 
-                                         pSplitScope 
+                                         pSplitKernel 
                                           ("C_Pointer_", l_id, l_tstep, l_revKernels, 
                                             l_newStencil) 
-                                          pShowUnrolledCPointerKernels
+                                          pShowSingleCPointerKernel
     <|> do return (l_id)
 
 -- get all iterators from Kernel
@@ -303,8 +302,26 @@ transKernel l_stencil l_mode l_kernel =
            l_revIters = transIterN 0 l_iters
        in  l_kernel { kIter = l_revIters }
  
-pSplitScope :: (String, String, String, [PKernel], PStencil) -> (String -> [PKernel] -> String) -> GenParser Char ParserState String
-pSplitScope (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showKernels = 
+pSplitKernel :: (String, String, String, [PKernel], PStencil) -> (String -> [PKernel] -> String) -> GenParser Char ParserState String
+pSplitKernel (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showSingleKernel = 
+    let oldKernelName = intercalate "_" $ map kName l_kernels
+        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
+        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
+        regBound = sRegBound l_stencil
+        bdryKernel = if regBound 
+                        then pShowUnrolledBoundaryKernels bdryKernelName 
+                                l_stencil l_kernels 
+                        else ""
+        obaseKernel = pShowUnrolledKernels obaseKernelName l_kernels l_showSingleKernel
+        runKernel = if regBound then obaseKernelName ++ ", " ++ bdryKernelName
+                                else obaseKernelName
+    in  return ("{" ++ breakline ++ 
+                bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
+                l_id ++ ".Run_Obase(" ++ l_tstep ++ ", " ++ runKernel ++ 
+                ");" ++ breakline ++ "}" ++ breakline)
+
+pSplitKernels :: (String, String, String, [PKernel], PStencil) -> (String -> [PKernel] -> String) -> GenParser Char ParserState String
+pSplitKernels (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showKernels = 
     let oldKernelName = intercalate "_" $ map kName l_kernels
         bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
         obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
@@ -321,27 +338,6 @@ pSplitScope (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showKernels =
                 l_id ++ ".Run_Obase(" ++ l_tstep ++ ", " ++ runKernel ++ 
                 ");" ++ breakline ++ "}" ++ breakline)
 
-pSplitObase :: (String, String, String, [PKernel], PStencil) -> (String -> PKernel -> String) -> GenParser Char ParserState String
-pSplitObase (l_tag, l_id, l_tstep, l_kernels, l_stencil) l_showKernel = undefined
-{-
-    let oldKernelName = concatMap kName l_kernels
-        bdryKernelName = "bdry_" ++ oldKernelName
-        obaseKernelName = l_tag ++ oldKernelName 
-        regBound = sRegBound l_stencil
-        bdryKernel = if regBound 
-                            then pShowMacroKernel "boundary" (sArrayInUse l_stencil) 
-                                 bdryKernelNames l_kernels
-                            else ""
-        obaseKernel = l_showKernel obaseKernelName l_kernel 
-        runKernel = 
-            if regBound then obaseKernelName ++ ", " ++ bdryKernelName
-            -- if the boundary function is NOT registered, we guess user are using 
-            -- zero-padding. Note: there's no zero-padding for Periodic stencils
-                        else obaseKernelName
-    in  return ("{" ++ breakline ++ bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
-                l_id ++ ".Run_Obase(" ++ l_tstep ++ ", " ++ runKernel ++ ");" ++ 
-                breakline ++ "}" ++ breakline)
--}
 -------------------------------------------------------------------------------------------
 --                             Following are C++ Grammar Parser                         ---
 -------------------------------------------------------------------------------------------

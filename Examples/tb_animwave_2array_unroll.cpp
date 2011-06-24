@@ -38,14 +38,14 @@
 
 #include <cstdio>
 #include <cstddef>
-#include <iostream>
+// #include <iostream>
 #include <cstdlib>
 #include <sys/time.h>
 #include <cmath>
 
 #include <pochoir.hpp>
 
-using namespace std;
+// using namespace std;
 #define TIMES 1
 #define TOLERANCE (1e-6)
 #define COND 0
@@ -156,7 +156,8 @@ int main(int argc, char * argv[])
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
-    std::cout << "Pochoir time : " << min_tdiff << " ms" << std::endl;
+    printf("Pochoir time = %.6f ms\n", min_tdiff);
+//    std::cout << "Pochoir time : " << min_tdiff << " ms" << std::endl;
 
     min_tdiff = INF;
 
@@ -176,7 +177,9 @@ int main(int argc, char * argv[])
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
-    std::cout << "Parallel Loop time : " << min_tdiff << " ms" << std::endl;
+
+    printf("Parallel Loop time = %.6f ms\n", min_tdiff);
+//    std::cout << "Parallel Loop time : " << min_tdiff << " ms" << std::endl;
 
     /* check results! */
     t = nt;

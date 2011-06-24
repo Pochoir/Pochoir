@@ -184,7 +184,7 @@ void Pochoir<N_RANK>::cmpPhysDomainFromArray(T_Array & arr) {
 template <int N_RANK> template <typename T>
 void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & arr) {
     if (!regShapeFlag) {
-        cout << "Please register Shape before register Array!" << endl;
+        printf("Please register Shape before register Array!\n");
         exit(1);
     }
 
@@ -234,7 +234,7 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
         }
     }
 #if DEBUG 
-    cout << "time_shift_ = " << time_shift_ << ", toggle = " << toggle_ << endl;
+    printf("time_shift_ = %d, toggle = %d\n", time_shift_, toggle_);
     for (int r = 0; r < N_RANK; ++r) {
         printf("slope[%d] = %d, ", r, slope_[r]);
     }
@@ -278,7 +278,7 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape1)[N_SIZE1], 
         }
     }
 #if DEBUG 
-    cout << "time_shift_ = " << time_shift_ << ", toggle = " << toggle_ << endl;
+    printf("time_shift_ = %d, toggle = %d\n", time_shift_, toggle_);
     for (int r = 0; r < N_RANK; ++r) {
         printf("slope[%d] = %d, ", r, slope_[r]);
     }

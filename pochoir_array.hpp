@@ -24,8 +24,8 @@
 
 #ifndef POCHOIR_ARRAY_H
 #define POCHOIR_ARRAY_H
-#include <iostream>
-#include <iomanip>
+// #include <iostream>
+// #include <iomanip>
 #include <cstdio>
 #include <cstdlib>
 
@@ -1578,10 +1578,13 @@ class Pochoir_Array {
 			return whole_done;
 		}
 
+#if 0
 		template <typename T2, int N2>
 		friend std::ostream& operator<<(std::ostream& os, Pochoir_Array<T2, N2> const & x); 
+#endif
 };
 
+#if 0
 template<typename T2, int N2>
 std::ostream& operator<<(std::ostream& os, Pochoir_Array<T2, N2> const & x) { 
 	typedef int size_info[N2];
@@ -1611,4 +1614,5 @@ std::ostream& operator<<(std::ostream& os, Pochoir_Array<T2, N2> const & x) {
 	}
 	return os; 
 }
+#endif
 #endif // POCHOIR_ARRAY_H

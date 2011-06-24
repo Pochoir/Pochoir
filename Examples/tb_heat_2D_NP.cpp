@@ -26,7 +26,7 @@
 /* Test bench - 2D heat equation, Non-periodic version */
 #include <cstdio>
 #include <cstddef>
-#include <iostream>
+// #include <iostream>
 #include <cstdlib>
 #include <sys/time.h>
 #include <cmath>
@@ -34,7 +34,7 @@
 
 #include <pochoir.hpp>
 
-using namespace std;
+// using namespace std;
 #define TIMES 1
 #define N_RANK 2
 #define TOLERANCE (1e-6)
@@ -52,8 +52,6 @@ void check_result(int t, int j, int i, double a, double b)
 Pochoir_Boundary_2D(heat_bv_2D, arr, t, i, j)
     return 0;
 Pochoir_Boundary_End
-
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 int main(int argc, char * argv[])
 {
@@ -74,7 +72,8 @@ int main(int argc, char * argv[])
 	Pochoir_Array_2D(double) a(N_SIZE, N_SIZE), b(N_SIZE+2, N_SIZE+2);
     Pochoir_2D heat_2D(heat_shape_2D);
 
-	cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
+	printf("a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)\n");
+
     Pochoir_Kernel_2D(heat_2D_fn, t, i, j)
 	   a(t+1, i, j) = 0.125 * (a(t, i+1, j) - 2.0 * a(t, i, j) + a(t, i-1, j)) + 0.125 * (a(t, i, j+1) - 2.0 * a(t, i, j) + a(t, i, j-1)) + a(t, i, j);
     Pochoir_Kernel_End
@@ -102,7 +101,7 @@ int main(int argc, char * argv[])
 	    gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
-	std::cout << "Pochoir ET: consumed time :" << min_tdiff << "ms" << std::endl;
+	printf("Pochoir consumed time : %.3f ms\n", min_tdiff);
 
     min_tdiff = INF;
     /* cilk_for + zero-padding */
@@ -116,7 +115,7 @@ int main(int argc, char * argv[])
 	gettimeofday(&end, 0);
     min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
-	std::cout << "Naive Loop: consumed time :" << min_tdiff << "ms" << std::endl;
+	printf("Parallel Loop consumed time : %.3f ms \n", min_tdiff); 
 
 #if 1
 	t = T_SIZE;

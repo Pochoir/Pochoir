@@ -161,24 +161,6 @@ pIterLookup (v, dL) ((iterName, arrayInUse, dim, rw):is)
     | v == aName arrayInUse && dL == dim = Just iterName
     | otherwise = pIterLookup (v, dL) is
 
-{-
-pShowShadowArrayInUse :: [PArray] -> String
-pShowShadowArrayInUse [] = ""
-pShowShadowArrayInUse aL@(a:as) =
-    pShowShadowArrayItem a ++ pShowShadowArrayInUse as
-    where pShowShadowArrayItem a = 
-            let l_type = aType a 
-                l_rank = aRank a
-                l_toggle = aToggle a
-                l_name = aName a
-                pShowShadowHeader (l_type, l_rank, l_toggle) = "interior_shadow<" ++
-                    show l_type ++ ", " ++ show l_rank ++ ", " ++ show l_toggle ++ "> "
-            in breakline ++ pShowShadowHeader (l_type, l_rank, l_toggle) ++ 
-                l_name ++ "_shadow(" ++ l_name ++ ");" ++
-                breakline ++ pShowShadowHeader (l_type, l_rank, l_toggle) ++
-                l_name ++ "(" ++ l_name ++ "_shadow);" ++ breakline
--}
-
 pDefMacroArrayInUse :: PName -> [PArray] -> [PName] -> String
 pDefMacroArrayInUse _ [] _ = ""
 pDefMacroArrayInUse l_macro (a:as) pL = pDefMacroShadowItem l_macro a pL ++ pDefMacroArrayInUse l_macro as pL
@@ -198,13 +180,6 @@ pUndefMacroArrayInUse (a:as) pL = pUndefMacroShadowItem a pL ++ pUndefMacroArray
             let l_arrayName = aName a
             in  breakline ++ "#undef " ++ pShowArrayTerm l_arrayName pL
 
-{-
-pShowKernel :: String -> PKernel -> String
-pShowKernel l_name l_kernel = "Pochoir_Kernel_" ++ show dim ++ "D(" ++ l_name ++ ", " ++
-    pShowKernelParams (kParams l_kernel) ++ ")" ++ show (kStmt l_kernel) ++
-    breakline ++ "Pochoir_Kernel_end" ++ breakline
-        where dim = length (kParams l_kernel) - 1
--}
 pShowKernelParams :: [String] -> String
 pShowKernelParams l_kernel_params = intercalate ", " l_kernel_params
 
@@ -212,26 +187,6 @@ pShowArrayGaps :: Int -> [PArray] -> String
 pShowArrayGaps _ [] = ""
 pShowArrayGaps l_rank l_array = breakline ++ "int " ++ 
         intercalate ", " (map (getArrayGaps (l_rank-1)) l_array) ++ ";"
-
-{-
-pShowInteriorKernel :: String -> PKernel -> String
-pShowInteriorKernel l_name l_kernel =
-    let l_iter = kIter l_kernel
-        l_interiorStmts = transStmts (kStmt l_kernel)
-                            $ transInterior $ getArrayName . unionArrayIter $ l_iter 
-        l_interiorKernel = PKernel { kName = l_name,
-                                     kParams = kParams l_kernel,
-                                     kStmt = l_interiorStmts,
-                                     kIter = kIter l_kernel 
-                                   }
-    in  pShowAutoKernel l_name l_interiorKernel
-
-pShowTypeKernel :: [PArray] -> String -> PKernel -> String
-pShowTypeKernel l_sArrayInUse l_name l_kernel =
-    let l_iter = kIter l_kernel
-    --  in  pShowShadowArrayInUse l_array ++ pShowAutoKernel l_name l_kernel 
-    in  pShowShadowArrayInUse l_sArrayInUse ++ pShowAutoKernel l_name l_kernel 
--}
 
 -- AutoKernel is a de-sugared kernel
 pShowAutoKernel :: String -> PKernel -> String
@@ -279,8 +234,8 @@ pShowUnrolledCachingKernels :: PStencil -> String -> [PKernel] -> String
 pShowUnrolledCachingKernels l_stencil l_name l_kL@(l_kernel:l_kernels) = 
     let l_rank = length (kParams l_kernel) - 1
         l_iter = concatMap kIter l_kL
-        l_rdIters = pGetReadIters l_iter
-        l_wrIters = pGetWriteIters l_iter 
+        l_rdIters = pGetMinIters $ pGetReadIters l_iter
+        l_wrIters = pGetMinIters $ pGetWriteIters l_iter 
         l_arrayInUse = unionArrayIter l_iter
         l_t = "t"
     in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
@@ -303,6 +258,22 @@ pShowUnrolledCachingKernels l_stencil l_name l_kL@(l_kernel:l_kernels) =
         ---------------------------------------------------------------------------
         breakline ++ "};\n"
 
+pShowUnrolledKernels :: String -> [PKernel] -> (String -> [PKernel] -> String) -> String
+pShowUnrolledKernels l_name l_kL@(l_kernel:l_kernels) l_showSingleKernel= 
+    let l_rank = length (kParams l_kernel) - 1
+        l_iter = concatMap kIter l_kL
+        l_arrayInUse = unionArrayIter l_iter
+        l_t = "t"
+    in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
+        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
+        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++ 
+        breakline ++ pShowRankAttr l_rank "stride" l_arrayInUse ++ 
+        breakline ++ pShowTimeLoopHeader l_t ++ 
+        l_showSingleKernel l_t l_kL ++
+        breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
+
+{-
 pShowUnrolledCPointerKernels :: String -> [PKernel] -> String
 pShowUnrolledCPointerKernels l_name l_kL@(l_kernel:l_kernels) = 
     let l_rank = length (kParams l_kernel) - 1
@@ -319,7 +290,6 @@ pShowUnrolledCPointerKernels l_name l_kL@(l_kernel:l_kernels) =
         breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
 
 pShowUnrolledOptPointerKernels :: String -> [PKernel] -> String
-pShowUnrolledOptPointerKernels _ [] = ""
 pShowUnrolledOptPointerKernels l_name l_kL@(l_kernel:l_kernels) = 
     let l_rank = length (kParams l_kernel) - 1
         l_iter = concatMap kIter l_kL
@@ -349,6 +319,7 @@ pShowUnrolledPointerKernels l_name l_kL@(l_kernel:l_kernels) =
         breakline ++ pShowTimeLoopHeader l_t ++ 
         pShowSinglePointerKernel l_t l_kL ++
         breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
+-}
 
 pShowUnrolledBoundaryKernels :: String -> PStencil -> [PKernel] -> String
 pShowUnrolledBoundaryKernels l_name l_stencil l_kL@(l_kernel:l_kernels) = 

@@ -28,7 +28,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cassert>
-#include <iostream>
+// #include <iostream>
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 #include <cilk/reducer_opadd.h>
@@ -461,12 +461,12 @@ struct Algorithm {
             dx_recursive_[i] = 1;
 #else
 #if 1
-        dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((100 * sizeof(double))/arr_type_size)) : (int)floor(float((600 * sizeof(double))/arr_type_size));
+        dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((80 * sizeof(double))/arr_type_size)) : (int)floor(float((600 * sizeof(double))/arr_type_size));
 //        dx_recursive_[0] = 30;
         for (int i = N_RANK-1; i >= 1; --i)
-            dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(100 * sizeof(double))/arr_type_size): 10;
+            dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(80 * sizeof(double))/arr_type_size): 10;
         assert(slope_[0] != 0);
-        dt_recursive_ = (N_RANK == 1) ? floor(dx_recursive_[0]/(2 * slope_[0])) : ((N_RANK == 2) ? floor(dx_recursive_[0]/(2 * slope_[0])) : 5);
+        dt_recursive_ = (N_RANK == 1) ? floor(dx_recursive_[0]/(2 * slope_[0]) - 100) : ((N_RANK == 2) ? floor(dx_recursive_[0]/(2 * slope_[0])-10) : 5);
 #else
         dx_recursive_[0] = (N_RANK == 1) ? 10000 : (N_RANK == 2 ? 100 : (N_RANK == 3 ? 20 : 10));
         for (int i = N_RANK-1; i >= 1; --i)

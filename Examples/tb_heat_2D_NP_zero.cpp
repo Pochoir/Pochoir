@@ -28,14 +28,14 @@
  */
 #include <cstdio>
 #include <cstddef>
-#include <iostream>
+// #include <iostream>
 #include <cstdlib>
 #include <sys/time.h>
 #include <cmath>
 
 #include <pochoir.hpp>
 
-using namespace std;
+// using namespace std;
 #define TIMES 1
 #define N_RANK 2
 #define TOLERANCE (1e-6)
@@ -87,7 +87,7 @@ int main(int argc, char * argv[])
         b(1, i, j) = 0;
 	} }
 
-	cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
+	printf("a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)\n");
     Pochoir_Kernel_2D(heat_2D_fn, t, i, j)
 	   a(t+1, i, j) = 0.125 * (a(t, i+1, j) - 2.0 * a(t, i, j) + a(t, i-1, j)) + 0.125 * (a(t, i, j+1) - 2.0 * a(t, i, j) + a(t, i, j-1)) + a(t, i, j);
     Pochoir_Kernel_End
@@ -104,7 +104,7 @@ int main(int argc, char * argv[])
 	    gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
-	std::cout << "Pochoir : consumed time :" << min_tdiff << "ms" << std::endl;
+	printf("Pochoir consumed time : %.3f ms\n", min_tdiff);
 
     min_tdiff = INF;
     /* cilk_for + zero-padding */
@@ -118,7 +118,7 @@ int main(int argc, char * argv[])
 	gettimeofday(&end, 0);
     min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
-	std::cout << "Naive Loop: consumed time :" << min_tdiff << "ms" << std::endl;
+	printf("Parallel Loop consumed time : %.3f ms\n", min_tdiff);
 
 	t = T_SIZE;
 	for (int i = 1; i < N_SIZE-1; ++i) {
