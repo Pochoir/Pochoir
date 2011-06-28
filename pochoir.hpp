@@ -57,9 +57,18 @@ class Pochoir {
         int num_arr_;
         int arr_type_size_;
         int size_kernel_func_;
-        typename Pochoir_Kernel<N_RANK>::T kernel_func_[10];
+        /* assuming that the number of distinct sub-regions less than 10 */
+        Pochoir_Kernel<N_RANK> kernel_func_[10];
+
+        /* Private Register Kernel Function */
+        template <typename F>
+        void reg_kernel(F f);
+        template <typename F, typename ... FArg>
+        void reg_kernel(F f, FArg ... farg);
 
     public:
+    template <typename ... F>
+    void Register_Default_Kernel(F ... f);
     // get slope(s)
     int slope(int const _idx) { return slope_[_idx]; }
     template <size_t N_SIZE>
@@ -124,12 +133,6 @@ class Pochoir {
     } 
     grid_info<N_RANK> get_phys_grid(void);
 
-    /* Register Kernel Function */
-    template <typename F>
-    void Register_Default_Kernel(F f);
-    template <typename F, typename ... FArg>
-    void Register_Default_Kernel(F f, FArg ... farg);
-
     /* Executable Spec */
     template <typename BF>
     void Run(int timestep, BF const & bf);
@@ -150,14 +153,29 @@ class Pochoir {
 };
 
 template <int N_RANK> template <typename F>
-void Pochoir<N_RANK>::Register_Default_Kernel(F f) {
-    kernel_func_[size_kernel_func_++] = f; 
+void Pochoir<N_RANK>::reg_kernel(F f) {
+    int l_pointer = kernel_func_[size_kernel_func_].pointer;
+    kernel_func_[size_kernel_func_].pt_kernel[l_pointer] = f; 
+    ++kernel_func_[size_kernel_func_].pointer;
 }
 
 template <int N_RANK> template <typename F, typename ... FArg>
-void Pochoir<N_RANK>::Register_Default_Kernel(F f, FArg ... farg) {
-    kernel_func_[size_kernel_func_++] = f;
-    Register_Default_Kernel(farg ...);
+void Pochoir<N_RANK>::reg_kernel(F f, FArg ... farg) {
+    int l_pointer = kernel_func_[size_kernel_func_].pointer;
+    kernel_func_[size_kernel_func_].pt_kernel[l_pointer] = f;
+    ++kernel_func_[size_kernel_func_].pointer;
+    reg_kernel(farg ...);
+}
+
+template <int N_RANK> template <typename ... F>
+void Pochoir<N_RANK>::Register_Default_Kernel(F ... f) {
+    int l_size = sizeof...(F);
+    typedef typename Pochoir_Types<N_RANK>::T_Kernel T_Kernel;
+    kernel_func_[size_kernel_func_].size = l_size;
+    kernel_func_[size_kernel_func_].pointer = 0;
+    kernel_func_[size_kernel_func_].pt_kernel = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));
+    reg_kernel(f ...);
+    ++size_kernel_func_;
 }
 
 template <int N_RANK>

@@ -4,6 +4,7 @@ ICC = icpc
 OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -std=c++0x
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
 ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
+POCHOIR_LIB_FILES = "../pochoir.hpp ../pochoir_common.hpp ../pochoir_types.hpp ../pochoir_array.hpp ../pochoir_walk.hpp ../pochoir_walk_recursive.hpp ../pochoir_walk_loops.hpp ../pochoir_wrapper.hpp ../pochoir_range.hpp"
 
 # ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x
 example_1D : tb_example_1D.cpp
@@ -53,13 +54,13 @@ animwave_2array : tb_animwave_2array.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o animwave_2array_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave_2array.cpp
 
-animwave_irregular : tb_animwave_irregular.cpp
+animwave_irregular : tb_animwave_irregular.cpp 
 #   Phase-II compilation
 #	${CC} -o animwave_irregular ${OPT_FLAGS} tb_animwave_irregular.cpp
 #	${ICC} -o animwave_irregular ${OPT_FLAGS} tb_animwave_irregular_pochoir.cpp
 #	${ICC} -o animwave_irregular ${ICC_DEBUG_FLAGS} tb_animwave_irregular_pochoir.cpp
 #	Phase-I compilation with debugging aid
-	${CC} -o animwave_irregular ${POCHOIR_DEBUG_FLAGS} tb_animwave_irregular.cpp
+	${CC} -o animwave_irregular ${POCHOIR_DEBUG_FLAGS} tb_animwave_irregular.cpp 
 
 func : tb_function_object.cpp
 	${ICC} -o func tb_function_object.cpp -std=c++0x

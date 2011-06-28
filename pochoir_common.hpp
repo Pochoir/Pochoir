@@ -94,6 +94,12 @@ struct Pochoir_Shape {
     int shift[N_RANK+1];
 };
  
+template <int N_RANK>
+struct Pochoir_Kernel {
+    int size, pointer;
+    typename Pochoir_Types<N_RANK>::T_Kernel * pt_kernel;
+};
+
 template <int N_RANK, size_t N>
 size_t ArraySize (Pochoir_Shape<N_RANK> (& arr)[N]) { return N; }
 
@@ -208,6 +214,12 @@ static inline void klein_region(grid_info<2> & grid, grid_info<2> const & initia
     auto name = [&](int t, int i, int j, int k, int l, int m, int n, int o, int p) {
 
 #define Pochoir_Kernel_End }; 
+
+#define Pochoir_Guard_3D(name, t, i, j, k) \
+    auto name = [&](int t, int i, int j, int k) -> bool {
+
+#define Pochoir_Guard_2D(name, t, i, j) \
+    auto name = [&](int t, int i, int j) -> bool {
 
 #define Pochoir_Guard_1D(name, t, i) \
     auto name = [&](int t, int i) -> bool {

@@ -537,7 +537,7 @@ struct Algorithm {
     template <typename F1, typename F2> 
 	inline void base_case_kernel_unroll(int t0, int t1, grid_info<N_RANK> const grid, F1 const & f1, F2 const & f2);
     template <size_t N_SIZE>
-    inline void base_case_kernel_func(int t0, int t1, grid_info<N_RANK> const grid, int size_kernel_func, typename Pochoir_Kernel<N_RANK>::T (& kf)[N_SIZE]);
+    inline void base_case_kernel_func(int t0, int t1, grid_info<N_RANK> const grid, int size_kernel_func, Pochoir_Kernel<N_RANK> (& kf)[N_SIZE]);
     template <typename F> 
 	inline void walk_serial(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
 
@@ -706,22 +706,22 @@ inline void Algorithm<N_RANK>::base_case_kernel_unroll(int t0, int t1, grid_info
 }
 
 template <int N_RANK> template <size_t N_SIZE>
-inline void Algorithm<N_RANK>::base_case_kernel_func(int t0, int t1, grid_info<N_RANK> const grid, int size_kernel_func, typename Pochoir_Kernel<N_RANK>::T (& kf) [N_SIZE]) {
+inline void Algorithm<N_RANK>::base_case_kernel_func(int t0, int t1, grid_info<N_RANK> const grid, int size_kernel_func, Pochoir_Kernel<N_RANK> (& kf) [N_SIZE]) {
 	grid_info<N_RANK> l_grid = grid;
-    int l_kernel_func_pointer = 0;
+    int l_pointer = 0, l_loc = size_kernel_func - 1, l_size = kf[l_loc].size;
 	for (int t = t0; t < t1; ) {
-        while (l_kernel_func_pointer < size_kernel_func) {
+        while (l_pointer < l_size) {
             home_cell_[0] = t;
             /* execute one single time step */
-            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, kf[l_kernel_func_pointer]);
+            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, kf[l_loc].pt_kernel[l_pointer]);
 
             /* because the shape is trapezoid! */
             for (int i = 0; i < N_RANK; ++i) {
                 l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
             }
-            ++t; ++l_kernel_func_pointer;
+            ++t; ++l_pointer;
         }
-        l_kernel_func_pointer = 0;
+        l_pointer = 0;
 	}
 
 }
