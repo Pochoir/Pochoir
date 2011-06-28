@@ -30,6 +30,7 @@
 #include "pochoir_array.hpp"
 /* assuming there won't be more than 10 Pochoir_Array in one Pochoir object! */
 #define ARRAY_SIZE 10
+
 template <int N_RANK>
 class Pochoir {
     private:
@@ -55,6 +56,8 @@ class Pochoir {
         int shape_size_;
         int num_arr_;
         int arr_type_size_;
+        int size_kernel_func_;
+        typename Pochoir_Kernel<N_RANK>::T kernel_func_[10];
 
     public:
     // get slope(s)
@@ -72,6 +75,7 @@ class Pochoir {
         regShapeFlag = true;
         num_arr_ = 0;
         arr_type_size_ = 0;
+        size_kernel_func_ = 0;
     }
 
     template <size_t N_SIZE1, size_t N_SIZE2>
@@ -87,6 +91,7 @@ class Pochoir {
         regShapeFlag = true;
         num_arr_ = 0;
         arr_type_size_ = 0;
+        size_kernel_func_ = 0;
     }
     /* currently, we just compute the slope[] out of the shape[] */
     /* We get the grid_info out of arrayInUse */
@@ -118,9 +123,17 @@ class Pochoir {
         Register_Array(arr);
     } 
     grid_info<N_RANK> get_phys_grid(void);
+
+    /* Register Kernel Function */
+    template <typename F>
+    void Register_Default_Kernel(F f);
+    template <typename F, typename ... FArg>
+    void Register_Default_Kernel(F f, FArg ... farg);
+
     /* Executable Spec */
     template <typename BF>
     void Run(int timestep, BF const & bf);
+    void Run(int timestep);
     /* safe/unsafe Executable Spec */
     template <typename F, typename BF>
     void Run_Split_Scope(int timestep, F const & f, BF const & bf);
@@ -135,6 +148,17 @@ class Pochoir {
     template <typename F, typename BF>
     void Run_Obase(int timestep, F const & f, BF const & bf);
 };
+
+template <int N_RANK> template <typename F>
+void Pochoir<N_RANK>::Register_Default_Kernel(F f) {
+    kernel_func_[size_kernel_func_++] = f; 
+}
+
+template <int N_RANK> template <typename F, typename ... FArg>
+void Pochoir<N_RANK>::Register_Default_Kernel(F f, FArg ... farg) {
+    kernel_func_[size_kernel_func_++] = f;
+    Register_Default_Kernel(farg ...);
+}
 
 template <int N_RANK>
 void Pochoir<N_RANK>::checkFlag(bool flag, char const * str) {
@@ -457,22 +481,22 @@ void Pochoir<N_RANK>::Run(int timestep, F1 const & f1, F2 const & f2) {
     inRun = false;
 }
 
-#if 0
-/* safe/non-safe ExecSpec */
-template <int N_RANK> template <typename F, typename BF>
-void Pochoir<N_RANK>::Run_Split_Scope(int timestep, F const & f, BF const & bf) {
+/* Run the kernel functions stored in array of function pointers */
+template <int N_RANK>
+void Pochoir<N_RANK>::Run(int timestep) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
     algor.set_unroll(unroll_);
-    /* this version uses 'f' to compute interior region, 
-     * and 'bf' to compute boundary region
-     */
     timestep_ = timestep;
+    /* base_case_kernel() will mimic exact the behavior of serial nested loop!
+    */
     checkFlags();
-    algor.shorter_duo_sim_obase_bicut_p(0 + time_shift_, timestep + time_shift_, logic_grid_, f, bf);
+    inRun = true;
+    algor.base_case_kernel_func(0 + time_shift_, timestep + time_shift_, logic_grid_, size_kernel_func_, kernel_func_);
+    inRun = false;
+
 }
-#endif
 
 /* obase for zero-padded area! */
 template <int N_RANK> template <typename F>

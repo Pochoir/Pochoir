@@ -27,9 +27,11 @@
 #define POCHOIR_COMMON_H
 
 #include <sys/time.h>
-#include <cstdio>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
+
+#include "pochoir_types.hpp"
 // #include <string>
 
 static inline double tdiff (struct timeval *a, struct timeval *b)

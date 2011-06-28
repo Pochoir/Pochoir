@@ -53,6 +53,17 @@ animwave_2array : tb_animwave_2array.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o animwave_2array_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave_2array.cpp
 
+animwave_irregular : tb_animwave_irregular.cpp
+#   Phase-II compilation
+#	${CC} -o animwave_irregular ${OPT_FLAGS} tb_animwave_irregular.cpp
+#	${ICC} -o animwave_irregular ${OPT_FLAGS} tb_animwave_irregular_pochoir.cpp
+#	${ICC} -o animwave_irregular ${ICC_DEBUG_FLAGS} tb_animwave_irregular_pochoir.cpp
+#	Phase-I compilation with debugging aid
+	${CC} -o animwave_irregular ${POCHOIR_DEBUG_FLAGS} tb_animwave_irregular.cpp
+
+func : tb_function_object.cpp
+	${ICC} -o func tb_function_object.cpp -std=c++0x
+
 animwave_2array_unroll : tb_animwave_2array_unroll.cpp
 #   Phase-II compilation
 	${CC} -o animwave_2array_unroll_pochoir ${OPT_FLAGS} tb_animwave_2array_unroll.cpp

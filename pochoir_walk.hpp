@@ -27,11 +27,13 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <cstdio>
 #include <cassert>
 // #include <iostream>
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 #include <cilk/reducer_opadd.h>
+// #include "pochoir_types.hpp"
 #include "pochoir_common.hpp"
 
 using namespace std;
@@ -534,6 +536,8 @@ struct Algorithm {
 	inline void base_case_kernel_stagger(int t0, int t1, grid_info<N_RANK> const grid, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2);
     template <typename F1, typename F2> 
 	inline void base_case_kernel_unroll(int t0, int t1, grid_info<N_RANK> const grid, F1 const & f1, F2 const & f2);
+    template <size_t N_SIZE>
+    inline void base_case_kernel_func(int t0, int t1, grid_info<N_RANK> const grid, int size_kernel_func, typename Pochoir_Kernel<N_RANK>::T (& kf)[N_SIZE]);
     template <typename F> 
 	inline void walk_serial(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
 
@@ -699,6 +703,27 @@ inline void Algorithm<N_RANK>::base_case_kernel_unroll(int t0, int t1, grid_info
             l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
         }
 	}
+}
+
+template <int N_RANK> template <size_t N_SIZE>
+inline void Algorithm<N_RANK>::base_case_kernel_func(int t0, int t1, grid_info<N_RANK> const grid, int size_kernel_func, typename Pochoir_Kernel<N_RANK>::T (& kf) [N_SIZE]) {
+	grid_info<N_RANK> l_grid = grid;
+    int l_kernel_func_pointer = 0;
+	for (int t = t0; t < t1; ) {
+        while (l_kernel_func_pointer < size_kernel_func) {
+            home_cell_[0] = t;
+            /* execute one single time step */
+            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, kf[l_kernel_func_pointer]);
+
+            /* because the shape is trapezoid! */
+            for (int i = 0; i < N_RANK; ++i) {
+                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+            }
+            ++t; ++l_kernel_func_pointer;
+        }
+        l_kernel_func_pointer = 0;
+	}
+
 }
 
 #if DEBUG_FACILITY 
