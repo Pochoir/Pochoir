@@ -687,34 +687,28 @@ inline void Algorithm<N_RANK>::base_case_kernel_stagger(int t0, int t1, grid_inf
 template <int N_RANK> template <int N_SIZE> 
 inline void Algorithm<N_RANK>::base_case_kernel_guard(int t0, int t1, grid_info<N_RANK> const grid, int size, Pochoir_Func<N_RANK> (& pf)[N_SIZE]) {
 	grid_info<N_RANK> l_grid = grid;
-    int l_pointer = 0, l_loc = size - 1, l_size = pochoir_func_[l_loc].size;
     Pochoir_Merged_Func<N_RANK> l_func(size, pf);
-	for (int t = t0; t < t1; ) {
-        while (l_pointer < l_size) {
-            home_cell_[0] = t;
-            /* execute one single time step */
-            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_func);
+	for (int t = t0; t < t1; ++t) {
+        home_cell_[0] = t;
+        /* execute one single time step */
+        meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_func);
 
-            /* because the shape is trapezoid! */
-            for (int i = 0; i < N_RANK; ++i) {
-                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-            }
-            ++t; ++l_pointer;
+        /* because the shape is trapezoid! */
+        for (int i = 0; i < N_RANK; ++i) {
+            l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
         }
-        l_pointer = 0;
 	}
-
 }
 
 template <int N_RANK> template <size_t N_SIZE>
-inline void Algorithm<N_RANK>::base_case_kernel_unroll(int t0, int t1, grid_info<N_RANK> const grid, int size_kernel_func, Pochoir_Func<N_RANK> (& pf) [N_SIZE]) {
+inline void Algorithm<N_RANK>::base_case_kernel_unroll(int t0, int t1, grid_info<N_RANK> const grid, int size, Pochoir_Func<N_RANK> (& pf) [N_SIZE]) {
 	grid_info<N_RANK> l_grid = grid;
-    int l_pointer = 0, l_loc = size_kernel_func - 1, l_size = pf[l_loc].size;
+    int l_pointer = 0, l_func_size = pf[0].size;
 	for (int t = t0; t < t1; ) {
-        while (l_pointer < l_size) {
+        while (l_pointer < l_func_size) {
             home_cell_[0] = t;
             /* execute one single time step */
-            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, pf[l_loc].pt_kernel[l_pointer]);
+            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, pf[0].pt_kernel[l_pointer]);
 
             /* because the shape is trapezoid! */
             for (int i = 0; i < N_RANK; ++i) {

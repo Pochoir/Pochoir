@@ -70,7 +70,7 @@ class Pochoir {
 
     public:
     template <typename ... KS>
-    void Register_Kernel(KS ... ks);
+    void Register_Default_Kernel(KS ... ks);
     template <typename ... KS>
     void Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks);
     // get slope(s)
@@ -114,23 +114,10 @@ class Pochoir {
     void Register_Array(Pochoir_Array<T, N_RANK> & arr);
 
     /* We should still keep the Register_Domain for zero-padding!!! */
-    template <typename Domain>
-    void Register_Domain(Domain const & i);
-    template <typename Domain>
-    void Register_Domain(Domain const & i, Domain const & j);
-    template <typename Domain>
-    void Register_Domain(Domain const & i, Domain const & j, Domain const & k);
-    template <typename Domain>
-    void Register_Domain(Domain const & i, Domain const & j, Domain const & k, Domain const & l);
-    template <typename Domain>
-    void Register_Domain(Domain const & i, Domain const & j, Domain const & k, Domain const & l, Domain const & m);
-    template <typename Domain>
-    void Register_Domain(Domain const & i, Domain const & j, Domain const & k, Domain const & l, Domain const & m, Domain const & n);
-    template <typename Domain>
-    void Register_Domain(Domain const & i, Domain const & j, Domain const & k, Domain const & l, Domain const & m, Domain const & n, Domain const & o);
-    template <typename Domain>
-    void Register_Domain(Domain const & i, Domain const & j, Domain const & k, Domain const & l, Domain const & m, Domain const & n, Domain const & o, Domain const & p);
-
+    template <typename D>
+    void Register_Domain(D const & d);
+    template <typename D, typename ... DS>
+    void Register_Domain(D const & d, DS ... ds);
     /* register boundary value function with corresponding Pochoir_Array object directly */
     template <typename T_Array, typename RET>
     void registerBoundaryFn(T_Array & arr, RET (*_bv)(T_Array &, int, int, int)) {
@@ -143,13 +130,6 @@ class Pochoir {
     template <typename BF>
     void Run(int timestep, BF const & bf);
     void Run(int timestep);
-    /* safe/unsafe Executable Spec */
-    template <typename F, typename BF>
-    void Run_Split_Scope(int timestep, F const & f, BF const & bf);
-    template <typename G1, typename F1, typename G2, typename F2>
-    void Run_Leap_Frog(int timestep, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2);
-    template <typename F1, typename F2>
-    void Run(int timestep, F1 const & f1, F2 const & f2);
     /* obase for zero-padded region */
     template <typename F>
     void Run_Obase(int timestep, F const & f);
@@ -176,7 +156,7 @@ void Pochoir<N_RANK>::reg_guard(typename Pochoir_Types<N_RANK>::T_Guard g) {
 }
     
 template <int N_RANK> template <typename ... KS>
-void Pochoir<N_RANK>::Register_Kernel(KS ... ks) {
+void Pochoir<N_RANK>::Register_Default_Kernel(KS ... ks) {
     int l_size = sizeof...(KS);
     typedef typename Pochoir_Types<N_RANK>::T_Kernel T_Kernel;
     pochoir_func_[size_pochoir_func_].size = l_size;
@@ -351,174 +331,23 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape1)[N_SIZE1], 
     regShapeFlag = true;
 }
 
-template <int N_RANK> template <typename Domain>
-void Pochoir<N_RANK>::Register_Domain(Domain const & r_i, Domain const & r_j, Domain const & r_k, Domain const & r_l, Domain const & r_m, Domain const & r_n, Domain const & r_o, Domain const & r_p) {
-    logic_grid_.x0[7] = r_i.first();
-    logic_grid_.x1[7] = r_i.first() + r_i.size();
-    logic_grid_.x0[6] = r_j.first();
-    logic_grid_.x1[6] = r_j.first() + r_j.size();
-    logic_grid_.x0[5] = r_k.first();
-    logic_grid_.x1[5] = r_k.first() + r_k.size();
-    logic_grid_.x0[4] = r_l.first();
-    logic_grid_.x1[4] = r_l.first() + r_l.size();
-    logic_grid_.x0[3] = r_m.first();
-    logic_grid_.x1[3] = r_m.first() + r_m.size();
-    logic_grid_.x0[2] = r_n.first();
-    logic_grid_.x1[2] = r_n.first() + r_n.size();
-    logic_grid_.x0[1] = r_o.first();
-    logic_grid_.x1[1] = r_o.first() + r_o.size();
-    logic_grid_.x0[0] = r_p.first();
-    logic_grid_.x1[0] = r_p.first() + r_p.size();
+template <int N_RANK> template <typename D>
+void Pochoir<N_RANK>::Register_Domain(D const & d) {
+    logic_grid_.x0[0] = d.first();
+    logic_grid_.x1[0] = d.first() + d.size();
     regLogicDomainFlag = true;
 }
 
-template <int N_RANK> template <typename Domain>
-void Pochoir<N_RANK>::Register_Domain(Domain const & r_i, Domain const & r_j, Domain const & r_k, Domain const & r_l, Domain const & r_m, Domain const & r_n, Domain const & r_o) {
-    logic_grid_.x0[6] = r_i.first();
-    logic_grid_.x1[6] = r_i.first() + r_i.size();
-    logic_grid_.x0[5] = r_j.first();
-    logic_grid_.x1[5] = r_j.first() + r_j.size();
-    logic_grid_.x0[4] = r_k.first();
-    logic_grid_.x1[4] = r_k.first() + r_k.size();
-    logic_grid_.x0[3] = r_l.first();
-    logic_grid_.x1[3] = r_l.first() + r_l.size();
-    logic_grid_.x0[2] = r_m.first();
-    logic_grid_.x1[2] = r_m.first() + r_m.size();
-    logic_grid_.x0[1] = r_n.first();
-    logic_grid_.x1[1] = r_n.first() + r_n.size();
-    logic_grid_.x0[0] = r_o.first();
-    logic_grid_.x1[0] = r_o.first() + r_o.size();
-    regLogicDomainFlag = true;
-}
-
-template <int N_RANK> template <typename Domain>
-void Pochoir<N_RANK>::Register_Domain(Domain const & r_i, Domain const & r_j, Domain const & r_k, Domain const & r_l, Domain const & r_m, Domain const & r_n) {
-    logic_grid_.x0[5] = r_i.first();
-    logic_grid_.x1[5] = r_i.first() + r_i.size();
-    logic_grid_.x0[4] = r_j.first();
-    logic_grid_.x1[4] = r_j.first() + r_j.size();
-    logic_grid_.x0[3] = r_k.first();
-    logic_grid_.x1[3] = r_k.first() + r_k.size();
-    logic_grid_.x0[2] = r_l.first();
-    logic_grid_.x1[2] = r_l.first() + r_l.size();
-    logic_grid_.x0[1] = r_m.first();
-    logic_grid_.x1[1] = r_m.first() + r_m.size();
-    logic_grid_.x0[0] = r_n.first();
-    logic_grid_.x1[0] = r_n.first() + r_n.size();
-    regLogicDomainFlag = true;
-}
-
-template <int N_RANK> template <typename Domain>
-void Pochoir<N_RANK>::Register_Domain(Domain const & r_i, Domain const & r_j, Domain const & r_k, Domain const & r_l, Domain const & r_m) {
-    logic_grid_.x0[4] = r_i.first();
-    logic_grid_.x1[4] = r_i.first() + r_i.size();
-    logic_grid_.x0[3] = r_j.first();
-    logic_grid_.x1[3] = r_j.first() + r_j.size();
-    logic_grid_.x0[2] = r_k.first();
-    logic_grid_.x1[2] = r_k.first() + r_k.size();
-    logic_grid_.x0[1] = r_l.first();
-    logic_grid_.x1[1] = r_l.first() + r_l.size();
-    logic_grid_.x0[0] = r_m.first();
-    logic_grid_.x1[0] = r_m.first() + r_m.size();
-    regLogicDomainFlag = true;
-}
-
-template <int N_RANK> template <typename Domain>
-void Pochoir<N_RANK>::Register_Domain(Domain const & r_i, Domain const & r_j, Domain const & r_k, Domain const & r_l) {
-    logic_grid_.x0[3] = r_i.first();
-    logic_grid_.x1[3] = r_i.first() + r_i.size();
-    logic_grid_.x0[2] = r_j.first();
-    logic_grid_.x1[2] = r_j.first() + r_j.size();
-    logic_grid_.x0[1] = r_k.first();
-    logic_grid_.x1[1] = r_k.first() + r_k.size();
-    logic_grid_.x0[0] = r_l.first();
-    logic_grid_.x1[0] = r_l.first() + r_l.size();
-    regLogicDomainFlag = true;
-}
-
-template <int N_RANK> template <typename Domain>
-void Pochoir<N_RANK>::Register_Domain(Domain const & r_i, Domain const & r_j, Domain const & r_k) {
-    logic_grid_.x0[2] = r_i.first();
-    logic_grid_.x1[2] = r_i.first() + r_i.size();
-    logic_grid_.x0[1] = r_j.first();
-    logic_grid_.x1[1] = r_j.first() + r_j.size();
-    logic_grid_.x0[0] = r_k.first();
-    logic_grid_.x1[0] = r_k.first() + r_k.size();
-    regLogicDomainFlag = true;
-}
-
-template <int N_RANK> template <typename Domain>
-void Pochoir<N_RANK>::Register_Domain(Domain const & r_i, Domain const & r_j) {
-    logic_grid_.x0[1] = r_i.first();
-    logic_grid_.x1[1] = r_i.first() + r_i.size();
-    logic_grid_.x0[0] = r_j.first();
-    logic_grid_.x1[0] = r_j.first() + r_j.size();
-    regLogicDomainFlag = true;
-}
-
-template <int N_RANK> template <typename Domain>
-void Pochoir<N_RANK>::Register_Domain(Domain const & r_i) {
-    logic_grid_.x0[0] = r_i.first();
-    logic_grid_.x1[0] = r_i.first() + r_i.size();
-    regLogicDomainFlag = true;
+template <int N_RANK> template <typename D, typename ... DS>
+void Pochoir<N_RANK>::Register_Domain(D const & d, DS ... ds) {
+    int l_pointer = sizeof...(DS);
+    logic_grid_.x0[l_pointer] = d.first();
+    logic_grid_.x1[l_pointer] = d.first() + d.size();
 }
 
 template <int N_RANK> 
 grid_info<N_RANK> Pochoir<N_RANK>::get_phys_grid(void) {
     return phys_grid_;
-}
-
-/* Executable Spec */
-template <int N_RANK> template <typename BF>
-void Pochoir<N_RANK>::Run(int timestep, BF const & bf) {
-    Algorithm<N_RANK> algor(slope_);
-    algor.set_phys_grid(phys_grid_);
-    algor.set_thres(arr_type_size_);
-    algor.set_unroll(unroll_);
-    timestep_ = timestep;
-    /* base_case_kernel() will mimic exact the behavior of serial nested loop!
-    */
-    checkFlags();
-    inRun = true;
-    algor.base_case_kernel_boundary(0 + time_shift_, timestep + time_shift_, logic_grid_, bf);
-    inRun = false;
-    // algor.sim_bicut_zero(0 + time_shift_, timestep + time_shift_, logic_grid_, bf);
-    /* obase_boundary_p() is a parallel divide-and-conquer algorithm, which checks
-     * boundary for every point
-     */
-    // algor.obase_boundary_p(0, timestep, logic_grid_, bf);
-}
-
-/* Executable Spec for staggered grid/leap frog scheme */
-template <int N_RANK> template <typename G1, typename F1, typename G2, typename F2>
-void Pochoir<N_RANK>::Run_Leap_Frog(int timestep, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2) {
-    Algorithm<N_RANK> algor(slope_);
-    algor.set_phys_grid(phys_grid_);
-    algor.set_thres(arr_type_size_);
-    algor.set_unroll(unroll_);
-    timestep_ = timestep;
-    /* base_case_kernel() will mimic exact the behavior of serial nested loop!
-    */
-    checkFlags();
-    inRun = true;
-    algor.base_case_kernel_stagger(0 + time_shift_, timestep + time_shift_, logic_grid_, g1, f1, g2, f2);
-    inRun = false;
-}
-
-/* Executable Spec for unrolled staggered grid/leap frog scheme */
-template <int N_RANK> template <typename F1, typename F2>
-void Pochoir<N_RANK>::Run(int timestep, F1 const & f1, F2 const & f2) {
-    Algorithm<N_RANK> algor(slope_);
-    algor.set_phys_grid(phys_grid_);
-    algor.set_thres(arr_type_size_);
-    algor.set_unroll(unroll_);
-    timestep_ = timestep;
-    /* base_case_kernel() will mimic exact the behavior of serial nested loop!
-    */
-    checkFlags();
-    inRun = true;
-    algor.base_case_kernel_unroll(0 + time_shift_, timestep + time_shift_, logic_grid_, f1, f2);
-    inRun = false;
 }
 
 /* Run the kernel functions stored in array of function pointers */
