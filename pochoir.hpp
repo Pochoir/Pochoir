@@ -56,19 +56,23 @@ class Pochoir {
         int shape_size_;
         int num_arr_;
         int arr_type_size_;
-        int size_kernel_func_;
+        int size_pochoir_func_;
+        bool pochoir_guard_;
         /* assuming that the number of distinct sub-regions less than 10 */
-        Pochoir_Kernel<N_RANK> kernel_func_[10];
+        Pochoir_Func<N_RANK> pochoir_func_[10];
 
         /* Private Register Kernel Function */
-        template <typename F>
-        void reg_kernel(F f);
-        template <typename F, typename ... FArg>
-        void reg_kernel(F f, FArg ... farg);
+        template <typename K>
+        void reg_kernel(int pt, K k);
+        template <typename K, typename ... KS>
+        void reg_kernel(int pt, K k, KS ... ks);
+        void reg_guard(typename Pochoir_Types<N_RANK>::T_Guard g);
 
     public:
-    template <typename ... F>
-    void Register_Default_Kernel(F ... f);
+    template <typename ... KS>
+    void Register_Kernel(KS ... ks);
+    template <typename ... KS>
+    void Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks);
     // get slope(s)
     int slope(int const _idx) { return slope_[_idx]; }
     template <size_t N_SIZE>
@@ -84,7 +88,8 @@ class Pochoir {
         regShapeFlag = true;
         num_arr_ = 0;
         arr_type_size_ = 0;
-        size_kernel_func_ = 0;
+        size_pochoir_func_ = 0;
+        pochoir_guard_ = false;
     }
 
     template <size_t N_SIZE1, size_t N_SIZE2>
@@ -100,7 +105,8 @@ class Pochoir {
         regShapeFlag = true;
         num_arr_ = 0;
         arr_type_size_ = 0;
-        size_kernel_func_ = 0;
+        size_pochoir_func_ = 0;
+        pochoir_guard_ = false;
     }
     /* currently, we just compute the slope[] out of the shape[] */
     /* We get the grid_info out of arrayInUse */
@@ -152,30 +158,46 @@ class Pochoir {
     void Run_Obase(int timestep, F const & f, BF const & bf);
 };
 
-template <int N_RANK> template <typename F>
-void Pochoir<N_RANK>::reg_kernel(F f) {
-    int l_pointer = kernel_func_[size_kernel_func_].pointer;
-    kernel_func_[size_kernel_func_].pt_kernel[l_pointer] = f; 
-    ++kernel_func_[size_kernel_func_].pointer;
+template <int N_RANK> template <typename K>
+void Pochoir<N_RANK>::reg_kernel(int pt, K k) {
+    pochoir_func_[size_pochoir_func_].pt_kernel[pt] = k; 
 }
 
-template <int N_RANK> template <typename F, typename ... FArg>
-void Pochoir<N_RANK>::reg_kernel(F f, FArg ... farg) {
-    int l_pointer = kernel_func_[size_kernel_func_].pointer;
-    kernel_func_[size_kernel_func_].pt_kernel[l_pointer] = f;
-    ++kernel_func_[size_kernel_func_].pointer;
-    reg_kernel(farg ...);
+template <int N_RANK> template <typename K, typename ... KS>
+void Pochoir<N_RANK>::reg_kernel(int pt, K k, KS ... ks) {
+    pochoir_func_[size_pochoir_func_].pt_kernel[pt] = k;
+    reg_kernel(pt+1, ks ...);
 }
 
-template <int N_RANK> template <typename ... F>
-void Pochoir<N_RANK>::Register_Default_Kernel(F ... f) {
-    int l_size = sizeof...(F);
+template <int N_RANK>
+void Pochoir<N_RANK>::reg_guard(typename Pochoir_Types<N_RANK>::T_Guard g) {
+    pochoir_func_[size_pochoir_func_].pt_guard = g;
+    return;
+}
+    
+template <int N_RANK> template <typename ... KS>
+void Pochoir<N_RANK>::Register_Kernel(KS ... ks) {
+    int l_size = sizeof...(KS);
     typedef typename Pochoir_Types<N_RANK>::T_Kernel T_Kernel;
-    kernel_func_[size_kernel_func_].size = l_size;
-    kernel_func_[size_kernel_func_].pointer = 0;
-    kernel_func_[size_kernel_func_].pt_kernel = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));
-    reg_kernel(f ...);
-    ++size_kernel_func_;
+    pochoir_func_[size_pochoir_func_].size = l_size;
+    pochoir_func_[size_pochoir_func_].pt_kernel = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));
+    pochoir_func_[size_pochoir_func_].guard = false;
+    pochoir_guard_ = false;
+    reg_kernel(0, ks ...);
+    ++size_pochoir_func_;
+}
+
+template <int N_RANK> template <typename ... KS>
+void Pochoir<N_RANK>::Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks) {
+    int l_size = sizeof...(KS);
+    typedef typename Pochoir_Types<N_RANK>::T_Kernel T_Kernel;
+    pochoir_func_[size_pochoir_func_].size = l_size;
+    pochoir_func_[size_pochoir_func_].pt_kernel = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));
+    pochoir_func_[size_pochoir_func_].guard = true;
+    pochoir_guard_ = true;
+    reg_guard(g);
+    reg_kernel(0, ks ...);
+    ++size_pochoir_func_;
 }
 
 template <int N_RANK>
@@ -511,7 +533,11 @@ void Pochoir<N_RANK>::Run(int timestep) {
     */
     checkFlags();
     inRun = true;
-    algor.base_case_kernel_func(0 + time_shift_, timestep + time_shift_, logic_grid_, size_kernel_func_, kernel_func_);
+    if (pochoir_guard_) {
+        algor.base_case_kernel_guard(0 + time_shift_, timestep + time_shift_, logic_grid_, size_pochoir_func_, pochoir_func_);
+    } else {
+        algor.base_case_kernel_unroll(0 + time_shift_, timestep + time_shift_, logic_grid_, size_pochoir_func_, pochoir_func_);
+    }
     inRun = false;
 
 }

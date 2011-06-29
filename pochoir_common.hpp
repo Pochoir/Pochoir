@@ -94,12 +94,6 @@ struct Pochoir_Shape {
     int shift[N_RANK+1];
 };
  
-template <int N_RANK>
-struct Pochoir_Kernel {
-    int size, pointer;
-    typename Pochoir_Types<N_RANK>::T_Kernel * pt_kernel;
-};
-
 template <int N_RANK, size_t N>
 size_t ArraySize (Pochoir_Shape<N_RANK> (& arr)[N]) { return N; }
 

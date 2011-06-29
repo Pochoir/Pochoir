@@ -62,6 +62,9 @@ animwave_irregular : tb_animwave_irregular.cpp
 #	Phase-I compilation with debugging aid
 	${CC} -o animwave_irregular ${POCHOIR_DEBUG_FLAGS} tb_animwave_irregular.cpp 
 
+meta : tb_meta_meta.cpp
+	icpc -o meta tb_meta_meta.cpp -std=c++0x
+
 func : tb_function_object.cpp
 	${ICC} -o func tb_function_object.cpp -std=c++0x
 
