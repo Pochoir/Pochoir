@@ -411,8 +411,8 @@ struct Algorithm {
         int unroll_;
         int ulb_boundary[N_RANK], uub_boundary[N_RANK], lub_boundary[N_RANK];
         bool boundarySet, physGridSet, slopeSet, unrollSet;
-        int size_pochoir_func_;
-        Pochoir_Func<N_RANK> * pochoir_func_;
+        int size_pochoir_guard_kernel_;
+        Pochoir_Guard_Kernel<N_RANK> * pochoir_func_;
 	public:
 #if STAT
     /* sim_count_cut will be accessed outside Algorithm object */
@@ -537,9 +537,7 @@ struct Algorithm {
     template <typename G1, typename F1, typename G2, typename F2> 
 	inline void base_case_kernel_stagger(int t0, int t1, grid_info<N_RANK> const grid, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2);
     template <int N_SIZE>
-    inline void base_case_kernel_guard(int t0, int t1, grid_info<N_RANK> const grid, int size, Pochoir_Func<N_RANK> (& pf)[N_SIZE]);
-    template <size_t N_SIZE>
-    inline void base_case_kernel_unroll(int t0, int t1, grid_info<N_RANK> const grid, int size_kernel_func, Pochoir_Func<N_RANK> (& pf)[N_SIZE]);
+    inline void base_case_kernel_guard(int t0, int t1, grid_info<N_RANK> const grid, int size, Pochoir_Guard_Kernel<N_RANK> (& pgk)[N_SIZE]);
     template <typename F> 
 	inline void walk_serial(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
 
@@ -659,66 +657,21 @@ inline void Algorithm<N_RANK>::base_case_kernel_boundary(int t0, int t1, grid_in
 	}
 }
 
-template <int N_RANK> template <typename G1, typename F1, typename G2, typename F2>
-inline void Algorithm<N_RANK>::base_case_kernel_stagger(int t0, int t1, grid_info<N_RANK> const grid, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2) {
-	grid_info<N_RANK> l_grid = grid;
-    auto merged_kernel = [&](int t, int i) { 
-        if (g1(t, i)) 
-            f1(t, i); 
-        else if (g2(t, i)) 
-            f2(t, i); 
-        else {
-            printf("Error! Exit!\n");
-            exit (-1);
-        }
-    };
-	for (int t = t0; t < t1; ++t) {
-            home_cell_[0] = t;
-            /* execute one single time step */
-            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, merged_kernel);
-
-            /* because the shape is trapezoid! */
-            for (int i = 0; i < N_RANK; ++i) {
-                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-            }
-	}
-}
-
 template <int N_RANK> template <int N_SIZE> 
-inline void Algorithm<N_RANK>::base_case_kernel_guard(int t0, int t1, grid_info<N_RANK> const grid, int size, Pochoir_Func<N_RANK> (& pf)[N_SIZE]) {
+inline void Algorithm<N_RANK>::base_case_kernel_guard(int t0, int t1, grid_info<N_RANK> const grid, int size_pochoir_guard_kernel, Pochoir_Guard_Kernel<N_RANK> (& pgk)[N_SIZE]) {
+    /* Each kernel update the entire region independently and entirely!!! */
 	grid_info<N_RANK> l_grid = grid;
-    Pochoir_Merged_Func<N_RANK> l_func(size, pf);
-	for (int t = t0; t < t1; ++t) {
+    Pochoir_Generic_Kernel<N_RANK> l_kernel(size_pochoir_guard_kernel, pgk);
+    for (int t = t0; t < t1; ) {
         home_cell_[0] = t;
-        /* execute one single time step */
-        meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_func);
-
-        /* because the shape is trapezoid! */
+        meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
+        /* adjust the trapezoids */
         for (int i = 0; i < N_RANK; ++i) {
             l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-        }
-	}
-}
-
-template <int N_RANK> template <size_t N_SIZE>
-inline void Algorithm<N_RANK>::base_case_kernel_unroll(int t0, int t1, grid_info<N_RANK> const grid, int size, Pochoir_Func<N_RANK> (& pf) [N_SIZE]) {
-	grid_info<N_RANK> l_grid = grid;
-    int l_pointer = 0, l_func_size = pf[0].size;
-	for (int t = t0; t < t1; ) {
-        while (l_pointer < l_func_size) {
-            home_cell_[0] = t;
-            /* execute one single time step */
-            meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, pf[0].pt_kernel[l_pointer]);
-
-            /* because the shape is trapezoid! */
-            for (int i = 0; i < N_RANK; ++i) {
-                l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-            }
-            ++t; ++l_pointer;
-        }
-        l_pointer = 0;
-	}
-
+        } 
+        ++t;
+        l_kernel.shift_pointer();
+    } /* end for 't' */
 }
 
 #if DEBUG_FACILITY 

@@ -220,6 +220,19 @@ static inline void klein_region(grid_info<2> & grid, grid_info<2> const & initia
 
 #define Pochoir_Guard_End };
 
+/* Default Guard: Always return true */
+Pochoir_Guard_3D(Default_Guard_3D, t, i, j, k)
+    return true;
+Pochoir_Guard_End
+
+Pochoir_Guard_2D(Default_Guard_2D, t, i, j)
+    return true;
+Pochoir_Guard_End
+
+Pochoir_Guard_1D(Default_Guard_1D, t, i)
+    return true;
+Pochoir_Guard_End
+
 #define Pochoir_Obase_Fn_1D(name, t0, t1, grid) \
     auto name = [&](int t0, int t1, grid_info<1> const & grid) {
 

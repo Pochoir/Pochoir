@@ -56,10 +56,9 @@ class Pochoir {
         int shape_size_;
         int num_arr_;
         int arr_type_size_;
-        int size_pochoir_func_;
-        bool pochoir_guard_;
-        /* assuming that the number of distinct sub-regions less than 10 */
-        Pochoir_Func<N_RANK> pochoir_func_[10];
+        int size_pochoir_guard_kernel_;
+        /* assuming that the number of distinct sub-regions is less than 10 */
+        Pochoir_Guard_Kernel<N_RANK> pochoir_guard_kernel_[10];
 
         /* Private Register Kernel Function */
         template <typename K>
@@ -88,8 +87,7 @@ class Pochoir {
         regShapeFlag = true;
         num_arr_ = 0;
         arr_type_size_ = 0;
-        size_pochoir_func_ = 0;
-        pochoir_guard_ = false;
+        size_pochoir_guard_kernel_ = 0;
     }
 
     template <size_t N_SIZE1, size_t N_SIZE2>
@@ -105,8 +103,7 @@ class Pochoir {
         regShapeFlag = true;
         num_arr_ = 0;
         arr_type_size_ = 0;
-        size_pochoir_func_ = 0;
-        pochoir_guard_ = false;
+        size_pochoir_guard_kernel_ = 0;
     }
     /* currently, we just compute the slope[] out of the shape[] */
     /* We get the grid_info out of arrayInUse */
@@ -140,44 +137,36 @@ class Pochoir {
 
 template <int N_RANK> template <typename K>
 void Pochoir<N_RANK>::reg_kernel(int pt, K k) {
-    pochoir_func_[size_pochoir_func_].pt_kernel[pt] = k; 
+    pochoir_guard_kernel_[size_pochoir_guard_kernel_].kernel_[pt] = k; 
 }
 
 template <int N_RANK> template <typename K, typename ... KS>
 void Pochoir<N_RANK>::reg_kernel(int pt, K k, KS ... ks) {
-    pochoir_func_[size_pochoir_func_].pt_kernel[pt] = k;
+    pochoir_guard_kernel_[size_pochoir_guard_kernel_].kernel_[pt] = k;
     reg_kernel(pt+1, ks ...);
 }
 
 template <int N_RANK>
 void Pochoir<N_RANK>::reg_guard(typename Pochoir_Types<N_RANK>::T_Guard g) {
-    pochoir_func_[size_pochoir_func_].pt_guard = g;
+    pochoir_guard_kernel_[size_pochoir_guard_kernel_].guard_ = g;
     return;
 }
     
 template <int N_RANK> template <typename ... KS>
-void Pochoir<N_RANK>::Register_Default_Kernel(KS ... ks) {
-    int l_size = sizeof...(KS);
-    typedef typename Pochoir_Types<N_RANK>::T_Kernel T_Kernel;
-    pochoir_func_[size_pochoir_func_].size = l_size;
-    pochoir_func_[size_pochoir_func_].pt_kernel = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));
-    pochoir_func_[size_pochoir_func_].guard = false;
-    pochoir_guard_ = false;
-    reg_kernel(0, ks ...);
-    ++size_pochoir_func_;
-}
-
-template <int N_RANK> template <typename ... KS>
 void Pochoir<N_RANK>::Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks) {
     int l_size = sizeof...(KS);
     typedef typename Pochoir_Types<N_RANK>::T_Kernel T_Kernel;
-    pochoir_func_[size_pochoir_func_].size = l_size;
-    pochoir_func_[size_pochoir_func_].pt_kernel = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));
-    pochoir_func_[size_pochoir_func_].guard = true;
-    pochoir_guard_ = true;
+    assert(size_pochoir_guard_kernel_ < 10);
+    if (size_pochoir_guard_kernel_ >= 10) {
+        printf("Pochoir Error: Register_Kernel > %d\n", size_pochoir_guard_kernel_);
+        exit(1);
+    }
+    pochoir_guard_kernel_[size_pochoir_guard_kernel_].size_ = l_size;
+    pochoir_guard_kernel_[size_pochoir_guard_kernel_].pointer_ = 0;
+    pochoir_guard_kernel_[size_pochoir_guard_kernel_].kernel_ = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));
     reg_guard(g);
     reg_kernel(0, ks ...);
-    ++size_pochoir_func_;
+    ++size_pochoir_guard_kernel_;
 }
 
 template <int N_RANK>
@@ -362,11 +351,7 @@ void Pochoir<N_RANK>::Run(int timestep) {
     */
     checkFlags();
     inRun = true;
-    if (pochoir_guard_) {
-        algor.base_case_kernel_guard(0 + time_shift_, timestep + time_shift_, logic_grid_, size_pochoir_func_, pochoir_func_);
-    } else {
-        algor.base_case_kernel_unroll(0 + time_shift_, timestep + time_shift_, logic_grid_, size_pochoir_func_, pochoir_func_);
-    }
+    algor.base_case_kernel_guard(0 + time_shift_, timestep + time_shift_, logic_grid_, size_pochoir_guard_kernel_, pochoir_guard_kernel_);
     inRun = false;
 
 }
