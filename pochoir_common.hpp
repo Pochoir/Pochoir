@@ -31,7 +31,6 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "pochoir_types.hpp"
 // #include <string>
 
 static inline double tdiff (struct timeval *a, struct timeval *b)

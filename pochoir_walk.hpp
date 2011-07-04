@@ -411,8 +411,9 @@ struct Algorithm {
         int unroll_;
         int ulb_boundary[N_RANK], uub_boundary[N_RANK], lub_boundary[N_RANK];
         bool boundarySet, physGridSet, slopeSet, unrollSet;
-        int size_pochoir_guard_kernel_;
-        Pochoir_Guard_Kernel<N_RANK> * pochoir_func_;
+        int sz_pgk_;
+        Pochoir_Obase_Guard_Kernel<N_RANK> * opgk_;
+        Pure_Region * pure_region_;
 	public:
 #if STAT
     /* sim_count_cut will be accessed outside Algorithm object */
@@ -489,13 +490,25 @@ struct Algorithm {
     inline void push_queue(int dep, int level, int t0, int t1, grid_info<N_RANK> const & grid);
     inline queue_info & top_queue(int dep);
     inline void pop_queue(int dep);
-    inline bool within_boundary(int t0, int t1, grid_info<N_RANK> & grid);
 
     void set_phys_grid(grid_info<N_RANK> const & grid);
     // void set_stride(int const stride[]);
     void set_slope(int const slope[]);
     void set_unroll(int const unroll);
+    template <int N_SIZE>
+    void set_pgk(int _sz_pgk, Pochoir_Obase_Guard_Kernel (& _opgk) [N_SIZE]);
+
     inline bool touch_boundary(int i, int lt, grid_info<N_RANK> & grid);
+    inline bool within_boundary(int t0, int t1, grid_info<N_RANK> & grid);
+    
+    /*******************************************************************************/
+    /* adaptive version for irregular stencil computation */
+    inline void adaptive_space_bicut(int t0, int t1, grid_info<N_RANK> const grid, int region_n)
+    inline void adaptive_space_bicut_p(int t0, int t1, grid_info<N_RANK> const grid)
+    inline void adaptive_bicut(int t0, int t1, grid_info<N_RANK> const grid, int region_n)
+    inline void adaptive_bicut_p(int t0, int t1, grid_info<N_RANK> const grid)
+    /* adaptive version for irregular stencil computation */
+    /*******************************************************************************/
 
     /* followings are the sim cut of both top and bottom bar */
     template <typename F>
@@ -628,6 +641,13 @@ void Algorithm<N_RANK>::set_unroll(int const unroll)
 #endif
 }
 
+template <int N_RANK> template <int N_SIZE>
+void Algorithm<N_RANK>::set_pgk(int _sz_pgk, Pochoir_Obase_Guard_Kernel (& _opgk) [N_SIZE]) {
+    sz_pgk_ = _sz_pgk; opgk_ = _opgk;
+    pure_region_ = new Pure_Region<N_RANK>(_sz_pgk, _opgk);
+    return;
+}
+
 template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::base_case_kernel_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f) {
 	grid_info<N_RANK> l_grid = grid;
@@ -658,10 +678,10 @@ inline void Algorithm<N_RANK>::base_case_kernel_boundary(int t0, int t1, grid_in
 }
 
 template <int N_RANK> template <int N_SIZE> 
-inline void Algorithm<N_RANK>::base_case_kernel_guard(int t0, int t1, grid_info<N_RANK> const grid, int size_pochoir_guard_kernel, Pochoir_Guard_Kernel<N_RANK> (& pgk)[N_SIZE]) {
+inline void Algorithm<N_RANK>::base_case_kernel_guard(int t0, int t1, grid_info<N_RANK> const grid, int size_pgk, Pochoir_Guard_Kernel<N_RANK> (& pgk)[N_SIZE]) {
     /* Each kernel update the entire region independently and entirely!!! */
 	grid_info<N_RANK> l_grid = grid;
-    Pochoir_Generic_Kernel<N_RANK> l_kernel(size_pochoir_guard_kernel, pgk);
+    Pochoir_Generic_Kernel<N_RANK> l_kernel(size_pgk, pgk);
     for (int t = t0; t < t1; ) {
         home_cell_[0] = t;
         meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);

@@ -27,6 +27,7 @@
 #define EXPR_STENCIL_HPP
 
 #include "pochoir_common.hpp"
+#include "pochoir_types.hpp"
 #include "pochoir_array.hpp"
 /* assuming there won't be more than 10 Pochoir_Array in one Pochoir object! */
 #define ARRAY_SIZE 10
@@ -56,9 +57,10 @@ class Pochoir {
         int shape_size_;
         int num_arr_;
         int arr_type_size_;
-        int size_pochoir_guard_kernel_;
+        int sz_pgk_;
         /* assuming that the number of distinct sub-regions is less than 10 */
-        Pochoir_Guard_Kernel<N_RANK> pochoir_guard_kernel_[10];
+        Pochoir_Guard_Kernel<N_RANK> * pgk_;
+        Pochoir_Obase_Guard_Kernel<N_RANK> * obase_pgk_;
 
         /* Private Register Kernel Function */
         template <typename K>
@@ -67,11 +69,18 @@ class Pochoir {
         void reg_kernel(int pt, K k, KS ... ks);
         void reg_guard(typename Pochoir_Types<N_RANK>::T_Guard g);
 
+        /* private register kernel function for obased kernel */
+        template <typename K>
+        void reg_obase_kernel(int pt, K k);
+        template <typename K, typename ... KS>
+        void reg_obase_kernel(int pt, K k, KS ... ks);
+        void reg_obase_guard(typename Pochoir_Types<N_RANK>::T_Guard g);
+
     public:
     template <typename ... KS>
-    void Register_Default_Kernel(KS ... ks);
-    template <typename ... KS>
     void Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks);
+    template <typename ... KS>
+    void Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks);
     // get slope(s)
     int slope(int const _idx) { return slope_[_idx]; }
     template <size_t N_SIZE>
@@ -87,7 +96,8 @@ class Pochoir {
         regShapeFlag = true;
         num_arr_ = 0;
         arr_type_size_ = 0;
-        size_pochoir_guard_kernel_ = 0;
+        sz_pgk_ = 0;
+        pgk_ = NULL; obase_pgk_ = NULL; 
     }
 
     template <size_t N_SIZE1, size_t N_SIZE2>
@@ -103,7 +113,8 @@ class Pochoir {
         regShapeFlag = true;
         num_arr_ = 0;
         arr_type_size_ = 0;
-        size_pochoir_guard_kernel_ = 0;
+        sz_pgk_ = 0;
+        pgk_ = NULL; obase_pgk_ = NULL; 
     }
     /* currently, we just compute the slope[] out of the shape[] */
     /* We get the grid_info out of arrayInUse */
@@ -137,18 +148,35 @@ class Pochoir {
 
 template <int N_RANK> template <typename K>
 void Pochoir<N_RANK>::reg_kernel(int pt, K k) {
-    pochoir_guard_kernel_[size_pochoir_guard_kernel_].kernel_[pt] = k; 
+    pgk_[sz_pgk_].kernel_[pt] = k; 
 }
 
 template <int N_RANK> template <typename K, typename ... KS>
 void Pochoir<N_RANK>::reg_kernel(int pt, K k, KS ... ks) {
-    pochoir_guard_kernel_[size_pochoir_guard_kernel_].kernel_[pt] = k;
+    pgk_[sz_pgk_].kernel_[pt] = k;
     reg_kernel(pt+1, ks ...);
 }
 
 template <int N_RANK>
 void Pochoir<N_RANK>::reg_guard(typename Pochoir_Types<N_RANK>::T_Guard g) {
-    pochoir_guard_kernel_[size_pochoir_guard_kernel_].guard_ = g;
+    pgk_[sz_pgk_].guard_ = g;
+    return;
+}
+
+template <int N_RANK> template <typename K>
+void Pochoir<N_RANK>::reg_obase_kernel(int pt, K k) {
+    obase_pgk_[sz_pgk_].kernel_[pt] = k; 
+}
+
+template <int N_RANK> template <typename K, typename ... KS>
+void Pochoir<N_RANK>::reg_obase_kernel(int pt, K k, KS ... ks) {
+    obase_pgk_[sz_pgk_].kernel_[pt] = k;
+    reg_obase_kernel(pt+1, ks ...);
+}
+
+template <int N_RANK>
+void Pochoir<N_RANK>::reg_obase_guard(typename Pochoir_Types<N_RANK>::T_Guard g) {
+    obase_pgk_[sz_pgk_].guard_ = g;
     return;
 }
     
@@ -156,17 +184,42 @@ template <int N_RANK> template <typename ... KS>
 void Pochoir<N_RANK>::Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks) {
     int l_size = sizeof...(KS);
     typedef typename Pochoir_Types<N_RANK>::T_Kernel T_Kernel;
-    assert(size_pochoir_guard_kernel_ < 10);
-    if (size_pochoir_guard_kernel_ >= 10) {
-        printf("Pochoir Error: Register_Kernel > %d\n", size_pochoir_guard_kernel_);
+    if (pgk_ == NULL) {
+        pgk_ = new Pochoir_Guard_Kernel[ARRAY_SIZE];
+        sz_pgk_ = 0;
+    }
+    assert(sz_pgk_ < ARRAY_SIZE);
+    if (sz_pgk_ >= ARRAY_SIZE) {
+        printf("Pochoir Error: Register_Kernel > %d\n", sz_pgk_);
         exit(1);
     }
-    pochoir_guard_kernel_[size_pochoir_guard_kernel_].size_ = l_size;
-    pochoir_guard_kernel_[size_pochoir_guard_kernel_].pointer_ = 0;
-    pochoir_guard_kernel_[size_pochoir_guard_kernel_].kernel_ = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));
+    pgk_[sz_pgk_].size_ = l_size;
+    pgk_[sz_pgk_].pointer_ = 0;
+    pgk_[sz_pgk_].kernel_ = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));
     reg_guard(g);
     reg_kernel(0, ks ...);
-    ++size_pochoir_guard_kernel_;
+    ++sz_pgk_;
+}
+
+template <int N_RANK> template <typename ... KS>
+void Pochoir<N_RANK>::Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks) {
+    int l_size = sizeof...(KS);
+    typedef typename Pochoir_Types<N_RANK>::T_Obase_Kernel T_Kernel;
+    if (obase_pgk_ == NULL) {
+        obase_pgk_ = new Pochoir_Guard_Kernel[ARRAY_SIZE];
+        sz_pgk_ = 0;
+    }
+    assert(sz_pgk_ < ARRAY_SIZE);
+    if (sz_pgk_ >= ARRAY_SIZE) {
+        printf("Pochoir Error: Register_Kernel > %d\n", sz_pgk_);
+        exit(1);
+    }
+    obase_pgk_[sz_pgk_].size_ = l_size;
+    obase_pgk_[sz_pgk_].pointer_ = 0;
+    obase_pgk_[sz_pgk_].kernel_ = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));
+    reg_obase_guard(g);
+    reg_obase_kernel(0, ks ...);
+    ++sz_pgk_;
 }
 
 template <int N_RANK>
@@ -351,10 +404,29 @@ void Pochoir<N_RANK>::Run(int timestep) {
     */
     checkFlags();
     inRun = true;
-    algor.base_case_kernel_guard(0 + time_shift_, timestep + time_shift_, logic_grid_, size_pochoir_guard_kernel_, pochoir_guard_kernel_);
+    algor.base_case_kernel_guard(0 + time_shift_, timestep + time_shift_, logic_grid_, sz_pgk_, pgk_);
     inRun = false;
 
 }
+
+/* obase for interior and ExecSpec for boundary */
+template <int N_RANK> 
+void Pochoir<N_RANK>::Run_Obase(int timestep) {
+    int l_total_points = 1;
+    Algorithm<N_RANK> algor(slope_);
+    algor.set_phys_grid(phys_grid_);
+    algor.set_thres(arr_type_size_);
+    algor.set_unroll(unroll_);
+    algor.set_pgk(sz_pgk_, obase_pgk_);
+    /* this version uses 'f' to compute interior region, 
+     * and 'bf' to compute boundary region
+     */
+    timestep_ = timestep;
+    checkFlags();
+    // cutting based on shorter bar
+    algor.adaptive_bicut_p(0 + time_shift_, timestep + time_shift_, logic_grid_);
+}
+
 
 /* obase for zero-padded area! */
 template <int N_RANK> template <typename F>
