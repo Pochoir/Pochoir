@@ -48,39 +48,19 @@ heat_3D_NP : tb_heat_3D_NP.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_3D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_3D_NP.cpp
 
-animwave_2array : tb_animwave_2array.cpp
-#   Phase-II compilation
-	${CC} -o animwave_2array_pochoir ${OPT_FLAGS} tb_animwave_2array.cpp
-#	Phase-I compilation with debugging aid
-#	${CC} -o animwave_2array_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave_2array.cpp
-
 animwave_irregular : tb_animwave_irregular.cpp 
 #   Phase-II compilation
-#	${CC} -o animwave_irregular ${OPT_FLAGS} tb_animwave_irregular.cpp
+	${CC} -o animwave_irregular ${OPT_FLAGS} -split-opt-pointer tb_animwave_irregular.cpp
 #	${ICC} -o animwave_irregular ${OPT_FLAGS} tb_animwave_irregular_pochoir.cpp
 #	${ICC} -o animwave_irregular ${ICC_DEBUG_FLAGS} tb_animwave_irregular_pochoir.cpp
 #	Phase-I compilation with debugging aid
-	${CC} -o animwave_irregular ${POCHOIR_DEBUG_FLAGS} tb_animwave_irregular.cpp 
+#	${CC} -o animwave_irregular ${POCHOIR_DEBUG_FLAGS} tb_animwave_irregular.cpp 
 
 meta : tb_meta_meta.cpp
 	icpc -o meta tb_meta_meta.cpp -std=c++0x
 
 func : tb_function_object.cpp
 	${ICC} -o func tb_function_object.cpp -std=c++0x
-
-animwave_2array_unroll : tb_animwave_2array_unroll.cpp
-#   Phase-II compilation
-	${CC} -o animwave_2array_unroll_pochoir ${OPT_FLAGS} tb_animwave_2array_unroll.cpp
-#	${ICC} -o animwave_2array_unroll_pochoir ${OPT_FLAGS} tb_animwave_2array_unroll_pochoir.cpp
-#	${ICC} -o animwave_2array_unroll_pochoir ${ICC_DEBUG_FLAGS} tb_animwave_2array_unroll_pochoir.cpp
-#	Phase-I compilation with debugging aid
-#	${CC} -o animwave_2array_unroll_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave_2array_unroll.cpp
-
-animwave_unroll : tb_animwave_unroll.cpp
-#   Phase-II compilation
-	${CC} -o animwave_unroll_pochoir ${OPT_FLAGS} tb_animwave_unroll.cpp
-#	Phase-I compilation with debugging aid
-#	${CC} -o animwave_unroll_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave_unroll.cpp
 
 animwave : tb_animwave.cpp
 #   Phase-II compilation

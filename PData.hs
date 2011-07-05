@@ -104,8 +104,18 @@ data PKernel = PKernel {
     kIter :: [Iter]
 } deriving Show
 
+data PGuard = PGuard {
+    gName :: PName,
+    gParams :: [PName],
+    gStmt :: [Stmt],
+    gIter :: [Iter]
+} deriving Show
+
 emptyKernel :: PKernel
 emptyKernel = PKernel {kName = "", kParams = [], kStmt = [], kIter = []}
+
+emptyGuard :: PGuard
+emptyGuard = PGuard {gName = "", gParams = [], gStmt = [], gIter = []}
 
 data ParserState = ParserState {
     pMode  :: PMode,
@@ -115,7 +125,8 @@ data ParserState = ParserState {
     pStencil :: Map.Map PName PStencil,
     pRange :: Map.Map PName PRange,
     pShape :: Map.Map PName PShape,
-    pKernel :: Map.Map PName PKernel
+    pKernel :: Map.Map PName PKernel,
+    pGuard :: Map.Map PName PGuard
 } deriving Show
 
 data Expr = VAR String String 

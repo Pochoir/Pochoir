@@ -192,9 +192,17 @@ pShowArrayGaps l_rank l_array = breakline ++ "int " ++
 pShowAutoKernel :: String -> PKernel -> String
 pShowAutoKernel l_name l_kernel = 
     let l_params = zipWith (++) (repeat "int ") (kParams l_kernel)
-    in  "/* known! */ auto " ++ l_name ++ " = [&] (" ++ 
+    in  "/* known Kernel ! */ auto " ++ l_name ++ " = [&] (" ++ 
         pShowKernelParams l_params ++ ") {" ++ breakline ++
         show (kStmt l_kernel) ++
+        breakline ++ "};" ++ breakline
+
+pShowAutoGuard :: String -> PGuard -> String
+pShowAutoGuard l_name l_guard = 
+    let l_params = zipWith (++) (repeat "int ") (gParams l_guard)
+    in  "/* known Guard ! */ auto " ++ l_name ++ " = [&] (" ++ 
+        pShowKernelParams l_params ++ ") -> bool {" ++ breakline ++
+        show (gStmt l_guard) ++
         breakline ++ "};" ++ breakline
 
 pShowMacroKernel :: PName -> PKernel -> String

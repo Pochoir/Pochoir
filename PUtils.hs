@@ -35,6 +35,10 @@ updatePKernel :: PKernel -> ParserState -> ParserState
 updatePKernel l_kernel parserState =
     parserState { pKernel = Map.insert (kName l_kernel) l_kernel $ pKernel parserState }
 
+updatePGuard :: PGuard -> ParserState -> ParserState
+updatePGuard l_guard parserState =
+    parserState { pGuard = Map.insert (gName l_guard) l_guard $ pGuard parserState }
+
 updateObase :: PMode -> ParserState -> ParserState
 updateObase mode parserState = parserState { pMode = mode }
 
@@ -142,6 +146,12 @@ getValidKernel l_state l_kernel =
     case Map.lookup l_kernel $ pKernel l_state of
         Nothing -> (False, emptyKernel) 
         Just l_pKernel -> (True, l_pKernel)
+
+getValidGuard :: ParserState -> String -> (Bool, PGuard)
+getValidGuard l_state l_guard =
+    case Map.lookup l_guard $ pGuard l_state of
+        Nothing -> (False, emptyGuard)
+        Just l_pGuard -> (True, l_pGuard)
 
 getPShape :: ParserState -> String -> PShape
 getPShape l_state l_shape =

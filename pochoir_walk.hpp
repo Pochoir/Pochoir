@@ -413,7 +413,7 @@ struct Algorithm {
         bool boundarySet, physGridSet, slopeSet, unrollSet;
         int sz_pgk_;
         Pochoir_Obase_Guard_Kernel<N_RANK> * opgk_;
-        Pure_Region * pure_region_;
+        Pure_Region<N_RANK> * pure_region_;
 	public:
 #if STAT
     /* sim_count_cut will be accessed outside Algorithm object */
@@ -495,18 +495,17 @@ struct Algorithm {
     // void set_stride(int const stride[]);
     void set_slope(int const slope[]);
     void set_unroll(int const unroll);
-    template <int N_SIZE>
-    void set_pgk(int _sz_pgk, Pochoir_Obase_Guard_Kernel (& _opgk) [N_SIZE]);
+    void set_pgk(int _sz_pgk, Pochoir_Obase_Guard_Kernel<N_RANK> * _opgk);
 
     inline bool touch_boundary(int i, int lt, grid_info<N_RANK> & grid);
     inline bool within_boundary(int t0, int t1, grid_info<N_RANK> & grid);
     
     /*******************************************************************************/
     /* adaptive version for irregular stencil computation */
-    inline void adaptive_space_bicut(int t0, int t1, grid_info<N_RANK> const grid, int region_n)
-    inline void adaptive_space_bicut_p(int t0, int t1, grid_info<N_RANK> const grid)
-    inline void adaptive_bicut(int t0, int t1, grid_info<N_RANK> const grid, int region_n)
-    inline void adaptive_bicut_p(int t0, int t1, grid_info<N_RANK> const grid)
+    inline void adaptive_space_bicut(int t0, int t1, grid_info<N_RANK> const grid, int region_n);
+    inline void adaptive_space_bicut_p(int t0, int t1, grid_info<N_RANK> const grid);
+    inline void adaptive_bicut(int t0, int t1, grid_info<N_RANK> const grid, int region_n);
+    inline void adaptive_bicut_p(int t0, int t1, grid_info<N_RANK> const grid);
     /* adaptive version for irregular stencil computation */
     /*******************************************************************************/
 
@@ -641,8 +640,8 @@ void Algorithm<N_RANK>::set_unroll(int const unroll)
 #endif
 }
 
-template <int N_RANK> template <int N_SIZE>
-void Algorithm<N_RANK>::set_pgk(int _sz_pgk, Pochoir_Obase_Guard_Kernel (& _opgk) [N_SIZE]) {
+template <int N_RANK> 
+void Algorithm<N_RANK>::set_pgk(int _sz_pgk, Pochoir_Obase_Guard_Kernel<N_RANK> * _opgk) {
     sz_pgk_ = _sz_pgk; opgk_ = _opgk;
     pure_region_ = new Pure_Region<N_RANK>(_sz_pgk, _opgk);
     return;

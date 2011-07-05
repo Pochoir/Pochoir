@@ -60,6 +60,7 @@ pToken =
     <|> try pParsePochoirShapeInfo
     <|> try pParsePochoirDomain
     <|> try pParsePochoirAutoKernel
+    <|> try pParsePochoirAutoGuard
     <|> try pParsePochoirArrayMember
     <|> try pParsePochoirStencilMember
     <|> do ch <- anyChar
@@ -183,11 +184,6 @@ pParsePochoirDomain =
        return (breakline ++ "Pochoir_Domain " ++ 
                pShowDynamicDecl l_rangeDecl pShowArrayDim ++ ";\n")
 
-pParsePochoirAutoKernel :: GenParser Char ParserState String
-pParsePochoirAutoKernel =
-    do reserved "auto"
-       pPochoirAutoKernel
-
 pParsePochoirArrayMember :: GenParser Char ParserState String
 pParsePochoirArrayMember =
     do l_id <- try (pIdentifier)
@@ -211,18 +207,35 @@ pParseCPPComment =
            -- return ("// comment\n")
            return ("//" ++ str ++ "\n")
 
-pPochoirAutoKernel :: GenParser Char ParserState String
-pPochoirAutoKernel =
-    do l_kernel_name <- identifier
+pParsePochoirAutoKernel :: GenParser Char ParserState String
+pParsePochoirAutoKernel =
+    do reserved "auto"
+       l_kernel_name <- identifier
        reservedOp "="
        symbol "[&]"
        l_kernel_params <- parens $ commaSep1 (reserved "int" >> identifier)
-       symbol "{"
+       reserved "{"
        exprStmts <- manyTill pStatement (try $ reserved "};")
        let l_kernel = PKernel { kName = l_kernel_name, kParams = l_kernel_params,
                                 kStmt = exprStmts, kIter = [] }
        updateState $ updatePKernel l_kernel
        return (pShowAutoKernel l_kernel_name l_kernel) 
+
+pParsePochoirAutoGuard :: GenParser Char ParserState String
+pParsePochoirAutoGuard =
+    do reserved "auto"
+       l_guard_name <- identifier
+       reservedOp "="
+       symbol "[&]"
+       l_guard_params <- parens $ commaSep1 (reserved "int" >> identifier)
+       reservedOp "->" 
+       reserved "bool" 
+       reserved "{"
+       exprStmts <- manyTill pStatement (try $ reserved "};")
+       let l_guard = PGuard { gName = l_guard_name, gParams = l_guard_params,
+                                gStmt = exprStmts, gIter = [] }
+       updateState $ updatePGuard l_guard
+       return (pShowAutoGuard l_guard_name l_guard) 
 
 pMacroValue :: String -> GenParser Char ParserState String
 pMacroValue l_name = 

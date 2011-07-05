@@ -232,30 +232,6 @@ Pochoir_Guard_1D(Default_Guard_1D, t, i)
     return true;
 Pochoir_Guard_End
 
-#define Pochoir_Obase_Fn_1D(name, t0, t1, grid) \
-    auto name = [&](int t0, int t1, grid_info<1> const & grid) {
-
-#define Pochoir_Obase_Fn_2D(name, t0, t1, grid) \
-    auto name = [&](int t0, int t1, grid_info<2> const & grid) {
-
-#define Pochoir_Obase_Fn_3D(name, t0, t1, grid) \
-    auto name = [&](int t0, int t1, grid_info<3> const & grid) {
-
-#define Pochoir_Obase_Fn_4D(name, t0, t1, grid) \
-    auto name = [&](int t0, int t1, grid_info<4> const & grid) {
-
-#define Pochoir_Obase_Fn_5D(name, t0, t1, grid) \
-    auto name = [&](int t0, int t1, grid_info<5> const & grid) {
-
-#define Pochoir_Obase_Fn_6D(name, t0, t1, grid) \
-    auto name = [&](int t0, int t1, grid_info<6> const & grid) {
-
-#define Pochoir_Obase_Fn_7D(name, t0, t1, grid) \
-    auto name = [&](int t0, int t1, grid_info<7> const & grid) {
-
-#define Pochoir_Obase_Fn_8D(name, t0, t1, grid) \
-    auto name = [&](int t0, int t1, grid_info<8> const & grid) {
-
 /* - these function templates are for computing boundary values, currently
  *   icc doesn't support capturing the lambda function by function objects,
  *   so, we have to utilize the function pointers!
