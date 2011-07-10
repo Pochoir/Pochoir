@@ -1363,8 +1363,10 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
 /************************************************************************************
  * Adaptive region cutting algorithm for irregular stencil computation **************
  ************************************************************************************/
-#define adaptive_space_can_cut(_dim) (cut_lb ? (lb >= 2 * thres + pad_point_ && tb + l_padding > dx_recursive_[_dim]) : (tb >= 2 * thres + pad_point_ && lb + l_padding > dx_recursive_[_dim]))
-#define adaptive_space_can_cut_p(_dim) (cut_lb ? ((l_touch_boundary || cross_region) ? (lb >= 2 * thres + pad_point_ && tb + l_padding > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres + pad_point_ && tb + l_padding > dx_recursive_[_dim])) : ((l_touch_boundary || cross_region) ? (lb == phys_length_[_dim] ? (tb >= 2 * thres + pad_point_ && lb + l_padding > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres + pad_point_ && lb + l_padding > dx_recursive_boundary_[_dim])) : (tb >= 2 * thres + pad_point_ && lb + l_padding > dx_recursive_[_dim])))
+#define adaptive_space_can_cut(_dim) (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim]))
+
+#define adaptive_space_can_cut_p(_dim) (cut_lb ? ((l_touch_boundary || cross_region) ? (lb >= 2 * thres && tb + l_padding > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim])) : ((l_touch_boundary || cross_region) ? (lb == phys_length_[_dim] ? (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim])) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
+
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::adaptive_space_bicut(int t0, int t1, grid_info<N_RANK> const grid, int region_n)
 {

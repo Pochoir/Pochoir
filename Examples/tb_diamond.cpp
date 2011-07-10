@@ -150,18 +150,18 @@ int main(int argc, char * argv[])
             cilk_for (int i = 0; i < N; ++i) {
             if (guard_interior(t, i)) {
                 /* interior sub-region */
-                if (t % 2 == 0) {
+                if (t % 2 == 1) {
                     b(t, i) = 0.1 * b(t-1, i-1) + 0.125 * b(t-1, i) + 0.189 * b(t-1, i+1);
                 }
-                if (t % 2 == 1) {
+                if (t % 2 == 0) {
                     b(t, i) = 0.02 * b(t-1, i-1) + 0.025 * b(t-1, i) + 0.0289 * b(t-1, i+1);
                 }
             } else {
                 /* exterior sub-region*/
-                if (t % 2 == 0) {
+                if (t % 2 == 1) {
                     b(t, i) = 0.1 * b(t-1, i-1) - 0.125 * b(t-1, i) - 0.189 * b(t-1, i+1);
                 }
-                if (t % 2 == 1) {
+                if (t % 2 == 0) {
                     b(t, i) = 0.02 * b(t-1, i-1) - 0.025 * b(t-1, i) - 0.0289 * b(t-1, i+1);
                 }
             }

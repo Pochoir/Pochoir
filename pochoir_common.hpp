@@ -52,7 +52,7 @@ static inline int StrToInt(const char * s)
 #define INF 100000000
 #define SUPPORT_RANK 9
 #define DEBUG_FACILITY 1
-#define PURE_REGION_ALL 1
+#define PURE_REGION_ALL 0
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
