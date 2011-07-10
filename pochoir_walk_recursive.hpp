@@ -1415,12 +1415,7 @@ inline void Algorithm<N_RANK>::adaptive_space_bicut(int t0, int t1, grid_info<N_
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
                 const int l_padding = 2 * l_slope;
-#if PURE_REGION_ALL
                 const bool can_cut = cut_lb ? (lb >= 2 * delta_x && tb + l_padding > dx_recursive_[level]) : (tb >= 2 * delta_x && lb + l_padding > dx_recursive_[level]);
-#else
-                const bool cross_region = (region_n < 0);
-                const bool can_cut = cut_lb ? (cross_region ? lb >= 2 * delta_x && tb + l_padding > dx_recursive_boundary_[level] : lb >= 2 * delta_x && tb + l_padding > dx_recursive_[level]) : (cross_region ? tb >= 2 * delta_x && lb + l_padding > dx_recursive_boundary_[level] : tb >= 2 * delta_x && lb + l_padding > dx_recursive_[level]);
-#endif
                 if (!can_cut) {
                     /* if we can't cut into this dimension, just directly push 
                      * it into the circular queue 
@@ -1680,12 +1675,6 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
      * time steps, it's likely that for bigger trapezoids, all corner points
      * denotes a pure region, but its sub-region doesn't
      */
-#if PURE_REGION_ALL
-    const int l_region_n = region_n;
-#else
-    const int l_region_n = (*pure_region_)(t0, t1, grid);;
-    const bool cross_region = (l_region_n < 0);
-#endif
 
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
@@ -1694,15 +1683,11 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
         bool cut_lb = (lb < tb);
         thres = (slope_[i] * lt);
         const int l_padding = 2 * slope_[i];
-#if PURE_REGION_ALL
         sim_can_cut = sim_can_cut || (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[i]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[i]));
-#else
-        sim_can_cut = sim_can_cut || (cut_lb ? (cross_region ? lb >= 2* thres && tb + l_padding > dx_recursive_boundary_[i] : lb >= 2 * thres && tb + l_padding > dx_recursive_[i]) : (cross_region ? tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[i] : tb >= 2 * thres && lb + l_padding > dx_recursive_[i]));
-#endif
     }
 
     if (sim_can_cut) {
-        adaptive_space_bicut(t0, t1, grid, l_region_n);
+        adaptive_space_bicut(t0, t1, grid, region_n);
         return;
     } else if (lt > dt_recursive_) {
         /* cut into time */
@@ -1711,7 +1696,7 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
         /* cutting halflt align to unroll_ factor */
         halflt -= (halflt > unroll_ ? (halflt % unroll_) : 0);
         grid_info<N_RANK> l_son_grid = grid;
-        adaptive_bicut(t0, t0+halflt, l_son_grid, l_region_n);
+        adaptive_bicut(t0, t0+halflt, l_son_grid, region_n);
 
         for (int i = 0; i < N_RANK; ++i) {
             l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
@@ -1719,22 +1704,22 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
             l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
             l_son_grid.dx1[i] = grid.dx1[i];
         }
-        adaptive_bicut(t0+halflt, t1, l_son_grid, l_region_n);
+        adaptive_bicut(t0+halflt, t1, l_son_grid, region_n);
         return;
     } else {
         // base case
         if (t1 - t0 < unroll_) {
 #if DEBUG
-        printf("call cond_kernel_ <%d>!\n", l_region_n);
+        printf("call cond_kernel_ <%d>!\n", region_n);
         print_grid(stdout, t0, t1, grid);
 #endif
-            opgk_[l_region_n].cond_kernel_(t0, t1, grid);
+            opgk_[region_n].cond_kernel_(t0, t1, grid);
         } else {
 #if DEBUG
-        printf("call kernel_ <%d>!\n", l_region_n);
+        printf("call kernel_ <%d>!\n", region_n);
         print_grid(stdout, t0, t1, grid);
 #endif
-            opgk_[l_region_n].kernel_(t0, t1, grid);
+            opgk_[region_n].kernel_(t0, t1, grid);
         }
         return;
     }  
