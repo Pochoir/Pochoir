@@ -55,9 +55,9 @@ updatePMacro :: (PName, PValue) -> ParserState -> ParserState
 updatePMacro (l_name, l_value) parserState =
     parserState { pMacro = Map.insert l_name l_value (pMacro parserState) }
 
-updatePShape :: (PName, Int, PValue, Int, [Int], [[Int]]) -> ParserState -> ParserState
-updatePShape (l_name, l_rank, l_len, l_toggle, l_slopes, l_shape) parserState =
-    let l_pShape = PShape {shapeName = l_name, shapeRank = l_rank, shapeLen = l_len, shapeToggle = l_toggle, shapeSlopes = l_slopes, shape = l_shape}
+updatePShape :: (PName, Int, PValue, Int, [Int], Int, [[Int]]) -> ParserState -> ParserState
+updatePShape (l_name, l_rank, l_len, l_toggle, l_slopes, l_timeShift, l_shape) parserState =
+    let l_pShape = PShape {shapeName = l_name, shapeRank = l_rank, shapeLen = l_len, shapeToggle = l_toggle, shapeSlopes = l_slopes, shapeTimeShift = l_timeShift, shape = l_shape}
     in parserState { pShape = Map.insert l_name l_pShape (pShape parserState) }
 
 updatePArray :: [(PName, PArray)] -> ParserState -> ParserState
@@ -130,6 +130,11 @@ getSlopesFromShape l_height l_shapes =
     let l_spatials = transpose $ map tail l_shapes
         l_xs = getXSFromShape l_spatials
     in  map (flip div l_height) l_xs
+
+getTimeShiftFromShape :: [[Int]] -> Int
+getTimeShiftFromShape l_shapes =
+    let l_t = map head l_shapes
+    in  minimum l_t
 
 getXSFromShape :: [[Int]] -> [Int]
 getXSFromShape [] = []

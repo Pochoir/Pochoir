@@ -71,6 +71,7 @@ data PStencil = PStencil {
     sRank :: Int,
     sToggle :: Int,
     sUnroll :: Int,
+    sTimeShift :: Int,
     sArrayInUse :: [PArray],
     sShape :: PShape,
     sRegBound :: Bool
@@ -81,11 +82,12 @@ data PShape = PShape {
     shapeLen :: Int,
     shapeToggle :: Int,
     shapeSlopes :: [Int],
+    shapeTimeShift :: Int,
     shape :: [[Int]]
 } deriving Show
 
 emptyShape :: PShape
-emptyShape = PShape {shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shape = []}
+emptyShape = PShape {shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = []}
 
 data PRange = PRange {
     rName :: PName,
@@ -99,6 +101,7 @@ type Iter = (String, PArray, [DimExpr], PRWMode)
 
 data PKernel = PKernel {
     kName :: PName,
+    kTimeShift :: Int,
     kParams :: [PName],
     kStmt :: [Stmt],
     kIter :: [Iter]
@@ -112,7 +115,7 @@ data PGuard = PGuard {
 } deriving Show
 
 emptyKernel :: PKernel
-emptyKernel = PKernel {kName = "", kParams = [], kStmt = [], kIter = []}
+emptyKernel = PKernel {kName = "", kTimeShift = 0, kParams = [], kStmt = [], kIter = []}
 
 emptyGuard :: PGuard
 emptyGuard = PGuard {gName = "", gParams = [], gStmt = [], gIter = []}

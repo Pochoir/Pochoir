@@ -48,9 +48,10 @@ heat_3D_NP : tb_heat_3D_NP.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_3D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_3D_NP.cpp
 
-animwave_irregular : tb_animwave_irregular.cpp 
+animwave_irregular : tb_animwave_irregular.cpp tb_animwave_irregular_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o animwave_irregular ${OPT_FLAGS} -split-opt-pointer tb_animwave_irregular.cpp
+	${CC} -o animwave_irregular ${OPT_FLAGS} tb_animwave_irregular.cpp
+#	${CC} -o animwave_irregular ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_animwave_irregular.cpp
 #	${ICC} -o animwave_irregular ${OPT_FLAGS} tb_animwave_irregular_pochoir.cpp
 #	${ICC} -o animwave_irregular ${ICC_DEBUG_FLAGS} tb_animwave_irregular_pochoir.cpp
 #	Phase-I compilation with debugging aid

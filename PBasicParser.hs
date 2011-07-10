@@ -233,6 +233,7 @@ transKernel :: PStencil -> PMode -> PKernel -> PKernel
 transKernel l_stencil l_mode l_kernel =
        let l_exprStmts = kStmt l_kernel
            l_kernelParams = kParams l_kernel
+           l_time_shift = sTimeShift l_stencil
            l_iters =
                    case l_mode of 
                        PMacroShadow -> getFromStmts getIter PRead 
@@ -258,43 +259,77 @@ transKernel l_stencil l_mode l_kernel =
                                          (transArrayMap $ sArrayInUse l_stencil) 
                                          l_exprStmts 
            l_revIters = transIterN 0 l_iters
-       in  l_kernel { kIter = l_revIters }
+       in  l_kernel { kIter = l_revIters, kTimeShift = l_time_shift }
  
 -- For modes : -split-pointer -split-opt-pointer -split-c-pointer
-pSplitKernel :: (String, String, String, [PKernel], PStencil) -> (String -> [PKernel] -> String) -> GenParser Char ParserState String
+pSplitKernel :: (String, String, String, [PKernel], PStencil) -> (Bool -> String -> Int -> Int -> [PKernel] -> String) -> GenParser Char ParserState String
 pSplitKernel (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showSingleKernel = 
     let oldKernelName = intercalate "_" $ map kName l_kernels
         bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
         obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
+        cond_bdryKernelName = l_tag ++ "cond_boundary_" ++ oldKernelName
+        cond_obaseKernelName = l_tag ++ "cond_interior_" ++ oldKernelName
         regBound = sRegBound l_stencil
+        unroll = length l_kernels
         bdryKernel = if regBound 
-                        then pShowUnrolledBoundaryKernels bdryKernelName 
+                        then pShowUnrolledBoundaryKernels False bdryKernelName 
                                 l_stencil l_kernels 
                         else ""
-        obaseKernel = pShowUnrolledKernels obaseKernelName l_kernels l_showSingleKernel
-        runKernel = if regBound then obaseKernelName ++ ", " ++ bdryKernelName
-                                else obaseKernelName
-    in  return (bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
-                l_id ++ ".Register_Obase_Kernel(" ++ l_guard ++ ", " ++ runKernel ++ 
-                ");" ++ breakline)
+{-
+        cond_bdryKernel = if unroll > 1
+                             then pShowUnrolledBoundaryKernels True 
+                                    cond_bdryKernelName l_stencil l_kernels
+                             else bdryKernel
+                                 -}
+        cond_bdryKernel = pShowUnrolledBoundaryKernels True 
+                                    cond_bdryKernelName l_stencil l_kernels
+        obaseKernel = pShowUnrolledKernels False obaseKernelName l_kernels l_showSingleKernel
+        cond_obaseKernel = pShowUnrolledKernels True cond_obaseKernelName l_kernels l_showSingleKernel
+        runKernel = if regBound then obaseKernelName ++ ", " ++ 
+                                     cond_obaseKernelName ++ ", " ++ 
+                                     bdryKernelName ++ ", " ++ 
+                                     cond_bdryKernelName
+                                else obaseKernelName ++ ", " ++ 
+                                     cond_obaseKernelName
+    in  return (bdryKernel ++ breakline ++ cond_bdryKernel ++ 
+                obaseKernel ++ breakline ++ cond_obaseKernel ++
+                l_id ++ ".Register_Obase_Kernel(" ++ l_guard ++ ", " ++ 
+                show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 -- For modes : -split-macro-shadow, -split-caching
-pSplitScope :: (String, String, String, [PKernel], PStencil) -> (String -> [PKernel] -> String) -> GenParser Char ParserState String
+pSplitScope :: (String, String, String, [PKernel], PStencil) -> (Bool -> String -> [PKernel] -> String) -> GenParser Char ParserState String
 pSplitScope (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showKernels = 
     let oldKernelName = intercalate "_" $ map kName l_kernels
         bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
         obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
+        cond_bdryKernelName = l_tag ++ "cond_boundary_" ++ oldKernelName
+        cond_obaseKernelName = l_tag ++ "cond_interior_" ++ oldKernelName
         regBound = sRegBound l_stencil
+        unroll = length l_kernels
         bdryKernel = if regBound 
-                        then pShowUnrolledBoundaryKernels bdryKernelName 
+                        then pShowUnrolledBoundaryKernels False bdryKernelName 
                                 l_stencil l_kernels 
                         else ""
-        obaseKernel = l_showKernels obaseKernelName l_kernels
-        runKernel = if regBound then obaseKernelName ++ ", " ++ bdryKernelName
-                                else obaseKernelName
-    in  return (bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
-                l_id ++ ".Register_Obase_Kernel(" ++ l_guard ++ ", " ++ runKernel ++ 
-                ");" ++ breakline)
+{-
+        cond_bdryKernel = if unroll > 1
+                             then pShowUnrolledBoundaryKernels True 
+                                    cond_bdryKernelName l_stencil l_kernels
+                             else bdryKernel
+                                 -}
+        cond_bdryKernel = pShowUnrolledBoundaryKernels True 
+                                   cond_bdryKernelName l_stencil l_kernels
+        obaseKernel = l_showKernels False obaseKernelName l_kernels
+        cond_obaseKernel = l_showKernels True cond_obaseKernelName l_kernels
+        runKernel = if regBound then obaseKernelName ++ ", " ++ 
+                                     cond_obaseKernelName ++ ", " ++ 
+                                     bdryKernelName ++ ", " ++ 
+                                     cond_bdryKernelName
+                                else obaseKernelName ++ ", " ++ 
+                                     cond_obaseKernelName
+    in  return (bdryKernel ++ breakline ++ cond_bdryKernel ++ 
+                obaseKernel ++ breakline ++ cond_obaseKernel ++
+                l_id ++ ".Register_Obase_Kernel(" ++ l_guard ++ ", " ++ 
+                show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 -------------------------------------------------------------------------------------------
 --                             Following are C++ Grammar Parser                         ---
@@ -405,12 +440,14 @@ pDeclPochoirWithShape =
        let l_shapeName = l_name ++ "_shape"
        let l_toggle = getToggleFromShape l_shapes
        let l_slopes = getSlopesFromShape (l_toggle-1) l_shapes
-       updateState $ updatePShape (l_shapeName, l_rank, l_len, l_toggle, l_slopes, l_shapes)
+       let l_timeShift = getTimeShiftFromShape l_shapes
+       updateState $ updatePShape (l_shapeName, l_rank, l_len, l_toggle, l_slopes, l_timeShift, l_shapes)
        let l_pShape = PShape {shapeName = l_shapeName, 
                               shapeRank = l_rank,
                               shapeLen = l_len,
                               shapeToggle = l_toggle,
                               shapeSlopes = l_slopes,
+                              shapeTimeShift = l_timeShift,
                               shape = l_shapes}
        return (l_qualifiers, l_name, l_pShape)
 

@@ -130,7 +130,6 @@ inline void Algorithm<N_RANK>::walk_serial(int t0, int t1, grid_info<N_RANK> con
     return;
 }
 
-/* walk_adaptive() is just for interior region */
 template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::walk_bicut(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
 {
@@ -1416,7 +1415,12 @@ inline void Algorithm<N_RANK>::adaptive_space_bicut(int t0, int t1, grid_info<N_
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
                 const int l_padding = 2 * l_slope;
+#if PURE_REGION_ALL
                 const bool can_cut = cut_lb ? (lb >= 2 * delta_x && tb + l_padding > dx_recursive_[level]) : (tb >= 2 * delta_x && lb + l_padding > dx_recursive_[level]);
+#else
+                const bool cross_region = (region_n < 0);
+                const bool can_cut = cut_lb ? (cross_region ? lb >= 2 * delta_x && tb + l_padding > dx_recursive_boundary_[level] : lb >= 2 * delta_x && tb + l_padding > dx_recursive_[level]) : (cross_region ? tb >= 2 * delta_x && lb + l_padding > dx_recursive_boundary_[level] : tb >= 2 * delta_x && lb + l_padding > dx_recursive_[level]);
+#endif
                 if (!can_cut) {
                     /* if we can't cut into this dimension, just directly push 
                      * it into the circular queue 
@@ -1504,7 +1508,7 @@ inline void Algorithm<N_RANK>::adaptive_space_bicut(int t0, int t1, grid_info<N_
 }
 
 template <int N_RANK> 
-inline void Algorithm<N_RANK>::adaptive_space_bicut_p(int t0, int t1, grid_info<N_RANK> const grid)
+inline void Algorithm<N_RANK>::adaptive_space_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, int region_n)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -1556,10 +1560,9 @@ inline void Algorithm<N_RANK>::adaptive_space_bicut_p(int t0, int t1, grid_info<
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
                 const int l_padding = 2 * l_slope;
-                const int region_n = (*pure_region_)(t0, t1, l_father_grid);
                 const bool cross_region = (region_n < 0);
                 const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
-                const bool can_cut = cut_lb ? ((l_touch_boundary || cross_region) ? (lb >= 2 * delta_x && tb > dx_recursive_boundary_[level]) : (lb >= 2 * delta_x && tb + l_padding > dx_recursive_[level])) : ((l_touch_boundary || cross_region) ? (lb == phys_length_[level] ? (tb >= 2 * delta_x && lb > dx_recursive_boundary_[level]) : (tb >= 2 * delta_x && lb > dx_recursive_boundary_[level])) : (tb >= 2 * delta_x && lb + l_padding > dx_recursive_[level]));
+                const bool can_cut = cut_lb ? ((l_touch_boundary || cross_region) ? (lb >= 2 * delta_x && tb + l_padding > dx_recursive_boundary_[level]) : (lb >= 2 * delta_x && tb + l_padding > dx_recursive_[level])) : ((l_touch_boundary || cross_region) ? (lb == phys_length_[level] ? (tb >= 2 * delta_x && lb + l_padding > dx_recursive_boundary_[level]) : (tb >= 2 * delta_x && lb + l_padding > dx_recursive_boundary_[level])) : (tb >= 2 * delta_x && lb + l_padding > dx_recursive_[level]));
                 if (!can_cut) {
                     /* if we can't cut into this dimension, just directly push
                      * it into the circular queue
@@ -1670,7 +1673,19 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false;
-    grid_info<N_RANK> l_son_grid;
+    int unroll_ = opgk_[region_n].unroll_;
+    /* because currently we only check the corner points of the trapezoids,
+     * so we can NOT rely on the region_n tranferred in, e.g. for leap-frog
+     * style stencil, we employ different computing kernel for even / odd
+     * time steps, it's likely that for bigger trapezoids, all corner points
+     * denotes a pure region, but its sub-region doesn't
+     */
+#if PURE_REGION_ALL
+    const int l_region_n = region_n;
+#else
+    const int l_region_n = (*pure_region_)(t0, t1, grid);;
+    const bool cross_region = (l_region_n < 0);
+#endif
 
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
@@ -1679,11 +1694,15 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
         bool cut_lb = (lb < tb);
         thres = (slope_[i] * lt);
         const int l_padding = 2 * slope_[i];
+#if PURE_REGION_ALL
         sim_can_cut = sim_can_cut || (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[i]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[i]));
+#else
+        sim_can_cut = sim_can_cut || (cut_lb ? (cross_region ? lb >= 2* thres && tb + l_padding > dx_recursive_boundary_[i] : lb >= 2 * thres && tb + l_padding > dx_recursive_[i]) : (cross_region ? tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[i] : tb >= 2 * thres && lb + l_padding > dx_recursive_[i]));
+#endif
     }
 
     if (sim_can_cut) {
-        adaptive_space_bicut(t0, t1, grid, region_n);
+        adaptive_space_bicut(t0, t1, grid, l_region_n);
         return;
     } else if (lt > dt_recursive_) {
         /* cut into time */
@@ -1691,8 +1710,8 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
         int halflt = lt / 2;
         /* cutting halflt align to unroll_ factor */
         halflt -= (halflt > unroll_ ? (halflt % unroll_) : 0);
-        l_son_grid = grid;
-        adaptive_bicut(t0, t0+halflt, l_son_grid, region_n);
+        grid_info<N_RANK> l_son_grid = grid;
+        adaptive_bicut(t0, t0+halflt, l_son_grid, l_region_n);
 
         for (int i = 0; i < N_RANK; ++i) {
             l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
@@ -1700,15 +1719,23 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
             l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
             l_son_grid.dx1[i] = grid.dx1[i];
         }
-        adaptive_bicut(t0+halflt, t1, l_son_grid, region_n);
+        adaptive_bicut(t0+halflt, t1, l_son_grid, l_region_n);
         return;
     } else {
         // base case
+        if (t1 - t0 < unroll_) {
 #if DEBUG
-        printf("call interior clone <%d>!\n", region_n);
+        printf("call cond_kernel_ <%d>!\n", l_region_n);
         print_grid(stdout, t0, t1, grid);
 #endif
-        opgk_[region_n].kernel_(t0, t1, grid);
+            opgk_[l_region_n].cond_kernel_(t0, t1, grid);
+        } else {
+#if DEBUG
+        printf("call kernel_ <%d>!\n", l_region_n);
+        print_grid(stdout, t0, t1, grid);
+#endif
+            opgk_[l_region_n].kernel_(t0, t1, grid);
+        }
         return;
     }  
 }
@@ -1735,13 +1762,13 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
         thres = (slope_[i] * lt);
         bool cut_lb = (lb < tb);
         const int l_padding = 2 * slope_[i];
-        sim_can_cut = sim_can_cut || (cut_lb ? ((l_touch_boundary || cross_region) ? (lb >= 2 * thres && tb > dx_recursive_boundary_[i]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[i])) : ((l_touch_boundary || cross_region) ? (lb == phys_length_[i] ? (tb >= 2 * thres && lb > dx_recursive_boundary_[i]) : (tb >= 2 * thres && lb > dx_recursive_boundary_[i])) : (tb > 2 * thres && lb + l_padding > dx_recursive_[i])));
+        sim_can_cut = sim_can_cut || (cut_lb ? ((l_touch_boundary || cross_region) ? (lb >= 2 * thres && tb + l_padding > dx_recursive_boundary_[i]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[i])) : ((l_touch_boundary || cross_region) ? (lb == phys_length_[i] ? (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[i]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[i])) : (tb > 2 * thres && lb + l_padding > dx_recursive_[i])));
         call_boundary |= l_touch_boundary;
     }
 
     if (sim_can_cut) {
         if (call_boundary || cross_region) 
-            adaptive_space_bicut_p(t0, t1, l_father_grid);
+            adaptive_space_bicut_p(t0, t1, l_father_grid, region_n);
         else
             adaptive_space_bicut(t0, t1, l_father_grid, region_n);
         return;
@@ -1756,7 +1783,7 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
         /* cut into time */
         int halflt = lt / 2;
         /* cut halflt align to unroll_ */
-        halflt -= (halflt > unroll_ ? (halflt % unroll_) : 0);
+        halflt -= (halflt > max_unroll_ ? (halflt % max_unroll_) : 0);
 #if DEBUG
         printf("halflt = %d\n", halflt);
 #endif
@@ -1783,10 +1810,12 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
 
     /* Serial Space Cut: on spatial dimension 'i' */
     if (cross_region) {
+        printf("Serial Space Cut called !!!\n");
+        print_grid(stderr, t0, t1, l_father_grid);
         /* keep cutting until every point is in a pure sub-region */
-        assert(t1 == t0 + 1);
+        assert(t1 - t0 == 1);
         for (int i = 0; i < N_RANK; ++i) {
-            int len_i = l_father_grid.x1[i] - l_father_grid.x0[i];
+            const int len_i = l_father_grid.x1[i] - l_father_grid.x0[i];
             if (len_i > 1) {
                 int mid_i = l_father_grid.x0[i] + len_i / 2;
                 l_son_grid = l_father_grid;
@@ -1802,19 +1831,36 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
     }
     // base case
     assert(region_n >= 0);
+
     if (call_boundary) {
         /* boundary region */
+        if (t1 - t0 < opgk_[region_n].unroll_) {
 #if DEBUG
-        printf("call boundary clone <%d>!\n", region_n);
+        printf("call cond_boundary_kernel <%d>!\n", region_n);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
-        opgk_[region_n].bkernel_(t0, t1, l_father_grid);
+            opgk_[region_n].cond_bkernel_(t0, t1, l_father_grid);
+        } else {
+#if DEBUG
+        printf("call boundary_kernel <%d>!\n", region_n);
+        print_grid(stdout, t0, t1, l_father_grid);
+#endif
+            opgk_[region_n].bkernel_(t0, t1, l_father_grid);
+        }
     } else {
+        if (t1 - t0 < opgk_[region_n].unroll_) {
 #if DEBUG
-        printf("call interior clone <%d>!\n", region_n);
+        printf("call cond_kernel_ <%d>!\n", region_n);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
-        opgk_[region_n].kernel_(t0, t1, l_father_grid);
+            opgk_[region_n].cond_kernel_(t0, t1, l_father_grid);
+        } else {
+#if DEBUG
+        printf("call kernel_ <%d>!\n", region_n);
+        print_grid(stdout, t0, t1, l_father_grid);
+#endif
+            opgk_[region_n].kernel_(t0, t1, l_father_grid);
+        }
     }
     return;
 }

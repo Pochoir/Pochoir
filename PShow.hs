@@ -214,13 +214,17 @@ pShowMacroKernel l_macro l_kernel =
         unshadowArrayInUse = pUndefMacroArrayInUse l_sArrayInUse (kParams l_kernel)
     in  shadowArrayInUse ++ pShowAutoKernel l_name l_kernel ++ unshadowArrayInUse
 
-pShowUnrolledMacroKernels :: PName -> [PKernel] -> String
-pShowUnrolledMacroKernels l_name l_kL@(l_kernel:l_kernels)  = 
+pShowUnrolledMacroKernels :: Bool -> PName -> [PKernel] -> String
+pShowUnrolledMacroKernels l_cond l_name l_kL@(l_kernel:l_kernels)  = 
     let l_iters = concatMap kIter l_kL
         l_arrayInUse = unionArrayIter l_iters 
         l_t = "t"
         -- We are assuming all kernels have the same number of input parameters
         l_kParams = kParams l_kernel
+        l_unroll = length l_kL
+        l_unfold_kernel = 
+            if l_cond then pShowCondMacroKernel False l_t 0 l_unroll l_kL
+                      else pShowSingleMacroKernel False l_t l_kL
         -- assuming all kernels have the same rank
         l_rank = length l_kParams - 1
         l_defMacro = pDefMacroArrayInUse "interior" l_arrayInUse l_kParams
@@ -230,14 +234,15 @@ pShowUnrolledMacroKernels l_name l_kL@(l_kernel:l_kernels)  =
         "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ pShowTimeLoopHeader l_t ++ 
-        pShowSingleMacroKernel False l_t l_kL ++
+        l_unfold_kernel ++
         breakline ++ pShowTimeLoopTail ++ breakline ++ "};" ++
-        breakline ++ l_undefMacro
+        breakline ++ l_undefMacro ++ breakline
 
-pShowUnrolledBoundaryKernels :: String -> PStencil -> [PKernel] -> String
-pShowUnrolledBoundaryKernels l_name l_stencil l_kL@(l_kernel:l_kernels) = 
+pShowUnrolledBoundaryKernels :: Bool -> String -> PStencil -> [PKernel] -> String
+pShowUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) = 
     let l_t = "t"
         l_rank = sRank l_stencil
+        l_unroll = length l_kL
         l_arrayInUse = sArrayInUse l_stencil
         -- We are assuming all kernels have the same number of input parameters
         l_kParams = kParams l_kernel
@@ -245,6 +250,9 @@ pShowUnrolledBoundaryKernels l_name l_stencil l_kL@(l_kernel:l_kernels) =
         l_undefMacro = pUndefMacroArrayInUse l_arrayInUse l_kParams
         l_showPhysGrid = "grid_info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
                          sName l_stencil ++ ".get_phys_grid();"
+        l_unfold_kernel = 
+                if l_cond then pShowCondMacroKernel True l_t 0 l_unroll l_kL
+                          else pShowSingleMacroKernel True l_t l_kL
     in  breakline ++ l_defMacro ++
         breakline ++ pShowPMODLU ++
         breakline ++ "/* known! */ auto " ++ l_name ++ " = [&] (" ++
@@ -252,15 +260,15 @@ pShowUnrolledBoundaryKernels l_name l_stencil l_kL@(l_kernel:l_kernels) =
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ l_showPhysGrid ++
         breakline ++ pShowTimeLoopHeader l_t ++ 
-        pShowSingleMacroKernel True l_t l_kL ++
+        l_unfold_kernel ++
         breakline ++ pShowTimeLoopTail ++ breakline ++ "};" ++
-        breakline ++ l_undefMacro
+        breakline ++ l_undefMacro ++ breakline
  
 ------------------------------------------------------------------------------
 -- so far, the split-caching mode doesn't work for multiple-kernel case!!!! --
 ------------------------------------------------------------------------------
-pShowUnrolledCachingKernels :: PStencil -> String -> [PKernel] -> String
-pShowUnrolledCachingKernels l_stencil l_name l_kL@(l_kernel:l_kernels) = 
+pShowUnrolledCachingKernels :: PStencil -> Bool -> String -> [PKernel] -> String
+pShowUnrolledCachingKernels l_stencil l_cond l_name l_kL@(l_kernel:l_kernels) = 
     let l_rank = length (kParams l_kernel) - 1
         l_iter = concatMap kIter l_kL
         l_rdIters = pGetMinIters $ pGetReadIters l_iter
@@ -287,19 +295,20 @@ pShowUnrolledCachingKernels l_stencil l_name l_kL@(l_kernel:l_kernels) =
         ---------------------------------------------------------------------------
         breakline ++ "};\n"
 
-pShowUnrolledKernels :: String -> [PKernel] -> (String -> [PKernel] -> String) -> String
-pShowUnrolledKernels l_name l_kL@(l_kernel:l_kernels) l_showSingleKernel= 
+pShowUnrolledKernels :: Bool -> String -> [PKernel] -> (Bool -> String -> Int -> Int -> [PKernel] -> String) -> String
+pShowUnrolledKernels l_cond l_name l_kL@(l_kernel:l_kernels) l_showSingleKernel= 
     let l_rank = length (kParams l_kernel) - 1
         l_iter = concatMap kIter l_kL
         l_arrayInUse = unionArrayIter l_iter
         l_t = "t"
+        l_unroll = length l_kL
     in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
         "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
         breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++ 
         breakline ++ pShowRankAttr l_rank "stride" l_arrayInUse ++ 
         breakline ++ pShowTimeLoopHeader l_t ++ 
-        l_showSingleKernel l_t l_kL ++
+        l_showSingleKernel l_cond l_t 0 l_unroll l_kL ++
         breakline ++ pShowTimeLoopTail ++ breakline ++ "};\n"
 
 pShowPMODLU :: String
@@ -320,62 +329,119 @@ pShowSingleCachingKernel l_t l_kL@(l_kernel:l_kernels) =
         pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++
         breakline ++ "}" ++ pShowSingleCachingKernel l_t l_kernels
 
-pShowSingleCPointerKernel :: String -> [PKernel] -> String
-pShowSingleCPointerKernel _ [] = ""
-pShowSingleCPointerKernel l_t l_kL@(l_kernel:l_kernels) = 
+pShowSingleCPointerKernel :: Bool -> String -> Int -> Int -> [PKernel] -> String
+pShowSingleCPointerKernel _ _ _ _ [] = ""
+pShowSingleCPointerKernel l_cond l_t l_resid l_unroll l_kL@(l_kernel:l_kernels) = 
     let l_rank = length (kParams l_kernel) - 1
         l_iter = kIter l_kernel
         l_arrayInUse = unionArrayIter l_iter
-    in  breakline ++ "{" ++
+        l_guard_head = if l_cond && l_unroll > 1 
+                          then pShowUnrollGuardHead l_t l_resid l_unroll 
+                                    (kTimeShift l_kernel)
+                          else ""
+        l_guard_tail = if l_cond && l_unroll > 1 then pShowUnrollGuardTail l_t else ""
+        l_adjust_T = if l_cond && l_unroll > 1  then "" else pAdjustT l_t l_kernels
+    in  breakline ++ l_guard_head ++
+        breakline ++ "{" ++
         breakline ++ pShowRawForHeader (tail $ kParams l_kernel) ++
         breakline ++ pShowRefMacro (kParams l_kernel) l_arrayInUse ++
         breakline ++ pShowCPointerStmt l_kernel ++ breakline ++ 
         breakline ++ pShowRefUnMacro l_arrayInUse ++
         pShowObaseForTail l_rank ++
-        pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++
-        breakline ++ "}" ++ pShowSingleCPointerKernel l_t l_kernels
+        pAdjustTrape l_rank ++ breakline ++ l_adjust_T ++
+        breakline ++ "}" ++ 
+        breakline ++ l_guard_tail ++
+        pShowSingleCPointerKernel l_cond l_t (l_resid + 1) l_unroll l_kernels
 
-pShowSingleOptPointerKernel :: String -> [PKernel] -> String
-pShowSingleOptPointerKernel _ [] = ""
-pShowSingleOptPointerKernel l_t l_kL@(l_kernel:l_kernels) =
+pShowSingleOptPointerKernel :: Bool -> String -> Int -> Int -> [PKernel] -> String
+pShowSingleOptPointerKernel _ _ _ _ [] = ""
+pShowSingleOptPointerKernel l_cond l_t l_resid l_unroll l_kL@(l_kernel:l_kernels) =
     let l_rank = length (kParams l_kernel) - 1
         l_iter = kIter l_kernel
         l_arrayInUse = unionArrayIter l_iter
-    in  breakline ++ "{" ++
+        l_guard_head = if l_cond && l_unroll > 1
+                          then pShowUnrollGuardHead l_t l_resid l_unroll 
+                                    (kTimeShift l_kernel)
+                          else ""
+        l_guard_tail = if l_cond && l_unroll > 1 then pShowUnrollGuardTail l_t else ""
+        l_adjust_T = if l_cond && l_unroll > 1 then "" else pAdjustT l_t l_kernels
+    in  breakline ++ l_guard_head ++ 
+        breakline ++ "{" ++
         pShowPointers l_iter ++ breakline ++ 
         pShowOptPointerSet l_iter (kParams l_kernel)++ breakline ++ 
         pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowOptPointerStmt l_kernel ++ breakline ++ 
         pShowObaseForTail l_rank ++
-        pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++
-        breakline ++ "}" ++ pShowSingleOptPointerKernel l_t l_kernels
+        pAdjustTrape l_rank ++ breakline ++ l_adjust_T ++
+        breakline ++ "}" ++ 
+        breakline ++ l_guard_tail ++
+        pShowSingleOptPointerKernel l_cond l_t (l_resid + 1) l_unroll l_kernels
  
-pShowSinglePointerKernel :: String -> [PKernel] -> String
-pShowSinglePointerKernel _ [] = ""
-pShowSinglePointerKernel l_t l_kL@(l_kernel:l_kernels) =
+pShowSinglePointerKernel :: Bool -> String -> Int -> Int -> [PKernel] -> String
+pShowSinglePointerKernel _ _ _ _ [] = ""
+pShowSinglePointerKernel l_cond l_t l_resid l_unroll l_kL@(l_kernel:l_kernels) =
     let l_rank = length (kParams l_kernel) - 1
         l_iter = kIter l_kernel
         l_arrayInUse = unionArrayIter l_iter
-    in  breakline ++ "{" ++ 
+        l_guard_head = if l_cond && l_unroll > 1 
+                          then pShowUnrollGuardHead l_t l_resid l_unroll 
+                                    (kTimeShift l_kernel)
+                          else ""
+        l_guard_tail = if l_cond && l_unroll > 1 then pShowUnrollGuardTail l_t else ""
+        l_adjust_T = if l_cond && l_unroll > 1 then "" else pAdjustT l_t l_kernels
+    in  breakline ++ l_guard_head ++
+        breakline ++ "{" ++ 
         pShowPointers l_iter ++ breakline ++ 
         pShowPointerSet l_iter (kParams l_kernel)++ breakline ++ 
         pShowPointerForHeader l_rank True l_iter (tail $ kParams l_kernel) ++
         breakline ++ pShowPointerStmt True l_kernel ++ breakline ++ 
         pShowObaseForTail l_rank ++
-        pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++
-        breakline ++ "}" ++ pShowSinglePointerKernel l_t l_kernels
+        pAdjustTrape l_rank ++ breakline ++ l_adjust_T ++
+        breakline ++ "}" ++ 
+        breakline ++ l_guard_tail ++ 
+        pShowSinglePointerKernel l_cond l_t (l_resid + 1) l_unroll l_kernels
  
 pShowSingleMacroKernel :: Bool -> String -> [PKernel] -> String
 pShowSingleMacroKernel _ _ [] = ""
 pShowSingleMacroKernel l_boundary l_t (l_kernel:l_kernels) =
     let l_params = tail $ kParams l_kernel
         l_rank = length (kParams l_kernel) - 1
-        l_t = "t"
     in  breakline ++ pShowMetaGridHeader l_boundary l_params ++
         breakline ++ show (kStmt l_kernel) ++
         breakline ++ pShowMetaGridTail l_params ++ 
         breakline ++ pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++ 
         pShowSingleMacroKernel l_boundary l_t l_kernels 
+
+pShowUnrollGuardHead :: String -> Int -> Int -> Int -> String
+pShowUnrollGuardHead l_t l_resid l_unroll l_timeShift =
+    let l_modOp = " % "
+        l_divisor = show l_unroll
+        l_dividend = " ( " ++ l_t ++ " + " ++ show l_timeShift ++ " ) "
+    in  "if (" ++ l_dividend ++ l_modOp ++ l_divisor ++ " == " ++ show l_resid ++ ") {"
+
+pShowUnrollGuardTail :: String -> String
+pShowUnrollGuardTail l_t = "} /* end conditional unroll on " ++ l_t ++ " */"
+    
+pShowCondMacroKernel :: Bool -> String -> Int -> Int -> [PKernel] -> String
+pShowCondMacroKernel _ _ _ _ [] = ""
+pShowCondMacroKernel l_boundary l_t l_resid l_unroll (l_kernel:l_kernels) =
+    let l_params = tail $ kParams l_kernel
+        l_rank = length (kParams l_kernel) - 1
+        -- l_modOp = if l_unroll == 2 then " & " else " % "
+        l_guard_head = if l_unroll > 1 
+                          then pShowUnrollGuardHead l_t l_resid l_unroll 
+                                                    (kTimeShift l_kernel)
+                          else ""
+        l_guard_tail = if l_unroll > 1 then pShowUnrollGuardTail l_t else ""
+        l_adjust_T = if l_unroll > 1 then "" else pAdjustT l_t l_kernels
+    in  breakline ++ l_guard_head ++ 
+        breakline ++ pShowMetaGridHeader l_boundary l_params ++
+        breakline ++ show (kStmt l_kernel) ++ 
+        breakline ++ pShowMetaGridTail l_params ++ 
+        breakline ++ pAdjustTrape l_rank ++ breakline ++ 
+        breakline ++ l_adjust_T ++
+        breakline ++ l_guard_tail ++
+        pShowCondMacroKernel l_boundary l_t (l_resid + 1) l_unroll l_kernels 
 
 pAdjustT :: String -> [PKernel] -> String
 pAdjustT l_t l_kernels = if null l_kernels then "" else "++" ++ l_t ++ ";" 

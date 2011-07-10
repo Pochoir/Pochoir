@@ -98,7 +98,7 @@ class Pochoir_Array {
 		size_info stride_; // stride of each dimension
         bool allocMemFlag_;
 		int total_size_;
-        int slope_[N_RANK], toggle_, unroll_;
+        int slope_[N_RANK], toggle_;
         Pochoir_Shape<N_RANK> * shape_;
         int shape_size_;
         typedef T (*BValue_1D)(Pochoir_Array<T, 1> &, int, int);
@@ -402,7 +402,7 @@ class Pochoir_Array {
 
         /* This function will be called from Pochoir::Register_Array in pochoir.hpp
          */
-        void Register_Shape(Pochoir_Shape<N_RANK> * shape, int shape_size, int unroll) {
+        void Register_Shape(Pochoir_Shape<N_RANK> * shape, int shape_size) {
             /* currently we just get the slope_[] and toggle_ out of the shape[] */
             int l_min_time_shift=0, l_max_time_shift=0, depth=0;
             shape_ = new Pochoir_Shape<N_RANK>[shape_size];
@@ -421,7 +421,6 @@ class Pochoir_Array {
             }
             depth = l_max_time_shift - l_min_time_shift;
             toggle_ = depth + 1;
-            unroll_ = unroll;
             for (int i = 0; i < shape_size; ++i) {
                 for (int r = 1; r < N_RANK+1; ++r) {
                     slope_[N_RANK-r] = max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[r]/(l_max_time_shift - shape_[i].shift[0]))));
@@ -432,7 +431,7 @@ class Pochoir_Array {
                 }
             }
 #if DEBUG 
-            printf("toggle = %d, unroll = %d\n", toggle_, unroll_);
+            printf("toggle = %d\n", toggle_);
             for (int r = 0; r < N_RANK; ++r) {
                 printf("slope[%d] = %d, ", r, slope_[r]);
             }
@@ -466,14 +465,13 @@ class Pochoir_Array {
             }
             depth = l_max_time_shift - l_min_time_shift;
             toggle_ = depth + 1;
-            unroll_ = 1;
             for (int i = 0; i < N_SIZE; ++i) {
                 for (int r = 1; r < N_RANK+1; ++r) {
                     slope_[N_RANK-r] = max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[r]/(l_max_time_shift - shape_[i].shift[0]))));
                 }
             }
 #if DEBUG 
-            printf("toggle = %d, unroll = %d\n", toggle_, unroll_);
+            printf("toggle = %d\n", toggle_);
             for (int r = 0; r < N_RANK; ++r) {
                 printf("slope[%d] = %d, ", r, slope_[r]);
             }
@@ -517,14 +515,13 @@ class Pochoir_Array {
             }
             depth = l_max_time_shift - l_min_time_shift;
             toggle_ = depth + 1;
-            unroll_ = 2;
             for (i = 0; i < N_SIZE1+N_SIZE2; ++i) {
                 for (int r = 1; r < N_RANK+1; ++r) {
                     slope_[N_RANK-r] = max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[r]/(l_max_time_shift - shape_[i].shift[0]))));
                 }
             }
 #if DEBUG 
-            printf("toggle = %d, unroll = %d\n", toggle_, unroll_);
+            printf("toggle = %d\n", toggle_);
             for (int r = 0; r < N_RANK; ++r) {
                 printf("slope[%d] = %d, ", r, slope_[r]);
             }

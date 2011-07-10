@@ -40,7 +40,6 @@ class Pochoir {
         grid_info<N_RANK> phys_grid_;
         int time_shift_;
         int toggle_;
-        int unroll_;
         int timestep_;
         bool regArrayFlag, regLogicDomainFlag, regPhysDomainFlag, regShapeFlag;
         void checkFlag(bool flag, char const * str);
@@ -71,7 +70,7 @@ class Pochoir {
     public:
     template <typename ... KS>
     void Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks);
-    void Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, typename Pochoir_Types<N_RANK>::T_Obase_Kernel k, typename Pochoir_Types<N_RANK>::T_Obase_Kernel bk);
+    void Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, int unroll, typename Pochoir_Types<N_RANK>::T_Obase_Kernel k, typename Pochoir_Types<N_RANK>::T_Obase_Kernel cond_k, typename Pochoir_Types<N_RANK>::T_Obase_Kernel bk, typename Pochoir_Types<N_RANK>::T_Obase_Kernel cond_bk);
     // get slope(s)
     int slope(int const _idx) { return slope_[_idx]; }
     template <size_t N_SIZE>
@@ -152,7 +151,7 @@ void Pochoir<N_RANK>::Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g,
     int l_size = sizeof...(KS);
     typedef typename Pochoir_Types<N_RANK>::T_Kernel T_Kernel;
     if (pgk_ == NULL) {
-        pgk_ = new Pochoir_Guard_Kernel[ARRAY_SIZE];
+        pgk_ = new Pochoir_Guard_Kernel<N_RANK>[ARRAY_SIZE];
         sz_pgk_ = 0;
     }
     assert(sz_pgk_ < ARRAY_SIZE);
@@ -164,13 +163,12 @@ void Pochoir<N_RANK>::Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g,
     pgk_[sz_pgk_].pointer_ = 0;
     pgk_[sz_pgk_].guard_ = g;
     pgk_[sz_pgk_].kernel_ = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));
-    reg_guard(g);
     reg_kernel(0, ks ...);
     ++sz_pgk_;
 }
 
 template <int N_RANK> 
-void Pochoir<N_RANK>::Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, typename Pochoir_Types<N_RANK>::T_Obase_Kernel k, typename Pochoir_Types<N_RANK>::T_Obase_Kernel bk) {
+void Pochoir<N_RANK>::Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, int unroll, typename Pochoir_Types<N_RANK>::T_Obase_Kernel k, typename Pochoir_Types<N_RANK>::T_Obase_Kernel cond_k, typename Pochoir_Types<N_RANK>::T_Obase_Kernel bk, typename Pochoir_Types<N_RANK>::T_Obase_Kernel cond_bk) {
     typedef typename Pochoir_Types<N_RANK>::T_Obase_Kernel T_Kernel;
     if (opgk_ == NULL) {
         opgk_ = new Pochoir_Obase_Guard_Kernel<N_RANK>[ARRAY_SIZE];
@@ -182,8 +180,11 @@ void Pochoir<N_RANK>::Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Gu
         exit(1);
     }
     opgk_[sz_pgk_].guard_ = g;
+    opgk_[sz_pgk_].unroll_ = unroll;
     opgk_[sz_pgk_].kernel_ = k;
+    opgk_[sz_pgk_].cond_kernel_ = cond_k;
     opgk_[sz_pgk_].bkernel_ = bk;
+    opgk_[sz_pgk_].cond_bkernel_ = cond_bk;
     ++sz_pgk_;
 }
 
@@ -251,7 +252,7 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & arr) {
     } else {
         cmpPhysDomainFromArray(arr);
     }
-    arr.Register_Shape(shape_, shape_size_, unroll_);
+    arr.Register_Shape(shape_, shape_size_);
 #if 0
     arr.set_slope(slope_);
     arr.set_toggle(toggle_);
@@ -278,7 +279,6 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
     depth = l_max_time_shift - l_min_time_shift;
     time_shift_ = 0 - l_min_time_shift;
     toggle_ = depth + 1;
-    unroll_ = 1;
     for (int i = 0; i < N_SIZE; ++i) {
         for (int r = 1; r < N_RANK+1; ++r) {
             slope_[N_RANK-r] = max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[r]/(l_max_time_shift - shape_[i].shift[0]))));
@@ -322,7 +322,6 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape1)[N_SIZE1], 
     depth = l_max_time_shift - l_min_time_shift;
     time_shift_ = 0 - l_min_time_shift;
     toggle_ = depth + 1;
-    unroll_ = 2;
     for (i = 0; i < N_SIZE1+N_SIZE2; ++i) {
         for (int r = 1; r < N_RANK+1; ++r) {
             slope_[N_RANK-r] = max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[r]/(l_max_time_shift - shape_[i].shift[0]))));
@@ -363,7 +362,6 @@ void Pochoir<N_RANK>::Run(int timestep) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
-    algor.set_unroll(unroll_);
     timestep_ = timestep;
     /* base_case_kernel() will mimic exact the behavior of serial nested loop!
     */
@@ -381,7 +379,6 @@ void Pochoir<N_RANK>::Run_Obase(int timestep) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
-    algor.set_unroll(unroll_);
     algor.set_pgk(sz_pgk_, opgk_);
     /* this version uses 'f' to compute interior region, 
      * and 'bf' to compute boundary region
@@ -399,7 +396,6 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
-    algor.set_unroll(unroll_);
     timestep_ = timestep;
     checkFlags();
 #if BICUT
@@ -429,7 +425,6 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
-    algor.set_unroll(unroll_);
     /* this version uses 'f' to compute interior region, 
      * and 'bf' to compute boundary region
      */
