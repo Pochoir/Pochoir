@@ -294,12 +294,12 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
                 const int lt = (t1 - t0);
                 const int level = l_father->level;
                 const int l_slope = slope_[level];
-                const int delta_x = l_slope * lt;
+                const int thres = l_slope * lt;
                 const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
                 const int l_padding = 2 * l_slope;
-                const bool can_cut = cut_lb ? (lb >= 2 * delta_x && tb + l_padding > dx_recursive_[level]) : (tb >= 2 * delta_x && lb + l_padding > dx_recursive_[level]);
+                const bool can_cut = cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[level]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[level]);
                 if (!can_cut) {
                     /* if we can't cut into this dimension, just directly push 
                      * it into the circular queue 
@@ -316,9 +316,9 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
                         /* push the middle triangular minizoid (gray) into 
                          * circular queue of (curr_dep) 
                          */
-                        l_son_grid.x0[level] = l_start + mid - delta_x;
+                        l_son_grid.x0[level] = l_start + mid - thres;
                         l_son_grid.dx0[level] = l_slope;
-                        l_son_grid.x1[level] = l_start + mid + delta_x;
+                        l_son_grid.x1[level] = l_start + mid + thres;
                         l_son_grid.dx1[level] = -l_slope;
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
 
@@ -329,14 +329,14 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
                          */
                         l_son_grid.x0[level] = l_start;
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
-                        l_son_grid.x1[level] = l_start + mid - delta_x;
+                        l_son_grid.x1[level] = l_start + mid - thres;
                         l_son_grid.dx1[level] = l_slope;
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
 
                         /* push the right big trapezoid (black)
                          * into circular queue of (curr_dep + 1)
                          */
-                        l_son_grid.x0[level] = l_start + mid + delta_x;
+                        l_son_grid.x0[level] = l_start + mid + thres;
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
@@ -436,13 +436,13 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
                 const int lt = (t1 - t0);
                 const int level = l_father->level;
                 const int l_slope = slope_[level];
-                const int delta_x = l_slope * lt;
+                const int thres = l_slope * lt;
                 const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
                 const int l_padding = 2 * l_slope;
                 const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
-                const bool can_cut = cut_lb ? (l_touch_boundary ? (lb >= 2 * delta_x && tb > dx_recursive_boundary_[level]) : (lb >= 2 * delta_x && tb + l_padding > dx_recursive_[level])) : (l_touch_boundary ? (lb == phys_length_[level] ? (tb >= 2 * delta_x && lb > dx_recursive_boundary_[level]) : (tb >= 2 * delta_x && lb > dx_recursive_boundary_[level])) : (tb >= 2 * delta_x && lb + l_padding > dx_recursive_[level]));
+                const bool can_cut = cut_lb ? (l_touch_boundary ? (lb >= 2 * thres && tb > dx_recursive_boundary_[level]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[level])) : (l_touch_boundary ? (lb == phys_length_[level] ? (tb >= 2 * thres && lb > dx_recursive_boundary_[level]) : (tb >= 2 * thres && lb > dx_recursive_boundary_[level])) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[level]));
                 if (!can_cut) {
                     /* if we can't cut into this dimension, just directly push
                      * it into the circular queue
@@ -461,9 +461,9 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
                         /* push the middle gray minizoid
                          * into circular queue of (curr_dep) 
                          */
-                        l_son_grid.x0[level] = l_start + mid - delta_x;
+                        l_son_grid.x0[level] = l_start + mid - thres;
                         l_son_grid.dx0[level] = l_slope;
-                        l_son_grid.x1[level] = l_start + mid + delta_x;
+                        l_son_grid.x1[level] = l_start + mid + thres;
                         l_son_grid.dx1[level] = -l_slope;
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
 
@@ -472,12 +472,12 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
                         l_son_grid.x0[level] = l_start;
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
-                        l_son_grid.x1[level] = l_start + mid - delta_x;
+                        l_son_grid.x1[level] = l_start + mid - thres;
                         l_son_grid.dx1[level] = l_slope;
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
 
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
-                        l_son_grid.x0[level] = l_start + mid + delta_x;
+                        l_son_grid.x0[level] = l_start + mid + thres;
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
@@ -640,16 +640,16 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut(int t0, int t1, grid_info
                     } /* end if (cut_lb) */
                     else {
                         /* cut_tb */
-                        const int delta_x = (lt * l_slope);
+                        const int thres = (lt * l_slope);
                         const int mid = (lb/2);
                         grid_info<N_RANK> l_son_grid = l_father_grid;
                         const int l_start = (l_father_grid.x0[level]);
                         const int l_end = (l_father_grid.x1[level]);
 
                         /* push one sub-grid into circular queue of (curr_dep) */
-                        l_son_grid.x0[level] = l_start + mid - delta_x;
+                        l_son_grid.x0[level] = l_start + mid - thres;
                         l_son_grid.dx0[level] = l_slope;
-                        l_son_grid.x1[level] = l_start + mid + delta_x;
+                        l_son_grid.x1[level] = l_start + mid + thres;
                         l_son_grid.dx1[level] = -l_slope;
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
 
@@ -658,12 +658,12 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut(int t0, int t1, grid_info
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
                         l_son_grid.x0[level] = l_start;
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
-                        l_son_grid.x1[level] = l_start + mid - delta_x;
+                        l_son_grid.x1[level] = l_start + mid - thres;
                         l_son_grid.dx1[level] = l_slope;
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
 
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
-                        l_son_grid.x0[level] = l_start + mid + delta_x;
+                        l_son_grid.x0[level] = l_start + mid + thres;
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
@@ -813,15 +813,15 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut_p(int t0, int t1, grid_in
                         /* if cutting tb, there's no initial cut! */
                         assert(tb != phys_length_[level]);
                         const int mid = (int)lb/2;
-                        const int delta_x = (lt * l_slope);
+                        const int thres = (lt * l_slope);
                         grid_info<N_RANK> l_son_grid = l_father_grid;
                         const int l_start = (l_father_grid.x0[level]);
                         const int l_end = (l_father_grid.x1[level]);
 
                         /* push one sub-grid into circular queue of (curr_dep) */
-                        l_son_grid.x0[level] = l_start + mid - delta_x;
+                        l_son_grid.x0[level] = l_start + mid - thres;
                         l_son_grid.dx0[level] = l_slope;
-                        l_son_grid.x1[level] = l_start + mid + delta_x;
+                        l_son_grid.x1[level] = l_start + mid + thres;
                         l_son_grid.dx1[level] = -l_slope;
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
 
@@ -830,12 +830,12 @@ inline void Algorithm<N_RANK>::duo_sim_obase_space_cut_p(int t0, int t1, grid_in
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
                         l_son_grid.x0[level] = l_start;
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
-                        l_son_grid.x1[level] = l_start + mid - delta_x;
+                        l_son_grid.x1[level] = l_start + mid - thres;
                         l_son_grid.dx1[level] = l_slope;
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
 
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
-                        l_son_grid.x0[level] = l_start + mid + delta_x;
+                        l_son_grid.x0[level] = l_start + mid + thres;
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
@@ -1363,6 +1363,8 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
 /************************************************************************************
  * Adaptive region cutting algorithm for irregular stencil computation **************
  ************************************************************************************/
+#define adaptive_space_can_cut(_dim) (cut_lb ? (lb >= 2 * thres + pad_point_ && tb + l_padding > dx_recursive_[_dim]) : (tb >= 2 * thres + pad_point_ && lb + l_padding > dx_recursive_[_dim]))
+#define adaptive_space_can_cut_p(_dim) (cut_lb ? ((l_touch_boundary || cross_region) ? (lb >= 2 * thres + pad_point_ && tb + l_padding > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres + pad_point_ && tb + l_padding > dx_recursive_[_dim])) : ((l_touch_boundary || cross_region) ? (lb == phys_length_[_dim] ? (tb >= 2 * thres + pad_point_ && lb + l_padding > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres + pad_point_ && lb + l_padding > dx_recursive_boundary_[_dim])) : (tb >= 2 * thres + pad_point_ && lb + l_padding > dx_recursive_[_dim])))
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::adaptive_space_bicut(int t0, int t1, grid_info<N_RANK> const grid, int region_n)
 {
@@ -1410,12 +1412,12 @@ inline void Algorithm<N_RANK>::adaptive_space_bicut(int t0, int t1, grid_info<N_
                 const int lt = (t1 - t0);
                 const int level = l_father->level;
                 const int l_slope = slope_[level];
-                const int delta_x = l_slope * lt;
+                const int thres = l_slope * lt;
                 const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
                 const int l_padding = 2 * l_slope;
-                const bool can_cut = cut_lb ? (lb >= 2 * delta_x && tb + l_padding > dx_recursive_[level]) : (tb >= 2 * delta_x && lb + l_padding > dx_recursive_[level]);
+                const bool can_cut = adaptive_space_can_cut(level);
                 if (!can_cut) {
                     /* if we can't cut into this dimension, just directly push 
                      * it into the circular queue 
@@ -1432,9 +1434,9 @@ inline void Algorithm<N_RANK>::adaptive_space_bicut(int t0, int t1, grid_info<N_
                         /* push the middle triangular minizoid (gray) into 
                          * circular queue of (curr_dep) 
                          */
-                        l_son_grid.x0[level] = l_start + mid - delta_x;
+                        l_son_grid.x0[level] = l_start + mid - thres;
                         l_son_grid.dx0[level] = l_slope;
-                        l_son_grid.x1[level] = l_start + mid + delta_x;
+                        l_son_grid.x1[level] = l_start + mid + thres;
                         l_son_grid.dx1[level] = -l_slope;
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
 
@@ -1445,14 +1447,14 @@ inline void Algorithm<N_RANK>::adaptive_space_bicut(int t0, int t1, grid_info<N_
                          */
                         l_son_grid.x0[level] = l_start;
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
-                        l_son_grid.x1[level] = l_start + mid - delta_x;
+                        l_son_grid.x1[level] = l_start + mid - thres;
                         l_son_grid.dx1[level] = l_slope;
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
 
                         /* push the right big trapezoid (black)
                          * into circular queue of (curr_dep + 1)
                          */
-                        l_son_grid.x0[level] = l_start + mid + delta_x;
+                        l_son_grid.x0[level] = l_start + mid + thres;
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
@@ -1550,14 +1552,14 @@ inline void Algorithm<N_RANK>::adaptive_space_bicut_p(int t0, int t1, grid_info<
                 const int lt = (t1 - t0);
                 const int level = l_father->level;
                 const int l_slope = slope_[level];
-                const int delta_x = l_slope * lt;
+                const int thres = l_slope * lt;
                 const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
                 const int l_padding = 2 * l_slope;
                 const bool cross_region = (region_n < 0);
                 const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
-                const bool can_cut = cut_lb ? ((l_touch_boundary || cross_region) ? (lb >= 2 * delta_x && tb + l_padding > dx_recursive_boundary_[level]) : (lb >= 2 * delta_x && tb + l_padding > dx_recursive_[level])) : ((l_touch_boundary || cross_region) ? (lb == phys_length_[level] ? (tb >= 2 * delta_x && lb + l_padding > dx_recursive_boundary_[level]) : (tb >= 2 * delta_x && lb + l_padding > dx_recursive_boundary_[level])) : (tb >= 2 * delta_x && lb + l_padding > dx_recursive_[level]));
+                const bool can_cut = adaptive_space_can_cut_p(level);
                 if (!can_cut) {
                     /* if we can't cut into this dimension, just directly push
                      * it into the circular queue
@@ -1576,9 +1578,9 @@ inline void Algorithm<N_RANK>::adaptive_space_bicut_p(int t0, int t1, grid_info<
                         /* push the middle gray minizoid
                          * into circular queue of (curr_dep) 
                          */
-                        l_son_grid.x0[level] = l_start + mid - delta_x;
+                        l_son_grid.x0[level] = l_start + mid - thres;
                         l_son_grid.dx0[level] = l_slope;
-                        l_son_grid.x1[level] = l_start + mid + delta_x;
+                        l_son_grid.x1[level] = l_start + mid + thres;
                         l_son_grid.dx1[level] = -l_slope;
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
 
@@ -1587,12 +1589,12 @@ inline void Algorithm<N_RANK>::adaptive_space_bicut_p(int t0, int t1, grid_info<
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
                         l_son_grid.x0[level] = l_start;
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
-                        l_son_grid.x1[level] = l_start + mid - delta_x;
+                        l_son_grid.x1[level] = l_start + mid - thres;
                         l_son_grid.dx1[level] = l_slope;
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
 
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
-                        l_son_grid.x0[level] = l_start + mid + delta_x;
+                        l_son_grid.x0[level] = l_start + mid + thres;
                         l_son_grid.dx0[level] = -l_slope;
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
@@ -1683,7 +1685,7 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
         bool cut_lb = (lb < tb);
         thres = (slope_[i] * lt);
         const int l_padding = 2 * slope_[i];
-        sim_can_cut = sim_can_cut || (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[i]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[i]));
+        sim_can_cut = sim_can_cut || (adaptive_space_can_cut(i));
     }
 
     if (sim_can_cut) {
@@ -1747,7 +1749,7 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
         thres = (slope_[i] * lt);
         bool cut_lb = (lb < tb);
         const int l_padding = 2 * slope_[i];
-        sim_can_cut = sim_can_cut || (cut_lb ? ((l_touch_boundary || cross_region) ? (lb >= 2 * thres && tb + l_padding > dx_recursive_boundary_[i]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[i])) : ((l_touch_boundary || cross_region) ? (lb == phys_length_[i] ? (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[i]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[i])) : (tb > 2 * thres && lb + l_padding > dx_recursive_[i])));
+        sim_can_cut = sim_can_cut || (adaptive_space_can_cut_p(i));
         call_boundary |= l_touch_boundary;
     }
 
@@ -1795,8 +1797,10 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
 
     /* Serial Space Cut: on spatial dimension 'i' */
     if (cross_region) {
+#if DEBUG
         printf("Serial Space Cut called !!!\n");
         print_grid(stderr, t0, t1, l_father_grid);
+#endif
         /* keep cutting until every point is in a pure sub-region */
         assert(t1 - t0 == 1);
         for (int i = 0; i < N_RANK; ++i) {

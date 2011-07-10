@@ -394,6 +394,7 @@ struct Algorithm {
         const int dt_recursive_boundary_;
         int Z;
         const int r_t; /* # of pieces cut in time dimension */
+        const int pad_point_;
         int N_CORES;
         typedef int index_info[N_RANK];
         typedef struct {
@@ -429,7 +430,7 @@ struct Algorithm {
     typedef enum {TILE_NCORES, TILE_BOUNDARY, TILE_MP} algor_type;
     
     /* constructor */
-    Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1), max_unroll_(1) {
+    Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1), max_unroll_(1), pad_point_(2) {
         for (int i = 0; i < N_RANK; ++i) {
             slope_[i] = _slope[i];
             dx_recursive_boundary_[i] = 1;

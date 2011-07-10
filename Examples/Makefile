@@ -57,6 +57,15 @@ animwave_irregular : tb_animwave_irregular.cpp tb_animwave_irregular_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o animwave_irregular ${POCHOIR_DEBUG_FLAGS} tb_animwave_irregular.cpp 
 
+diamond : tb_diamond.cpp tb_diamond_pochoir.cpp 
+#   Phase-II compilation
+#	${CC} -o diamond ${OPT_FLAGS} tb_diamond.cpp
+#	${CC} -o diamond ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_diamond.cpp
+#	${ICC} -o diamond ${OPT_FLAGS} tb_diamond_pochoir.cpp
+#	${ICC} -o diamond ${ICC_DEBUG_FLAGS} tb_diamond_pochoir.cpp
+#	Phase-I compilation with debugging aid
+	${CC} -o diamond ${POCHOIR_DEBUG_FLAGS} tb_diamond.cpp 
+
 meta : tb_meta_meta.cpp
 	icpc -o meta tb_meta_meta.cpp -std=c++0x
 
