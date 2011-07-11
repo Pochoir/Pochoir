@@ -163,7 +163,7 @@ void Pochoir<N_RANK>::Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g,
         printf("Pochoir Error: Register_Kernel > %d\n", sz_pgk_);
         exit(1);
     }
-    pgk_[sz_pgk_].size_ = l_size;
+    pgk_[sz_pgk_].unroll_ = l_size;
     pgk_[sz_pgk_].pointer_ = 0;
     pgk_[sz_pgk_].guard_ = g;
     pgk_[sz_pgk_].kernel_ = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));

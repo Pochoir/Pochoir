@@ -1739,7 +1739,7 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;
     grid_info<N_RANK> l_father_grid = grid, l_son_grid;
-    int l_dt_stop;
+    int l_dt_stop, l_unroll;
     const int region_n = (*pure_region_)(t0, t1, l_father_grid);;
     const bool cross_region = (region_n < 0);
 
@@ -1763,10 +1763,14 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
         return;
     } 
 
-    if (call_boundary || cross_region)
+    if (call_boundary || cross_region) {
         l_dt_stop = dt_recursive_boundary_;
-    else
+        l_unroll = lcm_unroll_;
+    } else {
+        assert (region_n >= 0);
         l_dt_stop = dt_recursive_;
+        l_unroll = opgk_[region_n].unroll_;
+    }
 
     if (lt > l_dt_stop) {
         /* cut into time */
@@ -1775,10 +1779,7 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
          * for mixed region: we align it to lcm_unroll_;
          * for pure region: we refine it to pgk_[region_n].unroll_;
          */
-        halflt -= (halflt > lcm_unroll_ ? (halflt % lcm_unroll_) : 0);
-#if DEBUG
-        printf("halflt = %d\n", halflt);
-#endif
+        halflt -= (halflt > l_unroll ? (halflt % l_unroll) : 0);
         l_son_grid = l_father_grid;
         if (call_boundary || cross_region) {
             adaptive_bicut_p(t0, t0+halflt, l_son_grid);
@@ -1829,30 +1830,30 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
     if (call_boundary) {
         /* boundary region */
         // if (t1 - t0 < opgk_[region_n].unroll_) {
-        if (t1 - t0 < lcm_unroll_) {
+        if (t1 - t0 < l_unroll) {
 #if DEBUG
-        printf("call cond_boundary_kernel <%d>, lcm_unroll = %d!\n", region_n, lcm_unroll_);
+        printf("call cond_boundary_kernel <%d>, l_unroll = %d!\n", region_n, l_unroll);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
             opgk_[region_n].cond_bkernel_(t0, t1, l_father_grid);
         } else {
 #if DEBUG
-        printf("call boundary_kernel <%d>, lcm_unroll = %d!\n", region_n, lcm_unroll_);
+        printf("call boundary_kernel <%d>, l_unroll = %d!\n", region_n, l_unroll);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
             opgk_[region_n].bkernel_(t0, t1, l_father_grid);
         }
     } else {
         // if (t1 - t0 < opgk_[region_n].unroll_) {
-        if (t1 - t0 < lcm_unroll_) {
+        if (t1 - t0 < l_unroll) {
 #if DEBUG
-        printf("call cond_kernel_ <%d>, lcm_unroll_ = %d!\n", region_n, lcm_unroll_);
+        printf("call cond_kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
             opgk_[region_n].cond_kernel_(t0, t1, l_father_grid);
         } else {
 #if DEBUG
-        printf("call kernel_ <%d>, lcm_unroll_ = %d!\n", region_n, lcm_unroll_);
+        printf("call kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
             opgk_[region_n].kernel_(t0, t1, l_father_grid);

@@ -108,7 +108,7 @@ int main(int argc, char * argv[])
     Pochoir_Guard_End
 
     Pochoir_Kernel_1D(interior_0, t, i)
-        a(t, i) = 0.1 * a(t-1, i-1) + 1.25 * a(t-1, i) + 0.189 * a(t-1, i+1);
+        a(t, i) = 0.1 * a(t-1, i-1) + 0.15 * a(t-1, i) + 0.189 * a(t-1, i+1);
     Pochoir_Kernel_End
 
     Pochoir_Kernel_1D(interior_1, t, i)
@@ -120,7 +120,7 @@ int main(int argc, char * argv[])
     Pochoir_Kernel_End
 
     Pochoir_Kernel_1D(exterior_0, t, i)
-        a(t, i) = 0.1 * a(t-1, i-1) - 1.25 * a(t-1, i) - 0.189 * a(t-1, i+1);
+        a(t, i) = 0.1 * a(t-1, i-1) - 0.15 * a(t-1, i) - 0.189 * a(t-1, i+1);
     Pochoir_Kernel_End
 
     Pochoir_Kernel_1D(exterior_1, t, i)
@@ -149,7 +149,7 @@ int main(int argc, char * argv[])
             if (guard_interior(t, i)) {
                 /* interior sub-region */
                 if (t % 3 == 1) {
-                    b(t, i) = 0.1 * b(t-1, i-1) + 1.25 * b(t-1, i) + 0.189 * b(t-1, i+1);
+                    b(t, i) = 0.1 * b(t-1, i-1) + 0.15 * b(t-1, i) + 0.189 * b(t-1, i+1);
                 }
                 if (t % 3 == 2) {
                     b(t, i) = 0.2 * b(t-1, i-1) + 0.25 * b(t-1, i) + 0.289 * b(t-1, i+1);
@@ -160,7 +160,7 @@ int main(int argc, char * argv[])
             } else {
                 /* exterior sub-region*/
                 if (t % 2 == 1) {
-                    b(t, i) = 0.1 * b(t-1, i-1) - 1.25 * b(t-1, i) - 0.189 * b(t-1, i+1);
+                    b(t, i) = 0.1 * b(t-1, i-1) - 0.15 * b(t-1, i) - 0.189 * b(t-1, i+1);
                 }
                 if (t % 2 == 0) {
                     b(t, i) = 0.2 * b(t-1, i-1) - 0.25 * b(t-1, i) - 0.289 * b(t-1, i+1);
