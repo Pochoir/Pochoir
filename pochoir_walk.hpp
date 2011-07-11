@@ -412,7 +412,7 @@ struct Algorithm {
         int ulb_boundary[N_RANK], uub_boundary[N_RANK], lub_boundary[N_RANK];
         bool boundarySet, physGridSet, slopeSet;
         int sz_pgk_;
-        int max_unroll_;
+        int lcm_unroll_;
         Pochoir_Obase_Guard_Kernel<N_RANK> * opgk_;
 #if PURE_REGION_ALL
         Pure_Region_All<N_RANK> * pure_region_;
@@ -430,7 +430,7 @@ struct Algorithm {
     typedef enum {TILE_NCORES, TILE_BOUNDARY, TILE_MP} algor_type;
     
     /* constructor */
-    Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1), max_unroll_(1), pad_point_(2) {
+    Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1), lcm_unroll_(1), pad_point_(2) {
         for (int i = 0; i < N_RANK; ++i) {
             slope_[i] = _slope[i];
             dx_recursive_boundary_[i] = 1;
@@ -463,7 +463,7 @@ struct Algorithm {
      * - walk_ncores_boundary
      */
     inline void set_thres(int arr_type_size) {
-#if 0
+#if 1
         dt_recursive_ = 1;
         dx_recursive_[0] = 1;
         for (int i = N_RANK-1; i >= 1; --i)
@@ -499,6 +499,7 @@ struct Algorithm {
     // void set_stride(int const stride[]);
     void set_slope(int const slope[]);
     void set_pgk(int _sz_pgk, Pochoir_Obase_Guard_Kernel<N_RANK> * _opgk);
+    void set_unroll(int _lcm_unroll);
 
     inline bool touch_boundary(int i, int lt, grid_info<N_RANK> & grid);
     inline bool within_boundary(int t0, int t1, grid_info<N_RANK> & grid);
@@ -634,18 +635,18 @@ void Algorithm<N_RANK>::set_slope(int const slope[])
 
 template <int N_RANK> 
 void Algorithm<N_RANK>::set_pgk(int _sz_pgk, Pochoir_Obase_Guard_Kernel<N_RANK> * _opgk) {
-    sz_pgk_ = _sz_pgk; opgk_ = _opgk; max_unroll_ = 1;
+    sz_pgk_ = _sz_pgk; opgk_ = _opgk; 
 #if PURE_REGION_ALL
     pure_region_ = new Pure_Region_All<N_RANK>(_sz_pgk, _opgk);
 #else
     pure_region_ = new Pure_Region_Corners<N_RANK>(_sz_pgk, _opgk);
 #endif
-    for (int i = 0; i < sz_pgk_; ++i) {
-        if (opgk_[i].unroll_ > max_unroll_)
-            max_unroll_ = opgk_[i].unroll_;
-    }
-    printf("max_unroll_ = %d\n", max_unroll_);
     return;
+}
+
+template <int N_RANK>
+void Algorithm<N_RANK>::set_unroll(int _lcm_unroll) {
+    lcm_unroll_ = _lcm_unroll;
 }
 
 template <int N_RANK> template <typename F>

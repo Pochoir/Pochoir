@@ -57,6 +57,7 @@ class Pochoir {
         int num_arr_;
         int arr_type_size_;
         int sz_pgk_;
+        int lcm_unroll_;
         /* assuming that the number of distinct sub-regions is less than 10 */
         Pochoir_Guard_Kernel<N_RANK> * pgk_;
         Pochoir_Obase_Guard_Kernel<N_RANK> * opgk_;
@@ -88,6 +89,7 @@ class Pochoir {
         arr_type_size_ = 0;
         sz_pgk_ = 0;
         pgk_ = NULL; opgk_ = NULL; 
+        lcm_unroll_ = 1;
     }
 
     template <size_t N_SIZE1, size_t N_SIZE2>
@@ -105,6 +107,7 @@ class Pochoir {
         arr_type_size_ = 0;
         sz_pgk_ = 0;
         pgk_ = NULL; opgk_ = NULL; 
+        lcm_unroll_ = 1;
     }
     /* currently, we just compute the slope[] out of the shape[] */
     /* We get the grid_info out of arrayInUse */
@@ -153,6 +156,7 @@ void Pochoir<N_RANK>::Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g,
     if (pgk_ == NULL) {
         pgk_ = new Pochoir_Guard_Kernel<N_RANK>[ARRAY_SIZE];
         sz_pgk_ = 0;
+        assert(lcm_unroll_ == 1);
     }
     assert(sz_pgk_ < ARRAY_SIZE);
     if (sz_pgk_ >= ARRAY_SIZE) {
@@ -164,6 +168,7 @@ void Pochoir<N_RANK>::Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g,
     pgk_[sz_pgk_].guard_ = g;
     pgk_[sz_pgk_].kernel_ = (T_Kernel *) calloc(l_size, sizeof(T_Kernel));
     reg_kernel(0, ks ...);
+    lcm_unroll_ = lcm(lcm_unroll_, l_size);
     ++sz_pgk_;
 }
 
@@ -173,6 +178,7 @@ void Pochoir<N_RANK>::Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Gu
     if (opgk_ == NULL) {
         opgk_ = new Pochoir_Obase_Guard_Kernel<N_RANK>[ARRAY_SIZE];
         sz_pgk_ = 0;
+        assert(lcm_unroll_ == 1);
     }
     assert(sz_pgk_ < ARRAY_SIZE);
     if (sz_pgk_ >= ARRAY_SIZE) {
@@ -185,6 +191,7 @@ void Pochoir<N_RANK>::Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Gu
     opgk_[sz_pgk_].cond_kernel_ = cond_k;
     opgk_[sz_pgk_].bkernel_ = bk;
     opgk_[sz_pgk_].cond_bkernel_ = cond_bk;
+    lcm_unroll_ = lcm(lcm_unroll_, unroll);
     ++sz_pgk_;
 }
 
@@ -362,6 +369,7 @@ void Pochoir<N_RANK>::Run(int timestep) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
+    algor.set_unroll(lcm_unroll_);
     timestep_ = timestep;
     /* base_case_kernel() will mimic exact the behavior of serial nested loop!
     */
@@ -380,6 +388,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep) {
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
     algor.set_pgk(sz_pgk_, opgk_);
+    algor.set_unroll(lcm_unroll_);
     /* this version uses 'f' to compute interior region, 
      * and 'bf' to compute boundary region
      */

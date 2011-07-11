@@ -1672,7 +1672,7 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false;
-    int unroll_ = opgk_[region_n].unroll_;
+    int l_unroll = opgk_[region_n].unroll_;
     /* because currently we only check the corner points of the trapezoids,
      * so we can NOT rely on the region_n tranferred in, e.g. for leap-frog
      * style stencil, we employ different computing kernel for even / odd
@@ -1698,7 +1698,7 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
         assert(lt > dt_recursive_);
         int halflt = lt / 2;
         /* cutting halflt align to unroll_ factor */
-        halflt -= (halflt > unroll_ ? (halflt % unroll_) : 0);
+        halflt -= (halflt > l_unroll ? (halflt % l_unroll) : 0);
         grid_info<N_RANK> l_son_grid = grid;
         adaptive_bicut(t0, t0+halflt, l_son_grid, region_n);
 
@@ -1712,15 +1712,15 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
         return;
     } else {
         // base case
-        if (t1 - t0 < unroll_) {
+        if (t1 - t0 < l_unroll) {
 #if DEBUG
-        printf("call cond_kernel_ <%d>!\n", region_n);
+        printf("call cond_kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
         print_grid(stdout, t0, t1, grid);
 #endif
             opgk_[region_n].cond_kernel_(t0, t1, grid);
         } else {
 #if DEBUG
-        printf("call kernel_ <%d>!\n", region_n);
+        printf("call kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
         print_grid(stdout, t0, t1, grid);
 #endif
             opgk_[region_n].kernel_(t0, t1, grid);
@@ -1771,8 +1771,11 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
     if (lt > l_dt_stop) {
         /* cut into time */
         int halflt = lt / 2;
-        /* cut halflt align to unroll_ */
-        halflt -= (halflt > max_unroll_ ? (halflt % max_unroll_) : 0);
+        /* cut halflt align to unroll_ 
+         * for mixed region: we align it to lcm_unroll_;
+         * for pure region: we refine it to pgk_[region_n].unroll_;
+         */
+        halflt -= (halflt > lcm_unroll_ ? (halflt % lcm_unroll_) : 0);
 #if DEBUG
         printf("halflt = %d\n", halflt);
 #endif
@@ -1825,29 +1828,31 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
 
     if (call_boundary) {
         /* boundary region */
-        if (t1 - t0 < opgk_[region_n].unroll_) {
+        // if (t1 - t0 < opgk_[region_n].unroll_) {
+        if (t1 - t0 < lcm_unroll_) {
 #if DEBUG
-        printf("call cond_boundary_kernel <%d>!\n", region_n);
+        printf("call cond_boundary_kernel <%d>, lcm_unroll = %d!\n", region_n, lcm_unroll_);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
             opgk_[region_n].cond_bkernel_(t0, t1, l_father_grid);
         } else {
 #if DEBUG
-        printf("call boundary_kernel <%d>!\n", region_n);
+        printf("call boundary_kernel <%d>, lcm_unroll = %d!\n", region_n, lcm_unroll_);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
             opgk_[region_n].bkernel_(t0, t1, l_father_grid);
         }
     } else {
-        if (t1 - t0 < opgk_[region_n].unroll_) {
+        // if (t1 - t0 < opgk_[region_n].unroll_) {
+        if (t1 - t0 < lcm_unroll_) {
 #if DEBUG
-        printf("call cond_kernel_ <%d>!\n", region_n);
+        printf("call cond_kernel_ <%d>, lcm_unroll_ = %d!\n", region_n, lcm_unroll_);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
             opgk_[region_n].cond_kernel_(t0, t1, l_father_grid);
         } else {
 #if DEBUG
-        printf("call kernel_ <%d>!\n", region_n);
+        printf("call kernel_ <%d>, lcm_unroll_ = %d!\n", region_n, lcm_unroll_);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
             opgk_[region_n].kernel_(t0, t1, l_father_grid);

@@ -41,7 +41,7 @@
 void check_result(int t, int i, double a, double b)
 {
     if (abs(a - b) < TOLERANCE) {
-//      printf("a(%d, %d) == b(%d, %d) == %f : passed!\n", t, i, t, i, a);
+        printf("a(%d, %d) == b(%d, %d) == %f : passed!\n", t, i, t, i, a);
     } else {
         printf("a(%d, %d) = %f, b(%d, %d) = %f : FAILED!\n", t, i, a, t, i, b);
     }
@@ -108,33 +108,31 @@ int main(int argc, char * argv[])
     Pochoir_Guard_End
 
     Pochoir_Kernel_1D(interior_0, t, i)
-        a(t, i) = 0.1 * a(t-1, i-1) + 0.125 * a(t-1, i) + 0.189 * a(t-1, i+1);
+        a(t, i) = 0.1 * a(t-1, i-1) + 1.25 * a(t-1, i) + 0.189 * a(t-1, i+1);
     Pochoir_Kernel_End
 
     Pochoir_Kernel_1D(interior_1, t, i)
-        a(t, i) = 0.02 * a(t-1, i-1) + 0.025 * a(t-1, i) + 0.0289 * a(t-1, i+1);
+        a(t, i) = 0.2 * a(t-1, i-1) + 0.25 * a(t-1, i) + 0.289 * a(t-1, i+1);
     Pochoir_Kernel_End
 
-#if 0
     Pochoir_Kernel_1D(interior_2, t, i)
-        a(t, i) = 0.03 * a(t-1, i-1) + 0.035 * a(t-1, i) + 0.0389 * a(t-1, i+1);
+        a(t, i) = 0.3 * a(t-1, i-1) + 0.35 * a(t-1, i) + 0.389 * a(t-1, i+1);
     Pochoir_Kernel_End
-#endif
 
     Pochoir_Kernel_1D(exterior_0, t, i)
-        a(t, i) = 0.1 * a(t-1, i-1) - 0.125 * a(t-1, i) - 0.189 * a(t-1, i+1);
+        a(t, i) = 0.1 * a(t-1, i-1) - 1.25 * a(t-1, i) - 0.189 * a(t-1, i+1);
     Pochoir_Kernel_End
 
     Pochoir_Kernel_1D(exterior_1, t, i)
-        a(t, i) = 0.02 * a(t-1, i-1) - 0.025 * a(t-1, i) - 0.0289 * a(t-1, i+1);
+        a(t, i) = 0.2 * a(t-1, i-1) - 0.25 * a(t-1, i) - 0.289 * a(t-1, i+1);
     Pochoir_Kernel_End
 
-    leap_frog.Register_Kernel(guard_interior, interior_0, interior_1);
+    leap_frog.Register_Kernel(guard_interior, interior_0, interior_1, interior_2);
     leap_frog.Register_Kernel(guard_exterior, exterior_0, exterior_1);
 
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        leap_frog.Run(2*T);
+        leap_frog.Run(6*T);
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
@@ -146,23 +144,26 @@ int main(int argc, char * argv[])
     /* cilk_for */
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        for (int t = 1; t < 2 * T + 1; ++t) {
+        for (int t = 1; t < 6 * T + 1; ++t) {
             cilk_for (int i = 0; i < N; ++i) {
             if (guard_interior(t, i)) {
                 /* interior sub-region */
-                if (t % 2 == 1) {
-                    b(t, i) = 0.1 * b(t-1, i-1) + 0.125 * b(t-1, i) + 0.189 * b(t-1, i+1);
+                if (t % 3 == 1) {
+                    b(t, i) = 0.1 * b(t-1, i-1) + 1.25 * b(t-1, i) + 0.189 * b(t-1, i+1);
                 }
-                if (t % 2 == 0) {
-                    b(t, i) = 0.02 * b(t-1, i-1) + 0.025 * b(t-1, i) + 0.0289 * b(t-1, i+1);
+                if (t % 3 == 2) {
+                    b(t, i) = 0.2 * b(t-1, i-1) + 0.25 * b(t-1, i) + 0.289 * b(t-1, i+1);
+                }
+                if (t % 3 == 0) {
+                    b(t, i) = 0.3 * b(t-1, i-1) + 0.35 * b(t-1, i) + 0.389 * b(t-1, i+1);
                 }
             } else {
                 /* exterior sub-region*/
                 if (t % 2 == 1) {
-                    b(t, i) = 0.1 * b(t-1, i-1) - 0.125 * b(t-1, i) - 0.189 * b(t-1, i+1);
+                    b(t, i) = 0.1 * b(t-1, i-1) - 1.25 * b(t-1, i) - 0.189 * b(t-1, i+1);
                 }
                 if (t % 2 == 0) {
-                    b(t, i) = 0.02 * b(t-1, i-1) - 0.025 * b(t-1, i) - 0.0289 * b(t-1, i+1);
+                    b(t, i) = 0.2 * b(t-1, i-1) - 0.25 * b(t-1, i) - 0.289 * b(t-1, i+1);
                 }
             }
             }
@@ -175,7 +176,7 @@ int main(int argc, char * argv[])
 //    std::cout << "Parallel Loop time : " << min_tdiff << " ms" << std::endl;
 
     /* check results! */
-    t = 2*T;
+    t = 6*T;
     for (int i = 0; i < N; ++i) {
         check_result(t, i, a(t, i), b(t, i));
     } 

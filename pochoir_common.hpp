@@ -43,6 +43,19 @@ static inline int StrToInt(const char * s)
   return atoi(s);
 }
 
+/* greatest common divisor */
+static inline int gcd(int a, int b) {
+    if (b == 0)
+        return a;
+    else
+        return gcd(b, a % b);
+}
+
+/* lowest common multiple of 'a' and 'b' */
+static inline int lcm(int a, int b) {
+    return ((a * b) / gcd(a, b));
+}
+
 #define ARRAY_LENGTH(x) (int)(sizeof(x)/sizeof(x[0]))
 
 /* due to the fact that bit trick is much slower than conditional instruction,
@@ -52,6 +65,7 @@ static inline int StrToInt(const char * s)
 #define INF 100000000
 #define SUPPORT_RANK 9
 #define DEBUG_FACILITY 1
+#define DEBUG 1
 #define PURE_REGION_ALL 0
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
