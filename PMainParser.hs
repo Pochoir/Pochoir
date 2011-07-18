@@ -52,11 +52,7 @@ pToken =
         try pParseCPPComment
     <|> try pParseMacro
     <|> try pParsePochoirArray
-    <|> try pParsePochoirArrayAsParam
     <|> try pParsePochoirStencil
-    <|> try pParsePochoirStencilWithShape
-    <|> try pParsePochoirStencilAsParam
-    <|> try pParsePochoirStencilWithShapeAsParam
     <|> try pParsePochoirShapeInfo
     <|> try pParsePochoirDomain
     <|> try pParsePochoirAutoKernel
@@ -84,17 +80,6 @@ pParsePochoirArray =
                ", " ++ show l_rank ++ "> " ++ 
                pShowDynamicDecl l_arrayDecl pShowArrayDim ++ l_delim)
 
-pParsePochoirArrayAsParam :: GenParser Char ParserState String
-pParsePochoirArrayAsParam =
-    do reserved "Pochoir_Array"
-       (l_type, l_rank) <- angles $ try pDeclStatic
-       l_arrayDecl <- pDeclDynamic
-       l_delim <- pDelim 
-       updateState $ updatePArray $ transPArray (l_type, l_rank) [l_arrayDecl]
-       return (breakline ++ "/* Known*/ Pochoir_Array <" ++ show l_type ++ 
-               ", " ++ show l_rank ++ "> " ++ 
-               pShowDynamicDecl [l_arrayDecl] pShowArrayDim ++ l_delim)
-
 pParsePochoirStencil :: GenParser Char ParserState String
 pParsePochoirStencil = 
     do reserved "Pochoir"
@@ -103,63 +88,10 @@ pParsePochoirStencil =
        l_delim <- pDelim
        l_state <- getState
        let l_stencils = map pSecond l_rawStencils
-       let l_shapes = concatMap pThird l_rawStencils
-       let l_pShapes = map (getPShape l_state) l_shapes
-       let l_toggles = map shapeToggle l_pShapes
-       updateState $ updatePStencil $ transPStencil l_rank l_stencils l_pShapes
+       updateState $ updatePStencil $ transPStencil l_rank l_stencils
        return (breakline ++ "/* Known */ Pochoir <" ++ show l_rank ++ 
-               "> " ++ pShowDynamicDecl l_rawStencils (intercalate ", ") ++ l_delim ++ 
-               "/* toggles = " ++ show l_toggles ++ "*/" ++ breakline)
-
-pParsePochoirStencilWithShape :: GenParser Char ParserState String
-pParsePochoirStencilWithShape = 
-    do reserved "Pochoir"
-       l_rank <- angles exprDeclDim
-       l_rawStencils <- commaSep1 pDeclPochoirWithShape
-       l_delim <- pDelim
-       l_state <- getState
-       let l_stencils = map pSecond l_rawStencils
-       let l_pShapes = map pThird l_rawStencils 
-       let l_toggles = map shapeToggle l_pShapes
-       let l_timeShift = minimum $ map shapeTimeShift l_pShapes
-       updateState $ updatePStencil $ transPStencil l_rank l_stencils l_pShapes
-       return (breakline ++ "/* Known */ Pochoir <" ++ show l_rank ++ 
-               "> " ++ pShowDynamicDecl l_rawStencils (pShowShapes . shape) ++ 
-               l_delim ++ "/* toggles = " ++ show l_toggles ++ "*/" ++ breakline)
-
-pParsePochoirStencilAsParam :: GenParser Char ParserState String
-pParsePochoirStencilAsParam = 
-    do reserved "Pochoir"
-       l_rank <- angles exprDeclDim
-       l_rawStencil <- pDeclPochoir
-       l_delim <- pDelim
-       l_state <- getState
-       let l_stencil = pSecond l_rawStencil
-       let l_shapes = pThird l_rawStencil
-       let l_pShapes = map (getPShape l_state) l_shapes
-       let l_toggles = map shapeToggle l_pShapes
-       let l_timeShift = minimum $ map shapeTimeShift l_pShapes
-       updateState $ updatePStencil $ transPStencil l_rank [l_stencil] l_pShapes
-       return (breakline ++ "/* Known */ Pochoir <" ++ show l_rank ++ 
-               "> " ++ pShowDynamicDecl [l_rawStencil] (intercalate ", ") ++ 
-               l_delim ++ "/* toggles = " ++ show l_toggles ++ "*/" ++ breakline)
-
-pParsePochoirStencilWithShapeAsParam :: GenParser Char ParserState String
-pParsePochoirStencilWithShapeAsParam = 
-    do reserved "Pochoir"
-       l_rank <- angles exprDeclDim
-       l_rawStencil <- pDeclPochoirWithShape
-       l_delim <- pDelim
-       l_state <- getState
-       let l_stencil = pSecond l_rawStencil
-       let l_pShape = pThird l_rawStencil 
-       let l_toggle = shapeToggle l_pShape
-       let l_timeShift = shapeTimeShift l_pShape
-       updateState $ updatePStencil $ transPStencil l_rank [l_stencil] [l_pShape]
-       return (breakline ++ "/* Known */ Pochoir <" ++ show l_rank ++ 
-               "> " ++ pShowDynamicDecl [l_rawStencil] (pShowShapes . shape) ++ 
-               l_delim ++ "/* toggles = " ++ (show $ shapeToggle l_pShape) ++ "*/" ++
-               breakline)
+               "> " ++ pShowDynamicDecl l_rawStencils (intercalate ", ") ++ 
+               l_delim ++ breakline)
 
 pParsePochoirShapeInfo :: GenParser Char ParserState String
 pParsePochoirShapeInfo = 
@@ -258,14 +190,14 @@ transPArray (l_type, l_rank) (p:ps) =
         l_dims = pThird p
     in  (l_name, PArray {aName = l_name, aType = l_type, aRank = l_rank, aDims = l_dims, aMaxShift = 0, aToggle = 0, aRegBound = False}) : transPArray (l_type, l_rank) ps
 
-transPStencil :: Int -> [PName] -> [PShape] -> [(PName, PStencil)]
-transPStencil l_rank [] _ = []
+transPStencil :: Int -> [PName] -> [(PName, PStencil)]
+transPStencil l_rank [] = []
 -- sToggle by default is two (2)
-transPStencil l_rank (p:ps) (a:as) = 
+transPStencil l_rank (p:ps) = 
     (p, PStencil 
-        {sName = p, sRank = l_rank, sToggle = shapeToggle a, sUnroll = 1, 
-         sTimeShift = shapeTimeShift a, sArrayInUse = [], sShape = a, 
-         sRegBound = False}) : transPStencil l_rank ps as
+        {sName = p, sRank = l_rank, sToggle = 0, sUnroll = 1, 
+         sTimeShift = 0, sArrayInUse = [], sShape = emptyShape, 
+         sRegBound = False}) : transPStencil l_rank ps
 
 transURange :: [([PName], PName, [DimExpr])] -> [(PName, PRange)]
 transURange [] = []

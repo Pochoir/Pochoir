@@ -65,7 +65,7 @@ static inline int lcm(int a, int b) {
 #define INF 100000000
 #define SUPPORT_RANK 9
 #define DEBUG_FACILITY 1
-#define DEBUG 1
+// #define DEBUG 0
 #define PURE_REGION_ALL 1
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -197,31 +197,6 @@ static inline void klein_region(grid_info<2> & grid, grid_info<2> const & initia
 /* these lambda functions are for computing internal/boundary region,
  * the original 'f'/'bf'
  */
-#define Pochoir_Kernel_1D(name, t, i) \
-    auto name = [&](int t, int i) { 
-
-#define Pochoir_Kernel_2D(name, t, i, j) \
-    auto name = [&](int t, int i, int j) {
-
-#define Pochoir_Kernel_3D(name, t, i, j, k) \
-    auto name = [&](int t, int i, int j, int k) {
-
-#define Pochoir_Kernel_4D(name, t, i, j, k, l) \
-    auto name = [&](int t, int i, int j, int k, int l) {
-
-#define Pochoir_Kernel_5D(name, t, i, j, k, l, m) \
-    auto name = [&](int t, int i, int j, int k, int l, int m) {
-
-#define Pochoir_Kernel_6D(name, t, i, j, k, l, m, n) \
-    auto name = [&](int t, int i, int j, int k, int l, int m, int n) {
-
-#define Pochoir_Kernel_7D(name, t, i, j, k, l, m, n, o) \
-    auto name = [&](int t, int i, int j, int k, int l, int m, int n, int o) {
-
-#define Pochoir_Kernel_8D(name, t, i, j, k, l, m, n, o, p) \
-    auto name = [&](int t, int i, int j, int k, int l, int m, int n, int o, int p) {
-
-#define Pochoir_Kernel_End }; 
 
 #define Pochoir_Guard_3D(name, t, i, j, k) \
     auto name = [&](int t, int i, int j, int k) -> bool {

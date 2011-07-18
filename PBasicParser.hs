@@ -426,10 +426,9 @@ pDeclDynamic = do (l_qualifiers, l_name) <- try pVarDecl
                   l_dims <- option [] (parens $ commaSep1 exprStmtDim)
                   return (l_qualifiers, l_name, l_dims)
 
-pDeclPochoir :: GenParser Char ParserState ([PName], PName, [PName])
+pDeclPochoir :: GenParser Char ParserState ([PName], PName, String)
 pDeclPochoir = do (l_qualifiers, l_name) <- try pVarDecl
-                  l_shapes <- option [""] (parens $ commaSep1 pIdentifier)
-                  return (l_qualifiers, l_name, l_shapes)
+                  return (l_qualifiers, l_name, "")
 
 pDeclPochoirWithShape :: GenParser Char ParserState ([PName], PName, PShape)
 pDeclPochoirWithShape = 

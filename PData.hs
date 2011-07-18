@@ -101,6 +101,8 @@ type Iter = (String, PArray, [DimExpr], PRWMode)
 
 data PKernel = PKernel {
     kName :: PName,
+    kFuncName :: PName,
+    kShape :: PShape,
     kTimeShift :: Int,
     kParams :: [PName],
     kStmt :: [Stmt],
@@ -115,7 +117,7 @@ data PGuard = PGuard {
 } deriving Show
 
 emptyKernel :: PKernel
-emptyKernel = PKernel {kName = "", kTimeShift = 0, kParams = [], kStmt = [], kIter = []}
+emptyKernel = PKernel {kName = "", kFuncName = "", kShape = emptyShape, kTimeShift = 0, kParams = [], kStmt = [], kIter = []}
 
 emptyGuard :: PGuard
 emptyGuard = PGuard {gName = "", gParams = [], gStmt = [], gIter = []}
