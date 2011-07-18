@@ -86,9 +86,6 @@ data PShape = PShape {
     shape :: [[Int]]
 } deriving Show
 
-emptyShape :: PShape
-emptyShape = PShape {shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = []}
-
 data PRange = PRange {
     rName :: PName,
     rFirst :: DimExpr,
@@ -99,14 +96,18 @@ data PRange = PRange {
 -- (NameOfIter, arrayInUse, correspondingDimExpr, RWMode)
 type Iter = (String, PArray, [DimExpr], PRWMode)
 
+data PKernelFunc = PKernelFunc {
+    kfName :: PName,
+    kfParams :: [PName],
+    kfStmt :: [Stmt],
+    kfIter :: [Iter]
+} deriving Show
+
 data PKernel = PKernel {
     kName :: PName,
-    kFuncName :: PName,
-    kShape :: PShape,
-    kTimeShift :: Int,
-    kParams :: [PName],
-    kStmt :: [Stmt],
-    kIter :: [Iter]
+    kRank :: Int,
+    kFunc :: PKernelFunc,
+    kShape :: PShape
 } deriving Show
 
 data PGuard = PGuard {
@@ -116,11 +117,17 @@ data PGuard = PGuard {
     gIter :: [Iter]
 } deriving Show
 
+emptyShape :: PShape
+emptyShape = PShape {shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = []}
+
+emptyKernelFunc :: PKernelFunc
+emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfIter = [] }
+
 emptyKernel :: PKernel
-emptyKernel = PKernel {kName = "", kFuncName = "", kShape = emptyShape, kTimeShift = 0, kParams = [], kStmt = [], kIter = []}
+emptyKernel = PKernel { kName = "", kRank = 0, kFunc = emptyKernelFunc, kShape = emptyShape }
 
 emptyGuard :: PGuard
-emptyGuard = PGuard {gName = "", gParams = [], gStmt = [], gIter = []}
+emptyGuard = PGuard { gName = "", gParams = [], gStmt = [], gIter = [] }
 
 data ParserState = ParserState {
     pMode  :: PMode,
@@ -130,6 +137,7 @@ data ParserState = ParserState {
     pStencil :: Map.Map PName PStencil,
     pRange :: Map.Map PName PRange,
     pShape :: Map.Map PName PShape,
+    pKernelFunc :: Map.Map PName PKernelFunc,
     pKernel :: Map.Map PName PKernel,
     pGuard :: Map.Map PName PGuard
 } deriving Show

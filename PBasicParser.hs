@@ -53,7 +53,7 @@ lexer = Token.makeTokenParser (javaStyle
                                   "<<=", ">>=", "^=", "++", "--", "?", ":", "&", "|", "~",
                                   ">>", "<<", "%", "^", "->"],
                reservedNames = ["Pochoir_Array", "Pochoir", "Pochoir_Domain", 
-                                "Pochoir", 
+                                "Pochoir", "Pochoir_Kernel", 
                                 "Pochoir_kernel_1D", "Pochoir_kernel_2D", 
                                 "Pochoir_kernel_3D", "Pochoir_kernel_end",
                                 "auto", "{", "};", "const", "volatile", "register", 
@@ -109,6 +109,13 @@ pMember l_memFunc =
     do l_start <- char '.'
        l_body <- string l_memFunc
        return (l_memFunc)
+
+pPochoirKernelParams :: GenParser Char ParserState (PName, PName)
+pPochoirKernelParams = 
+    do l_shape = identifier
+       comma
+       l_kernelFunc = identifier
+       return (l_shape, l_kernelFunc)
 
 ppArray :: String -> ParserState -> GenParser Char ParserState String
 ppArray l_id l_state =

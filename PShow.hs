@@ -189,8 +189,8 @@ pShowArrayGaps l_rank l_array = breakline ++ "int " ++
         intercalate ", " (map (getArrayGaps (l_rank-1)) l_array) ++ ";"
 
 -- AutoKernel is a de-sugared kernel
-pShowAutoKernel :: String -> PKernel -> String
-pShowAutoKernel l_name l_kernel = 
+pShowAutoKernelFunc :: String -> PKernelFunc -> String
+pShowAutoKernelFunc l_name l_kernelFunc = 
     let l_params = zipWith (++) (repeat "int ") (kParams l_kernel)
     in  "/* known Kernel ! */ auto " ++ l_name ++ " = [&] (" ++ 
         pShowKernelParams l_params ++ ") {" ++ breakline ++
@@ -212,7 +212,7 @@ pShowMacroKernel l_macro l_kernel =
         l_sArrayInUse = unionArrayIter l_iters
         shadowArrayInUse = pDefMacroArrayInUse l_macro l_sArrayInUse (kParams l_kernel)
         unshadowArrayInUse = pUndefMacroArrayInUse l_sArrayInUse (kParams l_kernel)
-    in  shadowArrayInUse ++ pShowAutoKernel l_name l_kernel ++ unshadowArrayInUse
+    in  shadowArrayInUse ++ pShowAutoKernelFunc l_name (kFunc l_kernel) ++ unshadowArrayInUse
 
 pShowUnrolledMacroKernels :: Bool -> PName -> [PKernel] -> String
 pShowUnrolledMacroKernels l_cond l_name l_kL@(l_kernel:l_kernels)  = 
