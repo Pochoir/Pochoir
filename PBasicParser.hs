@@ -112,9 +112,9 @@ pMember l_memFunc =
 
 pPochoirKernelParams :: GenParser Char ParserState (PName, PName)
 pPochoirKernelParams = 
-    do l_shape = identifier
+    do l_shape <- identifier
        comma
-       l_kernelFunc = identifier
+       l_kernelFunc <- identifier
        return (l_shape, l_kernelFunc)
 
 ppArray :: String -> ParserState -> GenParser Char ParserState String
@@ -148,17 +148,6 @@ ppStencil l_id l_state =
                    case Map.lookup l_array $ pArray l_state of
                        Nothing -> registerUndefinedArray l_id l_array l_stencil 
                        Just l_pArray -> registerArray l_id l_array l_pArray l_stencil
-    <|> do try $ pMember "Register_Boundary"
-           l_boundaryParams <- parens $ commaSep1 identifier
-           semi
-           let l_array = head l_boundaryParams
-           let l_bdry = head $ tail l_boundaryParams 
-           case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Register_Boundary(" ++ intercalate ", " l_boundaryParams ++ "); /* UNKNOWN Register_Boundary with " ++ l_id ++ "*/" ++ breakline)
-               Just l_stencil -> 
-                   case Map.lookup l_array $ pArray l_state of
-                       Nothing -> registerUndefinedBoundaryFn l_id l_boundaryParams l_stencil
-                       Just l_pArray -> registerBoundaryFn l_id l_boundaryParams l_pArray
     -- Ad hoc implementation of Run_Unroll
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
@@ -167,9 +156,14 @@ ppStencil l_id l_state =
                Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ 
                                   "); /* Run with UNKNOWN Stencil " ++ l_id ++ 
                                   " */" ++ breakline)
-               Just l_stencil -> return (l_id ++ ".Run_Obase(" ++ show l_tstep ++ 
-                                  "); /* Run with Stencil " ++ l_id ++ 
-                                  " */" ++ breakline)
+               Just l_stencil -> 
+                            do let l_arrayInUse = sArrayInUse l_stencil
+                               let l_regBound = foldr (||) False $ map (getArrayRegBound l_state) l_arrayInUse 
+                               updateState $ updateStencilBoundary l_id l_regBound 
+                               return (breakline ++ l_id ++ ".Run_Obase(" ++ 
+                                       show l_tstep ++ 
+                                       "); /* Run with Stencil " ++ l_id ++ 
+                                       " */" ++ breakline)
     -- convert "Register_Kernel(g, k, ... ks) " to "Register_Obase_Kernel(g, k, bk)"
     <|> do try $ pMember "Register_Kernel"
            (l_guard, l_kernels) <- parens pStencilRegisterKernelParams
@@ -181,12 +175,10 @@ ppStencil l_id l_state =
                                   l_id ++ "*/" ++ breakline)
                Just l_stencil ->
                    do let l_arrayInUse = sArrayInUse l_stencil
-                      let l_regBound = foldr (||) False $ map (getArrayRegBound l_state) l_arrayInUse 
                       let l_unroll = length l_kernels
-                      updateState $ updateStencilBoundary l_id l_regBound 
                       updateState $ updateStencilUnroll l_id l_unroll
                       l_newState <- getState
-                      let l_newStencil = getPStencil l_id l_newState l_stencil
+                      let l_revStencil = getPStencil l_id l_newState l_stencil
                       let l_pKernels = map (getValidKernel l_newState) l_kernels
                       let l_pGuard = getValidGuard l_newState l_guard
                       let l_validKernel = foldr (&&) True $ map fst l_pKernels
@@ -196,51 +188,30 @@ ppStencil l_id l_state =
                                       l_guard ++ ", " ++ intercalate ", " l_kernels ++ 
                                       ");" ++ "/* Not all kernels are valid */ " ++ 
                                       breakline)
-                         else let l_mode = pMode l_newState
-                                  l_revKernels = map (transKernel l_newStencil l_mode) (map snd l_pKernels) 
-                              in  case l_mode of
-                                    PDefault -> 
-                                        let l_showKernel = 
-                                              if sRank l_newStencil < 3
-                                                 then pShowSingleOptPointerKernel
-                                                 else pShowSinglePointerKernel
-                                        in  pSplitKernel
-                                             ("Default_", l_id, l_guard, l_revKernels, 
-                                               l_newStencil) 
-                                             l_showKernel
-                                    PMacroShadow -> 
-                                        pSplitScope 
-                                          ("macro_", l_id, l_guard, l_revKernels, 
-                                            l_newStencil) 
-                                          pShowUnrolledMacroKernels
-                                    PPointer -> 
-                                         pSplitKernel
-                                          ("Pointer_", l_id, l_guard, l_revKernels, 
-                                            l_newStencil) 
-                                          pShowSinglePointerKernel
-                                    POptPointer -> 
-                                         pSplitKernel 
-                                          ("Opt_Pointer_", l_id, l_guard, l_revKernels,
-                                            l_newStencil) 
-                                          pShowSingleOptPointerKernel
-                                    PCaching -> 
-                                         pSplitScope 
-                                          ("Caching_", l_id, l_guard, l_revKernels, 
-                                            l_newStencil) 
-                                          (pShowUnrolledCachingKernels l_newStencil)
-                                    PCPointer -> 
-                                         pSplitKernel 
-                                          ("C_Pointer_", l_id, l_guard, l_revKernels, 
-                                            l_newStencil) 
-                                          pShowSingleCPointerKernel
+                         else do  let l_sRegKernel = sRegKernel l_stencil
+                                  let l_rev_sRegKernel = l_sRegKernel ++ [(snd l_pGuard, map snd l_pKernels)]
+                                  updateState $ updateStencilRegKernel l_id l_rev_sRegKernel
+                                  let l_pShapes = map kShape (map snd l_pKernels)
+                                  let l_merged_pShape = foldr mergePShapes (sShape l_revStencil) l_pShapes
+                                  updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
+                                  updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
+                                  updateState $ updateStencilShape l_id l_merged_pShape
+                                  -- We don't return anything in Register_Kernel 
+                                  -- until 'Run', because we know the Register_Array
+                                  -- only after Register_Kernel
+                                  return (l_id ++ ".Register_Kernel(" ++
+                                          l_guard ++ ", " ++ 
+                                          intercalate ", " l_kernels ++
+                                          ");" ++ 
+                                          "/* All kernels are recognized! */" ++
+                                          breakline)
     <|> do return (l_id)
 
 -- get all iterators from Kernel
-transKernel :: PStencil -> PMode -> PKernel -> PKernel
-transKernel l_stencil l_mode l_kernel =
-       let l_exprStmts = kStmt l_kernel
-           l_kernelParams = kParams l_kernel
-           l_time_shift = sTimeShift l_stencil
+transKernel :: PStencil -> PMode -> PKernelFunc -> PKernelFunc
+transKernel l_stencil l_mode l_kernelFunc =
+       let l_exprStmts = kfStmt l_kernelFunc
+           l_kernelFuncParams = kfParams l_kernelFunc
            l_iters =
                    case l_mode of 
                        PMacroShadow -> getFromStmts getIter PRead 
@@ -249,29 +220,70 @@ transKernel l_stencil l_mode l_kernel =
                        PCPointer -> getFromStmts getIter PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_exprStmts
-                       PPointer -> getFromStmts (getPointer $ l_kernelParams) PRead 
+                       PPointer -> getFromStmts (getPointer $ l_kernelFuncParams) PRead 
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_exprStmts
                        POptPointer -> getFromStmts getIter PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_exprStmts 
-                       PCaching -> getFromStmts (getPointer $ l_kernelParams) PRead
+                       PCaching -> getFromStmts (getPointer $ l_kernelFuncParams) PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_exprStmts 
                        PDefault -> let l_get = 
                                             if sRank l_stencil < 3 
                                                 then getIter
-                                                else (getPointer $ l_kernelParams)
+                                                else (getPointer $ l_kernelFuncParams)
                                    in  getFromStmts l_get PRead
                                          (transArrayMap $ sArrayInUse l_stencil) 
                                          l_exprStmts 
            l_revIters = transIterN 0 l_iters
-       in  l_kernel { kIter = l_revIters, kTimeShift = l_time_shift }
- 
+       in  l_kernelFunc { kfIter = l_revIters }
+
+pShowRegKernel :: PMode -> PStencil -> (PGuard, [PKernel]) -> String
+pShowRegKernel l_mode l_stencil (l_guard, l_kernels) =
+    let l_revKernelFunc = map (transKernel l_stencil l_mode) (map kFunc l_kernels) 
+        l_id = sName l_stencil
+        l_guardName = gName l_guard
+    in  case l_mode of
+             PDefault -> 
+                 let l_showKernel = 
+                       if sRank l_stencil < 3
+                          then pShowSingleOptPointerKernel
+                          else pShowSinglePointerKernel
+                 in  pSplitKernel
+                      ("Default_", l_id, l_guardName, l_revKernelFunc, 
+                        l_stencil) 
+                      l_showKernel
+             PMacroShadow -> 
+                 pSplitScope 
+                   ("macro_", l_id, l_guardName, l_revKernelFunc, 
+                     l_stencil) 
+                   pShowUnrolledMacroKernels
+             PPointer -> 
+                  pSplitKernel
+                   ("Pointer_", l_id, l_guardName, l_revKernelFunc, 
+                     l_stencil) 
+                   pShowSinglePointerKernel
+             POptPointer -> 
+                  pSplitKernel 
+                   ("Opt_Pointer_", l_id, l_guardName, l_revKernelFunc,
+                     l_stencil) 
+                   pShowSingleOptPointerKernel
+             PCaching -> 
+                  pSplitScope 
+                   ("Caching_", l_id, l_guardName, l_revKernelFunc, 
+                     l_stencil) 
+                   (pShowUnrolledCachingKernels l_stencil)
+             PCPointer -> 
+                  pSplitKernel 
+                   ("C_Pointer_", l_id, l_guardName, l_revKernelFunc, 
+                     l_stencil) 
+                   pShowSingleCPointerKernel
+
 -- For modes : -split-pointer -split-opt-pointer -split-c-pointer
-pSplitKernel :: (String, String, String, [PKernel], PStencil) -> (Bool -> String -> Int -> Int -> [PKernel] -> String) -> GenParser Char ParserState String
+pSplitKernel :: (String, String, String, [PKernelFunc], PStencil) -> (Bool -> String -> Int -> Int -> [PKernelFunc] -> String) -> String
 pSplitKernel (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showSingleKernel = 
-    let oldKernelName = intercalate "_" $ map kName l_kernels
+    let oldKernelName = intercalate "_" $ map kfName l_kernels
         bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
         obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
         cond_bdryKernelName = l_tag ++ "cond_boundary_" ++ oldKernelName
@@ -290,23 +302,25 @@ pSplitKernel (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showSingleKernel =
                                  -}
         cond_bdryKernel = pShowUnrolledBoundaryKernels True 
                                     cond_bdryKernelName l_stencil l_kernels
-        obaseKernel = pShowUnrolledKernels False obaseKernelName l_kernels l_showSingleKernel
-        cond_obaseKernel = pShowUnrolledKernels True cond_obaseKernelName l_kernels l_showSingleKernel
+        obaseKernel = pShowUnrolledKernels False obaseKernelName l_stencil l_kernels l_showSingleKernel
+        cond_obaseKernel = pShowUnrolledKernels True cond_obaseKernelName l_stencil l_kernels l_showSingleKernel
         runKernel = if regBound then obaseKernelName ++ ", " ++ 
                                      cond_obaseKernelName ++ ", " ++ 
                                      bdryKernelName ++ ", " ++ 
                                      cond_bdryKernelName
                                 else obaseKernelName ++ ", " ++ 
                                      cond_obaseKernelName
-    in  return (bdryKernel ++ breakline ++ cond_bdryKernel ++ 
-                obaseKernel ++ breakline ++ cond_obaseKernel ++
-                l_id ++ ".Register_Obase_Kernel(" ++ l_guard ++ ", " ++ 
-                show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
+        l_pShape = foldr mergePShapes emptyShape (map kfShape l_kernels)
+    in  (breakline ++ show l_pShape ++
+         bdryKernel ++ breakline ++ cond_bdryKernel ++ 
+         obaseKernel ++ breakline ++ cond_obaseKernel ++
+         l_id ++ ".Register_Obase_Kernel(" ++ l_guard ++ ", " ++ 
+         show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 -- For modes : -split-macro-shadow, -split-caching
-pSplitScope :: (String, String, String, [PKernel], PStencil) -> (Bool -> String -> [PKernel] -> String) -> GenParser Char ParserState String
+pSplitScope :: (String, String, String, [PKernelFunc], PStencil) -> (Bool -> String -> [PKernelFunc] -> String) -> String
 pSplitScope (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showKernels = 
-    let oldKernelName = intercalate "_" $ map kName l_kernels
+    let oldKernelName = intercalate "_" $ map kfName l_kernels
         bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
         obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
         cond_bdryKernelName = l_tag ++ "cond_boundary_" ++ oldKernelName
@@ -333,10 +347,12 @@ pSplitScope (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showKernels =
                                      cond_bdryKernelName
                                 else obaseKernelName ++ ", " ++ 
                                      cond_obaseKernelName
-    in  return (bdryKernel ++ breakline ++ cond_bdryKernel ++ 
-                obaseKernel ++ breakline ++ cond_obaseKernel ++
-                l_id ++ ".Register_Obase_Kernel(" ++ l_guard ++ ", " ++ 
-                show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
+        l_pShape = foldr mergePShapes emptyShape (map kfShape l_kernels)
+    in (breakline ++ show l_pShape ++
+        bdryKernel ++ breakline ++ cond_bdryKernel ++ 
+        obaseKernel ++ breakline ++ cond_obaseKernel ++
+        l_id ++ ".Register_Obase_Kernel(" ++ l_guard ++ ", " ++ 
+        show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 -------------------------------------------------------------------------------------------
 --                             Following are C++ Grammar Parser                         ---
@@ -363,11 +379,6 @@ pStencilRegisterKernelParams =
 -- Register_Boundary l_id l_boundaryFn l_array =
 --     do updateState $ updateArrayBoundary l_id True 
 --        return (l_id ++ ".Register_Boundary(" ++ l_boundaryFn ++ "); /* Register_Boundary */" ++ breakline)
-
-registerShape :: String -> String -> PShape -> GenParser Char ParserState String
-registerShape l_id l_shape l_pShape = 
-    do updateState $ updateStencilToggle l_id $ shapeToggle l_pShape
-       return (l_id ++ ".Register_Shape(" ++ l_shape ++ "); /* Register_Shape */" ++ breakline)
 
 registerUndefinedBoundaryFn :: String -> [String] -> PStencil -> GenParser Char ParserState String
 registerUndefinedBoundaryFn l_id l_boundaryParams l_stencil =
@@ -436,26 +447,6 @@ pDeclDynamic = do (l_qualifiers, l_name) <- try pVarDecl
 pDeclPochoir :: GenParser Char ParserState ([PName], PName, String)
 pDeclPochoir = do (l_qualifiers, l_name) <- try pVarDecl
                   return (l_qualifiers, l_name, "")
-
-pDeclPochoirWithShape :: GenParser Char ParserState ([PName], PName, PShape)
-pDeclPochoirWithShape = 
-    do (l_qualifiers, l_name) <- try pVarDecl
-       l_shapes <- option [] $ parens $ braces $ commaSep1 ppShape
-       let l_rank = (length $ head l_shapes) - 1
-       let l_len = length l_shapes
-       let l_shapeName = l_name ++ "_shape"
-       let l_toggle = getToggleFromShape l_shapes
-       let l_slopes = getSlopesFromShape (l_toggle-1) l_shapes
-       let l_timeShift = getTimeShiftFromShape l_shapes
-       updateState $ updatePShape (l_shapeName, l_rank, l_len, l_toggle, l_slopes, l_timeShift, l_shapes)
-       let l_pShape = PShape {shapeName = l_shapeName, 
-                              shapeRank = l_rank,
-                              shapeLen = l_len,
-                              shapeToggle = l_toggle,
-                              shapeSlopes = l_slopes,
-                              shapeTimeShift = l_timeShift,
-                              shape = l_shapes}
-       return (l_qualifiers, l_name, l_pShape)
 
 pVarDecl :: GenParser Char ParserState ([PName], PName)
 pVarDecl = do l_qualifiers <- many cppQualifier

@@ -33,7 +33,7 @@ import qualified Data.Map as Map
 
 updatePKernelFunc :: PKernelFunc -> ParserState -> ParserState
 updatePKernelFunc l_kernelFunc parserState =
-    parserState { pKernelFunc = Map.insert (kfName l_kernelFunc) l_kernel_func $ pKernelFunc parserState }
+    parserState { pKernelFunc = Map.insert (kfName l_kernelFunc) l_kernelFunc $ pKernelFunc parserState }
 
 updatePKernel :: PKernel -> ParserState -> ParserState
 updatePKernel l_kernel parserState =
@@ -59,10 +59,9 @@ updatePMacro :: (PName, PValue) -> ParserState -> ParserState
 updatePMacro (l_name, l_value) parserState =
     parserState { pMacro = Map.insert l_name l_value (pMacro parserState) }
 
-updatePShape :: (PName, Int, PValue, Int, [Int], Int, [[Int]]) -> ParserState -> ParserState
-updatePShape (l_name, l_rank, l_len, l_toggle, l_slopes, l_timeShift, l_shape) parserState =
-    let l_pShape = PShape {shapeName = l_name, shapeRank = l_rank, shapeLen = l_len, shapeToggle = l_toggle, shapeSlopes = l_slopes, shapeTimeShift = l_timeShift, shape = l_shape}
-    in parserState { pShape = Map.insert l_name l_pShape (pShape parserState) }
+updatePShape :: PShape -> ParserState -> ParserState
+updatePShape l_pShape parserState = 
+    parserState { pShape = Map.insert (shapeName l_pShape) l_pShape (pShape parserState) }
 
 updatePArray :: [(PName, PArray)] -> ParserState -> ParserState
 updatePArray [] parserState = parserState
@@ -98,6 +97,14 @@ updateStencilBoundary l_id l_regBound parserState =
                 else Nothing
     in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
 
+updateStencilRegKernel :: String -> [(PGuard, [PKernel])] -> ParserState -> ParserState
+updateStencilRegKernel l_id l_regKernel parserState =
+    let f k x =
+            if sName x == l_id
+                then Just $ x { sRegKernel = l_regKernel }
+                else Nothing
+    in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
+
 updateStencilUnroll :: String -> Int -> ParserState -> ParserState
 updateStencilUnroll l_id l_unroll parserState =
     let f k x =
@@ -111,6 +118,22 @@ updateStencilToggle l_id l_toggle parserState =
     let f k x =
             if sName x == l_id
                 then Just $ x { sToggle = l_toggle }
+                else Nothing
+    in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
+
+updateStencilTimeShift :: String -> Int -> ParserState -> ParserState
+updateStencilTimeShift l_id l_timeShift parserState =
+    let f k x =
+            if sName x == l_id
+                then Just $ x { sTimeShift = l_timeShift }
+                else Nothing
+    in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
+
+updateStencilShape :: String -> PShape -> ParserState -> ParserState
+updateStencilShape l_id l_pShape parserState =
+    let f k x =
+            if sName x == l_id
+                then Just $ x { sShape = l_pShape }
                 else Nothing
     in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
 
@@ -266,4 +289,13 @@ groupIterByArray iL@(i:is) = groupBy eqArray iL
 sortIterByArray :: [Iter] -> [Iter]
 sortIterByArray iL@(i:is) = sortBy cmpArray iL
     where cmpArray (iName, iArray, iDims, iRW) (jName, jArray, jDims, jRW) = compare (aName iArray) (aName jArray)
+
+mergePShapes :: PShape -> PShape -> PShape
+mergePShapes a b = PShape { shapeName = shapeName a ++ shapeName b,
+                            shapeRank = max (shapeRank a) (shapeRank b),
+                            shapeLen = length $ union (shape a) (shape b),
+                            shapeToggle = max (shapeToggle a) (shapeToggle b),
+                            shapeSlopes = zipWith max (shapeSlopes a) (shapeSlopes b),
+                            shapeTimeShift = max (shapeTimeShift a) (shapeTimeShift b),
+                            shape = union (shape a) (shape b) }
 

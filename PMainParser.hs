@@ -30,7 +30,7 @@ import Text.ParserCombinators.Parsec
 import Control.Monad
 
 import PBasicParser
-import PParser2
+import PMainParser2
 import PUtils
 import PData
 import PShow
@@ -43,9 +43,9 @@ pParser = do tokens0 <- many $ pToken
              eof
              return $ concat tokens0
              -- start a second pass!
---             setInput $ concat tokens0
---             tokens1 <- many pToken1
---             return $ concat tokens1
+             setInput $ concat tokens0
+             tokens1 <- many pToken1
+             return $ concat tokens1
 
 pToken :: GenParser Char ParserState String
 pToken = 
@@ -91,7 +91,7 @@ pParsePochoirStencil =
        let l_stencils = map pSecond l_rawStencils
        updateState $ updatePStencil $ transPStencil l_rank l_stencils
        return (breakline ++ "/* Known */ Pochoir <" ++ show l_rank ++ 
-               "> " ++ pShowDynamicDecl l_rawStencils (intercalate ", ") ++ 
+               "> " ++ pShowDynamicDecl l_rawStencils (showString "") ++ 
                l_delim ++ breakline)
 
 pParsePochoirKernel :: GenParser Char ParserState String
@@ -112,7 +112,7 @@ pParsePochoirKernel =
                                         l_shape ++ ", " ++ l_kernelFunc ++ 
                                         "/* UNKNOWN kernel func */);" ++ breakline)
                      Just l_pKernelFunc -> 
-                          do let l_kernel = PKernel { kName = l_name, kRank = l_rank, kShape = l_pShape, kFunc = l_pKernelFunc }
+                          do let l_kernel = PKernel { kName = l_name, kRank = l_rank, kShape = l_pShape, kFunc = l_pKernelFunc { kfShape = l_pShape, kfName = l_name } }
                              updateState $ updatePKernel l_kernel
                              return (breakline ++ "Pochoir_Kernel <" ++ show l_rank ++
                                      ">" ++ l_name ++ "(" ++ l_shape ++ ", " ++ 
@@ -131,8 +131,12 @@ pParsePochoirShapeInfo =
        let l_toggle = getToggleFromShape l_shapes
        let l_slopes = getSlopesFromShape (l_toggle-1) l_shapes 
        let l_timeShift = getTimeShiftFromShape l_shapes
-       updateState $ updatePShape (l_name, l_rank, l_len, l_toggle, l_slopes, l_timeShift, l_shapes)
-       return (breakline ++ "/* Known */ Pochoir_Shape <" ++ show l_rank ++ "> " ++ l_name ++ " [" ++ show l_len ++ "] = " ++ pShowShapes l_shapes ++ ";\n" ++ breakline ++ "/* toggle: " ++ show l_toggle ++ "; slopes: " ++ show l_slopes ++ " */" ++ breakline)
+       let l_pShape = PShape {shapeName = l_name, shapeRank = l_rank, 
+                              shapeLen = l_len, shapeToggle = l_toggle, 
+                              shapeSlopes = l_slopes, shapeTimeShift = l_timeShift, 
+                              shape = l_shapes}
+       updateState $ updatePShape l_pShape
+       return (show l_pShape)
 
 pParsePochoirDomain :: GenParser Char ParserState String
 pParsePochoirDomain =
@@ -177,7 +181,8 @@ pParsePochoirAutoKernelFunc =
        exprStmts <- manyTill pStatement (try $ reserved "};")
        let l_kernelFunc = PKernelFunc { kfName = l_kernel_name, 
                                         kfParams = l_kernel_params,
-                                        kfStmt = exprStmts, kfIter = [] }
+                                        kfStmt = exprStmts, kfIter = [],
+                                        kfShape = emptyShape }
        updateState $ updatePKernelFunc l_kernelFunc
        return (pShowAutoKernelFunc l_kernel_name l_kernelFunc) 
 
@@ -222,7 +227,7 @@ transPStencil l_rank (p:ps) =
     (p, PStencil 
         {sName = p, sRank = l_rank, sToggle = 0, sUnroll = 1, 
          sTimeShift = 0, sArrayInUse = [], sShape = emptyShape, 
-         sRegBound = False}) : transPStencil l_rank ps
+         sRegBound = False, sRegKernel = []}) : transPStencil l_rank ps
 
 transURange :: [([PName], PName, [DimExpr])] -> [(PName, PRange)]
 transURange [] = []

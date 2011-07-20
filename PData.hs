@@ -74,8 +74,10 @@ data PStencil = PStencil {
     sTimeShift :: Int,
     sArrayInUse :: [PArray],
     sShape :: PShape,
+    sRegKernel :: [(PGuard, [PKernel])],
     sRegBound :: Bool
 } deriving Show
+
 data PShape = PShape {
     shapeName :: PName,
     shapeRank :: Int,
@@ -84,7 +86,7 @@ data PShape = PShape {
     shapeSlopes :: [Int],
     shapeTimeShift :: Int,
     shape :: [[Int]]
-} deriving Show
+} 
 
 data PRange = PRange {
     rName :: PName,
@@ -100,7 +102,8 @@ data PKernelFunc = PKernelFunc {
     kfName :: PName,
     kfParams :: [PName],
     kfStmt :: [Stmt],
-    kfIter :: [Iter]
+    kfIter :: [Iter],
+    kfShape :: PShape
 } deriving Show
 
 data PKernel = PKernel {
@@ -121,7 +124,7 @@ emptyShape :: PShape
 emptyShape = PShape {shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = []}
 
 emptyKernelFunc :: PKernelFunc
-emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfIter = [] }
+emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfIter = [], kfShape = emptyShape }
 
 emptyKernel :: PKernel
 emptyKernel = PKernel { kName = "", kRank = 0, kFunc = emptyKernelFunc, kShape = emptyShape }
@@ -219,6 +222,17 @@ instance Show PMode where
 instance Show PType where
     show ptype = typeName ptype
 
+instance Show PShape where
+    show l_pShape = let l_rank = shapeRank l_pShape
+                        l_name = shapeName l_pShape
+                        l_shapes = shape l_pShape
+                        l_toggle = shapeToggle l_pShape
+                        l_slopes = shapeSlopes l_pShape
+                    in  breakline ++ "/* Known */ Pochoir_Shape <" ++ show l_rank ++ 
+                        "> " ++ l_name ++ " [ ] = " ++ pShowShapes l_shapes ++ 
+                        ";" ++ breakline ++ "/* toggle: " ++ show l_toggle ++ 
+                        "; slopes: " ++ show l_slopes ++ " */" ++ breakline
+
 instance Show Expr where
     show (VAR q str) = q ++ str
     show (PVAR q a xList@(x:xs)) = q ++ a ++ "(" ++ showList xList "" ++ ")"
@@ -294,4 +308,15 @@ instance Show PShift where
                         where showl [] = showChar '}'
                               showl (x:xs) = showString ", " . shows x . showl xs
 
+pShowShapes :: [[Int]] -> String
+pShowShapes [] = ""
+pShowShapes aL@(a:as) = "{" ++ pShowShape a ++ pShowShapesL as
+    where pShowShapesL [] = "}"
+          pShowShapesL (x:xs) = ", " ++ pShowShape x ++ pShowShapesL xs
+
+pShowShape :: [Int] -> String
+pShowShape [] = ""
+pShowShape aL@(a:as) = "{" ++ show a ++ pShowShapeL as
+    where pShowShapeL [] = "}"
+          pShowShapeL (x:xs) = ", " ++ show x ++ pShowShapeL xs
 

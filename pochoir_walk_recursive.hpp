@@ -1717,13 +1717,13 @@ inline void Algorithm<N_RANK>::adaptive_bicut(int t0, int t1, grid_info<N_RANK> 
         printf("call cond_kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
         print_grid(stdout, t0, t1, grid);
 #endif
-            opgk_[region_n].cond_kernel_(t0, t1, grid);
+            opgk_[region_n].cond_kernel_[0](t0, t1, grid);
         } else {
 #if DEBUG
         printf("call kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
         print_grid(stdout, t0, t1, grid);
 #endif
-            opgk_[region_n].kernel_(t0, t1, grid);
+            opgk_[region_n].kernel_[0](t0, t1, grid);
         }
         return;
     }  
@@ -1835,13 +1835,13 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
         printf("call cond_boundary_kernel <%d>, l_unroll = %d!\n", region_n, l_unroll);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
-            opgk_[region_n].cond_bkernel_(t0, t1, l_father_grid);
+            opgk_[region_n].cond_bkernel_[0](t0, t1, l_father_grid);
         } else {
 #if DEBUG
         printf("call boundary_kernel <%d>, l_unroll = %d!\n", region_n, l_unroll);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
-            opgk_[region_n].bkernel_(t0, t1, l_father_grid);
+            opgk_[region_n].bkernel_[0](t0, t1, l_father_grid);
         }
     } else {
         // if (t1 - t0 < opgk_[region_n].unroll_) {
@@ -1850,13 +1850,13 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, grid_info<N_RANK
         printf("call cond_kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
-            opgk_[region_n].cond_kernel_(t0, t1, l_father_grid);
+            opgk_[region_n].cond_kernel_[0](t0, t1, l_father_grid);
         } else {
 #if DEBUG
         printf("call kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
         print_grid(stdout, t0, t1, l_father_grid);
 #endif
-            opgk_[region_n].kernel_(t0, t1, l_father_grid);
+            opgk_[region_n].kernel_[0](t0, t1, l_father_grid);
         }
     }
     return;

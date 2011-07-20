@@ -69,7 +69,7 @@ class Pochoir {
     public:
     template <typename ... KS>
     void Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks);
-    void Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, int unroll, typename Pochoir_Types<N_RANK>::T_Obase_Kernel k, typename Pochoir_Types<N_RANK>::T_Obase_Kernel cond_k, typename Pochoir_Types<N_RANK>::T_Obase_Kernel bk, typename Pochoir_Types<N_RANK>::T_Obase_Kernel cond_bk);
+    void Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk);
     // get slope(s)
     int slope(int const _idx) { return slope_[_idx]; }
     Pochoir() {
@@ -135,7 +135,6 @@ void Pochoir<N_RANK>::reg_kernel(int pt, K k, KS ... ks) {
 template <int N_RANK> template <typename ... KS>
 void Pochoir<N_RANK>::Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks) {
     int l_size = sizeof...(KS);
-//    typedef typename Pochoir_Types<N_RANK>::T_Kernel T_Kernel;
     typedef Pochoir_Kernel<N_RANK> T_Kernel;
     if (pgk_ == NULL) {
         pgk_ = new Pochoir_Guard_Kernel<N_RANK>[ARRAY_SIZE];
@@ -157,8 +156,8 @@ void Pochoir<N_RANK>::Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g,
 }
 
 template <int N_RANK> 
-void Pochoir<N_RANK>::Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, int unroll, typename Pochoir_Types<N_RANK>::T_Obase_Kernel k, typename Pochoir_Types<N_RANK>::T_Obase_Kernel cond_k, typename Pochoir_Types<N_RANK>::T_Obase_Kernel bk, typename Pochoir_Types<N_RANK>::T_Obase_Kernel cond_bk) {
-    typedef typename Pochoir_Types<N_RANK>::T_Obase_Kernel T_Kernel;
+void Pochoir<N_RANK>::Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk) {
+    typedef Pochoir_Obase_Kernel<N_RANK> T_Kernel;
     if (opgk_ == NULL) {
         opgk_ = new Pochoir_Obase_Guard_Kernel<N_RANK>[ARRAY_SIZE];
         sz_pgk_ = 0;
@@ -171,10 +170,18 @@ void Pochoir<N_RANK>::Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Gu
     }
     opgk_[sz_pgk_].guard_ = g;
     opgk_[sz_pgk_].unroll_ = unroll;
-    opgk_[sz_pgk_].kernel_ = k;
-    opgk_[sz_pgk_].cond_kernel_ = cond_k;
-    opgk_[sz_pgk_].bkernel_ = bk;
-    opgk_[sz_pgk_].cond_bkernel_ = cond_bk;
+    opgk_[sz_pgk_].kernel_ = (T_Kernel *) calloc(1, sizeof(T_Kernel));
+    opgk_[sz_pgk_].kernel_[0] = k;
+    Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
+    opgk_[sz_pgk_].cond_kernel_ = (T_Kernel *) calloc(1, sizeof(T_Kernel));
+    opgk_[sz_pgk_].cond_kernel_[0] = cond_k;
+    Register_Shape(cond_k.Get_Shape(), cond_k.Get_Shape_Size());
+    opgk_[sz_pgk_].bkernel_ = (T_Kernel *) calloc(1, sizeof(T_Kernel));
+    opgk_[sz_pgk_].bkernel_[0] = bk;
+    Register_Shape(bk.Get_Shape(), bk.Get_Shape_Size());
+    opgk_[sz_pgk_].cond_bkernel_ = (T_Kernel *) calloc(1, sizeof(T_Kernel));
+    opgk_[sz_pgk_].cond_bkernel_[0] = cond_bk;
+    Register_Shape(cond_bk.Get_Shape(), cond_bk.Get_Shape_Size());
     lcm_unroll_ = lcm(lcm_unroll_, unroll);
     ++sz_pgk_;
 }
@@ -306,12 +313,12 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> * shape, int N_SIZE) 
     toggle_ = max(toggle_, depth + 1);
     for (int i = 0; i < N_SIZE; ++i) {
         for (int r = 0; r < N_RANK+1; ++r) {
-            slope_[N_RANK-r] = (r > 0) ? max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[r]/(l_max_time_shift - shape_[i].shift[0])))) : 0;
+            slope_[N_RANK-r] = (r > 0) ? max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[N_RANK-r]/(l_max_time_shift - shape_[i].shift[0])))) : 0;
             shape_[shape_size_ + i].shift[r] = (r > 0) ? shape[i].shift[r] : shape[i].shift[r] + time_shift_;
         }
     }
     shape_size_ += N_SIZE;
-#if DEBUG 
+#if DEBUG
     printf("time_shift_ = %d, toggle = %d\n", time_shift_, toggle_);
     for (int r = 0; r < N_RANK; ++r) {
         printf("slope[%d] = %d, ", r, slope_[r]);
