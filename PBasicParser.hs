@@ -146,24 +146,27 @@ ppStencil l_id l_state =
                Nothing -> return (l_id ++ ".Register_Array(" ++ l_array ++ "); /* UNKNOWN Register_Array with" ++ l_id ++ "*/" ++ breakline)
                Just l_stencil -> 
                    case Map.lookup l_array $ pArray l_state of
-                       Nothing -> registerUndefinedArray l_id l_array l_stencil 
-                       Just l_pArray -> registerArray l_id l_array l_pArray l_stencil
+                       Nothing -> return (l_id ++ ".Register_Array (" ++ l_array ++ "); /* register Undefined Array */" ++ breakline)                       
+                       Just l_pArray ->
+                            do let l_revArray = l_pArray {aToggle = sToggle l_stencil}
+                               updateState $ updateStencilArray l_id l_revArray
+                               return (l_id ++ ".Register_Array (" ++ l_array ++ 
+                                       "); /* register Array */" ++ breakline)
+
     -- Ad hoc implementation of Run_Unroll
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
            semi
            case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ 
+               Nothing -> return (breakline ++ l_id ++ ".Run(" ++ show l_tstep ++ 
                                   "); /* Run with UNKNOWN Stencil " ++ l_id ++ 
                                   " */" ++ breakline)
                Just l_stencil -> 
-                            do let l_arrayInUse = sArrayInUse l_stencil
-                               let l_regBound = foldr (||) False $ map (getArrayRegBound l_state) l_arrayInUse 
-                               updateState $ updateStencilBoundary l_id l_regBound 
-                               return (breakline ++ l_id ++ ".Run_Obase(" ++ 
-                                       show l_tstep ++ 
-                                       "); /* Run with Stencil " ++ l_id ++ 
-                                       " */" ++ breakline)
+                          do let l_arrayInUse = sArrayInUse l_stencil
+                             let l_regBound = foldr (||) False $ map (getArrayRegBound l_state) l_arrayInUse 
+                             updateState $ updateStencilBoundary l_id l_regBound 
+                             return (breakline ++ l_id ++ ".Run(" ++ show l_tstep ++
+                                     ");" ++ breakline)
     -- convert "Register_Kernel(g, k, ... ks) " to "Register_Obase_Kernel(g, k, bk)"
     <|> do try $ pMember "Register_Kernel"
            (l_guard, l_kernels) <- parens pStencilRegisterKernelParams
@@ -188,23 +191,23 @@ ppStencil l_id l_state =
                                       l_guard ++ ", " ++ intercalate ", " l_kernels ++ 
                                       ");" ++ "/* Not all kernels are valid */ " ++ 
                                       breakline)
-                         else do  let l_sRegKernel = sRegKernel l_stencil
-                                  let l_rev_sRegKernel = l_sRegKernel ++ [(snd l_pGuard, map snd l_pKernels)]
-                                  updateState $ updateStencilRegKernel l_id l_rev_sRegKernel
-                                  let l_pShapes = map kShape (map snd l_pKernels)
-                                  let l_merged_pShape = foldr mergePShapes (sShape l_revStencil) l_pShapes
-                                  updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
-                                  updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
-                                  updateState $ updateStencilShape l_id l_merged_pShape
-                                  -- We don't return anything in Register_Kernel 
-                                  -- until 'Run', because we know the Register_Array
-                                  -- only after Register_Kernel
-                                  return (l_id ++ ".Register_Kernel(" ++
-                                          l_guard ++ ", " ++ 
-                                          intercalate ", " l_kernels ++
-                                          ");" ++ 
-                                          "/* All kernels are recognized! */" ++
-                                          breakline)
+                         else do let l_sRegKernel = sRegKernel l_stencil
+                                 let l_rev_sRegKernel = l_sRegKernel ++ [(snd l_pGuard, map snd l_pKernels)]
+                                 updateState $ updateStencilRegKernel l_id l_rev_sRegKernel
+                                 let l_pShapes = map kShape (map snd l_pKernels)
+                                 let l_merged_pShape = foldr mergePShapes (sShape l_revStencil) l_pShapes
+                                 updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
+                                 updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
+                                 updateState $ updateStencilShape l_id l_merged_pShape
+                                 -- We don't return anything in Register_Kernel 
+                                 -- until 'Run', because we know the Register_Array
+                                 -- only after Register_Kernel
+                                 return (l_id ++ ".Register_Kernel(" ++
+                                         l_guard ++ ", " ++ 
+                                         intercalate ", " l_kernels ++
+                                         ");" ++ 
+                                         "/* All kernels are recognized! */" ++
+                                         breakline)
     <|> do return (l_id)
 
 -- get all iterators from Kernel
@@ -374,56 +377,6 @@ pStencilRegisterKernelParams =
            l_kernels <- commaSep1 identifier
            return (l_guard, l_kernels)
     <?> "Stencil Register_Kernel Parameters"
-
--- Register_Boundary :: String -> String -> PArray -> GenParser Char ParserState String
--- Register_Boundary l_id l_boundaryFn l_array =
---     do updateState $ updateArrayBoundary l_id True 
---        return (l_id ++ ".Register_Boundary(" ++ l_boundaryFn ++ "); /* Register_Boundary */" ++ breakline)
-
-registerUndefinedBoundaryFn :: String -> [String] -> PStencil -> GenParser Char ParserState String
-registerUndefinedBoundaryFn l_id l_boundaryParams l_stencil =
-    let l_arrayName = head l_boundaryParams
-        l_pArray = PArray {aName = l_arrayName,
-                           aType = PType { basicType = PUserType, typeName = "UnknownType" },
-                           aRank = sRank l_stencil,
-                           aDims = [],
-                           aMaxShift = 0,
-                           aToggle = 0,
-                           aRegBound = True}
-    in do -- updateState $ updatePArray [(l_arrayName, l_pArray)]
-          -- updateState $ updateStencilArray l_id l_pArray
-          -- updateState $ updateStencilBoundary l_id True
-          return (l_id ++ ".Register_Boundary(" ++ (intercalate ", " l_boundaryParams) ++ 
-                  "); /* register Undefined Boundary Fn */" ++ breakline)
-
-registerBoundaryFn :: String -> [String] -> PArray -> GenParser Char ParserState String 
-registerBoundaryFn l_id l_boundaryParams l_pArray =
-    do updateState $ updateStencilArray l_id l_pArray
-       updateState $ updateStencilBoundary l_id True
-       return (l_id ++ ".Register_Boundary(" ++ (intercalate ", " l_boundaryParams) ++ 
-               "); /* register Boundary Fn */" ++ breakline)
-
-registerUndefinedArray :: String -> String -> PStencil -> GenParser Char ParserState String
-registerUndefinedArray l_id l_arrayName l_stencil =
-    let l_pArray = PArray {aName = l_arrayName,
-                           aType = PType { basicType = PUserType, typeName = "UnknownType" },
-                           aRank = sRank l_stencil,
-                           aDims = [],
-                           aMaxShift = 0,
-                           aToggle = 0,
-                           aRegBound = False}
-    in  do -- updateState $ updatePArray [(l_arrayName, l_pArray)]
-           -- updateState $ updateStencilArray l_id l_pArray 
-           return (l_id ++ ".Register_Array (" ++ l_arrayName ++ 
-                   "); /* register Undefined Array */" ++ breakline)
-    
-registerArray :: String -> String -> PArray -> PStencil -> GenParser Char ParserState String
-registerArray l_id l_arrayName l_pArray l_stencil =
-    -- assume all participating array has the same shape/toggle! Is that true?
-    let l_revArray = l_pArray { aToggle = sToggle l_stencil }
-    in  do updateState $ updateStencilArray l_id l_revArray
-           return (l_id ++ ".Register_Array (" ++ l_arrayName ++ 
-                   "); /* register Array */" ++ breakline)
 
 -- pDeclStatic <type, rank>
 pDeclStatic :: GenParser Char ParserState (PType, PValue)

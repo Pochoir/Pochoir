@@ -51,7 +51,7 @@ ppStencil1 l_id l_state =
                Nothing -> return (l_id ++ ".Register_Kernel(" ++ l_guard ++ ", " ++ 
                                   intercalate ", " l_kernels ++ 
                                   "); /* Register_Kernel with UNKNOWN Stencil " ++ 
-                                  l_id ++ "*/" ++ breakline)
+                                  l_id ++ " */" ++ breakline)
                Just l_stencil ->
                    do let l_pKernels = map (getValidKernel l_state) l_kernels
                       let l_pGuard = getValidGuard l_state l_guard
@@ -64,5 +64,14 @@ ppStencil1 l_id l_state =
                                       breakline)
                          else do let l_regKernels = pShowRegKernel (pMode l_state) l_stencil (snd l_pGuard, map snd l_pKernels)
                                  return (l_regKernels)
+    -- Ad hoc implementation of Run_Unroll
+    <|> do try $ pMember "Run"
+           l_tstep <- parens exprStmtDim
+           semi
+           case Map.lookup l_id $ pStencil l_state of
+               Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ ");")
+               Just l_stencil -> return (breakline ++ l_id ++ ".Run_Obase(" ++
+                                         show l_tstep ++ "); /* Run with Stencil " ++
+                                         l_id ++ " */" ++ breakline)
     <|> do return (l_id)
 

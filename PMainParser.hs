@@ -38,6 +38,8 @@ import PShow
 import Data.List
 import qualified Data.Map as Map
 
+-- first pass will be gathering the infor
+-- second pass will do the real transformation
 pParser :: GenParser Char ParserState String
 pParser = do tokens0 <- many $ pToken
              eof
