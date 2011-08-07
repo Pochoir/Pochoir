@@ -102,23 +102,24 @@ pParsePochoirKernel =
        l_rank <- angles pDeclStaticNum
        l_name <- identifier
        (l_shape, l_kernelFunc) <- parens pPochoirKernelParams
+       semi
        l_state <- getState
        case Map.lookup l_shape $ pShape l_state of
-            Nothing -> return (breakline ++ "Pochoir_Kernel <" ++ show l_rank ++ ">" ++
-                               l_name ++ "(" ++ l_shape ++ "/* UNKNOWN shape */, " ++ 
+            Nothing -> return (breakline ++ "Pochoir_Kernel <" ++ show l_rank ++ 
+                               "> " ++ l_name ++ "(" ++ l_shape ++ ", " ++ 
                                l_kernelFunc ++ ");" ++ breakline)
             Just l_pShape ->
                 case Map.lookup l_kernelFunc $ pKernelFunc l_state of
                      Nothing -> return (breakline ++ "Pochoir_Kernel <" ++ 
-                                        show l_rank ++ ">" ++ l_name ++ "(" ++ 
+                                        show l_rank ++ "> " ++ l_name ++ "(" ++ 
                                         l_shape ++ ", " ++ l_kernelFunc ++ 
-                                        "/* UNKNOWN kernel func */);" ++ breakline)
+                                        ");" ++ breakline)
                      Just l_pKernelFunc -> 
                           do let l_kernel = PKernel { kName = l_name, kRank = l_rank, kShape = l_pShape, kFunc = l_pKernelFunc { kfShape = l_pShape, kfName = l_name } }
                              updateState $ updatePKernel l_kernel
                              return (breakline ++ "Pochoir_Kernel <" ++ show l_rank ++
-                                     ">" ++ l_name ++ "(" ++ l_shape ++ ", " ++ 
-                                     l_kernelFunc ++ "); /* KNOWN */ " ++ breakline)
+                                     "> " ++ l_name ++ "(" ++ l_shape ++ ", " ++ 
+                                     l_kernelFunc ++ "); " ++ breakline)
 
 pParsePochoirShapeInfo :: GenParser Char ParserState String
 pParsePochoirShapeInfo = 

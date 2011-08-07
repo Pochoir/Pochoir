@@ -64,8 +64,8 @@ void serial_loops(Pochoir_Domain _tR, Pochoir_Domain _iR, F const & f) {
 template <typename F>
 void pochoir(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Domain const & _jR, const size_t _slope[], F const f) {
 	size_t l_t0 = _tR.first(), l_t1 = _tR.last();
-    grid_info_2 l_grid;
-    Algorithm<3, grid_info_2> algor(_slope);
+    Grid_Info_2 l_grid;
+    Algorithm<3, Grid_Info_2> algor(_slope);
     size_t l_stride[2];
 
     l_grid.x0[0] = _iR.first(); l_grid.x1[0] = _iR.first() + _iR.stride() * _iR.size();
@@ -83,8 +83,8 @@ void pochoir(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Dom
 template <typename F>
 void pochoir(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_t _slope[], F const f) {
 	size_t l_t0 = _tR.first(), l_t1 = _tR.last();
-    Algorithm<2, grid_info_1> algor(_slope);
-    grid_info_1 l_grid;
+    Algorithm<2, Grid_Info_1> algor(_slope);
+    Grid_Info_1 l_grid;
     size_t l_stride[1];
 
     l_grid.x0[0] = _iR.first(); l_grid.x1[0] = _iR.first() + _iR.stride() * _iR.size();
@@ -101,8 +101,8 @@ void pochoir(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_
 template <typename F, typename BF>
 void pochoir(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Domain const & _jR, const size_t _slope[], F const & f, BF const & bf) {
 	size_t l_t0 = _tR.first(), l_t1 = _tR.last();
-    grid_info_2 l_grid;
-    Algorithm<3, grid_info_2> algor(_slope);
+    Grid_Info_2 l_grid;
+    Algorithm<3, Grid_Info_2> algor(_slope);
     size_t l_stride[2];
 
     l_grid.x0[0] = _iR.first(); l_grid.x1[0] = _iR.first() + _iR.stride() * _iR.size();
@@ -120,8 +120,8 @@ void pochoir(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Dom
 template <typename F, typename BF>
 void pochoir(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_t _slope[], F const & f, BF const & bf) {
 	size_t l_t0 = _tR.first(), l_t1 = _tR.last();
-    Algorithm<2, grid_info_1> algor(_slope);
-    grid_info_1 l_grid;
+    Algorithm<2, Grid_Info_1> algor(_slope);
+    Grid_Info_1 l_grid;
     size_t l_stride[1];
 
     l_grid.x0[0] = _iR.first(); l_grid.x1[0] = _iR.first() + _iR.stride() * _iR.size();
@@ -141,8 +141,8 @@ void pochoir(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_
 template <typename F, typename BF>
 void pochoir_p(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Domain const & _jR, const size_t _slope[], F const & f, BF const & bf) {
 	size_t l_t0 = _tR.first(), l_t1 = _tR.last();
-    grid_info_2 l_grid;
-    Algorithm<3, grid_info_2> algor(_slope);
+    Grid_Info_2 l_grid;
+    Algorithm<3, Grid_Info_2> algor(_slope);
     size_t l_stride[2];
 
     l_grid.x0[0] = _iR.first(); l_grid.x1[0] = _iR.first() + _iR.stride() * _iR.size();
@@ -160,9 +160,9 @@ void pochoir_p(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_D
 template <typename F, typename BF>
 void pochoir_p(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_t _slope[], F const & f, BF const & bf) {
 	size_t l_t0 = _tR.first(), l_t1 = _tR.last();
-    Algorithm<2, grid_info_1> algor(_slope);
-    grid_info_1 l_grid;
-    Algorithm<2, grid_info_1>::index_info l_stride;
+    Algorithm<2, Grid_Info_1> algor(_slope);
+    Grid_Info_1 l_grid;
+    Algorithm<2, Grid_Info_1>::index_info l_stride;
 
     l_grid.x0[0] = _iR.first(); l_grid.x1[0] = _iR.first() + _iR.stride() * _iR.size();
     l_grid.dx0[0] = 0; l_grid.dx1[0] = 0;
@@ -178,9 +178,9 @@ void pochoir_p(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const siz
 template <typename F>
 void obase(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Domain const & _jR, const size_t _slope[], F const f) {
 	size_t l_t0 = _tR.first(), l_t1 = _tR.last();
-    grid_info_2 l_grid;
-    Algorithm<3, grid_info_2> algor(_slope);
-    Algorithm<3, grid_info_2>::index_info l_stride;
+    Grid_Info_2 l_grid;
+    Algorithm<3, Grid_Info_2> algor(_slope);
+    Algorithm<3, Grid_Info_2>::index_info l_stride;
 
     l_grid.x0[0] = _iR.first(); l_grid.x1[0] = _iR.first() + _iR.stride() * _iR.size();
     l_grid.x0[1] = _jR.first(); l_grid.x1[1] = _jR.first() + _jR.stride() * _jR.size();
@@ -197,9 +197,9 @@ void obase(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Domai
 template <typename F>
 void obase(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_t _slope[], F const f) {
 	size_t l_t0 = _tR.first(), l_t1 = _tR.last();
-    Algorithm<2, grid_info_1> algor(_slope);
-    grid_info_1 l_grid;
-    Algorithm<2, grid_info_1>::index_info l_stride;
+    Algorithm<2, Grid_Info_1> algor(_slope);
+    Grid_Info_1 l_grid;
+    Algorithm<2, Grid_Info_1>::index_info l_stride;
 
     l_grid.x0[0] = _iR.first(); l_grid.x1[0] = _iR.first() + _iR.stride() * _iR.size();
     l_grid.dx0[0] = 0; l_grid.dx1[0] = 0;
@@ -215,8 +215,8 @@ void obase(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_t 
 template <typename F, typename BF>
 void obase(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Domain const & _jR, const size_t _slope[], F const & f, BF const & bf) {
 	size_t l_t0 = _tR.first(), l_t1 = _tR.last();
-    grid_info_2 l_grid;
-    Algorithm<3, grid_info_2> algor(_slope);
+    Grid_Info_2 l_grid;
+    Algorithm<3, Grid_Info_2> algor(_slope);
     size_t l_stride[2];
 
     l_grid.x0[0] = _iR.first(); l_grid.x1[0] = _iR.first() + _iR.stride() * _iR.size();
@@ -234,8 +234,8 @@ void obase(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Domai
 template <typename F, typename BF>
 void obase(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_t _slope[], F const & f, BF const & bf) {
 	size_t l_t0 = _tR.first(), l_t1 = _tR.last();
-    Algorithm<2, grid_info_1> algor(_slope);
-    grid_info_1 l_grid;
+    Algorithm<2, Grid_Info_1> algor(_slope);
+    Grid_Info_1 l_grid;
     size_t l_stride[1];
 
     l_grid.x0[0] = _iR.first(); l_grid.x1[0] = _iR.first() + _iR.stride() * _iR.size();
@@ -255,8 +255,8 @@ void obase(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_t 
 template <typename F, typename BF>
 void obase_p(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Domain const & _jR, const size_t _slope[], F const & f, BF const & bf) {
 	size_t l_t0 = _tR.first(), l_t1 = _tR.last();
-    grid_info_2 l_grid;
-    Algorithm<3, grid_info_2> algor(_slope);
+    Grid_Info_2 l_grid;
+    Algorithm<3, Grid_Info_2> algor(_slope);
     size_t l_stride[2];
 
     l_grid.x0[0] = _iR.first(); l_grid.x1[0] = _iR.first() + _iR.stride() * _iR.size();
@@ -274,8 +274,8 @@ void obase_p(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, Pochoir_Dom
 template <typename F, typename BF>
 void obase_p(Pochoir_Domain const & _tR, Pochoir_Domain const & _iR, const size_t _slope[], F const & f, BF const & bf) {
 	size_t l_t0 = _tR.first(), l_t1 = _tR.last();
-    Algorithm<2, grid_info_1> algor(_slope);
-    grid_info_1 l_grid;
+    Algorithm<2, Grid_Info_1> algor(_slope);
+    Grid_Info_1 l_grid;
     size_t l_stride[1];
 
     l_grid.x0[0] = _iR.first(); l_grid.x1[0] = _iR.first() + _iR.stride() * _iR.size();

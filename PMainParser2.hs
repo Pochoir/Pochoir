@@ -41,7 +41,8 @@ import qualified Data.Map as Map
 
 pToken1 :: GenParser Char ParserState String
 pToken1 = 
-        try pParsePochoirStencilMember1
+        try pParsePochoirKernel1
+    <|> try pParsePochoirStencilMember1
     <|> do ch <- anyChar
            return [ch]
     <?> "line"
@@ -51,5 +52,38 @@ pParsePochoirStencilMember1 =
     do l_id <- try (pIdentifier)
        l_state <- getState
        try $ ppStencil1 l_id l_state
+
+pParsePochoirKernel1 :: GenParser Char ParserState String
+pParsePochoirKernel1 =
+    do reserved "Pochoir_Kernel"
+       l_rank <- angles pDeclStaticNum
+       l_name <- identifier
+       (l_shape, l_kernelFunc) <- parens pPochoirKernelParams
+       semi
+       l_state <- getState
+       case Map.lookup l_shape $ pShape l_state of
+            Nothing -> return (breakline ++ "Pochoir_Kernel <" ++ show l_rank ++ 
+                               "> " ++ l_name ++ "(" ++ l_shape ++ 
+                               "/* UNKNOWN shape */, " ++ l_kernelFunc ++ ");" ++ 
+                               breakline)
+            Just l_pShape ->
+                case Map.lookup l_kernelFunc $ pKernelFunc l_state of
+                     Nothing -> return (breakline ++ "Pochoir_Kernel <" ++
+                                        show l_rank ++ "> " ++ l_name ++ "(" ++
+                                        l_shape ++ ", " ++ l_kernelFunc ++
+                                        "/* UNKNOWN kernel func */);" ++ breakline)
+                     Just l_pKernelFunc ->
+                          do -- If everything is OK, we will generate a 
+                             -- Pochoir_Obase_Kernel object later on
+                             return (breakline ++ "Pochoir_Kernel <" ++
+                                     show l_rank ++ "> " ++ l_name ++ "(" ++
+                                     l_shape ++ ", " ++ l_kernelFunc ++
+                                     "); /* KNOWN Pochoir_Kernel */" ++ breakline)
+                             -- Found an ICC bug. with following return value,
+                             -- if compiled with -O0, it's correct,
+                             -- if compiled with -O1, it will have 'segmentation fault'
+                             -- if compiled with -O2/-O3, it will have wrong results
+                             -- return ("breakline ++ /* KNOWN Pochoir_Kernel */" ++
+                             --          breakline)
 
    

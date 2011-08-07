@@ -90,6 +90,7 @@ int main(int argc, char * argv[])
     b.Register_Boundary(periodic_1D);
 
     Pochoir_Guard_1D(guard_interior, t, i)
+#if 0
         /* (T/2) / (N/2) = T / N */
         float _slope = float(T) / (N);
         if ((t <= T/2 && i > N/2 && float(t)/(i - N/2) < _slope) ||
@@ -99,6 +100,14 @@ int main(int argc, char * argv[])
             return false;
         else
             return true;
+#else
+        if (t > T/2 && i > N/2) {
+            /* up right rectangle */
+            return true;
+        } else {
+            return false;
+        }
+#endif
     Pochoir_Guard_End
 
     Pochoir_Guard_1D(guard_exterior, t, i)
@@ -109,24 +118,12 @@ int main(int argc, char * argv[])
         a(t, i) = 0.1 * a(t-1, i-1) + 0.15 * a(t-1, i) + 0.189 * a(t-1, i+1) + 0.8;
     Pochoir_Kernel_1D_End(interior_0, shape_interior_0)
 
-    Pochoir_Kernel_1D_Begin(interior_1, t, i)
-        a(t, i) = 0.2 * a(t-1, i-1) + 0.25 * a(t-1, i) + 0.289 * a(t-1, i+1) + 0.8;
-    Pochoir_Kernel_1D_End(interior_1, shape_interior_1)
-
-    Pochoir_Kernel_1D_Begin(interior_2, t, i)
-        a(t, i) = 0.3 * a(t-1, i-1) + 0.35 * a(t-1, i) + 0.389 * a(t-1, i+1) + 0.8;
-    Pochoir_Kernel_1D_End(interior_2, shape_interior_2)
-
     Pochoir_Kernel_1D_Begin(exterior_0, t, i)
-        a(t, i) = 0.1 * a(t-1, i-1) + 0.15 * a(t-1, i) + 0.189 * a(t-1, i+1) + 0.8;
+        a(t, i) = 0.1 * a(t-1, i-1) - 0.15 * a(t-1, i) - 0.189 * a(t-1, i+1) - 0.1;
     Pochoir_Kernel_1D_End(exterior_0, shape_exterior_0)
 
-    Pochoir_Kernel_1D_Begin(exterior_1, t, i)
-        a(t, i) = 0.2 * a(t-1, i-1) + 0.25 * a(t-1, i) + 0.289 * a(t-1, i+1) + 0.8;
-    Pochoir_Kernel_1D_End(exterior_1, shape_exterior_1)
-
-    leap_frog.Register_Kernel(guard_interior, interior_0, interior_1, interior_2);
-    leap_frog.Register_Kernel(guard_exterior, exterior_0, exterior_1);
+    leap_frog.Register_Kernel(guard_interior, interior_0);
+    leap_frog.Register_Kernel(guard_exterior, exterior_0);
     leap_frog.Register_Array(a);
 
     /* initialization */
@@ -135,11 +132,11 @@ int main(int argc, char * argv[])
         b(0, i) = a(0, i);
     }
 
-    leap_frog.Gen_Plan(6 * T);
+    leap_frog.Gen_Plan(T);
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         leap_frog.Load_Plan();
-        // leap_frog.Run(6*T);
+//        leap_frog.Run(T);
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
@@ -151,28 +148,15 @@ int main(int argc, char * argv[])
     /* cilk_for */
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        for (int t = 1; t < 6 * T + 1; ++t) {
-            cilk_for (int i = 0; i < N; ++i) {
-            if (guard_interior(t, i)) {
-                /* interior sub-region */
-                if (t % 3 == 1) {
+        for (int t = 1; t < T + 1; ++t) {
+            for (int i = 0; i < N; ++i) {
+                if (guard_interior(t, i)) {
+                    /* interior sub-region */
                     b(t, i) = 0.1 * b(t-1, i-1) + 0.15 * b(t-1, i) + 0.189 * b(t-1, i+1) + 0.8;
+                } else {
+                    /* exterior sub-region*/
+                    b(t, i) = 0.1 * b(t-1, i-1) - 0.15 * b(t-1, i) - 0.189 * b(t-1, i+1) - 0.1;
                 }
-                if (t % 3 == 2) {
-                    b(t, i) = 0.2 * b(t-1, i-1) + 0.25 * b(t-1, i) + 0.289 * b(t-1, i+1) + 0.8;
-                }
-                if (t % 3 == 0) {
-                    b(t, i) = 0.3 * b(t-1, i-1) + 0.35 * b(t-1, i) + 0.389 * b(t-1, i+1) + 0.8;
-                }
-            } else {
-                /* exterior sub-region*/
-                if (t % 2 == 1) {
-                    b(t, i) = 0.1 * b(t-1, i-1) + 0.15 * b(t-1, i) + 0.189 * b(t-1, i+1) + 0.8;
-                }
-                if (t % 2 == 0) {
-                    b(t, i) = 0.2 * b(t-1, i-1) + 0.25 * b(t-1, i) + 0.289 * b(t-1, i+1) + 0.8;
-                }
-            }
             }
         }
         gettimeofday(&end, 0);
@@ -183,7 +167,7 @@ int main(int argc, char * argv[])
 //    std::cout << "Parallel Loop time : " << min_tdiff << " ms" << std::endl;
 
     /* check results! */
-    t = 6*T;
+    t = T;
     for (int i = 0; i < N; ++i) {
         check_result(t, i, a(t, i), b(t, i));
     } 

@@ -33,12 +33,15 @@
 /* assuming there won't be more than 10 Pochoir_Array in one Pochoir object! */
 #define ARRAY_SIZE 10
 
+const char * base_data_file_name = "pochoir_base.dat";
+const char * sync_data_file_name = "pochoir_sync.dat";
+
 template <int N_RANK>
 class Pochoir {
     private:
         int slope_[N_RANK];
-        grid_info<N_RANK> logic_grid_;
-        grid_info<N_RANK> phys_grid_;
+        Grid_Info<N_RANK> logic_grid_;
+        Grid_Info<N_RANK> phys_grid_;
         int time_shift_;
         int toggle_;
         int timestep_;
@@ -66,6 +69,11 @@ class Pochoir {
         template <typename K, typename ... KS>
         void reg_kernel(int pt, K k, KS ... ks);
 
+        Spawn_Tree<N_RANK> * tree_;
+        Node_Info<N_RANK> * root_;
+        Vector_Info< Region_Info<N_RANK> > * base_data_;
+        Vector_Info<int> * sync_data_;
+        int sz_base_data_, sz_sync_data_;
     public:
     template <typename ... KS>
     void Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks);
@@ -89,11 +97,11 @@ class Pochoir {
     }
 
     /* currently, we just compute the slope[] out of the shape[] */
-    /* We get the grid_info out of arrayInUse */
-    template <typename A>
-    void Register_Array(A & a);
-    template <typename A, typename ... AS>
-    void Register_Array(A & a, AS ... as);
+    /* We get the Grid_Info out of arrayInUse */
+    template <typename T>
+    void Register_Array(Pochoir_Array<T, N_RANK> & a);
+    template <typename T, typename ... TS>
+    void Register_Array(Pochoir_Array<T, N_RANK> & a, Pochoir_Array<TS, N_RANK> ... as);
 
     /* We should still keep the Register_Domain for zero-padding!!! */
     template <typename D>
@@ -106,17 +114,24 @@ class Pochoir {
         arr.Register_Boundary(_bv);
         Register_Array(arr);
     } 
-    grid_info<N_RANK> get_phys_grid(void);
+    Grid_Info<N_RANK> get_phys_grid(void);
 
     /* Executable Spec */
     void Run(int timestep);
     void Run_Obase(int timestep);
+    void Gen_Plan(int timepste);
+    void Load_Plan(void);
+    void Read_Plan(void);
+    void Run_Plan(int timestep);
+#if 0
+    /* obsolete methods -- to remove */
     /* obase for zero-padded region */
     template <typename F>
     void Run_Obase(int timestep, F const & f);
     /* obase for interior and ExecSpec for boundary */
     template <typename F, typename BF>
     void Run_Obase(int timestep, F const & f, BF const & bf);
+#endif
 };
 
 template <int N_RANK> template <typename K>
@@ -231,15 +246,19 @@ void Pochoir<N_RANK>::cmpPhysDomainFromArray(T_Array & arr) {
     }
 }
 
-template <int N_RANK> template <typename A>
-void Pochoir<N_RANK>::Register_Array(A & a) {
+template <int N_RANK> template <typename T>
+void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a) {
     if (!regShapeFlag) {
         printf("Please register Shape before register Array!\n");
         exit(1);
     }
 
     if (num_arr_ == 0) {
-        arr_type_size_ = sizeof(A);
+        arr_type_size_ = sizeof(T);
+        // arr_type_size_ = sizeof(double);
+#if DEBUG
+        printf("<%s:%d> arr_type_size = %d\n", __FILE__, __LINE__, arr_type_size_);
+#endif
         ++num_arr_;
     } 
     if (!regPhysDomainFlag) {
@@ -256,15 +275,19 @@ void Pochoir<N_RANK>::Register_Array(A & a) {
     regArrayFlag = true;
 }
 
-template <int N_RANK> template <typename A, typename ... AS>
-void Pochoir<N_RANK>::Register_Array(A & a, AS ... as) {
+template <int N_RANK> template <typename T, typename ... TS>
+void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a, Pochoir_Array<TS, N_RANK> ... as) {
     if (!regShapeFlag) {
         printf("Please register Shape before register Array!\n");
         exit(1);
     }
 
     if (num_arr_ == 0) {
-        arr_type_size_ = sizeof(A);
+        arr_type_size_ = sizeof(T);
+        // arr_type_size_ = sizeof(double);
+#if DEBUG
+        printf("<%s:%d> arr_type_size = %d\n", __FILE__, __LINE__, arr_type_size_);
+#endif
         ++num_arr_;
     } 
     if (!regPhysDomainFlag) {
@@ -342,7 +365,7 @@ void Pochoir<N_RANK>::Register_Domain(D const & d, DS ... ds) {
 }
 
 template <int N_RANK> 
-grid_info<N_RANK> Pochoir<N_RANK>::get_phys_grid(void) {
+Grid_Info<N_RANK> Pochoir<N_RANK>::get_phys_grid(void) {
     return phys_grid_;
 }
 
@@ -360,28 +383,156 @@ void Pochoir<N_RANK>::Run(int timestep) {
     inRun = true;
     algor.base_case_kernel_guard(0 + time_shift_, timestep + time_shift_, logic_grid_, sz_pgk_, pgk_);
     inRun = false;
-
 }
 
 /* obase for interior and ExecSpec for boundary */
 template <int N_RANK> 
 void Pochoir<N_RANK>::Run_Obase(int timestep) {
-    int l_total_points = 1;
+//    int l_total_points = 1;
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
-    algor.set_pgk(sz_pgk_, opgk_);
+    algor.set_obase_pgk(sz_pgk_, opgk_);
     algor.set_unroll(lcm_unroll_);
-    /* this version uses 'f' to compute interior region, 
-     * and 'bf' to compute boundary region
-     */
     timestep_ = timestep;
     checkFlags();
     // cutting based on shorter bar
     algor.adaptive_bicut_p(0 + time_shift_, timestep + time_shift_, logic_grid_);
 }
 
+template <int N_RANK> 
+void Pochoir<N_RANK>::Gen_Plan(int timestep) {
+    Algorithm<N_RANK> algor(slope_);
+    algor.set_phys_grid(phys_grid_);
+    algor.set_thres(arr_type_size_);
+    /* set individual unroll factor from opgk_ */
+    algor.set_pgk(sz_pgk_, pgk_);
+    algor.set_unroll(lcm_unroll_);
+    timestep_ = timestep;
+    checkFlags();
+    tree_ = new Spawn_Tree<N_RANK>();
+    root_ = tree_->get_root();
+    algor.set_tree(tree_);
+    algor.gen_plan_bicut_p(root_, 0 + time_shift_, timestep + time_shift_, logic_grid_);
+    sz_base_data_ = algor.get_sz_base_data();
+    sz_sync_data_ = algor.get_sz_sync_data();
+    base_data_ = new Vector_Info< Region_Info<N_RANK> >(sz_base_data_);
+    sync_data_ = new Vector_Info<int>(sz_sync_data_);
+    printf("sz_base_data = %d, sz_sync_data = %d\n", sz_base_data_, sz_sync_data_);
+    int l_tree_size_begin = tree_->size();
+    printf("tree size = %d\n", l_tree_size_begin);
+    /* after remove all nodes, the only remaining node will be the 'root' */
+    while (l_tree_size_begin > 1) {
+        tree_->dfs_until_sync(root_->left, (*base_data_));
+        int l_tree_size_end = tree_->size();
+        sync_data_->add_element(l_tree_size_begin - l_tree_size_end);
+        tree_->dfs_rm_sync(root_->left);
+        l_tree_size_begin = tree_->size();
+        printf("tree size = %d\n", l_tree_size_begin);
+    }
+    sync_data_->scan();
+    /* extract data and store plan */
+    ofstream os_base_data(base_data_file_name);
+    ofstream os_sync_data(sync_data_file_name);
+    if (os_base_data.is_open()) {
+        printf("os_base_data is open!\n");
+        os_base_data << (*base_data_);
+    } else {
+        printf("os_base_data is NOT open! exit!\n");
+        exit(1);
+    }
+    if (os_sync_data.is_open()) {
+        printf("os_sync_data is open!\n");
+        os_sync_data << (*sync_data_);
+    } else {
+        printf("os_sync_data is NOT open! exit!\n");
+        exit(1);
+    }
+    os_base_data.close();
+    os_sync_data.close();
+    return;
+}
 
+template <int N_RANK>
+void Pochoir<N_RANK>::Load_Plan(void) {
+    Vector_Info< Region_Info<N_RANK> > * l_base_data = new Vector_Info< Region_Info<N_RANK> >(10);
+    Vector_Info<int> * l_sync_data = new Vector_Info<int>(10);
+    int l_sz_base_data, l_sz_sync_data, offset = 0;
+    
+    FILE * is_base_data = fopen(base_data_file_name, "r");
+
+    if (is_base_data != NULL) {
+        printf("is_base_data is open!\n");
+        while (!feof(is_base_data)) {
+            Region_Info<N_RANK> l_region;
+            l_region.pscanf(is_base_data);
+            l_base_data->add_element(l_region);
+        }
+    } else {
+        printf("is_base_data is NOT open! exit!\n");
+        exit(1);
+    }
+    fclose(is_base_data);
+    std::cerr << "l_base_data : \n" << (*l_base_data) << std::endl;
+
+    FILE * is_sync_data = fopen(sync_data_file_name, "r");
+    if (is_sync_data != NULL) {
+        printf("is_sync_data is open!\n");
+        while (!feof(is_sync_data)) {
+            int l_sync;
+            fscanf(is_sync_data, "%d\n", &l_sync);
+            l_sync_data->add_element(l_sync);
+        }
+    } else {
+        printf("is_sync_data is NOT open! exit!\n");
+        exit(1);
+    }
+    fclose(is_sync_data);
+    std::cerr << "l_sync_data : \n" << (*l_sync_data) << std::endl;
+    l_sync_data->add_element(-1);
+
+    for (int j = 0; l_sync_data->region_[j] != -1; ++j) {
+        for (int i = offset; i < l_sync_data->region_[j]; ++i) {
+            int l_region_n = l_base_data->region_[i].region_n;
+            int l_t0 = l_base_data->region_[i].t0;
+            int l_t1 = l_base_data->region_[i].t1;
+            Grid_Info<N_RANK> l_grid = l_base_data->region_[i].grid;
+            for (int t = l_t0; t < l_t1; ++t) {
+                for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
+            int new_i = pmod_lu(i, phys_grid_.x0[0], phys_grid_.x1[0]);
+                pgk_[l_region_n].kernel_[0](t, new_i);
+                }
+                l_grid.x0[0] += l_grid.dx0[0]; l_grid.x1[0] += l_grid.dx1[0];
+            }
+        }
+        offset = l_sync_data->region_[j];
+    }
+
+    return;
+}
+
+template <int N_RANK>
+void Pochoir<N_RANK>::Run_Plan(int timestep) {
+    int offset = 0;
+    Algorithm<N_RANK> algor(slope_);
+    algor.set_phys_grid(phys_grid_);
+    algor.set_thres(arr_type_size_);
+    algor.set_pgk(sz_pgk_, opgk_);
+    algor.set_unroll(lcm_unroll_);
+    timestep_ = timestep;
+    checkFlags();
+
+    for (int j = 0; sync_data_[j] != -1; ++j) {
+        cilk_for (int i = offset; i < sync_data_[j]; ++i) {
+            /* all the grids are supposed to be within one pure sub-region */
+            algor.plan_bicut(base_data_[i].t0_, base_data_[i].t1_, base_data_[i].grid_);
+        }
+        offset = sync_data_[j];
+    }
+    return;
+}
+#if 0
+/* obsolete methods - to remove */
 /* obase for zero-padded area! */
 template <int N_RANK> template <typename F>
 void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f) {
@@ -446,5 +597,5 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
     algor.obase_boundary_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #endif
 }
-
+#endif
 #endif

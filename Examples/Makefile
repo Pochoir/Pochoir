@@ -59,12 +59,21 @@ animwave_irregular : tb_animwave_irregular.cpp tb_animwave_irregular_pochoir.cpp
 
 diamond : tb_diamond.cpp # tb_diamond_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o diamond ${OPT_FLAGS} tb_diamond.cpp
+#	${CC} -o diamond ${OPT_FLAGS} tb_diamond.cpp
 #	${CC} -o diamond ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_diamond.cpp
 #	${ICC} -o diamond ${OPT_FLAGS} tb_diamond_pochoir.cpp
-#	${ICC} -o diamond ${ICC_DEBUG_FLAGS} tb_diamond_pochoir.cpp
+#	${ICC} -o diamond_gdb ${ICC_DEBUG_FLAGS} tb_diamond_pochoir.cpp
 #	Phase-I compilation with debugging aid
-#	${CC} -o diamond ${POCHOIR_DEBUG_FLAGS} tb_diamond.cpp 
+	${CC} -o diamond ${POCHOIR_DEBUG_FLAGS} tb_diamond.cpp 
+
+diamond_1 : tb_diamond_1.cpp # tb_diamond_1_pochoir.cpp 
+#   Phase-II compilation
+#	${CC} -o diamond_1 ${OPT_FLAGS} tb_diamond_1.cpp
+#	${CC} -o diamond_1 ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_diamond_1.cpp
+#	${ICC} -o diamond_1 ${OPT_FLAGS} tb_diamond_1_pochoir.cpp
+#	${ICC} -o diamond_1_gdb ${ICC_DEBUG_FLAGS} tb_diamond_1_pochoir.cpp
+#	Phase-I compilation with debugging aid
+	${CC} -o diamond_1 ${POCHOIR_DEBUG_FLAGS} tb_diamond_1.cpp 
 
 meta : tb_meta_meta.cpp
 	icpc -o meta tb_meta_meta.cpp -std=c++0x

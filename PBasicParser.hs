@@ -313,7 +313,7 @@ pSplitKernel (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showSingleKernel =
                                      cond_bdryKernelName
                                 else obaseKernelName ++ ", " ++ 
                                      cond_obaseKernelName
-        l_pShape = foldr mergePShapes emptyShape (map kfShape l_kernels)
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kernels)
     in  (breakline ++ show l_pShape ++
          bdryKernel ++ breakline ++ cond_bdryKernel ++ 
          obaseKernel ++ breakline ++ cond_obaseKernel ++
@@ -350,7 +350,7 @@ pSplitScope (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showKernels =
                                      cond_bdryKernelName
                                 else obaseKernelName ++ ", " ++ 
                                      cond_obaseKernelName
-        l_pShape = foldr mergePShapes emptyShape (map kfShape l_kernels)
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kernels)
     in (breakline ++ show l_pShape ++
         bdryKernel ++ breakline ++ cond_bdryKernel ++ 
         obaseKernel ++ breakline ++ cond_obaseKernel ++

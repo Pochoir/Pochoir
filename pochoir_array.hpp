@@ -392,7 +392,7 @@ class Pochoir_Array {
 
         void unRegister_Boundary(void) { bv1_ = NULL;  bv2_ = NULL; bv3_ = NULL; bv4_ = NULL; ; bv5_ = NULL; bv6_ = NULL; bv7_ = NULL; bv8_ = NULL}
 
-        void Register_Domain(grid_info<N_RANK> initial_grid) {
+        void Register_Domain(Grid_Info<N_RANK> initial_grid) {
             for (int i = 0; i < N_RANK; ++i) {
                 logic_start_[i] = initial_grid.x0[i];
                 logic_end_[i] = initial_grid.x1[i];
@@ -1553,7 +1553,6 @@ class Pochoir_Array {
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + _idx7 * stride_[7] + (_idx8 % toggle_) * total_size_;
             return (set_boundary ? l_bvalue : (*view_)[l_idx]);
 		}
-
 
 		/* size_info is of type int[] */
 		static inline bool update_index(int * index, bool & line_break, int const * head_index, int const * tail_index)

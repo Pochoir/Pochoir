@@ -4,7 +4,7 @@
  *  Copyright (C) 2010-2011  Yuan Tang <yuantang@csail.mit.edu>
  * 		                     Charles E. Leiserson <cel@mit.edu>
  * 	 
- *   This program is free software: you can redistribute it and/or modify
+ *   This program is delete software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
@@ -31,7 +31,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
-// #include <string>
+#include <string>
+#include <iostream>
+#include <fstream>
 
 static inline double tdiff (struct timeval *a, struct timeval *b)
 {
@@ -95,7 +97,7 @@ typedef int T_dim;
 typedef int T_index;
 
 template <int N_RANK>
-struct grid_info {
+struct Grid_Info {
     int x0[N_RANK], x1[N_RANK];
     int dx0[N_RANK], dx1[N_RANK];
 };
@@ -108,6 +110,337 @@ struct Pochoir_Shape {
     int shift[N_RANK+1];
 };
  
+enum Meta_Op { IS_ROOT, IS_SPAWN, IS_SYNC, IS_INTERNAL };
+
+
+template <int N_RANK>
+struct Region_Info {
+    int t0, t1;
+    Grid_Info<N_RANK> grid;
+    int region_n;
+    Region_Info() {
+        t0 = 0; t1 = 0; region_n = -1;
+    }
+
+    Region_Info(int _t0, int _t1, Grid_Info<N_RANK> _grid, int _region_n) {
+        t0 = _t0; t1 = _t1; grid = _grid;
+        region_n = _region_n;
+    }
+
+    friend std::ofstream & operator<<(std::ofstream & fs, Region_Info<N_RANK> const & r) {
+        int i;
+        fs << "{ BASE, ";
+        fs << "t = {" << r.t0 << ", " << r.t1 << "}, {";
+
+        fs << "x0 = {";
+        for (i = 0; i < N_RANK-1; ++i) {
+            fs << r.grid.x0[i] << ", ";
+        }
+        fs << r.grid.x0[i] << "}, ";
+
+        fs << "x1 = {";
+        for (i = 0; i < N_RANK-1; ++i) {
+            fs << r.grid.x1[i] << ", ";
+        }
+        fs << r.grid.x1[i] << "}, ";
+
+        fs << "dx0 = {";
+        for (i = 0; i < N_RANK-1; ++i) {
+            fs << r.grid.dx0[i] << ", ";
+        }
+        fs << r.grid.dx0[i] << "}, ";
+
+        fs << "dx1 = {";
+        for (i = 0; i < N_RANK-1; ++i) {
+            fs << r.grid.dx1[i] << ", ";
+        }
+        fs << r.grid.dx1[i] << "}}, " << r.region_n << "}";
+        return;
+    }
+
+    void pscanf(FILE * fs) {
+        int i;
+        fscanf(fs, "{ BASE, ");
+        fscanf(fs, "t = {%d, %d}, {",  &(t0), &(t1));
+
+        fscanf(fs, "x0 = {");
+        for (i = 0; i < N_RANK-1; ++i) {
+            fscanf(fs, "%d, ", &(grid.x0[i]));
+        }
+        fscanf(fs, "%d}, ", &(grid.x0[i]));
+
+        fscanf(fs, "x1 = {");
+        for (i = 0; i < N_RANK-1; ++i) {
+            fscanf(fs, "%d, ", &(grid.x1[i]));
+        }
+        fscanf(fs, "%d}, ", &(grid.x1[i]));
+
+        fscanf(fs, "dx0 = {");
+        for (i = 0; i < N_RANK-1; ++i) {
+            fscanf(fs, "%d, ", &(grid.dx0[i]));
+        }
+        fscanf(fs, "%d}, ", &(grid.dx0[i]));
+
+        fscanf(fs, "dx1 = {");
+        for (i = 0; i < N_RANK-1; ++i) {
+            fscanf(fs, "%d, ", &(grid.dx1[i]));
+        }
+        fscanf(fs, "%d}}, %d}\n", &(grid.dx1[i]), &(region_n));
+        return;
+    }
+
+    friend std::ostream & operator<<(std::ostream & fs, Region_Info<N_RANK> const & r) {
+        int i;
+        fs << "{ BASE, ";
+        fs << "t = {" << r.t0 << ", " << r.t1 << "}, {";
+
+        fs << "x0 = {";
+        for (i = 0; i < N_RANK-1; ++i) {
+            fs << r.grid.x0[i] << ", ";
+        }
+        fs << r.grid.x0[i] << "}, ";
+
+        fs << "x1 = {";
+        for (i = 0; i < N_RANK-1; ++i) {
+            fs << r.grid.x1[i] << ", ";
+        }
+        fs << r.grid.x1[i] << "}, ";
+
+        fs << "dx0 = {";
+        for (i = 0; i < N_RANK-1; ++i) {
+            fs << r.grid.dx0[i] << ", ";
+        }
+        fs << r.grid.dx0[i] << "}, ";
+
+        fs << "dx1 = {";
+        for (i = 0; i < N_RANK-1; ++i) {
+            fs << r.grid.dx1[i] << ", ";
+        }
+        fs << r.grid.dx1[i] << "}}, " << r.region_n << "}";
+        return;
+    }
+};
+
+template <typename T>
+struct Vector_Info {
+    T * region_;
+    int pointer_, size_;
+    Vector_Info(int size) {
+        region_ = (T *) calloc(size, sizeof(T));
+        pointer_ = 0; size_ = size;
+        printf("init size = %d\n", size_);
+    }
+    void add_element(T ele) {
+#if DEBUG
+//        std::cerr << "add_element " << ele << std::endl;
+#endif
+        if (pointer_ < size_) {
+            region_[pointer_] = ele;
+            ++pointer_;
+        } else {
+            printf("realloc memory size = %d -> %d!\n", size_, 2*size_);
+            T * l_region = (T *) calloc(2*size_, sizeof(T));
+            if (l_region != NULL) {
+                for (int i = 0; i < size_; ++i) {
+                    l_region[i] = region_[i];
+                }
+                delete(region_);
+                region_ = l_region;
+                region_[pointer_] = ele;
+                ++pointer_;
+                size_ = 2 * size_;
+            } else {
+                printf("realloc wrong!\n");
+                exit(1);
+            }
+        }
+        return;
+    }
+    void scan () {
+        for (int i = 1; i < pointer_; ++i) {
+            region_[i] = region_[i] + region_[i-1];
+        }
+    }
+    int size() { return pointer_; }
+
+    friend std::ofstream & operator<<(std::ofstream & fs, Vector_Info<T> const & v) {
+        for (int i = 0; i < v.pointer_; ++i) {
+            fs << v.region_[i] << std::endl;
+            // std::cerr << region_[i] << "\n";
+        }
+        return fs;
+    }
+    friend std::ostream & operator<<(std::ostream & fs, Vector_Info<T> const & v) {
+        for (int i = 0; i < v.pointer_; ++i) {
+            fs << v.region_[i] << std::endl;
+            // std::cerr << region_[i] << "\n";
+        }
+        return fs;
+    }
+};
+
+template <int N_RANK>
+struct Node_Info {
+    Region_Info<N_RANK> region_;
+    Node_Info<N_RANK> *parent, *left, *right;
+    enum Meta_Op op;
+
+    Node_Info() { parent = left = right = NULL; }
+
+    Node_Info(enum Meta_Op _op) {
+        /* constructor */
+        op = _op;
+        parent = left = right = NULL;
+    }
+
+    Node_Info(int _t0, int _t1, Grid_Info<N_RANK> & _grid) : region_(_t0, _t1, _grid, -1) {
+        /* constructor */
+        op = IS_INTERNAL; 
+        parent = left = right = NULL;
+    }
+
+    ~Node_Info() {
+        /* destructor */
+        parent = left = right = NULL;
+    }   
+#if 0
+    Node_Info(enum Meta_Op _op, int _t0, int _t1, Grid_Info & _grid) {
+        /* constructor */
+        op = _op; 
+        region_.t0 = _t0; region_.t1 = _t1; region_.grid = _grid;
+        parent = left = right = NULL;
+    }
+    Node_Info(enum Meta_Op _op, int _region_n, int _t0, int _t1, Grid_Info & _grid) {
+        /* constructor */
+        op = _op; 
+        region_.region_n = _region_n;
+        region_.t0 = _t0; region_.t1 = _t1; region_.grid = _grid;
+        parent = left = right = NULL;
+    }
+#endif
+};
+
+template <int N_RANK>
+struct Spawn_Tree {
+    Node_Info<N_RANK> * root_;
+    int size_;
+    Spawn_Tree() { 
+        /* constructor */
+        root_ = new Node_Info<N_RANK>(IS_ROOT); size_ = 1; 
+    }
+
+    Spawn_Tree(int _t0, int _t1, Grid_Info<N_RANK> & _grid) {
+        /* constructor */
+        root_ = new Node_Info<N_RANK>(_t0, _t1, _grid);
+        size_ = 1;
+    }
+    Node_Info<N_RANK> * get_root() {  return root_; }
+    int size() { return size_; }
+    void add_node(Node_Info<N_RANK> * parent, Node_Info<N_RANK> * child, enum Meta_Op _op) {
+        if (parent->left == NULL) {
+            parent->left = child;
+            child->parent = parent;
+            child->op = _op;
+            ++size_;
+            return;
+        }
+        Node_Info<N_RANK> * youngest_child = parent->left;
+        while (youngest_child->right != NULL)
+            youngest_child = youngest_child->right;
+        youngest_child->right = child;
+        child->parent = parent;
+        child->op = _op;
+        ++size_;
+        return;
+    }
+
+    void add_node(Node_Info<N_RANK> * parent, Node_Info<N_RANK> * child, enum Meta_Op _op, int _region_n) {
+        if (parent->left == NULL) {
+            parent->left = child;
+            child->parent = parent;
+            child->op = _op; (child->region_).region_n = _region_n;
+            ++size_;
+            return;
+        }
+        Node_Info<N_RANK> * youngest_child = parent->left;
+        while (youngest_child->right != NULL)
+            youngest_child = youngest_child->right;
+        youngest_child->right = child;
+        child->parent = parent;
+        child->op = _op; (child->region_).region_n = _region_n;
+        ++size_;
+        return;
+    }
+
+    void rm_node(Node_Info<N_RANK> * node) {
+        if (node == node->parent->left) {
+            /* I am the biggest brother */
+            node->parent->left = node->right;
+        } else {
+            /* I am NOT the biggest brother */
+            Node_Info<N_RANK> * l_node = node->parent->left;
+            while (l_node->right != node) {
+                l_node = l_node->right;
+            }
+            assert(l_node->right == node);
+            l_node->right = node->right;
+        }
+        delete(node);
+        if (node != NULL)
+            node = NULL;
+        --size_;
+    }
+    void dfs_until_sync(Node_Info<N_RANK> * node, Vector_Info< Region_Info<N_RANK> > & base_data) {
+        if (node == NULL) {
+            return;
+        }
+        /* visit node */
+        if (node->op == IS_SYNC) {
+            return;
+        }
+        Node_Info<N_RANK> * l_node = NULL;
+        if (node->op == IS_SPAWN) {
+            assert(node->left == NULL);
+            l_node = node->right;
+            base_data.add_element(node->region_);
+            rm_node(node);
+        } else if (node->op == IS_INTERNAL) {
+            l_node = node->right;
+            dfs_until_sync(node->left, base_data);
+        }
+        /* visit its brothers */
+        dfs_until_sync(l_node, base_data);
+        return;
+    }
+    void dfs_rm_sync(Node_Info<N_RANK> * node) {
+        if (node == NULL) {
+            return;
+        }
+        if (node->op == IS_SPAWN) {
+            return;
+        }
+        if (node->op == IS_SYNC && node == node->parent->left) {
+            /* remove the biggest sync */
+            rm_node(node);
+            return;
+        }
+        Node_Info<N_RANK> * l_node = NULL;
+        if (node->op == IS_INTERNAL && node->left == NULL) {
+            /* remove the biggest empty internal node */
+            l_node = node->right;
+            rm_node(node);
+        } else if (node->op == IS_INTERNAL && node->left != NULL) {
+            l_node = node->right;
+            dfs_rm_sync(node->left);
+            if (node->left == NULL) {
+                rm_node(node);
+            }
+        }
+        dfs_rm_sync(l_node);
+        return;
+    }
+};
+
 template <int N_RANK, size_t N>
 size_t ArraySize (Pochoir_Shape<N_RANK> (& arr)[N]) { return N; }
 
@@ -118,7 +451,7 @@ size_t ArraySize (Pochoir_Shape<N_RANK> (& arr)[N]) { return N; }
 static bool inRun = false;
 static int home_cell_[9];
 
-static inline void klein(int & new_i, int & new_j, grid_info<2> const & grid) {
+static inline void klein(int & new_i, int & new_j, Grid_Info<2> const & grid) {
     int l_arr_size_1 = grid.x1[1] - grid.x0[1];
     int l_arr_size_0 = grid.x1[0] - grid.x0[0];
 
@@ -136,8 +469,8 @@ static inline void klein(int & new_i, int & new_j, grid_info<2> const & grid) {
     return;
 }
 
-static inline void klein_region(grid_info<2> & grid, grid_info<2> const & initial_grid) {
-    grid_info<2> orig_grid;
+static inline void klein_region(Grid_Info<2> & grid, Grid_Info<2> const & initial_grid) {
+    Grid_Info<2> orig_grid;
     const int l_arr_size_1 = initial_grid.x1[1] - initial_grid.x0[1];
     const int l_arr_size_0 = initial_grid.x1[0] - initial_grid.x0[0];
 

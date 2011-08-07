@@ -229,17 +229,17 @@ pShowUnrolledMacroKernels l_cond l_name l_kL@(l_kernel:l_kernels)  =
         l_rank = length l_kfParams - 1
         l_defMacro = pDefMacroArrayInUse "interior" l_arrayInUse l_kfParams
         l_undefMacro = pUndefMacroArrayInUse l_arrayInUse l_kfParams
-        l_pShape = foldr mergePShapes emptyShape (map kfShape l_kL)
-        l_kernelFuncName = "__" ++ l_name ++ "__"
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kL)
+        l_kernelFuncName = pSys l_name 
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
-                   " = [&] (int t0, int t1, " ++ " grid_info<" ++ 
+                   " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
                    show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ shapeName l_pShape ++ ", " ++ 
                  l_kernelFuncName ++ " );" ++ breakline 
     in  breakline ++ l_defMacro ++
         breakline ++ l_header ++
-        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ pShowTimeLoopHeader l_t ++ 
         l_unfold_kernel ++
         breakline ++ pShowTimeLoopTail ++ 
@@ -256,15 +256,15 @@ pShowUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) =
         l_kfParams = kfParams l_kernel
         l_defMacro = pDefMacroArrayInUse "boundary" l_arrayInUse l_kfParams
         l_undefMacro = pUndefMacroArrayInUse l_arrayInUse l_kfParams
-        l_showPhysGrid = "grid_info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
+        l_showPhysGrid = "Grid_Info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
                          sName l_stencil ++ ".get_phys_grid();"
         l_unfold_kernel = 
                 if l_cond then pShowCondMacroKernel True l_t 0 l_unroll l_kL
                           else pShowSingleMacroKernel True l_t l_kL
-        l_pShape = foldr mergePShapes emptyShape (map kfShape l_kL)
-        l_kernelFuncName = "__" ++ l_name ++ "__"
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kL)
+        l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
-                   " = [&] (int t0, int t1, " ++ " grid_info<" ++ 
+                   " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
                    show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ shapeName l_pShape ++ ", " ++ 
@@ -272,7 +272,7 @@ pShowUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) =
     in  breakline ++ l_defMacro ++
         breakline ++ pShowPMODLU ++
         breakline ++ l_header ++
-        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ l_showPhysGrid ++
         breakline ++ pShowTimeLoopHeader l_t ++ 
         l_unfold_kernel ++
@@ -291,16 +291,16 @@ pShowUnrolledCachingKernels l_stencil l_cond l_name l_kL@(l_kernel:l_kernels) =
         l_wrIters = pGetMinIters $ pGetWriteIters l_iter 
         l_arrayInUse = unionArrayIter l_iter
         l_t = "t"
-        l_pShape = foldr mergePShapes emptyShape (map kfShape l_kL)
-        l_kernelFuncName = "__" ++ l_name ++ "__"
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kL)
+        l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
-                   " = [&] (int t0, int t1, " ++ " grid_info<" ++ 
+                   " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
                    show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ shapeName l_pShape ++ ", " ++ 
                  l_kernelFuncName ++ " );" ++ breakline 
     in  breakline ++ l_header ++ 
-        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++
         breakline ++ pShowRankAttr l_rank "stride" l_arrayInUse ++ 
         -- Additional copy-in info for caching kernel ---------------------------
@@ -325,16 +325,16 @@ pShowUnrolledKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) l_showSin
         l_arrayInUse = unionArrayIter l_iter
         l_t = "t"
         l_unroll = length l_kL
-        l_pShape = foldr mergePShapes emptyShape (map kfShape l_kL)
-        l_kernelFuncName = "__" ++ l_name ++ "__"
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kL)
+        l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
-                   " = [&] (int t0, int t1, " ++ " grid_info<" ++ 
+                   " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
                    show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ shapeName l_pShape ++ ", " ++ 
                  l_kernelFuncName ++ " );" ++ breakline 
     in  breakline ++ l_header ++ 
-        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++ 
         breakline ++ pShowRankAttr l_rank "stride" l_arrayInUse ++ 
         breakline ++ pShowTimeLoopHeader l_t ++ 
@@ -507,8 +507,8 @@ pShowObaseKernel l_name l_kernel =
         l_array = unionArrayIter l_iter
         l_t = head $ kfParams l_kernel
     in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
-        "int t0, int t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
-        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        "int t0, int t1, Grid_Info<" ++ show l_rank ++ "> const & grid) {" ++ 
+        breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayGaps l_rank l_array ++
         breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
         pShowTimeLoopHeader l_t ++ breakline ++

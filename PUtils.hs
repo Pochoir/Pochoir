@@ -299,3 +299,9 @@ mergePShapes a b = PShape { shapeName = shapeName a ++ shapeName b,
                             shapeTimeShift = max (shapeTimeShift a) (shapeTimeShift b),
                             shape = union (shape a) (shape b) }
 
+pSysShape :: PShape -> PShape
+pSysShape a = a { shapeName = "__" ++ shapeName a ++ "__" }
+
+pSys :: String -> String
+pSys a = "__" ++ a ++ "__"
+
