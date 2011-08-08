@@ -145,10 +145,12 @@ int main(int argc, char * argv[])
     }
 
     Pochoir_Plan<1> & l_plan = leap_frog.Gen_Plan(T);
+    leap_frog.Store_Plan(l_plan, "pochoir.dat");
+    Pochoir_Plan<1> & ll_plan = leap_frog.Load_Plan("pochoir.dat");
 //    leap_frog.Load_Plan();
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        leap_frog.Run_Plan(l_plan);
+        leap_frog.Run_Plan(ll_plan);
 //        leap_frog.Run(T);
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));

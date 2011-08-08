@@ -310,6 +310,73 @@ struct Pochoir_Plan {
         delete base_data_;
         delete sync_data_;
     }
+    void store_plan(const char * base_file_name, const char * sync_file_name) {
+        /* extract data and store plan */
+        std::ofstream os_base_data(base_file_name);
+        std::ofstream os_sync_data(sync_file_name);
+        if (os_base_data.is_open()) {
+            printf("os_base_data is open!\n");
+            os_base_data << (*base_data_);
+        } else {
+            printf("os_base_data is NOT open! exit!\n");
+            exit(1);
+        }
+        if (os_sync_data.is_open()) {
+            printf("os_sync_data is open!\n");
+            os_sync_data << (*sync_data_);
+        } else {
+            printf("os_sync_data is NOT open! exit!\n");
+            exit(1);
+        }
+        os_base_data.close();
+        os_sync_data.close();
+        return;
+    }
+    Pochoir_Plan<N_RANK> & load_plan(const char * base_file_name, const char * sync_file_name) {
+        if (sz_base_data_ != 0) {
+            delete base_data_;
+            sz_base_data_ = 0;
+        }
+        if (sz_sync_data_ != 0) {
+            delete sync_data_;
+            sz_sync_data_ = 0;
+        }
+        alloc_base_data(10);
+        alloc_sync_data(10);
+
+        FILE * is_base_data = fopen(base_file_name, "r");
+
+        if (is_base_data != NULL) {
+            printf("is_base_data is open!\n");
+            while (!feof(is_base_data)) {
+                Region_Info<N_RANK> l_region;
+                l_region.pscanf(is_base_data);
+                base_data_->add_element(l_region);
+            }
+        } else {
+            printf("is_base_data is NOT open! exit!\n");
+            exit(1);
+        }
+        fclose(is_base_data);
+        std::cerr << "base_data : \n" << (*base_data_) << std::endl;
+
+        FILE * is_sync_data = fopen(sync_file_name, "r");
+        if (is_sync_data != NULL) {
+            printf("is_sync_data is open!\n");
+            while (!feof(is_sync_data)) {
+                int l_sync;
+                fscanf(is_sync_data, "%d\n", &l_sync);
+                sync_data_->add_element(l_sync);
+            }
+        } else {
+            printf("is_sync_data is NOT open! exit!\n");
+            exit(1);
+        }
+        fclose(is_sync_data);
+        std::cerr << "sync_data : \n" << (*sync_data_) << std::endl;
+
+        return (*this);
+    }
 };
 
 template <int N_RANK>
