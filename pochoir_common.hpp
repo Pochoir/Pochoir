@@ -69,6 +69,7 @@ static inline int lcm(int a, int b) {
 #define DEBUG_FACILITY 1
 // #define DEBUG 0
 #define PURE_REGION_ALL 1
+#define END_SYNC -1
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
@@ -111,7 +112,6 @@ struct Pochoir_Shape {
 };
  
 enum Meta_Op { IS_ROOT, IS_SPAWN, IS_SYNC, IS_INTERNAL };
-
 
 template <int N_RANK>
 struct Region_Info {
@@ -230,6 +230,10 @@ struct Vector_Info {
         pointer_ = 0; size_ = size;
         printf("init size = %d\n", size_);
     }
+    ~Vector_Info() {
+        pointer_ = size_ = 0;
+        delete region_;
+    } 
     void add_element(T ele) {
 #if DEBUG
 //        std::cerr << "add_element " << ele << std::endl;
@@ -280,6 +284,35 @@ struct Vector_Info {
 };
 
 template <int N_RANK>
+struct Pochoir_Plan {
+    Vector_Info< Region_Info<N_RANK> > * base_data_;
+    Vector_Info<int> * sync_data_;
+    int sz_base_data_, sz_sync_data_;
+    Pochoir_Plan (int _sz_base_data, int _sz_sync_data) : sz_base_data_(_sz_base_data), sz_sync_data_(_sz_sync_data) {
+        base_data_ = new Vector_Info< Region_Info<N_RANK> >(_sz_base_data);
+        sync_data_ = new Vector_Info<int>(_sz_sync_data);
+    }
+    Pochoir_Plan () {
+        sz_base_data_ = sz_sync_data_ = 0;
+        base_data_ = NULL;
+        sync_data_ = NULL;
+    }
+    void alloc_base_data(int _sz_base_data) {
+        sz_base_data_ = _sz_base_data;
+        base_data_ = new Vector_Info< Region_Info<N_RANK> >(_sz_base_data);
+    }
+    void alloc_sync_data(int _sz_sync_data) {
+        sz_sync_data_ = _sz_sync_data;
+        sync_data_ = new Vector_Info<int>(_sz_sync_data);
+    }
+    ~Pochoir_Plan() {
+        sz_base_data_ = sz_sync_data_ = 0;
+        delete base_data_;
+        delete sync_data_;
+    }
+};
+
+template <int N_RANK>
 struct Node_Info {
     Region_Info<N_RANK> region_;
     Node_Info<N_RANK> *parent, *left, *right;
@@ -303,21 +336,6 @@ struct Node_Info {
         /* destructor */
         parent = left = right = NULL;
     }   
-#if 0
-    Node_Info(enum Meta_Op _op, int _t0, int _t1, Grid_Info & _grid) {
-        /* constructor */
-        op = _op; 
-        region_.t0 = _t0; region_.t1 = _t1; region_.grid = _grid;
-        parent = left = right = NULL;
-    }
-    Node_Info(enum Meta_Op _op, int _region_n, int _t0, int _t1, Grid_Info & _grid) {
-        /* constructor */
-        op = _op; 
-        region_.region_n = _region_n;
-        region_.t0 = _t0; region_.t1 = _t1; region_.grid = _grid;
-        parent = left = right = NULL;
-    }
-#endif
 };
 
 template <int N_RANK>
@@ -333,6 +351,31 @@ struct Spawn_Tree {
         /* constructor */
         root_ = new Node_Info<N_RANK>(_t0, _t1, _grid);
         size_ = 1;
+    }
+    ~Spawn_Tree() {
+        /* free the entire tree */
+        if (root_->left == NULL) {
+            delete root_;
+            return;
+        } else {
+            dfs_rm_tree(root_);
+            return;
+        }
+    }
+    void dfs_rm_tree(Node_Info<N_RANK> * parent) {
+        Node_Info<N_RANK> * l_node;
+
+        if (parent->left == NULL) {
+            rm_node(parent);
+            return;
+        } else {
+            l_node = parent->right;
+            dfs_rm_tree(parent->left);
+            assert(parent->left == NULL);
+            rm_node(parent);
+            dfs_rm_tree(l_node);
+            return;
+        }
     }
     Node_Info<N_RANK> * get_root() {  return root_; }
     int size() { return size_; }
