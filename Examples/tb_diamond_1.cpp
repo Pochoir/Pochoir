@@ -145,9 +145,10 @@ int main(int argc, char * argv[])
     }
 
     leap_frog.Gen_Plan(T);
+    leap_frog.Load_Plan();
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        leap_frog.Load_Plan();
+        leap_frog.Run_Plan();
 //        leap_frog.Run(T);
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
@@ -161,7 +162,7 @@ int main(int argc, char * argv[])
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
-            for (int i = 0; i < N; ++i) {
+            cilk_for (int i = 0; i < N; ++i) {
                 if (guard_interior(t, i)) {
                     /* interior sub-region */
                     if (t % 3 == 1) {

@@ -122,8 +122,7 @@ class Pochoir {
     void Run_Obase(int timestep);
     void Gen_Plan(int timepste);
     void Load_Plan(void);
-    void Read_Plan(void);
-    void Run_Plan(int timestep);
+    void Run_Plan();
 #if 0
     /* obsolete methods -- to remove */
     /* obase for zero-padded region */
@@ -404,6 +403,10 @@ void Pochoir<N_RANK>::Run_Obase(int timestep) {
 
 template <int N_RANK> 
 void Pochoir<N_RANK>::Gen_Plan(int timestep) {
+    Vector_Info< Region_Info<N_RANK> > * l_base_data;
+    Vector_Info<int> * l_sync_data;
+    int l_sz_base_data, l_sz_sync_data;
+
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
@@ -416,36 +419,36 @@ void Pochoir<N_RANK>::Gen_Plan(int timestep) {
     root_ = tree_->get_root();
     algor.set_tree(tree_);
     algor.gen_plan_bicut_p(root_, 0 + time_shift_, timestep + time_shift_, logic_grid_);
-    sz_base_data_ = algor.get_sz_base_data();
-    sz_sync_data_ = algor.get_sz_sync_data();
-    base_data_ = new Vector_Info< Region_Info<N_RANK> >(sz_base_data_);
-    sync_data_ = new Vector_Info<int>(sz_sync_data_);
-    printf("sz_base_data = %d, sz_sync_data = %d\n", sz_base_data_, sz_sync_data_);
+    l_sz_base_data = algor.get_sz_base_data();
+    l_sz_sync_data = algor.get_sz_sync_data();
+    l_base_data = new Vector_Info< Region_Info<N_RANK> >(l_sz_base_data);
+    l_sync_data = new Vector_Info<int>(l_sz_sync_data);
+    printf("sz_base_data = %d, sz_sync_data = %d\n", l_sz_base_data, l_sz_sync_data);
     int l_tree_size_begin = tree_->size();
     printf("tree size = %d\n", l_tree_size_begin);
     /* after remove all nodes, the only remaining node will be the 'root' */
     while (l_tree_size_begin > 1) {
-        tree_->dfs_until_sync(root_->left, (*base_data_));
+        tree_->dfs_until_sync(root_->left, (*l_base_data));
         int l_tree_size_end = tree_->size();
-        sync_data_->add_element(l_tree_size_begin - l_tree_size_end);
+        l_sync_data->add_element(l_tree_size_begin - l_tree_size_end);
         tree_->dfs_rm_sync(root_->left);
         l_tree_size_begin = tree_->size();
         printf("tree size = %d\n", l_tree_size_begin);
     }
-    sync_data_->scan();
+    l_sync_data->scan();
     /* extract data and store plan */
     ofstream os_base_data(base_data_file_name);
     ofstream os_sync_data(sync_data_file_name);
     if (os_base_data.is_open()) {
         printf("os_base_data is open!\n");
-        os_base_data << (*base_data_);
+        os_base_data << (*l_base_data);
     } else {
         printf("os_base_data is NOT open! exit!\n");
         exit(1);
     }
     if (os_sync_data.is_open()) {
         printf("os_sync_data is open!\n");
-        os_sync_data << (*sync_data_);
+        os_sync_data << (*l_sync_data);
     } else {
         printf("os_sync_data is NOT open! exit!\n");
         exit(1);
@@ -457,9 +460,8 @@ void Pochoir<N_RANK>::Gen_Plan(int timestep) {
 
 template <int N_RANK>
 void Pochoir<N_RANK>::Load_Plan(void) {
-    Vector_Info< Region_Info<N_RANK> > * l_base_data = new Vector_Info< Region_Info<N_RANK> >(10);
-    Vector_Info<int> * l_sync_data = new Vector_Info<int>(10);
-    int l_sz_base_data, l_sz_sync_data, offset = 0;
+    base_data_ = new Vector_Info< Region_Info<N_RANK> >(10);
+    sync_data_ = new Vector_Info<int>(10);
     
     FILE * is_base_data = fopen(base_data_file_name, "r");
 
@@ -468,14 +470,14 @@ void Pochoir<N_RANK>::Load_Plan(void) {
         while (!feof(is_base_data)) {
             Region_Info<N_RANK> l_region;
             l_region.pscanf(is_base_data);
-            l_base_data->add_element(l_region);
+            base_data_->add_element(l_region);
         }
     } else {
         printf("is_base_data is NOT open! exit!\n");
         exit(1);
     }
     fclose(is_base_data);
-    std::cerr << "l_base_data : \n" << (*l_base_data) << std::endl;
+    std::cerr << "base_data : \n" << (*base_data_) << std::endl;
 
     FILE * is_sync_data = fopen(sync_data_file_name, "r");
     if (is_sync_data != NULL) {
@@ -483,42 +485,30 @@ void Pochoir<N_RANK>::Load_Plan(void) {
         while (!feof(is_sync_data)) {
             int l_sync;
             fscanf(is_sync_data, "%d\n", &l_sync);
-            l_sync_data->add_element(l_sync);
+            sync_data_->add_element(l_sync);
         }
     } else {
         printf("is_sync_data is NOT open! exit!\n");
         exit(1);
     }
     fclose(is_sync_data);
-    std::cerr << "l_sync_data : \n" << (*l_sync_data) << std::endl;
-    l_sync_data->add_element(-1);
+    std::cerr << "sync_data : \n" << (*sync_data_) << std::endl;
+    sync_data_->add_element(-1);
 
-#if 0
-    for (int j = 0; l_sync_data->region_[j] != -1; ++j) {
-        for (int i = offset; i < l_sync_data->region_[j]; ++i) {
-            int l_region_n = l_base_data->region_[i].region_n;
-            int l_t0 = l_base_data->region_[i].t0;
-            int l_t1 = l_base_data->region_[i].t1;
-            Grid_Info<N_RANK> l_grid = l_base_data->region_[i].grid;
-            for (int t = l_t0; t < l_t1; ++t) {
-                for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
-            int new_i = pmod_lu(i, phys_grid_.x0[0], phys_grid_.x1[0]);
-                pgk_[l_region_n].kernel_[0](t, new_i);
-                }
-                l_grid.x0[0] += l_grid.dx0[0]; l_grid.x1[0] += l_grid.dx1[0];
-            }
-        }
-        offset = l_sync_data->region_[j];
-    }
-#else
-    for (int j = 0; l_sync_data->region_[j] != -1; ++j) {
-        for (int i = offset; i < l_sync_data->region_[j]; ++i) {
-            int l_region_n = l_base_data->region_[i].region_n;
-            int l_t0 = l_base_data->region_[i].t0;
-            int l_t1 = l_base_data->region_[i].t1;
-            Grid_Info<N_RANK> l_grid = l_base_data->region_[i].grid;
+    return;
+}
+
+template <int N_RANK>
+void Pochoir<N_RANK>::Run_Plan() {
+    int offset = 0;
+    for (int j = 0; sync_data_->region_[j] != -1; ++j) {
+        for (int i = offset; i < sync_data_->region_[j]; ++i) {
+            int l_region_n = base_data_->region_[i].region_n;
+            int l_t0 = base_data_->region_[i].t0;
+            int l_t1 = base_data_->region_[i].t1;
+            Grid_Info<N_RANK> l_grid = base_data_->region_[i].grid;
             Pochoir_Region_Kernel<N_RANK> l_kernel(pgk_[l_region_n]);
-            l_kernel.set_pointer(l_t0-time_shift_);
+            l_kernel.set_pointer(l_t0 - time_shift_);
             for (int t = l_t0; t < l_t1; ) {
                 meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
                 for (int i = 0; i < N_RANK; ++i) {
@@ -528,29 +518,7 @@ void Pochoir<N_RANK>::Load_Plan(void) {
                 l_kernel.shift_pointer();
             }
         }
-        offset = l_sync_data->region_[j];
-    }
-#endif
-    return;
-}
-
-template <int N_RANK>
-void Pochoir<N_RANK>::Run_Plan(int timestep) {
-    int offset = 0;
-    Algorithm<N_RANK> algor(slope_);
-    algor.set_phys_grid(phys_grid_);
-    algor.set_thres(arr_type_size_);
-    algor.set_pgk(sz_pgk_, opgk_);
-    algor.set_unroll(lcm_unroll_);
-    timestep_ = timestep;
-    checkFlags();
-
-    for (int j = 0; sync_data_[j] != -1; ++j) {
-        cilk_for (int i = offset; i < sync_data_[j]; ++i) {
-            /* all the grids are supposed to be within one pure sub-region */
-            algor.plan_bicut(base_data_[i].t0_, base_data_[i].t1_, base_data_[i].grid_);
-        }
-        offset = sync_data_[j];
+        offset = sync_data_->region_[j];
     }
     return;
 }

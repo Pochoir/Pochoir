@@ -155,7 +155,7 @@ struct Region_Info {
             fs << r.grid.dx1[i] << ", ";
         }
         fs << r.grid.dx1[i] << "}}, " << r.region_n << "}";
-        return;
+        return fs;
     }
 
     void pscanf(FILE * fs) {
@@ -217,7 +217,7 @@ struct Region_Info {
             fs << r.grid.dx1[i] << ", ";
         }
         fs << r.grid.dx1[i] << "}}, " << r.region_n << "}";
-        return;
+        return fs;
     }
 };
 
