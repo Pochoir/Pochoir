@@ -2067,12 +2067,15 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
     } 
 
     l_dt_stop = dt_recursive_boundary_;
+#if 0
     if (call_boundary) {
         l_unroll = lcm_unroll_;
     } else {
         l_unroll = pgk_[region_n].unroll_;
     }
-
+#else
+    l_unroll = lcm_unroll_;
+#endif
     if (lt > l_dt_stop) {
         /* cut into time */
         int halflt = lt / 2;

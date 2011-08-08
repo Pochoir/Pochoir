@@ -567,7 +567,7 @@ struct Algorithm {
 	inline void base_case_kernel_boundary(int t0, int t1, Grid_Info<N_RANK> const grid, BF const & bf);
     template <typename G1, typename F1, typename G2, typename F2> 
 	inline void base_case_kernel_stagger(int t0, int t1, Grid_Info<N_RANK> const grid, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2);
-    inline void base_case_kernel_guard(int t0, int t1, Grid_Info<N_RANK> const grid, int size, Pochoir_Guard_Kernel<N_RANK> * pgk);
+    inline void base_case_kernel_guard(int t0, int t1, Grid_Info<N_RANK> const grid);
     template <typename F> 
 	inline void walk_serial(int t0, int t1, Grid_Info<N_RANK> const grid, F const & f);
 
@@ -716,10 +716,10 @@ inline void Algorithm<N_RANK>::base_case_kernel_boundary(int t0, int t1, Grid_In
 }
 
 template <int N_RANK> 
-inline void Algorithm<N_RANK>::base_case_kernel_guard(int t0, int t1, Grid_Info<N_RANK> const grid, int size_pgk, Pochoir_Guard_Kernel<N_RANK> * pgk) {
+inline void Algorithm<N_RANK>::base_case_kernel_guard(int t0, int t1, Grid_Info<N_RANK> const grid) {
     /* Each kernel update the entire region independently and entirely!!! */
 	Grid_Info<N_RANK> l_grid = grid;
-    Pochoir_Generic_Kernel<N_RANK> l_kernel(size_pgk, pgk);
+    Pochoir_Generic_Kernel<N_RANK> l_kernel(sz_pgk_, pgk_);
     for (int t = t0; t < t1; ) {
         home_cell_[0] = t;
         meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);

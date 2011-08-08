@@ -29,6 +29,7 @@
 #include "pochoir_common.hpp"
 #include "pochoir_types.hpp"
 #include "pochoir_kernel.hpp"
+#include "pochoir_walk.hpp"
 #include "pochoir_array.hpp"
 /* assuming there won't be more than 10 Pochoir_Array in one Pochoir object! */
 #define ARRAY_SIZE 10
@@ -376,12 +377,13 @@ void Pochoir<N_RANK>::Run(int timestep) {
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
     algor.set_unroll(lcm_unroll_);
+    algor.set_pgk(sz_pgk_, pgk_);
     timestep_ = timestep;
     /* base_case_kernel() will mimic exact the behavior of serial nested loop!
     */
     checkFlags();
     inRun = true;
-    algor.base_case_kernel_guard(0 + time_shift_, timestep + time_shift_, logic_grid_, sz_pgk_, pgk_);
+    algor.base_case_kernel_guard(0 + time_shift_, timestep + time_shift_, logic_grid_);
     inRun = false;
 }
 
@@ -491,6 +493,7 @@ void Pochoir<N_RANK>::Load_Plan(void) {
     std::cerr << "l_sync_data : \n" << (*l_sync_data) << std::endl;
     l_sync_data->add_element(-1);
 
+#if 0
     for (int j = 0; l_sync_data->region_[j] != -1; ++j) {
         for (int i = offset; i < l_sync_data->region_[j]; ++i) {
             int l_region_n = l_base_data->region_[i].region_n;
@@ -507,7 +510,27 @@ void Pochoir<N_RANK>::Load_Plan(void) {
         }
         offset = l_sync_data->region_[j];
     }
-
+#else
+    for (int j = 0; l_sync_data->region_[j] != -1; ++j) {
+        for (int i = offset; i < l_sync_data->region_[j]; ++i) {
+            int l_region_n = l_base_data->region_[i].region_n;
+            int l_t0 = l_base_data->region_[i].t0;
+            int l_t1 = l_base_data->region_[i].t1;
+            Grid_Info<N_RANK> l_grid = l_base_data->region_[i].grid;
+            Pochoir_Region_Kernel<N_RANK> l_kernel(pgk_[l_region_n]);
+            l_kernel.set_pointer(l_t0-time_shift_);
+            for (int t = l_t0; t < l_t1; ) {
+                meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
+                for (int i = 0; i < N_RANK; ++i) {
+                    l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+                }
+                ++t;
+                l_kernel.shift_pointer();
+            }
+        }
+        offset = l_sync_data->region_[j];
+    }
+#endif
     return;
 }
 
