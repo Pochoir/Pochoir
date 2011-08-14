@@ -491,7 +491,7 @@ struct Algorithm {
         dt_recursive_ = (N_RANK == 1) ? 4500 : (N_RANK == 2 ? 45 : (N_RANK == 3 ? 4 : 2));
 #endif
 #endif
-#if 1
+#if DEBUG 
         printf("arr_type_size = %d\n", arr_type_size);
         printf("dt_thres = %d, ", dt_recursive_);
         for (int i = N_RANK-1; i >=1; --i)

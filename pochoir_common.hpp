@@ -228,7 +228,9 @@ struct Vector_Info {
     Vector_Info(int size) {
         region_ = (T *) calloc(size, sizeof(T));
         pointer_ = 0; size_ = size;
+#if DEBUG
         printf("init size = %d\n", size_);
+#endif
     }
     ~Vector_Info() {
         pointer_ = size_ = 0;
@@ -242,7 +244,9 @@ struct Vector_Info {
             region_[pointer_] = ele;
             ++pointer_;
         } else {
+#if DEBUG
             printf("realloc memory size = %d -> %d!\n", size_, 2*size_);
+#endif
             T * l_region = (T *) calloc(2*size_, sizeof(T));
             if (l_region != NULL) {
                 for (int i = 0; i < size_; ++i) {
@@ -315,14 +319,18 @@ struct Pochoir_Plan {
         std::ofstream os_base_data(base_file_name);
         std::ofstream os_sync_data(sync_file_name);
         if (os_base_data.is_open()) {
+#if DEBUG
             printf("os_base_data is open!\n");
+#endif
             os_base_data << (*base_data_);
         } else {
             printf("os_base_data is NOT open! exit!\n");
             exit(1);
         }
         if (os_sync_data.is_open()) {
+#if DEBUG
             printf("os_sync_data is open!\n");
+#endif
             os_sync_data << (*sync_data_);
         } else {
             printf("os_sync_data is NOT open! exit!\n");
@@ -347,7 +355,9 @@ struct Pochoir_Plan {
         FILE * is_base_data = fopen(base_file_name, "r");
 
         if (is_base_data != NULL) {
+#if DEBUG
             printf("is_base_data is open!\n");
+#endif
             while (!feof(is_base_data)) {
                 Region_Info<N_RANK> l_region;
                 l_region.pscanf(is_base_data);
@@ -358,11 +368,15 @@ struct Pochoir_Plan {
             exit(1);
         }
         fclose(is_base_data);
+#if DEBUG
         std::cerr << "base_data : \n" << (*base_data_) << std::endl;
+#endif
 
         FILE * is_sync_data = fopen(sync_file_name, "r");
         if (is_sync_data != NULL) {
+#if DEBUG
             printf("is_sync_data is open!\n");
+#endif
             while (!feof(is_sync_data)) {
                 int l_sync;
                 fscanf(is_sync_data, "%d\n", &l_sync);
@@ -373,7 +387,9 @@ struct Pochoir_Plan {
             exit(1);
         }
         fclose(is_sync_data);
+#if DEBUG
         std::cerr << "sync_data : \n" << (*sync_data_) << std::endl;
+#endif
 
         return (*this);
     }

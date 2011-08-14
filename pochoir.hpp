@@ -425,9 +425,11 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     l_sz_sync_data = max(1, algor.get_sz_sync_data());
     l_plan->alloc_base_data(l_sz_base_data);
     l_plan->alloc_sync_data(l_sz_sync_data);
-    printf("sz_base_data = %d, sz_sync_data = %d\n", l_sz_base_data, l_sz_sync_data);
     int l_tree_size_begin = l_tree->size();
+#if DEBUG
+    printf("sz_base_data = %d, sz_sync_data = %d\n", l_sz_base_data, l_sz_sync_data);
     printf("tree size = %d\n", l_tree_size_begin);
+#endif
     /* after remove all nodes, the only remaining node will be the 'root' */
     while (l_tree_size_begin > 1) {
         l_tree->dfs_until_sync(l_root->left, (*(l_plan->base_data_)));
@@ -435,7 +437,9 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
         l_plan->sync_data_->add_element(l_tree_size_begin - l_tree_size_end);
         l_tree->dfs_rm_sync(l_root->left);
         l_tree_size_begin = l_tree->size();
+#if DEBUG
         printf("tree size = %d\n", l_tree_size_begin);
+#endif
     }
     l_plan->sync_data_->scan();
     l_plan->sync_data_->add_element(END_SYNC);
@@ -502,7 +506,7 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
     checkFlags();
     int offset = 0;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
-        for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
+        cilk_for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
             int l_region_n = _plan.base_data_->region_[i].region_n;
             int l_t0 = _plan.base_data_->region_[i].t0;
             int l_t1 = _plan.base_data_->region_[i].t1;
