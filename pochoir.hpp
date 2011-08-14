@@ -118,7 +118,8 @@ class Pochoir {
     Pochoir_Plan<N_RANK> & Gen_Plan(int timepstep);
     Pochoir_Plan<N_RANK> & Load_Plan(const char * file_name);
     void Store_Plan(Pochoir_Plan<N_RANK> & _plan, const char * file_name);
-    void Run_Plan(Pochoir_Plan<N_RANK> & _plan);
+    void Run(Pochoir_Plan<N_RANK> & _plan);
+    void Run_Obase(Pochoir_Plan<N_RANK> & _plan);
 #if 0
     /* obsolete methods -- to remove */
     /* obase for zero-padded region */
@@ -408,7 +409,11 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
     /* set individual unroll factor from opgk_ */
-    algor.set_pgk(sz_pgk_, pgk_);
+    if (opgk_ == NULL) {
+        algor.set_pgk(sz_pgk_, pgk_);
+    } else {
+        algor.set_obase_pgk(sz_pgk_, opgk_);
+    }
     algor.set_unroll(lcm_unroll_);
     timestep_ = timestep;
     checkFlags();
@@ -417,7 +422,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     algor.set_tree(l_tree);
     algor.gen_plan_bicut_p(l_root, 0 + time_shift_, timestep + time_shift_, logic_grid_);
     l_sz_base_data = algor.get_sz_base_data();
-    l_sz_sync_data = algor.get_sz_sync_data();
+    l_sz_sync_data = max(1, algor.get_sz_sync_data());
     l_plan->alloc_base_data(l_sz_base_data);
     l_plan->alloc_sync_data(l_sz_sync_data);
     printf("sz_base_data = %d, sz_sync_data = %d\n", l_sz_base_data, l_sz_sync_data);
@@ -459,7 +464,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Load_Plan(const char * file_name) {
 }
 
 template <int N_RANK>
-void Pochoir<N_RANK>::Run_Plan(Pochoir_Plan<N_RANK> & _plan) {
+void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
     int offset = 0;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
@@ -482,4 +487,31 @@ void Pochoir<N_RANK>::Run_Plan(Pochoir_Plan<N_RANK> & _plan) {
     }
     return;
 }
+
+template <int N_RANK>
+void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
+    Algorithm<N_RANK> algor(slope_);
+    algor.set_phys_grid(phys_grid_);
+    algor.set_thres(arr_type_size_);
+    algor.set_unroll(lcm_unroll_);
+    if (opgk_ == NULL) {
+        algor.set_pgk(sz_pgk_, pgk_);
+    } else {
+        algor.set_obase_pgk(sz_pgk_, opgk_);
+    }
+    checkFlags();
+    int offset = 0;
+    for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
+        for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
+            int l_region_n = _plan.base_data_->region_[i].region_n;
+            int l_t0 = _plan.base_data_->region_[i].t0;
+            int l_t1 = _plan.base_data_->region_[i].t1;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
+        }
+        offset = _plan.sync_data_->region_[j];
+    }
+    return;
+}
+
 #endif

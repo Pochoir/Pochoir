@@ -471,7 +471,7 @@ struct Algorithm {
     inline int get_sz_base_data(void) { return sz_base_data_; }
     inline int get_sz_sync_data(void) { return sz_sync_data_; }
     inline void set_thres(int arr_type_size) {
-#if DEBUG 
+#if 0 
         dt_recursive_ = 1;
         dx_recursive_[0] = 1;
         for (int i = N_RANK-1; i >= 1; --i)
@@ -527,6 +527,13 @@ struct Algorithm {
     inline void gen_plan_space_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid);
     inline void gen_plan_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid);
     /* meta functions to generate the execute plan */
+    /*******************************************************************************/
+    /* meta functions to run the plan */
+    inline void plan_space_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void plan_space_bicut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void plan_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    /* meta functions to run the plan */
     /*******************************************************************************/
     /* followings are the sim cut of both top and bottom bar */
     template <typename F>
