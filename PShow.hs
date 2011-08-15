@@ -369,7 +369,7 @@ pShowSingleCPointerKernel l_cond l_t l_resid l_unroll l_kL@(l_kernel:l_kernels) 
                           then pShowUnrollGuardHead l_t l_resid l_unroll 
                                     (shapeTimeShift $ kfShape l_kernel)
                           else ""
-        l_guard_tail = if l_cond && l_unroll > 1 then pShowUnrollGuardTail l_t else ""
+        l_guard_tail = if l_cond && l_unroll > 1 then pShowUnrollGuardTail l_t (length l_kernels) else ""
         l_adjust_T = if l_cond && l_unroll > 1  then "" else pAdjustT l_t l_kernels
     in  breakline ++ l_guard_head ++
         breakline ++ "{" ++
@@ -393,7 +393,7 @@ pShowSingleOptPointerKernel l_cond l_t l_resid l_unroll l_kL@(l_kernel:l_kernels
                           then pShowUnrollGuardHead l_t l_resid l_unroll 
                                     (shapeTimeShift $ kfShape l_kernel)
                           else ""
-        l_guard_tail = if l_cond && l_unroll > 1 then pShowUnrollGuardTail l_t else ""
+        l_guard_tail = if l_cond && l_unroll > 1 then pShowUnrollGuardTail l_t (length l_kernels) else ""
         l_adjust_T = if l_cond && l_unroll > 1 then "" else pAdjustT l_t l_kernels
     in  breakline ++ l_guard_head ++ 
         breakline ++ "{" ++
@@ -417,7 +417,7 @@ pShowSinglePointerKernel l_cond l_t l_resid l_unroll l_kL@(l_kernel:l_kernels) =
                           then pShowUnrollGuardHead l_t l_resid l_unroll 
                                     (shapeTimeShift $ kfShape l_kernel)
                           else ""
-        l_guard_tail = if l_cond && l_unroll > 1 then pShowUnrollGuardTail l_t else ""
+        l_guard_tail = if l_cond && l_unroll > 1 then pShowUnrollGuardTail l_t (length l_kernels) else ""
         l_adjust_T = if l_cond && l_unroll > 1 then "" else pAdjustT l_t l_kernels
     in  breakline ++ l_guard_head ++
         breakline ++ "{" ++ 
@@ -449,8 +449,10 @@ pShowUnrollGuardHead l_t l_resid l_unroll l_timeShift =
         l_dividend = " ( " ++ l_t ++ " + " ++ show l_timeShift ++ " ) "
     in  "if (" ++ l_dividend ++ l_modOp ++ l_divisor ++ " == " ++ show l_resid ++ ") {"
 
-pShowUnrollGuardTail :: String -> String
-pShowUnrollGuardTail l_t = "} /* end conditional unroll on " ++ l_t ++ " */"
+pShowUnrollGuardTail :: String -> Int -> String
+pShowUnrollGuardTail l_t l_len 
+    | l_len == 0 = "} /* end conditional unroll on " ++ l_t ++ " */"
+    | otherwise = "} /* end conditional unroll on " ++ l_t ++ " */ else"
     
 pShowCondMacroKernel :: Bool -> String -> Int -> Int -> [PKernelFunc] -> String
 pShowCondMacroKernel _ _ _ _ [] = ""
@@ -462,7 +464,7 @@ pShowCondMacroKernel l_boundary l_t l_resid l_unroll (l_kernel:l_kernels) =
                           then pShowUnrollGuardHead l_t l_resid l_unroll 
                                                     (shapeTimeShift $ kfShape l_kernel)
                           else ""
-        l_guard_tail = if l_unroll > 1 then pShowUnrollGuardTail l_t else ""
+        l_guard_tail = if l_unroll > 1 then pShowUnrollGuardTail l_t (length l_kernels) else ""
         l_adjust_T = if l_unroll > 1 then "" else pAdjustT l_t l_kernels
     in  breakline ++ l_guard_head ++ 
         breakline ++ pShowMetaGridHeader l_boundary l_params ++

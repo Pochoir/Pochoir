@@ -412,7 +412,7 @@ struct Algorithm {
         int ulb_boundary[N_RANK], uub_boundary[N_RANK], lub_boundary[N_RANK];
         bool boundarySet, physGridSet, slopeSet, pgkSet, opgkSet;
         int sz_pgk_;
-        int lcm_unroll_;
+        int lcm_unroll_, time_shift_;
         Pochoir_Guard_Kernel<N_RANK> * pgk_;
         Pochoir_Obase_Guard_Kernel<N_RANK> * opgk_;
 #if PURE_REGION_ALL
@@ -429,11 +429,11 @@ struct Algorithm {
     cilk::reducer_opadd<int> interior_region_count, boundary_region_count;
     cilk::reducer_opadd<long long> interior_points_count, boundary_points_count;
 #endif
-
+    int num_kernel_, num_cond_kernel_, num_bkernel_, num_cond_bkernel_;
     typedef enum {TILE_NCORES, TILE_BOUNDARY, TILE_MP} algor_type;
     
     /* constructor */
-    Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1), lcm_unroll_(1), pad_point_(2) {
+    Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1), lcm_unroll_(1), time_shift_(0), pad_point_(2) {
         for (int i = 0; i < N_RANK; ++i) {
             slope_[i] = _slope[i];
             dx_recursive_boundary_[i] = 1;
@@ -448,6 +448,7 @@ struct Algorithm {
         pgkSet = opgkSet = false;
         slopeSet = true;
         sz_base_data_ = sz_sync_data_ = 0;
+        num_kernel_ = num_cond_kernel_ = num_bkernel_ = num_cond_bkernel_ = 0;
         /* ALGOR_QUEUE_SIZE = 3^N_RANK */
         // ALGOR_QUEUE_SIZE = power<N_RANK>::value;
 #define ALGOR_QUEUE_SIZE (power<N_RANK>::value)
@@ -470,6 +471,10 @@ struct Algorithm {
     inline void set_tree(Spawn_Tree<N_RANK> * _tree) { tree_ = _tree; }
     inline int get_sz_base_data(void) { return sz_base_data_; }
     inline int get_sz_sync_data(void) { return sz_sync_data_; }
+    inline void read_stat_kernel(int & _num_kernel_, int & _num_cond_kernel_, int & _num_bkernel_, int & _num_cond_bkernel_) {
+        _num_kernel_ = num_kernel_; _num_cond_kernel_ = num_cond_kernel_;
+        _num_bkernel_ = num_bkernel_; _num_cond_bkernel_ = num_cond_bkernel_;
+    }
     inline void set_thres(int arr_type_size) {
 #if 0 
         dt_recursive_ = 1;
@@ -508,7 +513,8 @@ struct Algorithm {
     void set_slope(int const slope[]);
     void set_pgk(int _sz_pgk, Pochoir_Guard_Kernel<N_RANK> * _pgk);
     void set_obase_pgk(int _sz_pgk, Pochoir_Obase_Guard_Kernel<N_RANK> * _opgk);
-    void set_unroll(int _lcm_unroll);
+    void set_unroll(int _lcm_unroll) { lcm_unroll_ = _lcm_unroll; }
+    void set_time_shift(int _time_shift) { time_shift_ = _time_shift; }
 
     inline bool touch_boundary(int i, int lt, Grid_Info<N_RANK> & grid);
     inline bool within_boundary(int t0, int t1, Grid_Info<N_RANK> & grid);
@@ -686,11 +692,6 @@ void Algorithm<N_RANK>::set_obase_pgk(int _sz_pgk, Pochoir_Obase_Guard_Kernel<N_
         pure_region_->set_phys_grid(phys_grid_);
     }
     return;
-}
-
-template <int N_RANK>
-void Algorithm<N_RANK>::set_unroll(int _lcm_unroll) {
-    lcm_unroll_ = _lcm_unroll;
 }
 
 template <int N_RANK> template <typename F>

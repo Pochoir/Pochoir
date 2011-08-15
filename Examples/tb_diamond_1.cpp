@@ -68,6 +68,7 @@ int main(int argc, char * argv[])
     /* the 1D spatial dimension has 'N' points */
     int N = 0, T = 0;
     double umin, umax;
+    char pochoir_plan_file_name[100];
 
     if (argc < 3) {
         printf("argc < 3, quit! \n");
@@ -180,8 +181,9 @@ int main(int argc, char * argv[])
     }
 
     Pochoir_Plan<1> & l_plan = leap_frog.Gen_Plan(T);
-    leap_frog.Store_Plan(l_plan, "pochoir.dat");
-    Pochoir_Plan<1> & ll_plan = leap_frog.Load_Plan("pochoir.dat");
+    sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat", N, T);
+    leap_frog.Store_Plan(l_plan, pochoir_plan_file_name);
+    Pochoir_Plan<1> & ll_plan = leap_frog.Load_Plan(pochoir_plan_file_name);
 //    leap_frog.Load_Plan();
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
@@ -194,7 +196,7 @@ int main(int argc, char * argv[])
 //    std::cout << "Pochoir time : " << min_tdiff << " ms" << std::endl;
 
     min_tdiff = INF;
-
+#if !POCHOIR
     /* cilk_for */
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
@@ -260,7 +262,7 @@ int main(int argc, char * argv[])
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
-
+#endif
     printf("Parallel Loop time = %.6f ms\n", min_tdiff);
 //    std::cout << "Parallel Loop time : " << min_tdiff << " ms" << std::endl;
 
