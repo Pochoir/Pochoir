@@ -73,6 +73,7 @@ class Pochoir {
     public:
     template <typename ... KS>
     void Register_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, KS ... ks);
+    void Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & bk);
     void Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk);
     // get slope(s)
     int slope(int const _idx) { return slope_[_idx]; }
@@ -120,6 +121,7 @@ class Pochoir {
     void Store_Plan(Pochoir_Plan<N_RANK> & _plan, const char * file_name);
     void Run(Pochoir_Plan<N_RANK> & _plan);
     void Run_Obase(Pochoir_Plan<N_RANK> & _plan);
+    void Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan);
 #if 0
     /* obsolete methods -- to remove */
     /* obase for zero-padded region */
@@ -194,6 +196,33 @@ void Pochoir<N_RANK>::Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Gu
     opgk_[sz_pgk_].cond_bkernel_ = (T_Kernel *) calloc(1, sizeof(T_Kernel));
     opgk_[sz_pgk_].cond_bkernel_[0] = cond_bk;
     Register_Shape(cond_bk.Get_Shape(), cond_bk.Get_Shape_Size());
+    lcm_unroll_ = lcm(lcm_unroll_, unroll);
+    ++sz_pgk_;
+}
+
+template <int N_RANK> 
+void Pochoir<N_RANK>::Register_Obase_Kernel(typename Pochoir_Types<N_RANK>::T_Guard g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & bk) {
+    typedef Pochoir_Obase_Kernel<N_RANK> T_Kernel;
+    if (opgk_ == NULL) {
+        opgk_ = new Pochoir_Obase_Guard_Kernel<N_RANK>[ARRAY_SIZE];
+        sz_pgk_ = 0;
+        assert(lcm_unroll_ == 1);
+    }
+    assert(sz_pgk_ < ARRAY_SIZE);
+    if (sz_pgk_ >= ARRAY_SIZE) {
+        printf("Pochoir Error: Register_Kernel > %d\n", sz_pgk_);
+        exit(1);
+    }
+    opgk_[sz_pgk_].guard_ = g;
+    opgk_[sz_pgk_].unroll_ = unroll;
+    opgk_[sz_pgk_].kernel_ = (T_Kernel *) calloc(1, sizeof(T_Kernel));
+    opgk_[sz_pgk_].kernel_[0] = k;
+    Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
+    opgk_[sz_pgk_].bkernel_ = (T_Kernel *) calloc(1, sizeof(T_Kernel));
+    opgk_[sz_pgk_].bkernel_[0] = bk;
+    Register_Shape(bk.Get_Shape(), bk.Get_Shape_Size());
+    opgk_[sz_pgk_].cond_kernel_ = NULL;
+    opgk_[sz_pgk_].cond_bkernel_ = NULL;
     lcm_unroll_ = lcm(lcm_unroll_, unroll);
     ++sz_pgk_;
 }
@@ -544,4 +573,55 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
     return;
 }
 
+template <int N_RANK>
+void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
+    Algorithm<N_RANK> algor(slope_);
+    algor.set_phys_grid(phys_grid_);
+    algor.set_thres(arr_type_size_);
+    algor.set_unroll(lcm_unroll_);
+    algor.set_time_shift(time_shift_);
+    if (opgk_ == NULL) {
+        algor.set_pgk(sz_pgk_, pgk_);
+    } else {
+        algor.set_obase_pgk(sz_pgk_, opgk_);
+    }
+    checkFlags();
+#if USE_CILK_FOR
+    int offset = 0;
+    for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
+        cilk_for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
+            int l_region_n = _plan.base_data_->region_[i].region_n;
+            int l_t0 = _plan.base_data_->region_[i].t0;
+            int l_t1 = _plan.base_data_->region_[i].t1;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n);
+        }
+        offset = _plan.sync_data_->region_[j];
+    }
+#else
+    int offset = 0, i;
+    for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
+        for (i = offset; i < _plan.sync_data_->region_[j]-1; ++i) {
+            int l_region_n = _plan.base_data_->region_[i].region_n;
+            int l_t0 = _plan.base_data_->region_[i].t0;
+            int l_t1 = _plan.base_data_->region_[i].t1;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            cilk_spawn algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n);
+        }
+        int l_region_n = _plan.base_data_->region_[i].region_n;
+        int l_t0 = _plan.base_data_->region_[i].t0;
+        int l_t1 = _plan.base_data_->region_[i].t1;
+        Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+        algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n);
+        cilk_sync;
+        offset = _plan.sync_data_->region_[j];
+    }
+
+#endif
+    int l_num_kernel = 0, l_num_cond_kernel = 0, l_num_bkernel = 0, l_num_cond_bkernel = 0;
+    algor.read_stat_kernel(l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
+    printf("kernel = %d, cond_kernel = %d, bkernel = %d, cond_bkernel = %d\n",
+            l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
+    return;
+}
 #endif

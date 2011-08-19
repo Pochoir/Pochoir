@@ -68,9 +68,15 @@ ppStencil1 l_id l_state =
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
            semi
+           let l_mode = pMode l_state
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ ");")
-               Just l_stencil -> return (breakline ++ l_id ++ ".Run_Obase(" ++
+               Just l_stencil -> if l_mode == PMUnroll 
+                                    then return (breakline ++ l_id ++ 
+                                         ".Run_Obase_Merge(" ++ show l_tstep ++ 
+                                         "); /* Run with Stencil " ++ l_id ++ " */" ++ 
+                                         breakline)
+                                    else return (breakline ++ l_id ++ ".Run_Obase(" ++
                                          show l_tstep ++ "); /* Run with Stencil " ++
                                          l_id ++ " */" ++ breakline)
     <|> do return (l_id)

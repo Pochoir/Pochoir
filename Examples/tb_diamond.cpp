@@ -68,6 +68,7 @@ int main(int argc, char * argv[])
     /* the 1D spatial dimension has 'N' points */
     int N = 0, T = 0;
     double umin, umax;
+    char pochoir_plan_file_name[100];
 
     if (argc < 3) {
         printf("argc < 3, quit! \n");
@@ -118,11 +119,11 @@ int main(int argc, char * argv[])
     Pochoir_Kernel_1D_End(interior_2, shape_interior_2)
 
     Pochoir_Kernel_1D_Begin(exterior_0, t, i)
-        a(t, i) = 0.1 * a(t-1, i-1) + 0.15 * a(t-1, i) + 0.189 * a(t-1, i+1) + 0.8;
+        a(t, i) = 0.1 * a(t-1, i-1) - 0.15 * a(t-1, i) - 0.189 * a(t-1, i+1) - 0.8;
     Pochoir_Kernel_1D_End(exterior_0, shape_exterior_0)
 
     Pochoir_Kernel_1D_Begin(exterior_1, t, i)
-        a(t, i) = 0.2 * a(t-1, i-1) + 0.25 * a(t-1, i) + 0.289 * a(t-1, i+1) + 0.8;
+        a(t, i) = 0.2 * a(t-1, i-1) - 0.25 * a(t-1, i) - 0.289 * a(t-1, i+1) - 0.8;
     Pochoir_Kernel_1D_End(exterior_1, shape_exterior_1)
 
     leap_frog.Register_Kernel(guard_interior, interior_0, interior_1, interior_2);
@@ -135,10 +136,14 @@ int main(int argc, char * argv[])
         b(0, i) = a(0, i);
     }
 
-    leap_frog.Gen_Plan(6 * T);
+    Pochoir_Plan<1> & l_plan = leap_frog.Gen_Plan(T);
+    sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat", N, T);
+    leap_frog.Store_Plan(l_plan, pochoir_plan_file_name);
+    Pochoir_Plan<1> & ll_plan = leap_frog.Load_Plan(pochoir_plan_file_name);
+
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        leap_frog.Load_Plan();
+        leap_frog.Run(ll_plan);
         // leap_frog.Run(6*T);
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
@@ -151,7 +156,7 @@ int main(int argc, char * argv[])
     /* cilk_for */
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        for (int t = 1; t < 6 * T + 1; ++t) {
+        for (int t = 1; t < T + 1; ++t) {
             cilk_for (int i = 0; i < N; ++i) {
             if (guard_interior(t, i)) {
                 /* interior sub-region */
@@ -167,10 +172,10 @@ int main(int argc, char * argv[])
             } else {
                 /* exterior sub-region*/
                 if (t % 2 == 1) {
-                    b(t, i) = 0.1 * b(t-1, i-1) + 0.15 * b(t-1, i) + 0.189 * b(t-1, i+1) + 0.8;
+                    b(t, i) = 0.1 * b(t-1, i-1) - 0.15 * b(t-1, i) - 0.189 * b(t-1, i+1) - 0.8;
                 }
                 if (t % 2 == 0) {
-                    b(t, i) = 0.2 * b(t-1, i-1) + 0.25 * b(t-1, i) + 0.289 * b(t-1, i+1) + 0.8;
+                    b(t, i) = 0.2 * b(t-1, i-1) - 0.25 * b(t-1, i) - 0.289 * b(t-1, i+1) - 0.8;
                 }
             }
             }

@@ -219,6 +219,8 @@ pShowUnrolledMacroKernels l_cond l_name l_kL@(l_kernel:l_kernels)  =
     let l_iters = concatMap kfIter l_kL
         l_arrayInUse = unionArrayIter l_iters 
         l_t = "t"
+        l_t_begin = l_t ++ "0"
+        l_t_end = l_t ++ "1"
         -- We are assuming all kernels have the same number of input parameters
         l_kfParams = kfParams l_kernel
         l_unroll = length l_kL
@@ -240,7 +242,7 @@ pShowUnrolledMacroKernels l_cond l_name l_kL@(l_kernel:l_kernels)  =
     in  breakline ++ l_defMacro ++
         breakline ++ l_header ++
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
-        breakline ++ pShowTimeLoopHeader l_t ++ 
+        breakline ++ pShowTimeLoopHeader l_t l_t_begin l_t_end ++ 
         l_unfold_kernel ++
         breakline ++ pShowTimeLoopTail ++ 
         breakline ++ l_tail ++
@@ -249,6 +251,8 @@ pShowUnrolledMacroKernels l_cond l_name l_kL@(l_kernel:l_kernels)  =
 pShowUnrolledBoundaryKernels :: Bool -> String -> PStencil -> [PKernelFunc] -> String
 pShowUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) = 
     let l_t = "t"
+        l_t_begin = l_t ++ "0"
+        l_t_end = l_t ++ "1"
         l_rank = sRank l_stencil
         l_unroll = length l_kL
         l_arrayInUse = sArrayInUse l_stencil
@@ -274,12 +278,164 @@ pShowUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) =
         breakline ++ l_header ++
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ l_showPhysGrid ++
-        breakline ++ pShowTimeLoopHeader l_t ++ 
+        breakline ++ pShowTimeLoopHeader l_t l_t_begin l_t_end ++ 
         l_unfold_kernel ++
         breakline ++ pShowTimeLoopTail ++ 
         breakline ++ l_tail ++
         breakline ++ l_undefMacro ++ breakline
- 
+
+pDefMax :: String
+pDefMax = "#define max(a, b) ((a) > (b) ? (a) : (b))"
+
+pUndefMax :: String
+pUndefMax = "#undef max(a, b)"
+
+pDefMin :: String
+pDefMin = "#define min(a, b) ((a) < (b) ? (a) : (b))"
+
+pUndefMin :: String
+pUndefMin = "#undef min(a, b)"
+
+pShowMUnrolledBoundaryKernels :: Bool -> String -> PStencil -> [PKernelFunc] -> String
+pShowMUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) = 
+    let l_unroll = length l_kL
+        s_unroll = show l_unroll 
+        l_time_shift = sTimeShift l_stencil
+        s_time_shift = show l_time_shift
+        l_t = "t"
+        l_t_header_begin = "t0"
+        l_t_header_end = "t0 + (" ++ s_unroll ++ " - (t0 + " ++ s_time_shift ++ ") % " ++ s_unroll ++ ")"
+        l_t_header_end' = "min(" ++ l_t_header_end ++ ", t1)"
+        ll_t_header_begin = "l_t_header_begin"
+        ll_t_header_end = "l_t_header_end"
+        l_def_t_header_begin = "int " ++ ll_t_header_begin ++ " = " ++ l_t_header_begin ++ ";"
+        l_def_t_header_end = "int " ++ ll_t_header_end ++ " = " ++ l_t_header_end' ++ ";"
+        l_t_mid_begin = l_t_header_end'
+        l_t_mid_end = "t1 - " ++ "(t1 + " ++ s_time_shift ++ ") % " ++ s_unroll
+        l_t_mid_end' = "min(" ++ l_t_mid_end ++ ", t1)"
+        ll_t_mid_begin = "l_t_mid_begin"
+        ll_t_mid_end = "l_t_mid_end"
+        l_def_t_mid_begin = "int " ++ ll_t_mid_begin ++ " = " ++ l_t_mid_begin ++ ";"
+        l_def_t_mid_end = "int " ++ ll_t_mid_end ++ " = " ++ l_t_mid_end' ++ ";"
+        l_t_tail_begin = "max(" ++ l_t_header_end' ++ ", " ++ l_t_mid_end' ++ ")"
+        l_t_tail_end = "t1"
+        l_t_tail_end' = l_t_tail_end
+        ll_t_tail_begin = "l_t_tail_begin"
+        ll_t_tail_end = "l_t_tail_end"
+        l_def_t_tail_begin = "int " ++ ll_t_tail_begin ++ " = " ++ l_t_tail_begin ++ ";"
+        l_def_t_tail_end = "int " ++ ll_t_tail_end ++ " = " ++ l_t_tail_end' ++ ";"
+        l_t_header_cout = "// std::cout << \"l_t_header_begin = \" << " ++ l_t_header_begin ++ "<< \" l_t_header_end = \" << " ++ l_t_header_end' ++ " << std::endl;"
+        l_t_mid_cout = "// std::cout << \"l_t_mid_begin = \" << " ++ l_t_mid_begin ++ "<< \" l_t_mid_end = \" << " ++ l_t_mid_end' ++ " << std::endl;"
+        l_t_tail_cout = "// std::cout << \"l_t_tail_begin = \" << " ++ l_t_tail_begin ++ "<< \" l_t_tail_end = \" << " ++ l_t_tail_end' ++ " << std::endl;"
+        l_rank = sRank l_stencil
+        l_arrayInUse = sArrayInUse l_stencil
+        -- We are assuming all kernels have the same number of input parameters
+        l_kfParams = kfParams l_kernel
+        l_defMacro = pDefMacroArrayInUse "boundary" l_arrayInUse l_kfParams
+        l_undefMacro = pUndefMacroArrayInUse l_arrayInUse l_kfParams
+        l_showPhysGrid = "Grid_Info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
+                         sName l_stencil ++ ".get_phys_grid();"
+        l_header_kernel = pShowCondMacroKernel True l_t 0 l_unroll l_kL
+        l_tail_kernel = l_header_kernel
+        l_mid_kernel = pShowSingleMacroKernel True l_t l_kL
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kL)
+        l_kernelFuncName = pSys l_name
+        l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
+                   " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
+                   show l_rank ++ "> const & grid) {"
+        l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
+                 "> " ++ l_name ++ "( " ++ shapeName l_pShape ++ ", " ++ 
+                 l_kernelFuncName ++ " );" ++ breakline 
+    in  breakline ++ pDefMax ++
+        breakline ++ pDefMin ++
+        breakline ++ l_defMacro ++
+        breakline ++ pShowPMODLU ++
+        breakline ++ l_header ++
+        breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        breakline ++ l_showPhysGrid ++
+        breakline ++ l_def_t_header_begin ++ breakline ++ l_def_t_header_end ++
+        breakline ++ l_def_t_mid_begin ++ breakline ++ l_def_t_mid_end ++
+        breakline ++ l_def_t_tail_begin ++ breakline ++ l_def_t_tail_end ++
+        breakline ++ l_t_header_cout ++
+        breakline ++ l_t_mid_cout ++
+        breakline ++ l_t_tail_cout ++
+        breakline ++ pShowTimeLoopHeader l_t ll_t_header_begin ll_t_header_end ++
+        l_header_kernel ++ breakline ++ pShowTimeLoopTail ++
+        breakline ++ pShowTimeLoopHeader l_t ll_t_mid_begin ll_t_mid_end ++
+        l_mid_kernel ++ breakline ++ pShowTimeLoopTail ++
+        breakline ++ pShowTimeLoopHeader l_t ll_t_tail_begin ll_t_tail_end ++
+        l_tail_kernel ++ breakline ++ pShowTimeLoopTail ++
+        breakline ++ l_tail ++
+        breakline ++ l_undefMacro ++ 
+        breakline ++ pUndefMax ++ breakline ++ pUndefMin 
+
+pShowMUnrolledKernels :: String -> PStencil -> [PKernelFunc] -> (Bool -> String -> Int -> Int -> [PKernelFunc] -> String) -> String
+pShowMUnrolledKernels l_name l_stencil l_kL@(l_kernel:l_kernels) l_showSingleKernel= 
+    let l_rank = sRank l_stencil
+        l_iter = concatMap kfIter l_kL
+        -- l_arrayInUse = unionArrayIter l_iter
+        l_arrayInUse = sArrayInUse l_stencil
+        l_unroll = length l_kL
+        s_unroll = show l_unroll
+        l_time_shift = sTimeShift l_stencil
+        s_time_shift = show l_time_shift
+        l_t = "t"
+        l_t_header_begin = "t0"
+        l_t_header_end = "t0 + (" ++ s_unroll ++ " - (t0 + " ++ s_time_shift ++ ") % " ++ s_unroll ++ ")"
+        l_t_header_end' = "min(" ++ l_t_header_end ++ ", t1)"
+        ll_t_header_begin = "l_t_header_begin"
+        ll_t_header_end = "l_t_header_end"
+        l_def_t_header_begin = "int " ++ ll_t_header_begin ++ " = " ++ l_t_header_begin ++ ";"
+        l_def_t_header_end = "int " ++ ll_t_header_end ++ " = " ++ l_t_header_end' ++ ";"
+        l_t_mid_begin = l_t_header_end'
+        l_t_mid_end = "t1 - " ++ "(t1 + " ++ s_time_shift ++ ") % " ++ s_unroll
+        l_t_mid_end' = "min(" ++ l_t_mid_end ++ ", t1)"
+        ll_t_mid_begin = "l_t_mid_begin"
+        ll_t_mid_end = "l_t_mid_end"
+        l_def_t_mid_begin = "int " ++ ll_t_mid_begin ++ " = " ++ l_t_mid_begin ++ ";"
+        l_def_t_mid_end = "int " ++ ll_t_mid_end ++ " = " ++ l_t_mid_end' ++ ";"
+        l_t_tail_begin = "max(" ++ l_t_header_end' ++ ", " ++ l_t_mid_end' ++ ")"
+        l_t_tail_end = "t1"
+        l_t_tail_end' = l_t_tail_end
+        ll_t_tail_begin = "l_t_tail_begin"
+        ll_t_tail_end = "l_t_tail_end"
+        l_def_t_tail_begin = "int " ++ ll_t_tail_begin ++ " = " ++ l_t_tail_begin ++ ";"
+        l_def_t_tail_end = "int " ++ ll_t_tail_end ++ " = " ++ l_t_tail_end' ++ ";"
+        l_t_header_cout = "// std::cout << \"l_t_header_begin = \" << " ++ l_t_header_begin ++ " << \" l_t_header_end = \" << " ++ l_t_header_end' ++ " << std::endl;"
+        l_t_mid_cout = "// std::cout << \"l_t_mid_begin = \" << " ++ l_t_mid_begin ++ "<< \" l_t_mid_end = \" << " ++ l_t_mid_end' ++ " << std::endl;"
+        l_t_tail_cout = "// std::cout << \"l_t_tail_begin = \" << " ++ l_t_tail_begin ++ " << \" l_t_tail_end = \" << " ++ l_t_tail_end' ++ " << std::endl;"
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kL)
+        l_kernelFuncName = pSys l_name
+        l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
+                   " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
+                   show l_rank ++ "> const & grid) {"
+        l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
+                 "> " ++ l_name ++ "( " ++ shapeName l_pShape ++ ", " ++ 
+                 l_kernelFuncName ++ " );" ++ breakline 
+        l_header_kernel = l_showSingleKernel True l_t 0 l_unroll l_kL
+        l_tail_kernel = l_header_kernel
+        l_mid_kernel = l_showSingleKernel False l_t 0 l_unroll l_kL
+    in  breakline ++ pDefMax ++
+        breakline ++ pDefMin ++
+        breakline ++ l_header ++ 
+        breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++ 
+        breakline ++ pShowRankAttr l_rank "stride" l_arrayInUse ++ 
+        breakline ++ l_def_t_header_begin ++ breakline ++ l_def_t_header_end ++
+        breakline ++ l_def_t_mid_begin ++ breakline ++ l_def_t_mid_end ++
+        breakline ++ l_def_t_tail_begin ++ breakline ++ l_def_t_tail_end ++
+        breakline ++ l_t_header_cout ++
+        breakline ++ l_t_mid_cout ++
+        breakline ++ l_t_tail_cout ++
+        breakline ++ pShowTimeLoopHeader l_t ll_t_header_begin ll_t_header_end ++ 
+        l_header_kernel ++ breakline ++ pShowTimeLoopTail ++
+        breakline ++ pShowTimeLoopHeader l_t ll_t_mid_begin ll_t_mid_end ++
+        l_mid_kernel ++ breakline ++ pShowTimeLoopTail ++
+        breakline ++ pShowTimeLoopHeader l_t ll_t_tail_begin ll_t_tail_end ++
+        l_tail_kernel ++ breakline ++ pShowTimeLoopTail ++
+        breakline ++ l_tail ++
+        breakline ++ pUndefMax ++ breakline ++ pUndefMin
+
 ------------------------------------------------------------------------------
 -- so far, the split-caching mode doesn't work for multiple-kernel case!!!! --
 ------------------------------------------------------------------------------
@@ -291,6 +447,8 @@ pShowUnrolledCachingKernels l_stencil l_cond l_name l_kL@(l_kernel:l_kernels) =
         l_wrIters = pGetMinIters $ pGetWriteIters l_iter 
         l_arrayInUse = unionArrayIter l_iter
         l_t = "t"
+        l_t_begin = "t0"
+        l_t_end = "t1"
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kL)
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
@@ -309,7 +467,7 @@ pShowUnrolledCachingKernels l_stencil l_cond l_name l_kL@(l_kernel:l_kernels) =
         pShowLocalCopyIn l_rank (kfParams l_kernel) l_arrayInUse l_rdIters ++ breakline ++ 
         pShowLocalGridForComp l_rank (head l_arrayInUse) ++ breakline ++
         -------------------------------------------------------------------------
-        pShowTimeLoopHeader l_t ++ breakline ++
+        pShowTimeLoopHeader l_t l_t_begin l_t_end ++ breakline ++
         pShowSingleCachingKernel l_t l_kL ++
         pShowTimeLoopTail ++ breakline ++ 
         -- Additional copy-out info for caching kernel ---------------------------
@@ -324,6 +482,8 @@ pShowUnrolledKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) l_showSin
         l_iter = concatMap kfIter l_kL
         l_arrayInUse = unionArrayIter l_iter
         l_t = "t"
+        l_t_begin = "t0" 
+        l_t_end = "t1"
         l_unroll = length l_kL
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kL)
         l_kernelFuncName = pSys l_name
@@ -337,7 +497,7 @@ pShowUnrolledKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) l_showSin
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++ 
         breakline ++ pShowRankAttr l_rank "stride" l_arrayInUse ++ 
-        breakline ++ pShowTimeLoopHeader l_t ++ 
+        breakline ++ pShowTimeLoopHeader l_t l_t_begin l_t_end ++ 
         l_showSingleKernel l_cond l_t 0 l_unroll l_kL ++
         breakline ++ pShowTimeLoopTail ++ breakline ++ l_tail
 
@@ -508,12 +668,14 @@ pShowObaseKernel l_name l_kernel =
         l_iter = kfIter l_kernel
         l_array = unionArrayIter l_iter
         l_t = head $ kfParams l_kernel
+        l_t_begin = l_t ++ "0"
+        l_t_end = l_t ++ "1"
     in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
         "int t0, int t1, Grid_Info<" ++ show l_rank ++ "> const & grid) {" ++ 
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayGaps l_rank l_array ++
         breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
-        pShowTimeLoopHeader l_t ++ breakline ++
+        pShowTimeLoopHeader l_t l_t_begin l_t_end ++ breakline ++
         pShowIterSet l_iter (kfParams l_kernel)++
         breakline ++ pShowObaseForHeader l_rank l_iter (tail $ kfParams l_kernel) ++
         breakline ++ pShowObaseStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
@@ -578,25 +740,31 @@ pShowPointerSetLocal iL@(i:is) l_kernelParams = concatMap pShowPointerSetLocalTe
 
 pShowLocalCopyOut :: Int -> [PName] -> [PArray] -> [Iter] -> String
 pShowLocalCopyOut l_rank l_kfParams l_arrays l_wrIters =
-    "/* Copy Out */" ++ breakline ++ 
-    pShowLocalGridForCopyOut l_rank ++ breakline ++
-    pShowTimeLoopHeader (head l_kfParams) ++ breakline ++
-    (intercalate breakline $ map (pShowCopyInOutBase False l_rank $ head l_kfParams) l_wrIters) ++ breakline ++
-    pShowCopyLoopHeader False l_rank (tail l_kfParams) l_arrays ++ breakline ++
-    (intercalate breakline $ map (pShowCopyInOutBody False) l_arrays) ++ breakline ++
-    pShowCopyLoopTail l_rank ++ breakline ++ pAdjustTrape l_rank ++ breakline ++ 
-    pShowTimeLoopTail ++ breakline 
+    let l_t = head l_kfParams
+        l_t_begin = l_t ++ "0"
+        l_t_end = l_t ++ "1"
+    in "/* Copy Out */" ++ breakline ++ 
+       pShowLocalGridForCopyOut l_rank ++ breakline ++
+       pShowTimeLoopHeader l_t l_t_begin l_t_end ++ breakline ++
+       (intercalate breakline $ map (pShowCopyInOutBase False l_rank $ head l_kfParams) l_wrIters) ++ breakline ++
+       pShowCopyLoopHeader False l_rank (tail l_kfParams) l_arrays ++ breakline ++
+       (intercalate breakline $ map (pShowCopyInOutBody False) l_arrays) ++ breakline ++
+       pShowCopyLoopTail l_rank ++ breakline ++ pAdjustTrape l_rank ++ breakline ++ 
+       pShowTimeLoopTail ++ breakline 
 
 pShowLocalCopyIn :: Int -> [PName] -> [PArray] -> [Iter] -> String
 pShowLocalCopyIn l_rank l_kfParams l_arrays l_rdIters =
-    "/* Copy In */" ++ breakline ++ 
-    pShowLocalGridForCopyIn l_rank ++ breakline ++
-    pShowTimeLoopHeader (head l_kfParams) ++ breakline ++
-    (intercalate breakline $ map (pShowCopyInOutBase True l_rank $ head l_kfParams) l_rdIters) ++ breakline ++
-    pShowCopyLoopHeader True l_rank (tail l_kfParams) l_arrays ++ breakline ++
-    (intercalate breakline $ map (pShowCopyInOutBody True) l_arrays) ++ breakline ++
-    pShowCopyLoopTail l_rank ++ breakline ++ pAdjustTrape l_rank ++ breakline ++
-    pShowTimeLoopTail ++ breakline
+    let l_t = head l_kfParams
+        l_t_begin = l_t ++ "0"
+        l_t_end = l_t ++ "1"
+    in "/* Copy In */" ++ breakline ++ 
+       pShowLocalGridForCopyIn l_rank ++ breakline ++
+       pShowTimeLoopHeader l_t l_t_begin l_t_end ++ breakline ++
+       (intercalate breakline $ map (pShowCopyInOutBase True l_rank $ head l_kfParams) l_rdIters) ++ breakline ++
+       pShowCopyLoopHeader True l_rank (tail l_kfParams) l_arrays ++ breakline ++
+       (intercalate breakline $ map (pShowCopyInOutBody True) l_arrays) ++ breakline ++
+       pShowCopyLoopTail l_rank ++ breakline ++ pAdjustTrape l_rank ++ breakline ++
+       pShowTimeLoopTail ++ breakline
 
 pShowCopyInOutBody :: Bool -> PArray -> String
 pShowCopyInOutBody l_inOut l_array =
@@ -688,9 +856,10 @@ pShowCopyInOutBase l_inOut l_rank l_t l_rwIter =
                  intercalate " + " l_grid_offsets ++ ";" ++ breakline
     in  lc_a_base ++ l_a_base
 
-pShowTimeLoopHeader :: String -> String
-pShowTimeLoopHeader l_t =
-    "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") {"
+pShowTimeLoopHeader :: String -> String -> String -> String
+pShowTimeLoopHeader l_t l_t_begin l_t_end =
+    "for (int " ++ l_t ++ " = " ++ l_t_begin ++ "; " ++ 
+    l_t ++ " < " ++ l_t_end ++ "; ++" ++ l_t ++ ") {"
 
 pShowTimeLoopTail :: String
 pShowTimeLoopTail = "} /* end for t */"

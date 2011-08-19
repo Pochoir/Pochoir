@@ -91,24 +91,12 @@ int main(int argc, char * argv[])
     b.Register_Boundary(periodic_1D);
 
     Pochoir_Guard_1D(guard_interior, t, i)
-#if 0
-        /* (T/2) / (N/2) = T / N */
-        float _slope = float(T) / (N);
-        if ((t <= T/2 && i > N/2 && float(t)/(i - N/2) < _slope) ||
-            (t > T/2 && i > N/2 && float(T - t)/(i - N/2) < _slope) ||
-            (t > T/2 && i < N/2 && float(T - t)/(N/2 - i) < _slope) ||
-            (t <= T/2 && i < N/2 && float(t)/(N/2 - i) < _slope))
-            return false;
-        else
-            return true;
-#else
         if (t > T/2 && i > N/2) {
             /* up right rectangle */
             return true;
         } else {
             return false;
         }
-#endif
     Pochoir_Guard_End
 
     Pochoir_Guard_1D(guard_exterior, t, i)

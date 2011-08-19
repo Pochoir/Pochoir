@@ -296,7 +296,7 @@ mergePShapes a b = PShape { shapeName = shapeName a ++ shapeName b,
                             shapeLen = length $ union (shape a) (shape b),
                             shapeToggle = max (shapeToggle a) (shapeToggle b),
                             shapeSlopes = zipWith max (shapeSlopes a) (shapeSlopes b),
-                            shapeTimeShift = max (shapeTimeShift a) (shapeTimeShift b),
+                            shapeTimeShift = min (shapeTimeShift a) (shapeTimeShift b),
                             shape = union (shape a) (shape b) }
 
 pSysShape :: PShape -> PShape

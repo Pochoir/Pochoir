@@ -52,7 +52,7 @@ data PType = PType {
     typeName :: String
 } deriving Eq
 data PState = PochoirBegin | PochoirEnd | PochoirMacro | PochoirDeclArray | PochoirDeclRange | PochoirError | Unrelated deriving (Show, Eq)
-data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | POptPointer | PPointer | PMacroShadow | PNoPP deriving Eq
+data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP deriving Eq
 data PMacro = PMacro {
     mName :: PName,
     mValue :: PValue
@@ -218,6 +218,7 @@ instance Show PMode where
     show PPointer = "-split-pointer" 
     show PMacroShadow = "-split-macro-shadow" 
     show PNoPP = "-No-Preprocessing"
+    show PMUnroll = "-unroll-multi-kernel"
 
 instance Show PType where
     show ptype = typeName ptype

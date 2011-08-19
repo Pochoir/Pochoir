@@ -541,6 +541,15 @@ struct Algorithm {
     inline void plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
     /* meta functions to run the plan */
     /*******************************************************************************/
+    /* meta functions to run the plan 
+     * -- 'm' is the version with merged kernel
+     */
+    inline void plan_space_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void plan_space_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    /* meta functions to run the plan */
+    /*******************************************************************************/
     /* followings are the sim cut of both top and bottom bar */
     template <typename F>
     inline void shorter_duo_sim_obase_space_cut(int t0, int t1, Grid_Info<N_RANK> const grid, F const & f);

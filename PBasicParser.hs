@@ -201,8 +201,7 @@ ppStencil l_id l_state =
                                  -- only after Register_Kernel
                                  return (l_id ++ ".Register_Kernel(" ++
                                          l_guard ++ ", " ++ 
-                                         intercalate ", " l_kernels ++
-                                         ");" ++ 
+                                         intercalate ", " l_kernels ++ ");" ++ 
                                          "/* All kernels are recognized! */" ++
                                          breakline)
     <|> do return (l_id)
@@ -229,6 +228,13 @@ transKernel l_stencil l_mode l_kernelFunc =
                        PCaching -> getFromStmts (getPointer $ l_kernelFuncParams) PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_exprStmts 
+                       PMUnroll -> let l_get = 
+                                            if sRank l_stencil < 3 
+                                                then getIter
+                                                else (getPointer $ l_kernelFuncParams)
+                                   in  getFromStmts l_get PRead
+                                         (transArrayMap $ sArrayInUse l_stencil) 
+                                         l_exprStmts 
                        PDefault -> let l_get = 
                                             if sRank l_stencil < 3 
                                                 then getIter
@@ -252,6 +258,15 @@ pShowRegKernel l_mode l_stencil (l_guard, l_kernels) =
                           else pShowSinglePointerKernel
                  in  pSplitKernel
                       ("Default_", l_id, l_guardName, l_revKernelFunc, 
+                        l_stencil) 
+                      l_showKernel
+             PMUnroll -> 
+                 let l_showKernel = 
+                       if sRank l_stencil < 3
+                          then pShowSingleOptPointerKernel
+                          else pShowSinglePointerKernel
+                 in  pUnrollMultiKernel
+                      ("MUnroll_", l_id, l_guardName, l_revKernelFunc, 
                         l_stencil) 
                       l_showKernel
              PMacroShadow -> 
@@ -279,6 +294,28 @@ pShowRegKernel l_mode l_stencil (l_guard, l_kernels) =
                    ("C_Pointer_", l_id, l_guardName, l_revKernelFunc, 
                      l_stencil) 
                    pShowSingleCPointerKernel
+
+-- for mode -unroll-multi-kernel
+pUnrollMultiKernel :: (String, String, String, [PKernelFunc], PStencil) -> (Bool -> String -> Int -> Int -> [PKernelFunc] -> String) -> String
+pUnrollMultiKernel (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showSingleKernel = 
+    let oldKernelName = intercalate "_" $ map kfName l_kernels
+        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
+        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
+        regBound = sRegBound l_stencil
+        unroll = length l_kernels
+        bdryKernel = if regBound 
+                        then pShowMUnrolledBoundaryKernels False bdryKernelName 
+                                l_stencil l_kernels 
+                        else ""
+        obaseKernel = pShowMUnrolledKernels obaseKernelName l_stencil l_kernels l_showSingleKernel
+        runKernel = if regBound then obaseKernelName ++ ", " ++ bdryKernelName  
+                                else obaseKernelName 
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kernels)
+    in  (breakline ++ show l_pShape ++
+         breakline ++ bdryKernel ++ 
+         breakline ++ obaseKernel ++ 
+         breakline ++ l_id ++ ".Register_Obase_Kernel(" ++ l_guard ++ ", " ++ 
+         show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 -- For modes : -split-pointer -split-opt-pointer -split-c-pointer
 pSplitKernel :: (String, String, String, [PKernelFunc], PStencil) -> (Bool -> String -> Int -> Int -> [PKernelFunc] -> String) -> String
