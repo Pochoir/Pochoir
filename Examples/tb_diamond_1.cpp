@@ -119,7 +119,7 @@ int main(int argc, char * argv[])
         printf("<i1> a(%d, %d) = f(a(%d, %d) <%.3f>, a(%d, %d) <%.3f>, a(%d, %d) <%.3f>)\n", t, i, t-1, i-1, a(t-1, i-1), t-1, i, a(t-1, i), t-1, i+1, a(t-1, i+1));
         printf("<i1> a(%d, %d) : %.3f -> ", t, i, a(t, i));
 #endif
-        a(t, i) = 0.2 * a(t-1, i-1) + 0.25 * a(t-1, i) + 0.289 * a(t-1, i+1) + 0.8;
+        a(t, i) = 0.2 * a(t-1, i-1) + 0.25 * a(t-1, i) + 0.281 * a(t-1, i+1) + 0.8;
 #if DEBUG
         printf("%.3f\n", a(t, i));
 #endif
@@ -152,7 +152,7 @@ int main(int argc, char * argv[])
         printf("<e1> a(%d, %d) = f(a(%d, %d) <%.3f>, a(%d, %d) <%.3f>, a(%d, %d) <%.3f>)\n", t, i, t-1, i-1, a(t-1, i-1), t-1, i, a(t-1, i), t-1, i+1, a(t-1, i+1));
         printf("<e1> a(%d, %d) : %.3f -> ", t, i, a(t, i));
 #endif
-        a(t, i) = 0.2 * a(t-1, i-1) - 0.25 * a(t-1, i) - 0.289 * a(t-1, i+1) - 0.8;
+        a(t, i) = 0.2 * a(t-1, i-1) - 0.25 * a(t-1, i) - 0.281 * a(t-1, i+1) - 0.8;
 #if DEBUG
         printf("%.3f\n", a(t, i));
 #endif
@@ -207,7 +207,7 @@ int main(int argc, char * argv[])
                         printf("<i1> b(%d, %d) = f(b(%d, %d) <%.3f>, b(%d, %d) <%.3f>, b(%d, %d) <%.3f>)\n", t, i, t-1, i-1, b(t-1, i-1), t-1, i, b(t-1, i), t-1, i+1, b(t-1, i+1));
                         printf("<i1> b(%d, %d) : %.3f -> ", t, i, b(t, i));
 #endif
-                        b(t, i) = 0.2 * b(t-1, i-1) + 0.25 * b(t-1, i) + 0.289 * b(t-1, i+1) + 0.8;
+                        b(t, i) = 0.2 * b(t-1, i-1) + 0.25 * b(t-1, i) + 0.281 * b(t-1, i+1) + 0.8;
 #if DEBUG
                         printf("%.3f\n", b(t, i));
 #endif
@@ -239,7 +239,7 @@ int main(int argc, char * argv[])
                         printf("<e1> b(%d, %d) = f(b(%d, %d) <%.3f>, b(%d, %d) <%.3f>, b(%d, %d) <%.3f>)\n", t, i, t-1, i-1, b(t-1, i-1), t-1, i, b(t-1, i), t-1, i+1, b(t-1, i+1));
                         printf("<e1> b(%d, %d) : %.3f -> ", t, i, b(t, i));
 #endif
-                        b(t, i) = 0.2 * b(t-1, i-1) - 0.25 * b(t-1, i) - 0.289 * b(t-1, i+1) - 0.8;
+                        b(t, i) = 0.2 * b(t-1, i-1) - 0.25 * b(t-1, i) - 0.281 * b(t-1, i+1) - 0.8;
 #if DEBUG
                         printf("%.3f\n", b(t, i));
 #endif

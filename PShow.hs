@@ -310,23 +310,23 @@ pShowMUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) 
         ll_t_header_end = "l_t_header_end"
         l_def_t_header_begin = "int " ++ ll_t_header_begin ++ " = " ++ l_t_header_begin ++ ";"
         l_def_t_header_end = "int " ++ ll_t_header_end ++ " = " ++ l_t_header_end' ++ ";"
-        l_t_mid_begin = l_t_header_end'
+        l_t_mid_begin = ll_t_header_end
         l_t_mid_end = "t1 - " ++ "(t1 + " ++ s_time_shift ++ ") % " ++ s_unroll
         l_t_mid_end' = "min(" ++ l_t_mid_end ++ ", t1)"
         ll_t_mid_begin = "l_t_mid_begin"
         ll_t_mid_end = "l_t_mid_end"
         l_def_t_mid_begin = "int " ++ ll_t_mid_begin ++ " = " ++ l_t_mid_begin ++ ";"
         l_def_t_mid_end = "int " ++ ll_t_mid_end ++ " = " ++ l_t_mid_end' ++ ";"
-        l_t_tail_begin = "max(" ++ l_t_header_end' ++ ", " ++ l_t_mid_end' ++ ")"
+        l_t_tail_begin = "max(" ++ ll_t_header_end ++ ", " ++ ll_t_mid_end ++ ")"
         l_t_tail_end = "t1"
         l_t_tail_end' = l_t_tail_end
         ll_t_tail_begin = "l_t_tail_begin"
         ll_t_tail_end = "l_t_tail_end"
         l_def_t_tail_begin = "int " ++ ll_t_tail_begin ++ " = " ++ l_t_tail_begin ++ ";"
         l_def_t_tail_end = "int " ++ ll_t_tail_end ++ " = " ++ l_t_tail_end' ++ ";"
-        l_t_header_cout = "// std::cout << \"l_t_header_begin = \" << " ++ l_t_header_begin ++ "<< \" l_t_header_end = \" << " ++ l_t_header_end' ++ " << std::endl;"
-        l_t_mid_cout = "// std::cout << \"l_t_mid_begin = \" << " ++ l_t_mid_begin ++ "<< \" l_t_mid_end = \" << " ++ l_t_mid_end' ++ " << std::endl;"
-        l_t_tail_cout = "// std::cout << \"l_t_tail_begin = \" << " ++ l_t_tail_begin ++ "<< \" l_t_tail_end = \" << " ++ l_t_tail_end' ++ " << std::endl;"
+        l_t_header_cout = "// std::cout << \"l_t_header_begin = \" << " ++ ll_t_header_begin ++ "<< \" l_t_header_end = \" << " ++ ll_t_header_end ++ " << std::endl;"
+        l_t_mid_cout = "// std::cout << \"l_t_mid_begin = \" << " ++ ll_t_mid_begin ++ "<< \" l_t_mid_end = \" << " ++ ll_t_mid_end ++ " << std::endl;"
+        l_t_tail_cout = "// std::cout << \"l_t_tail_begin = \" << " ++ ll_t_tail_begin ++ "<< \" l_t_tail_end = \" << " ++ ll_t_tail_end ++ " << std::endl;"
         l_rank = sRank l_stencil
         l_arrayInUse = sArrayInUse l_stencil
         -- We are assuming all kernels have the same number of input parameters
@@ -387,23 +387,23 @@ pShowMUnrolledKernels l_name l_stencil l_kL@(l_kernel:l_kernels) l_showSingleKer
         ll_t_header_end = "l_t_header_end"
         l_def_t_header_begin = "int " ++ ll_t_header_begin ++ " = " ++ l_t_header_begin ++ ";"
         l_def_t_header_end = "int " ++ ll_t_header_end ++ " = " ++ l_t_header_end' ++ ";"
-        l_t_mid_begin = l_t_header_end'
+        l_t_mid_begin = ll_t_header_end
         l_t_mid_end = "t1 - " ++ "(t1 + " ++ s_time_shift ++ ") % " ++ s_unroll
         l_t_mid_end' = "min(" ++ l_t_mid_end ++ ", t1)"
         ll_t_mid_begin = "l_t_mid_begin"
         ll_t_mid_end = "l_t_mid_end"
         l_def_t_mid_begin = "int " ++ ll_t_mid_begin ++ " = " ++ l_t_mid_begin ++ ";"
         l_def_t_mid_end = "int " ++ ll_t_mid_end ++ " = " ++ l_t_mid_end' ++ ";"
-        l_t_tail_begin = "max(" ++ l_t_header_end' ++ ", " ++ l_t_mid_end' ++ ")"
+        l_t_tail_begin = "max(" ++ ll_t_header_end ++ ", " ++ ll_t_mid_end ++ ")"
         l_t_tail_end = "t1"
         l_t_tail_end' = l_t_tail_end
         ll_t_tail_begin = "l_t_tail_begin"
         ll_t_tail_end = "l_t_tail_end"
         l_def_t_tail_begin = "int " ++ ll_t_tail_begin ++ " = " ++ l_t_tail_begin ++ ";"
         l_def_t_tail_end = "int " ++ ll_t_tail_end ++ " = " ++ l_t_tail_end' ++ ";"
-        l_t_header_cout = "// std::cout << \"l_t_header_begin = \" << " ++ l_t_header_begin ++ " << \" l_t_header_end = \" << " ++ l_t_header_end' ++ " << std::endl;"
-        l_t_mid_cout = "// std::cout << \"l_t_mid_begin = \" << " ++ l_t_mid_begin ++ "<< \" l_t_mid_end = \" << " ++ l_t_mid_end' ++ " << std::endl;"
-        l_t_tail_cout = "// std::cout << \"l_t_tail_begin = \" << " ++ l_t_tail_begin ++ " << \" l_t_tail_end = \" << " ++ l_t_tail_end' ++ " << std::endl;"
+        l_t_header_cout = "// std::cout << \"l_t_header_begin = \" << " ++ ll_t_header_begin ++ " << \" l_t_header_end = \" << " ++ ll_t_header_end ++ " << std::endl;"
+        l_t_mid_cout = "// std::cout << \"l_t_mid_begin = \" << " ++ ll_t_mid_begin ++ "<< \" l_t_mid_end = \" << " ++ ll_t_mid_end ++ " << std::endl;"
+        l_t_tail_cout = "// std::cout << \"l_t_tail_begin = \" << " ++ ll_t_tail_begin ++ " << \" l_t_tail_end = \" << " ++ ll_t_tail_end ++ " << std::endl;"
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kL)
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 

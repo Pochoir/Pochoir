@@ -566,10 +566,12 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
     }
 
 #endif
+#if DEBUG
     int l_num_kernel = 0, l_num_cond_kernel = 0, l_num_bkernel = 0, l_num_cond_bkernel = 0;
     algor.read_stat_kernel(l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
     printf("kernel = %d, cond_kernel = %d, bkernel = %d, cond_bkernel = %d\n",
             l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
+#endif
     return;
 }
 
@@ -618,10 +620,12 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
     }
 
 #endif
+#if DEBUG
     int l_num_kernel = 0, l_num_cond_kernel = 0, l_num_bkernel = 0, l_num_cond_bkernel = 0;
     algor.read_stat_kernel(l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
     printf("kernel = %d, cond_kernel = %d, bkernel = %d, cond_bkernel = %d\n",
             l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
+#endif
     return;
 }
 #endif
