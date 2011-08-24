@@ -410,11 +410,12 @@ struct Algorithm {
         int phys_length_[N_RANK];
         int slope_[N_RANK];
         int ulb_boundary[N_RANK], uub_boundary[N_RANK], lub_boundary[N_RANK];
-        bool boundarySet, physGridSet, slopeSet, pgkSet, opgkSet;
+        bool boundarySet, physGridSet, slopeSet, pgkSet, opgkSet, pgtSet;
         int sz_pgk_;
         int lcm_unroll_, time_shift_;
         Pochoir_Guard_Kernel<N_RANK> * pgk_;
         Pochoir_Obase_Guard_Kernel<N_RANK> * opgk_;
+        Pochoir_Guard_Tile<N_RANK> * pgt_;
 #if PURE_REGION_ALL
         Pure_Region_All<N_RANK> * pure_region_;
 #else
@@ -445,7 +446,7 @@ struct Algorithm {
         Z = 10000;
         boundarySet = false;
         physGridSet = false;
-        pgkSet = opgkSet = false;
+        pgkSet = opgkSet = pgtSet = false;
         slopeSet = true;
         sz_base_data_ = sz_sync_data_ = 0;
         num_kernel_ = num_cond_kernel_ = num_bkernel_ = num_cond_bkernel_ = 0;
@@ -512,6 +513,7 @@ struct Algorithm {
     // void set_stride(int const stride[]);
     void set_slope(int const slope[]);
     void set_pgk(int _sz_pgk, Pochoir_Guard_Kernel<N_RANK> * _pgk);
+    void set_pgt(int _sz_pgk, Pochoir_Guard_Tile<N_RANK> * _pgt);
     void set_obase_pgk(int _sz_pgk, Pochoir_Obase_Guard_Kernel<N_RANK> * _opgk);
     void set_unroll(int _lcm_unroll) { lcm_unroll_ = _lcm_unroll; }
     void set_time_shift(int _time_shift) { time_shift_ = _time_shift; }
@@ -681,6 +683,21 @@ void Algorithm<N_RANK>::set_pgk(int _sz_pgk, Pochoir_Guard_Kernel<N_RANK> * _pgk
     pure_region_ = new Pure_Region_All<N_RANK>(_sz_pgk, _pgk);
 #else
     pure_region_ = new Pure_Region_Corners<N_RANK>(_sz_pgk, _pgk);
+#endif
+    if (physGridSet) {
+        pure_region_->set_phys_grid(phys_grid_);
+    }
+    return;
+}
+
+template <int N_RANK> 
+void Algorithm<N_RANK>::set_pgt(int _sz_pgk, Pochoir_Guard_Tile<N_RANK> * _pgt) {
+    sz_pgk_ = _sz_pgk; pgt_ = _pgt; 
+    pgkSet = true;
+#if PURE_REGION_ALL
+    pure_region_ = new Pure_Region_All<N_RANK>(_sz_pgk, _pgt);
+#else
+    pure_region_ = new Pure_Region_Corners<N_RANK>(_sz_pgk, _pgt);
 #endif
     if (physGridSet) {
         pure_region_->set_phys_grid(phys_grid_);
