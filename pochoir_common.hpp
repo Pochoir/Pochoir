@@ -68,7 +68,6 @@ static inline int lcm(int a, int b) {
 #define SUPPORT_RANK 9
 #define DEBUG_FACILITY 1
 // #define DEBUG 0
-#define PURE_REGION_ALL 1
 #define END_SYNC -1
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -657,29 +656,18 @@ static inline void klein_region(Grid_Info<2> & grid, Grid_Info<2> const & initia
  * the original 'f'/'bf'
  */
 
-#define Pochoir_Guard_3D(name, t, i, j, k) \
-    auto name = [&](int t, int i, int j, int k) -> bool {
-
-#define Pochoir_Guard_2D(name, t, i, j) \
-    auto name = [&](int t, int i, int j) -> bool {
-
-#define Pochoir_Guard_1D(name, t, i) \
-    auto name = [&](int t, int i) -> bool {
-
-#define Pochoir_Guard_End };
-
 /* Default Guard: Always return true */
-Pochoir_Guard_3D(Default_Guard_3D, t, i, j, k)
+Pochoir_Guard_3D_Begin(Default_Guard_3D, t, i, j, k)
     return true;
-Pochoir_Guard_End
+Pochoir_Guard_3D_End(Default_Guard_3D)
 
-Pochoir_Guard_2D(Default_Guard_2D, t, i, j)
+Pochoir_Guard_2D_Begin(Default_Guard_2D, t, i, j)
     return true;
-Pochoir_Guard_End
+Pochoir_Guard_2D_End(Default_Guard_2D)
 
-Pochoir_Guard_1D(Default_Guard_1D, t, i)
+Pochoir_Guard_1D_Begin(Default_Guard_1D, t, i)
     return true;
-Pochoir_Guard_End
+Pochoir_Guard_1D_End(Default_Guard_1D)
 
 /* - these function templates are for computing boundary values, currently
  *   icc doesn't support capturing the lambda function by function objects,

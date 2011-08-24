@@ -126,8 +126,8 @@ int main(int argc, char * argv[])
         a(t, i) = 0.2 * a(t-1, i-1) - 0.25 * a(t-1, i) - 0.289 * a(t-1, i+1) - 0.8;
     Pochoir_Kernel_1D_End(exterior_1, shape_exterior_1)
 
-    leap_frog.Register_Stagger(guard_interior, interior_0, interior_1, interior_2);
-    leap_frog.Register_Stagger(guard_exterior, exterior_0, exterior_1);
+    leap_frog.Register_Stagger_Kernels(guard_interior, interior_0, interior_1, interior_2);
+    leap_frog.Register_Stagger_Kernels(guard_exterior, exterior_0, exterior_1);
     leap_frog.Register_Array(a);
 
     /* initialization */
