@@ -129,11 +129,11 @@ iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 
 -- iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
-iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++0x"]
+iccDebugFlags = ["-DNDEBUG", "-O0", "-g3", "-std=c++0x"]
 
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x"]
-iccDebugPPFlags = ["-P", "-C", "-DDEBUG", "-g3", "-std=c++0x"]
+iccDebugPPFlags = ["-P", "-C", "-DNDEBUG", "-g3", "-std=c++0x"]
 
 parseArgs :: ([String], [String], PMode, Bool, Bool, [String]) -> [String] -> ([String], [String], PMode, Bool, Bool, [String])
 parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL 

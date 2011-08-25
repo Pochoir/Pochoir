@@ -186,6 +186,10 @@ void Pochoir<N_RANK>::reg_tile_dim(int dim, I i) {
     assert(dim == 0);
     pts_[sz_pgk_].size_[0] = i; 
     pts_[sz_pgk_].pointer_[0] = 0;
+    pts_[sz_pgk_].stride_[0] = 1;
+    for (int i = 1; i <= N_RANK; ++i) {
+        pts_[sz_pgk_].stride_[i] = pts_[sz_pgk_].stride_[i - 1] * pts_[sz_pgk_].size_[i - 1];
+    }
     return;
 }
 
@@ -211,12 +215,12 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
         printf("Pochoir Error: Register_Tile_Kernels > %d\n", sz_pgk_);
         exit(1);
     }
-    // pks_[sz_pgk_].kernel_ = (T_Kernel *) calloc(N_SIZE1 * N_SIZE2, sizeof(T_Kernel));
-    pks_[sz_pgk_].kernel_ = new T_Kernel[N_SIZE1][N_SIZE2];
+    // pts_[sz_pgk_].kernel_ = (T_Kernel *) calloc(N_SIZE1 * N_SIZE2, sizeof(T_Kernel));
+    pts_[sz_pgk_].kernel_ = new T_Kernel[N_SIZE1 * N_SIZE2];
     pgs_[sz_pgk_] = g;
     for (int i = 0; i < N_SIZE1; ++i) {
         for (int j = 0; j < N_SIZE2; ++j) {
-            pks_[sz_pgk_].kernel_[i][j] = tile[i][j];
+            pts_[sz_pgk_].kernel_[i * N_SIZE2 + j] = tile[i][j];
             Register_Shape(tile[i][j].Get_Shape(), tile[i][j].Get_Shape_Size());
         }
     }
@@ -579,6 +583,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Load_Plan(const char * file_name) {
     return (*l_plan);
 }
 
+#if 0
 template <int N_RANK>
 void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
     assert(pks_ != NULL);
@@ -589,7 +594,7 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
             int l_t0 = _plan.base_data_->region_[i].t0;
             int l_t1 = _plan.base_data_->region_[i].t1;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-            Pochoir_Run_Regional_Stagger_Kernel<N_RANK> l_kernel(pgs_[l_region_n], pks_[l_region_n]);
+            Pochoir_Run_Regional_Stagger_Kernel<N_RANK> l_kernel(pks_[l_region_n]);
             l_kernel.set_pointer(l_t0 - time_shift_);
             for (int t = l_t0; t < l_t1; ) {
                 meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
@@ -604,6 +609,30 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
     }
     return;
 }
+#else
+template <int N_RANK>
+void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
+    assert(pts_ != NULL);
+    int offset = 0;
+    for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
+        for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
+            int l_region_n = _plan.base_data_->region_[i].region_n;
+            int l_t0 = _plan.base_data_->region_[i].t0;
+            int l_t1 = _plan.base_data_->region_[i].t1;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            Pochoir_Run_Regional_Tile_Kernel<N_RANK> l_kernel(time_shift_, pts_[l_region_n]);
+            for (int t = l_t0; t < l_t1; ++t) {
+                meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
+                for (int i = 0; i < N_RANK; ++i) {
+                    l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+                }
+            }
+        }
+        offset = _plan.sync_data_->region_[j];
+    }
+    return;
+}
+#endif
 
 template <int N_RANK>
 void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
