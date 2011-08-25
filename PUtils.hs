@@ -39,6 +39,10 @@ updatePKernel :: PKernel -> ParserState -> ParserState
 updatePKernel l_kernel parserState =
     parserState { pKernel = Map.insert (kName l_kernel) l_kernel $ pKernel parserState }
 
+updatePGuardFunc :: PGuardFunc -> ParserState -> ParserState
+updatePGuardFunc l_gFunc parserState =
+    parserState { pGuardFunc = Map.insert (gfName l_gFunc) l_gFunc $ pGuardFunc parserState }
+
 updatePGuard :: PGuard -> ParserState -> ParserState
 updatePGuard l_guard parserState =
     parserState { pGuard = Map.insert (gName l_guard) l_guard $ pGuard parserState }
@@ -81,8 +85,14 @@ updatePRange pL@(p:ps) parserState =
 pMapInsert :: (Ord k) => (k, a) -> Map.Map k a -> Map.Map k a
 pMapInsert (l_key, l_value) l_map = Map.insert l_key l_value l_map
 
-updateStencilArray :: String -> PArray -> ParserState -> ParserState
-updateStencilArray l_id l_pArray parserState =
+updateStencilArray :: String -> [PArray] -> GenParser Char ParserState String
+updateStencilArray _ [] = return ("")
+updateStencilArray l_id l_pArrays@(a:as) =
+    do updateState $ updateStencilArrayItem l_id a
+       updateStencilArray l_id as
+
+updateStencilArrayItem :: String -> PArray -> ParserState -> ParserState
+updateStencilArrayItem l_id l_pArray parserState =
     let f k x =
             if sName x == l_id
                 then Just $ x { sArrayInUse = union [l_pArray] (sArrayInUse x) }
@@ -304,4 +314,13 @@ pSysShape a = a { shapeName = "__" ++ shapeName a ++ "__" }
 
 pSys :: String -> String
 pSys a = "__" ++ a ++ "__"
+
+checkValidPArray :: String -> ParserState -> (Bool, PArray)
+checkValidPArray l_array l_state =
+    case Map.lookup l_array $ pArray l_state of
+         Nothing -> (False, emptyPArray)
+         Just l_pArray -> (True, l_pArray)
+
+fillToggleInPArray :: PArray -> Int -> PArray
+fillToggleInPArray l_pArray l_toggle = l_pArray { aToggle = l_toggle }
 

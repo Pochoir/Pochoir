@@ -41,8 +41,8 @@ import qualified Data.Map as Map
 
 pToken1 :: GenParser Char ParserState String
 pToken1 = 
-        try pParsePochoirKernel1
-    <|> try pParsePochoirStencilMember1
+        try pParsePochoirStencilMember1
+--    <|> try pParsePochoirKernel1
     <|> do ch <- anyChar
            return [ch]
     <?> "line"

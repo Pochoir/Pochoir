@@ -652,23 +652,6 @@ static inline void klein_region(Grid_Info<2> & grid, Grid_Info<2> const & initia
 #define Pochoir_Shape_7D Pochoir_Shape<7>
 #define Pochoir_Shape_8D Pochoir_Shape<8>
 
-/* these lambda functions are for computing internal/boundary region,
- * the original 'f'/'bf'
- */
-
-/* Default Guard: Always return true */
-Pochoir_Guard_3D_Begin(Default_Guard_3D, t, i, j, k)
-    return true;
-Pochoir_Guard_3D_End(Default_Guard_3D)
-
-Pochoir_Guard_2D_Begin(Default_Guard_2D, t, i, j)
-    return true;
-Pochoir_Guard_2D_End(Default_Guard_2D)
-
-Pochoir_Guard_1D_Begin(Default_Guard_1D, t, i)
-    return true;
-Pochoir_Guard_1D_End(Default_Guard_1D)
-
 /* - these function templates are for computing boundary values, currently
  *   icc doesn't support capturing the lambda function by function objects,
  *   so, we have to utilize the function pointers!

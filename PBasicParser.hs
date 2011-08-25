@@ -53,7 +53,7 @@ lexer = Token.makeTokenParser (javaStyle
                                   "<<=", ">>=", "^=", "++", "--", "?", ":", "&", "|", "~",
                                   ">>", "<<", "%", "^", "->"],
                reservedNames = ["Pochoir_Array", "Pochoir", "Pochoir_Domain", 
-                                "Pochoir", "Pochoir_Kernel", 
+                                "Pochoir", "Pochoir_Kernel", "Pochoir_Guard", 
                                 "auto", "{", "};", "const", "volatile", "register", 
                                 "#define", "int", "float", "double", 
                                 "bool", "true", "false",
@@ -137,19 +137,26 @@ ppArray l_id l_state =
 ppStencil :: String -> ParserState -> GenParser Char ParserState String
 ppStencil l_id l_state = 
         do try $ pMember "Register_Array"
-           l_array <- parens identifier
+           l_arrays <- parens $ commaSep1 identifier
            semi
            case Map.lookup l_id $ pStencil l_state of 
-               Nothing -> return (l_id ++ ".Register_Array(" ++ l_array ++ "); /* UNKNOWN Register_Array with" ++ l_id ++ "*/" ++ breakline)
+               Nothing -> return (l_id ++ ".Register_Array(" ++ 
+                                  intercalate ", " l_arrays ++ 
+                                  "); /* UNKNOWN Register_Array with" ++ 
+                                  l_id ++ "*/" ++ breakline)
                Just l_stencil -> 
-                   case Map.lookup l_array $ pArray l_state of
-                       Nothing -> return (l_id ++ ".Register_Array (" ++ l_array ++ "); /* register Undefined Array */" ++ breakline)                       
-                       Just l_pArray ->
-                            do let l_revArray = l_pArray {aToggle = sToggle l_stencil}
-                               updateState $ updateStencilArray l_id l_revArray
-                               return (l_id ++ ".Register_Array (" ++ l_array ++ 
-                                       "); /* register Array */" ++ breakline)
-
+                    do let l_pArrayStatus = map (flip checkValidPArray l_state) l_arrays
+                       let l_validPArray = foldr (&&) True $ map fst l_pArrayStatus
+                       if (l_validPArray == True) 
+                          then do let l_pArrays = map snd l_pArrayStatus 
+                                  let l_revPArrays = map (flip fillToggleInPArray (sToggle l_stencil)) l_pArrays
+                                  updateStencilArray l_id l_revPArrays
+                                  return (l_id ++ ".Register_Array (" ++ 
+                                          intercalate ", " l_arrays ++ 
+                                          "); /* Known Register Array */" ++ breakline)
+                          else return (l_id ++ ".Register_Array(" ++ 
+                                       intercalate ", " l_arrays ++ 
+                                       "); /* UNKNOWN Pochoir Array */" ++ breakline)
     -- Ad hoc implementation of Run_Unroll
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
@@ -164,14 +171,15 @@ ppStencil l_id l_state =
                              updateState $ updateStencilBoundary l_id l_regBound 
                              return (breakline ++ l_id ++ ".Run(" ++ show l_tstep ++
                                      ");" ++ breakline)
-    -- convert "Register_Kernel(g, k, ... ks) " to "Register_Obase_Kernel(g, k, bk)"
-    <|> do try $ pMember "Register_Kernel"
+    -- convert "Register_Kernel(g, k, ... ks) " to 
+    -- "Register_Stagger_Obase_Kernels(g, k, bk)"
+    <|> do try $ pMember "Register_Stagger_Kernels"
            (l_guard, l_kernels) <- parens pStencilRegisterKernelParams
            semi
            case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Register_Kernel(" ++ l_guard ++ ", " ++ 
-                                  intercalate ", " l_kernels ++ 
-                                  "); /* Register_Kernel with UNKNOWN Stencil " ++ 
+               Nothing -> return (l_id ++ ".Register_Stagger_Kernels(" ++ l_guard ++ 
+                                  ", " ++ intercalate ", " l_kernels ++ 
+                                  "); /* UNKNOWN Stencil " ++ 
                                   l_id ++ "*/" ++ breakline)
                Just l_stencil ->
                    do let l_arrayInUse = sArrayInUse l_stencil
@@ -184,7 +192,7 @@ ppStencil l_id l_state =
                       let l_validKernel = foldr (&&) True $ map fst l_pKernels
                       let l_validGuard = fst l_pGuard
                       if (l_validKernel == False || l_validGuard == False) 
-                         then return (l_id ++ ".Register_Kernel(" ++ 
+                         then return (l_id ++ ".Register_Stagger_Kernels(" ++ 
                                       l_guard ++ ", " ++ intercalate ", " l_kernels ++ 
                                       ");" ++ "/* Not all kernels are valid */ " ++ 
                                       breakline)
@@ -199,7 +207,7 @@ ppStencil l_id l_state =
                                  -- We don't return anything in Register_Kernel 
                                  -- until 'Run', because we know the Register_Array
                                  -- only after Register_Kernel
-                                 return (l_id ++ ".Register_Kernel(" ++
+                                 return (l_id ++ ".Register_Stagger_Kernels(" ++
                                          l_guard ++ ", " ++ 
                                          intercalate ", " l_kernels ++ ");" ++ 
                                          "/* All kernels are recognized! */" ++
@@ -314,7 +322,7 @@ pUnrollMultiKernel (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showSingleKern
     in  (breakline ++ show l_pShape ++
          breakline ++ bdryKernel ++ 
          breakline ++ obaseKernel ++ 
-         breakline ++ l_id ++ ".Register_Obase_Kernel(" ++ l_guard ++ ", " ++ 
+         breakline ++ l_id ++ ".Register_Stagger_Obase_Kernels(" ++ l_guard ++ ", " ++ 
          show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 -- For modes : -split-pointer -split-opt-pointer -split-c-pointer
@@ -331,12 +339,6 @@ pSplitKernel (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showSingleKernel =
                         then pShowUnrolledBoundaryKernels False bdryKernelName 
                                 l_stencil l_kernels 
                         else ""
-{-
-        cond_bdryKernel = if unroll > 1
-                             then pShowUnrolledBoundaryKernels True 
-                                    cond_bdryKernelName l_stencil l_kernels
-                             else bdryKernel
-                                 -}
         cond_bdryKernel = pShowUnrolledBoundaryKernels True 
                                     cond_bdryKernelName l_stencil l_kernels
         obaseKernel = pShowUnrolledKernels False obaseKernelName l_stencil l_kernels l_showSingleKernel
@@ -351,7 +353,7 @@ pSplitKernel (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showSingleKernel =
     in  (breakline ++ show l_pShape ++
          bdryKernel ++ breakline ++ cond_bdryKernel ++ 
          obaseKernel ++ breakline ++ cond_obaseKernel ++
-         l_id ++ ".Register_Obase_Kernel(" ++ l_guard ++ ", " ++ 
+         l_id ++ ".Register_Stagger_Obase_Kernels(" ++ l_guard ++ ", " ++ 
          show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 -- For modes : -split-macro-shadow, -split-caching
@@ -388,7 +390,7 @@ pSplitScope (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showKernels =
     in (breakline ++ show l_pShape ++
         bdryKernel ++ breakline ++ cond_bdryKernel ++ 
         obaseKernel ++ breakline ++ cond_obaseKernel ++
-        l_id ++ ".Register_Obase_Kernel(" ++ l_guard ++ ", " ++ 
+        l_id ++ ".Register_Stagger_Obase_Kernels(" ++ l_guard ++ ", " ++ 
         show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 -------------------------------------------------------------------------------------------

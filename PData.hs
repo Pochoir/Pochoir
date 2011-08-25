@@ -106,6 +106,19 @@ data PKernelFunc = PKernelFunc {
     kfShape :: PShape
 } deriving Show
 
+data PGuardFunc = PGuardFunc {
+    gfName :: PName,
+    gfParams :: [PName],
+    gfStmt :: [Stmt],
+    gfIter :: [Iter]
+} deriving Show
+
+data PGuard = PGuard {
+    gName :: PName,
+    gRank :: Int,
+    gFunc :: PGuardFunc
+} deriving Show
+
 data PKernel = PKernel {
     kName :: PName,
     kRank :: Int,
@@ -113,15 +126,14 @@ data PKernel = PKernel {
     kShape :: PShape
 } deriving Show
 
-data PGuard = PGuard {
-    gName :: PName,
-    gParams :: [PName],
-    gStmt :: [Stmt],
-    gIter :: [Iter]
-} deriving Show
+emptyPType :: PType
+emptyPType = PType { basicType = PUserType, typeName = "" }
+
+emptyPArray :: PArray
+emptyPArray = PArray { aName = "", aType = emptyPType, aRank = 0, aMaxShift = 0, aToggle = 0, aDims = [], aRegBound = False }
 
 emptyShape :: PShape
-emptyShape = PShape {shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = []}
+emptyShape = PShape { shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = [] }
 
 emptyKernelFunc :: PKernelFunc
 emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfIter = [], kfShape = emptyShape }
@@ -129,8 +141,11 @@ emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfIter 
 emptyKernel :: PKernel
 emptyKernel = PKernel { kName = "", kRank = 0, kFunc = emptyKernelFunc, kShape = emptyShape }
 
+emptyGuardFunc :: PGuardFunc
+emptyGuardFunc = PGuardFunc { gfName = "", gfParams = [], gfStmt = [], gfIter = [] }
+
 emptyGuard :: PGuard
-emptyGuard = PGuard { gName = "", gParams = [], gStmt = [], gIter = [] }
+emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc }
 
 data ParserState = ParserState {
     pMode  :: PMode,
@@ -142,6 +157,7 @@ data ParserState = ParserState {
     pShape :: Map.Map PName PShape,
     pKernelFunc :: Map.Map PName PKernelFunc,
     pKernel :: Map.Map PName PKernel,
+    pGuardFunc :: Map.Map PName PGuardFunc,
     pGuard :: Map.Map PName PGuard
 } deriving Show
 

@@ -197,13 +197,12 @@ pShowAutoKernelFunc l_name l_kernelFunc =
         show (kfStmt l_kernelFunc) ++
         breakline ++ "};" ++ breakline
 
-pShowAutoGuard :: String -> PGuard -> String
-pShowAutoGuard l_name l_guard = 
-    let l_params = zipWith (++) (repeat "int ") (gParams l_guard)
+pShowAutoGuardFunc :: String -> PGuardFunc -> String
+pShowAutoGuardFunc l_name l_guardFunc = 
+    let l_params = zipWith (++) (repeat "int ") (gfParams l_guardFunc)
     in  "/* known Guard ! */ auto " ++ l_name ++ " = [&] (" ++ 
         pShowKernelParams l_params ++ ") -> bool {" ++ breakline ++
-        show (gStmt l_guard) ++
-        breakline ++ "};" ++ breakline
+        show (gfStmt l_guardFunc) ++ breakline ++ "};" ++ breakline
 
 pShowMacroKernel :: PName -> PKernelFunc -> String
 pShowMacroKernel l_macro l_kernel =

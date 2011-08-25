@@ -90,18 +90,18 @@ int main(int argc, char * argv[])
     b.Register_Shape(oned_3pt);
     b.Register_Boundary(periodic_1D);
 
-    Pochoir_Guard_1D(guard_interior, t, i)
+    Pochoir_Guard_1D_Begin(guard_interior, t, i)
         if (t > T/2 && i > N/2) {
             /* up right rectangle */
             return true;
         } else {
             return false;
         }
-    Pochoir_Guard_End
+    Pochoir_Guard_1D_End(guard_interior)
 
-    Pochoir_Guard_1D(guard_exterior, t, i)
+    Pochoir_Guard_1D_Begin(guard_exterior, t, i)
         return (!guard_interior(t, i));
-    Pochoir_Guard_End
+    Pochoir_Guard_1D_End(guard_exterior)
 
     Pochoir_Kernel_1D_Begin(interior_0, t, i)
 #if DEBUG

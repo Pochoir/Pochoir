@@ -74,11 +74,11 @@ diamond_1 : tb_diamond_1.cpp # tb_diamond_1_pochoir.cpp
 #   Phase-II compilation
 	${CC} -o diamond_1 ${OPT_FLAGS} -unroll-multi-kernel tb_diamond_1.cpp
 #	${CC} -o diamond_1 ${OPT_FLAGS} tb_diamond_1.cpp
-	${ICC} -o diamond_1_gdb ${ICC_DEBUG_FLAGS} tb_diamond_1_pochoir.cpp
+#	${ICC} -o diamond_1_gdb ${ICC_DEBUG_FLAGS} tb_diamond_1_pochoir.cpp
 #	${CC} -o diamond_1 ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_diamond_1.cpp
 #	${ICC} -o diamond_1 ${OPT_FLAGS} tb_diamond_1_pochoir.cpp
 #	Phase-I compilation with debugging aid
-#	${CC} -o diamond_1 ${POCHOIR_DEBUG_FLAGS} -unroll-multi-kernel tb_diamond_1.cpp 
+#	${CC} -o diamond_1 ${POCHOIR_DEBUG_FLAGS} tb_diamond_1.cpp 
 #	${ICC} -o diamond_1 ${OPT_FLAGS} tb_diamond_1.cpp 
 
 tile : tb_tile.cpp # tb_tile_pochoir.cpp 

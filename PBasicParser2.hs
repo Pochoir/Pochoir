@@ -44,21 +44,21 @@ import PData
 ppStencil1 :: String -> ParserState -> GenParser Char ParserState String
 ppStencil1 l_id l_state = 
     -- convert "Register_Kernel(g, k, ... ks) " to "Register_Obase_Kernel(g, k, bk)"
-        do try $ pMember "Register_Kernel"
+        do try $ pMember "Register_Stagger_Kernels"
            (l_guard, l_kernels) <- parens pStencilRegisterKernelParams
            semi
            case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Register_Kernel(" ++ l_guard ++ ", " ++ 
+               Nothing -> return (l_id ++ ".Register_Stagger_Kernels(" ++ l_guard ++ ", " ++ 
                                   intercalate ", " l_kernels ++ 
-                                  "); /* Register_Kernel with UNKNOWN Stencil " ++ 
-                                  l_id ++ " */" ++ breakline)
+                                  "); /* UNKNOWN Stencil " ++ l_id ++ " */" ++ 
+                                  breakline)
                Just l_stencil ->
                    do let l_pKernels = map (getValidKernel l_state) l_kernels
                       let l_pGuard = getValidGuard l_state l_guard
                       let l_validKernel = foldr (&&) True $ map fst l_pKernels
                       let l_validGuard = fst l_pGuard
                       if (l_validKernel == False || l_validGuard == False) 
-                         then return (l_id ++ ".Register_Kernel(" ++ 
+                         then return (l_id ++ ".Register_Stagger_Kernel(" ++ 
                                       l_guard ++ ", " ++ intercalate ", " l_kernels ++ 
                                       ");" ++ "/* Not all kernels are valid */ " ++ 
                                       breakline)

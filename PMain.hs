@@ -120,7 +120,7 @@ getObjFile dir fname = ["-o"] ++ [dir++name]
     where (name, suffix) = break ('.' ==) fname 
 -}
 
-pInitState = ParserState { pMode = PCaching, pState = Unrelated, pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty }
+pInitState = ParserState { pMode = PCaching, pState = Unrelated, pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty }
 
 icc = "icpc"
 

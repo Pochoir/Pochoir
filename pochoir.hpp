@@ -76,14 +76,14 @@ class Pochoir {
 
     public:
     template <typename ... KS>
-    void Register_Stagger_Kernels(Pochoir_Guard & g, KS ... ks);
+    void Register_Stagger_Kernels(Pochoir_Guard<N_RANK> & g, KS ... ks);
     /* this is for 2D checkerboard style tile.
      * the total dimensions here include the time dimension
      */
     template <int N_SIZE1, int N_SIZE2, typename ... IS>
-    void Register_Tile_Kernels(Pochoir_Guard & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2], IS ... is);
-    void Register_Stagger_Obase_Kernels(Pochoir_Guard & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & bk);
-    void Register_Stagger_Obase_Kernels(Pochoir_Guard & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk);
+    void Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2], IS ... is);
+    void Register_Stagger_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & bk);
+    void Register_Stagger_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk);
     // get slope(s)
     int slope(int const _idx) { return slope_[_idx]; }
     Pochoir() {
@@ -98,7 +98,7 @@ class Pochoir {
         num_arr_ = 0;
         arr_type_size_ = 0;
         sz_pgk_ = 0; 
-        pgs_ = pks_ = opks_ = pts_ = NULL;
+        pgs_ = NULL; pks_ = NULL; opks_ = NULL; pts_ = NULL;
         lcm_unroll_ = 1;
     }
 
@@ -156,7 +156,7 @@ void Pochoir<N_RANK>::reg_stagger_kernels(int pt, K k, KS ... ks) {
 }
 
 template <int N_RANK> template <typename ... KS>
-void Pochoir<N_RANK>::Register_Stagger_Kernels(Pochoir_Guard & g, KS ... ks) {
+void Pochoir<N_RANK>::Register_Stagger_Kernels(Pochoir_Guard<N_RANK> & g, KS ... ks) {
     int l_size = sizeof...(KS);
     typedef Pochoir_Kernel<N_RANK> T_Kernel;
     if (pks_ == NULL) {
@@ -198,7 +198,7 @@ void Pochoir<N_RANK>::reg_tile_dim(int dim, I i, IS ... is) {
 }
 
 template <int N_RANK> template <int N_SIZE1, int N_SIZE2, typename ... IS>
-void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2], IS ... is) {
+void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2], IS ... is) {
     typedef Pochoir_Kernel<N_RANK> T_Kernel;
     if (pts_ == NULL) {
         pts_ = new Pochoir_Tile_Kernel<N_RANK>[ARRAY_SIZE];
@@ -226,7 +226,7 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard & g, Pochoir_Kernel<N_
 }
 
 template <int N_RANK> 
-void Pochoir<N_RANK>::Register_Stagger_Obase_Kernels(Pochoir_Guard & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk) {
+void Pochoir<N_RANK>::Register_Stagger_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk) {
     typedef Pochoir_Obase_Kernel<N_RANK> T_Kernel;
     if (opks_ == NULL) {
         opks_ = new Pochoir_Stagger_Obase_Kernel<N_RANK>[ARRAY_SIZE];
@@ -263,7 +263,7 @@ void Pochoir<N_RANK>::Register_Stagger_Obase_Kernels(Pochoir_Guard & g, int unro
 }
 
 template <int N_RANK> 
-void Pochoir<N_RANK>::Register_Stagger_Obase_Kernels(Pochoir_Guard & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & bk) {
+void Pochoir<N_RANK>::Register_Stagger_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & bk) {
     typedef Pochoir_Obase_Kernel<N_RANK> T_Kernel;
     if (opks_ == NULL) {
         opks_ = new Pochoir_Stagger_Obase_Kernel<N_RANK>[ARRAY_SIZE];
@@ -589,7 +589,7 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
             int l_t0 = _plan.base_data_->region_[i].t0;
             int l_t1 = _plan.base_data_->region_[i].t1;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-            Pochoir_Run_Regional_Stagger_Kernel<N_RANK> l_kernel(pks_[l_region_n]);
+            Pochoir_Run_Regional_Stagger_Kernel<N_RANK> l_kernel(pgs_[l_region_n], pks_[l_region_n]);
             l_kernel.set_pointer(l_t0 - time_shift_);
             for (int t = l_t0; t < l_t1; ) {
                 meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
