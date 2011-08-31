@@ -82,15 +82,25 @@ diamond_1 : tb_diamond_1.cpp # tb_diamond_1_pochoir.cpp
 #	${CC} -o diamond_1 ${POCHOIR_DEBUG_FLAGS} tb_diamond_1.cpp 
 #	${ICC} -o diamond_1 ${OPT_FLAGS} tb_diamond_1.cpp 
 
+diamond_2 : tb_diamond_2.cpp # tb_diamond_2_pochoir.cpp 
+#   Phase-II compilation
+#	${CC} -o diamond_2 ${OPT_FLAGS} tb_diamond_2.cpp
+#	${CC} -o diamond_2 ${OPT_FLAGS} tb_diamond_2.cpp
+#	${ICC} -o diamond_2_gdb ${ICC_DEBUG_FLAGS} tb_diamond_2_pochoir.cpp
+#	${CC} -o diamond_2 ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_diamond_2.cpp
+#	${ICC} -o diamond_2 ${OPT_FLAGS} tb_diamond_2_pochoir.cpp
+#	Phase-I compilation with debugging aid
+	${CC} -o diamond_2 ${POCHOIR_DEBUG_FLAGS} tb_diamond_2.cpp 
+#	${ICC} -o diamond_2 ${OPT_FLAGS} tb_diamond_2.cpp 
+
 tile : tb_tile.cpp # tb_tile_pochoir.cpp 
 #   Phase-II compilation
-#	${CC} -o tile ${OPT_FLAGS} tb_tile.cpp
-#	${CC} -o tile ${OPT_FLAGS} tb_tile.cpp
+	${CC} -o tile ${OPT_FLAGS} tb_tile.cpp
 #	${ICC} -o tile_gdb ${ICC_DEBUG_FLAGS} tb_tile_pochoir.cpp
 #	${CC} -o tile ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_tile.cpp
 #	${ICC} -o tile ${OPT_FLAGS} tb_tile_pochoir.cpp
 #	Phase-I compilation with debugging aid
-	${CC} -o tile ${POCHOIR_DEBUG_FLAGS} tb_tile.cpp 
+#	${CC} -o tile ${POCHOIR_DEBUG_FLAGS} tb_tile.cpp 
 #	${ICC} -o tile ${OPT_FLAGS} tb_tile.cpp 
 
 meta : tb_meta_meta.cpp

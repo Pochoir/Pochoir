@@ -126,6 +126,25 @@ data PKernel = PKernel {
     kShape :: PShape
 } deriving Show
 
+data PTileKernel = SK PKernel 
+                 | LK [PTileKernel]
+--                 deriving Show
+
+data PTile = PTile {
+    tName :: PName,
+    tRank :: Int,
+    tSize :: [Int],
+    tKernel :: PTileKernel
+} deriving Show
+
+instance Show PTileKernel where
+    show (SK k) = kName k
+    show (LK kList) = "{" ++ showList kList "" ++ "}"
+    showList [] = showString ""
+    showList (k:ks) = shows k . showL ks
+        where showL [] = showString ""
+              showL (k:ks) = showString ", " . shows k . showL ks
+
 emptyPType :: PType
 emptyPType = PType { basicType = PUserType, typeName = "" }
 
@@ -147,6 +166,12 @@ emptyGuardFunc = PGuardFunc { gfName = "", gfParams = [], gfStmt = [], gfIter = 
 emptyGuard :: PGuard
 emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc }
 
+emptyTileKernel :: PTileKernel
+emptyTileKernel = LK [] 
+
+emptyTile :: PTile
+emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel }
+
 data ParserState = ParserState {
     pMode  :: PMode,
     pState :: PState, 
@@ -158,7 +183,8 @@ data ParserState = ParserState {
     pKernelFunc :: Map.Map PName PKernelFunc,
     pKernel :: Map.Map PName PKernel,
     pGuardFunc :: Map.Map PName PGuardFunc,
-    pGuard :: Map.Map PName PGuard
+    pGuard :: Map.Map PName PGuard,
+    pTile :: Map.Map PName PTile
 } deriving Show
 
 data Expr = VAR String String 

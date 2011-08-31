@@ -127,8 +127,9 @@ class Pochoir {
     void Run_Obase(int timestep);
     Pochoir_Plan<N_RANK> & Gen_Plan(int timepstep);
     Pochoir_Plan<N_RANK> & Load_Plan(const char * file_name);
-    void Store_Plan(Pochoir_Plan<N_RANK> & _plan, const char * file_name);
+    void Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & _plan);
     void Run(Pochoir_Plan<N_RANK> & _plan);
+    void Run_Stagger(Pochoir_Plan<N_RANK> & _plan);
     void Run_Obase(Pochoir_Plan<N_RANK> & _plan);
     void Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan);
 #if 0
@@ -563,7 +564,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
 }
 
 template <int N_RANK>
-void Pochoir<N_RANK>::Store_Plan(Pochoir_Plan<N_RANK> & _plan, const char * file_name) {
+void Pochoir<N_RANK>::Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & _plan) {
     char * l_base_file_name = new char[100];
     sprintf(l_base_file_name, "base_%s\0", file_name);
     char * l_sync_file_name = new char[100];
@@ -583,9 +584,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Load_Plan(const char * file_name) {
     return (*l_plan);
 }
 
-#if 0
 template <int N_RANK>
-void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
+void Pochoir<N_RANK>::Run_Stagger(Pochoir_Plan<N_RANK> & _plan) {
     assert(pks_ != NULL);
     int offset = 0;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
@@ -609,7 +609,7 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
     }
     return;
 }
-#else
+
 template <int N_RANK>
 void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
     assert(pts_ != NULL);
@@ -632,7 +632,6 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
     }
     return;
 }
-#endif
 
 template <int N_RANK>
 void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {

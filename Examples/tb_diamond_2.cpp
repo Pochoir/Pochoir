@@ -23,7 +23,9 @@
  *********************************************************************************
  */
 
-/* test bench for 2D checkerboard style stencil in Pochoir
+/* A diamond-shape irregular stencil computation in Pochoir
+ * -- In this test bench, let's see whether the staggered kernel can be computed
+ *  as a special case of tile
  */
 #include <cstdio>
 #include <cstddef>
@@ -37,6 +39,7 @@
 // using namespace std;
 #define TIMES 1
 #define TOLERANCE (1e-6)
+#define RUN_STAGGER 0
 
 void check_result(int t, int i, double a, double b)
 {
@@ -78,10 +81,11 @@ int main(int argc, char * argv[])
     T = StrToInt(argv[2]);
     printf("N = %d, T = %d\n", N, T);
     Pochoir_Shape_1D oned_3pt[] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
-    Pochoir_Shape_1D shape_k0[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
-    Pochoir_Shape_1D shape_k1[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
-    Pochoir_Shape_1D shape_k2[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
-    Pochoir_Shape_1D shape_k3[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
+    Pochoir_Shape_1D shape_interior_0[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
+    Pochoir_Shape_1D shape_interior_1[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
+    Pochoir_Shape_1D shape_interior_2[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
+    Pochoir_Shape_1D shape_exterior_0[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
+    Pochoir_Shape_1D shape_exterior_1[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
     Pochoir_Array_1D(double) a(N);
     Pochoir_Array_1D(double) b(N);
     Pochoir_1D leap_frog;
@@ -102,7 +106,7 @@ int main(int argc, char * argv[])
         return (!guard_interior(t, i));
     Pochoir_Guard_1D_End(guard_exterior)
 
-    Pochoir_Kernel_1D_Begin(k0, t, i)
+    Pochoir_Kernel_1D_Begin(interior_0, t, i)
 #if DEBUG
         printf("<i0> a(%d, %d) = f(a(%d, %d) <%.3f>, a(%d, %d) <%.3f>, a(%d, %d) <%.3f>)\n", t, i, t-1, i-1, a(t-1, i-1), t-1, i, a(t-1, i), t-1, i+1, a(t-1, i+1));
         printf("<i0> a(%d, %d) : %.3f -> ", t, i, a(t, i));
@@ -111,9 +115,9 @@ int main(int argc, char * argv[])
 #if DEBUG
         printf("%.3f\n", a(t, i));
 #endif
-    Pochoir_Kernel_1D_End(k0, shape_k0)
+    Pochoir_Kernel_1D_End(interior_0, shape_interior_0)
 
-    Pochoir_Kernel_1D_Begin(k1, t, i)
+    Pochoir_Kernel_1D_Begin(interior_1, t, i)
 #if DEBUG
         printf("<i1> a(%d, %d) = f(a(%d, %d) <%.3f>, a(%d, %d) <%.3f>, a(%d, %d) <%.3f>)\n", t, i, t-1, i-1, a(t-1, i-1), t-1, i, a(t-1, i), t-1, i+1, a(t-1, i+1));
         printf("<i1> a(%d, %d) : %.3f -> ", t, i, a(t, i));
@@ -122,36 +126,50 @@ int main(int argc, char * argv[])
 #if DEBUG
         printf("%.3f\n", a(t, i));
 #endif
-    Pochoir_Kernel_1D_End(k1, shape_k1)
+    Pochoir_Kernel_1D_End(interior_1, shape_interior_1)
 
-    Pochoir_Kernel_1D_Begin(k2, t, i)
+    Pochoir_Kernel_1D_Begin(interior_2, t, i)
 #if DEBUG
         printf("<i2> a(%d, %d) = f(a(%d, %d) <%.3f>, a(%d, %d) <%.3f>, a(%d, %d) <%.3f>)\n", t, i, t-1, i-1, a(t-1, i-1), t-1, i, a(t-1, i), t-1, i+1, a(t-1, i+1));
         printf("<i2> a(%d, %d) : %.3f -> ", t, i, a(t, i));
 #endif
-        a(t, i) = 0.3 * a(t-1, i-1) - 0.35 * a(t-1, i) - 0.389 * a(t-1, i+1) - 0.8;
+        a(t, i) = 0.3 * a(t-1, i-1) + 0.35 * a(t-1, i) + 0.389 * a(t-1, i+1) + 0.8;
 #if DEBUG
         printf("%.3f\n", a(t, i));
 #endif
-    Pochoir_Kernel_1D_End(k2, shape_k2)
+    Pochoir_Kernel_1D_End(interior_2, shape_interior_2)
 
-    Pochoir_Kernel_1D_Begin(k3, t, i)
+    Pochoir_Kernel_1D_Begin(exterior_0, t, i)
 #if DEBUG
         printf("<e0> a(%d, %d) = f(a(%d, %d) <%.3f>, a(%d, %d) <%.3f>, a(%d, %d) <%.3f>)\n", t, i, t-1, i-1, a(t-1, i-1), t-1, i, a(t-1, i), t-1, i+1, a(t-1, i+1));
         printf("<e0> a(%d, %d) : %.3f -> ", t, i, a(t, i));
 #endif
-        a(t, i) = 0.4 * a(t-1, i-1) - 0.45 * a(t-1, i) - 0.489 * a(t-1, i+1) - 0.4;
+        a(t, i) = 0.1 * a(t-1, i-1) - 0.15 * a(t-1, i) - 0.189 * a(t-1, i+1) - 0.1;
 #if DEBUG
         printf("%.3f\n", a(t, i));
 #endif
-    Pochoir_Kernel_1D_End(k3, shape_k3)
+    Pochoir_Kernel_1D_End(exterior_0, shape_exterior_0)
 
-    printf("Pochoir_Kernel size = %d, sizeof(int) = %d\n", sizeof(k3), sizeof(int));
-    /* this is a 2D checkerboard style tiling of the entire rectangular region/domain */
-    Pochoir_Kernel<1> tile0[2] = {};
-    Pochoir_Kernel<1> tile1[2] = {k0, k1};
-    Pochoir_Kernel<1> tile_2D_checkerboard[2][2] = {{k0, k1}, {k2, k3}};
-    leap_frog.Register_Tile_Kernels(Default_Guard_1D, tile_2D_checkerboard, 2, 2);
+    Pochoir_Kernel_1D_Begin(exterior_1, t, i)
+#if DEBUG
+        printf("<e1> a(%d, %d) = f(a(%d, %d) <%.3f>, a(%d, %d) <%.3f>, a(%d, %d) <%.3f>)\n", t, i, t-1, i-1, a(t-1, i-1), t-1, i, a(t-1, i), t-1, i+1, a(t-1, i+1));
+        printf("<e1> a(%d, %d) : %.3f -> ", t, i, a(t, i));
+#endif
+        a(t, i) = 0.2 * a(t-1, i-1) - 0.25 * a(t-1, i) - 0.281 * a(t-1, i+1) - 0.8;
+#if DEBUG
+        printf("%.3f\n", a(t, i));
+#endif
+    Pochoir_Kernel_1D_End(exterior_1, shape_exterior_1)
+
+    Pochoir_Kernel<1> tile_interior[3][1] = {{interior_0}, {interior_1}, {interior_2}};
+    Pochoir_Kernel<1> tile_exterior[2][1] = {{exterior_0}, {exterior_1}};
+#if RUN_STAGGER 
+    leap_frog.Register_Stagger_Kernels(guard_interior, interior_0, interior_1, interior_2);
+    leap_frog.Register_Stagger_Kernels(guard_exterior, exterior_0, exterior_1);
+#else
+    leap_frog.Register_Tile_Kernels(guard_interior, tile_interior, 3, 1);
+    leap_frog.Register_Tile_Kernels(guard_exterior, tile_exterior, 2, 1);
+#endif
     leap_frog.Register_Array(a);
 
     /* initialization */
@@ -167,7 +185,11 @@ int main(int argc, char * argv[])
 //    leap_frog.Load_Plan();
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
+#if RUN_STAGGER 
+        leap_frog.Run_Stagger(ll_plan);
+#else
         leap_frog.Run(ll_plan);
+#endif
 //        leap_frog.Run(T);
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
@@ -181,9 +203,10 @@ int main(int argc, char * argv[])
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
-            for (int i = 0; i < N; ++i) {
-                if ((t - 1) % 2 == 0 && i % 2 == 0) {
-                    /* k0 */
+            cilk_for (int i = 0; i < N; ++i) {
+                if (guard_interior(t, i)) {
+                    /* interior sub-region */
+                    if (t % 3 == 1) {
 #if DEBUG
                         printf("<i0> b(%d, %d) = f(b(%d, %d) <%.3f>, b(%d, %d) <%.3f>, b(%d, %d) <%.3f>)\n", t, i, t-1, i-1, b(t-1, i-1), t-1, i, b(t-1, i), t-1, i+1, b(t-1, i+1));
                         printf("<i0> b(%d, %d) : %.3f -> ", t, i, b(t, i));
@@ -192,8 +215,8 @@ int main(int argc, char * argv[])
 #if DEBUG
                         printf("%.3f\n", b(t, i));
 #endif
-                } else if ((t - 1) % 2 == 0 && i % 2 == 1) {
-                    /* k1 */
+                    }
+                    if (t % 3 == 2) {
 #if DEBUG
                         printf("<i1> b(%d, %d) = f(b(%d, %d) <%.3f>, b(%d, %d) <%.3f>, b(%d, %d) <%.3f>)\n", t, i, t-1, i-1, b(t-1, i-1), t-1, i, b(t-1, i), t-1, i+1, b(t-1, i+1));
                         printf("<i1> b(%d, %d) : %.3f -> ", t, i, b(t, i));
@@ -202,26 +225,39 @@ int main(int argc, char * argv[])
 #if DEBUG
                         printf("%.3f\n", b(t, i));
 #endif
-                } else if ((t - 1) % 2 == 1 && i % 2 == 0) {
-                    /* k2 */
+                    }
+                    if (t % 3 == 0) {
 #if DEBUG
                         printf("<i2> b(%d, %d) = f(b(%d, %d) <%.3f>, b(%d, %d) <%.3f>, b(%d, %d) <%.3f>)\n", t, i, t-1, i-1, b(t-1, i-1), t-1, i, b(t-1, i), t-1, i+1, b(t-1, i+1));
                         printf("<i2> b(%d, %d) : %.3f -> ", t, i, b(t, i));
 #endif
-                        b(t, i) = 0.3 * b(t-1, i-1) - 0.35 * b(t-1, i) - 0.389 * b(t-1, i+1) - 0.8;
+                        b(t, i) = 0.3 * b(t-1, i-1) + 0.35 * b(t-1, i) + 0.389 * b(t-1, i+1) + 0.8;
 #if DEBUG
                         printf("%.3f\n", b(t, i));
 #endif
-                } else if ((t - 1) % 2 == 1 && i % 2 == 1) {
-                    /* k3 */
+                    }
+                } else {
+                    /* exterior sub-region*/
+                    if (t % 2 == 1) {
 #if DEBUG
                         printf("<e0> b(%d, %d) = f(b(%d, %d) <%.3f>, b(%d, %d) <%.3f>, b(%d, %d) <%.3f>)\n", t, i, t-1, i-1, b(t-1, i-1), t-1, i, b(t-1, i), t-1, i+1, b(t-1, i+1));
                         printf("<e0> b(%d, %d) : %.3f -> ", t, i, b(t, i));
 #endif
-                        b(t, i) = 0.4 * b(t-1, i-1) - 0.45 * b(t-1, i) - 0.489 * b(t-1, i+1) - 0.4;
+                        b(t, i) = 0.1 * b(t-1, i-1) - 0.15 * b(t-1, i) - 0.189 * b(t-1, i+1) - 0.1;
 #if DEBUG
                         printf("%.3f\n", b(t, i));
 #endif
+                    }
+                    if (t % 2 == 0) {
+#if DEBUG
+                        printf("<e1> b(%d, %d) = f(b(%d, %d) <%.3f>, b(%d, %d) <%.3f>, b(%d, %d) <%.3f>)\n", t, i, t-1, i-1, b(t-1, i-1), t-1, i, b(t-1, i), t-1, i+1, b(t-1, i+1));
+                        printf("<e1> b(%d, %d) : %.3f -> ", t, i, b(t, i));
+#endif
+                        b(t, i) = 0.2 * b(t-1, i-1) - 0.25 * b(t-1, i) - 0.281 * b(t-1, i+1) - 0.8;
+#if DEBUG
+                        printf("%.3f\n", b(t, i));
+#endif
+                    }
                 }
             }
         }

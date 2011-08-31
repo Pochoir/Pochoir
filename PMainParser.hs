@@ -57,6 +57,7 @@ pToken =
     <|> try pParsePochoirStencil
     <|> try pParsePochoirShapeInfo
     <|> try pParsePochoirDomain
+    <|> try pParsePochoirTile
     <|> try pParsePochoirKernel
     <|> try pParsePochoirAutoKernelFunc
     <|> try pParsePochoirGuard
@@ -102,7 +103,7 @@ pParsePochoirKernel =
     do reserved "Pochoir_Kernel"
        l_rank <- angles pDeclStaticNum
        l_name <- identifier
-       (l_shape, l_kernelFunc) <- parens pPochoirKernelParams
+       (l_kernelFunc, l_shape) <- parens pPochoirKernelParams
        semi
        l_state <- getState
        case Map.lookup l_shape $ pShape l_state of
@@ -119,8 +120,24 @@ pParsePochoirKernel =
                           do let l_kernel = PKernel { kName = l_name, kRank = l_rank, kShape = l_pShape, kFunc = l_pKernelFunc { kfShape = l_pShape, kfName = l_name } }
                              updateState $ updatePKernel l_kernel
                              return (breakline ++ "Pochoir_Kernel <" ++ show l_rank ++
-                                     "> " ++ l_name ++ "(" ++ l_shape ++ ", " ++ 
-                                     l_kernelFunc ++ "); /* Known!!! */" ++ breakline)
+                                     "> " ++ l_name ++ "(" ++ l_kernelFunc ++ ", " ++
+                                     l_shape ++ "); /* Known!!! */" ++ breakline)
+
+pParsePochoirTile :: GenParser Char ParserState String
+pParsePochoirTile =
+    do reserved "Pochoir_Kernel"
+       l_rank <- angles pDeclStaticNum
+       l_name <- identifier
+       l_sizes <- many1 $ brackets pDeclStaticNum
+       reservedOp "="
+       l_tile_kernel <- pParseTileKernel
+       semi
+       -- let l_tile_kernel = emptyTileKernel
+       let l_tile = PTile { tName = l_name, tRank = l_rank, tSize = l_sizes, tKernel = l_tile_kernel }
+       updateState $ updatePTile l_tile
+       return (breakline ++ "Pochoir_Kernel <" ++ show l_rank ++ "> " ++ l_name ++
+               pShowArrayDims l_sizes ++ " = " ++ show l_tile_kernel ++ ";" ++ 
+               " /* Known! */" ++ breakline)
 
 pParsePochoirGuard :: GenParser Char ParserState String
 pParsePochoirGuard =

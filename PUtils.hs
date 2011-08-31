@@ -31,6 +31,10 @@ import Data.List
 import PData
 import qualified Data.Map as Map
 
+updatePTile :: PTile -> ParserState -> ParserState
+updatePTile l_tile parserState =
+    parserState { pTile = Map.insert (tName l_tile) l_tile $ pTile parserState }
+
 updatePKernelFunc :: PKernelFunc -> ParserState -> ParserState
 updatePKernelFunc l_kernelFunc parserState =
     parserState { pKernelFunc = Map.insert (kfName l_kernelFunc) l_kernelFunc $ pKernelFunc parserState }

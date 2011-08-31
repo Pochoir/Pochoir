@@ -236,8 +236,8 @@ pShowUnrolledMacroKernels l_cond l_name l_kL@(l_kernel:l_kernels)  =
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
                    show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
-                 "> " ++ l_name ++ "( " ++ shapeName l_pShape ++ ", " ++ 
-                 l_kernelFuncName ++ " );" ++ breakline 
+                 "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
+                 shapeName l_pShape ++ " );" ++ breakline 
     in  breakline ++ l_defMacro ++
         breakline ++ l_header ++
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
@@ -270,8 +270,8 @@ pShowUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) =
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
                    show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
-                 "> " ++ l_name ++ "( " ++ shapeName l_pShape ++ ", " ++ 
-                 l_kernelFuncName ++ " );" ++ breakline 
+                 "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
+                 shapeName l_pShape ++ " );" ++ breakline 
     in  breakline ++ l_defMacro ++
         breakline ++ pShowPMODLU ++
         breakline ++ l_header ++
@@ -343,8 +343,8 @@ pShowMUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) 
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
                    show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
-                 "> " ++ l_name ++ "( " ++ shapeName l_pShape ++ ", " ++ 
-                 l_kernelFuncName ++ " );" ++ breakline 
+                 "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
+                 shapeName l_pShape ++ " );" ++ breakline 
     in  breakline ++ pDefMax ++
         breakline ++ pDefMin ++
         breakline ++ l_defMacro ++
@@ -409,8 +409,8 @@ pShowMUnrolledKernels l_name l_stencil l_kL@(l_kernel:l_kernels) l_showSingleKer
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
                    show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
-                 "> " ++ l_name ++ "( " ++ shapeName l_pShape ++ ", " ++ 
-                 l_kernelFuncName ++ " );" ++ breakline 
+                 "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
+                 shapeName l_pShape ++ " );" ++ breakline 
         l_header_kernel = l_showSingleKernel True l_t 0 l_unroll l_kL
         l_tail_kernel = l_header_kernel
         l_mid_kernel = l_showSingleKernel False l_t 0 l_unroll l_kL
@@ -454,8 +454,8 @@ pShowUnrolledCachingKernels l_stencil l_cond l_name l_kL@(l_kernel:l_kernels) =
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
                    show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
-                 "> " ++ l_name ++ "( " ++ shapeName l_pShape ++ ", " ++ 
-                 l_kernelFuncName ++ " );" ++ breakline 
+                 "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
+                 shapeName l_pShape ++ " );" ++ breakline 
     in  breakline ++ l_header ++ 
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++
@@ -490,8 +490,8 @@ pShowUnrolledKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) l_showSin
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
                    show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
-                 "> " ++ l_name ++ "( " ++ shapeName l_pShape ++ ", " ++ 
-                 l_kernelFuncName ++ " );" ++ breakline 
+                 "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
+                 shapeName l_pShape ++ " );" ++ breakline 
     in  breakline ++ l_header ++ 
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++ 
@@ -1477,3 +1477,8 @@ pShowArrayDim (c:cs) = show c ++ pShowArrayDimL cs
     where pShowArrayDimL [] = ""
           pShowArrayDimL (d:ds) = ", " ++ show d ++ pShowArrayDimL ds
 
+pShowArrayDimItem :: Int -> String
+pShowArrayDimItem i = "[ " ++ show i ++ " ]"
+
+pShowArrayDims :: [Int] -> String
+pShowArrayDims iL@(i:is) = concatMap pShowArrayDimItem iL

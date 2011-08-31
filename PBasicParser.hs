@@ -114,6 +114,19 @@ pPochoirKernelParams =
        l_kernelFunc <- identifier
        return (l_shape, l_kernelFunc)
 
+pParseTileKernel :: GenParser Char ParserState PTileKernel
+pParseTileKernel =
+     do try $ symbol "{"
+        l_tiles <- commaSep pParseTileKernel
+        symbol "}"
+        return $ LK l_tiles
+ <|> do l_kernelName <- try $ identifier
+        l_state <- getState
+        case Map.lookup l_kernelName $ pKernel l_state of
+             -- Nothing -> return emptyTileKernel
+             Nothing -> return $ SK emptyKernel { kName = l_kernelName }
+             Just l_kernel -> return $ SK l_kernel 
+
 ppArray :: String -> ParserState -> GenParser Char ParserState String
 ppArray l_id l_state =
         do try $ pMember "Register_Boundary"
