@@ -51,7 +51,7 @@ data PType = PType {
     basicType :: PBasicType,
     typeName :: String
 } deriving Eq
-data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro deriving Eq
+data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro | PAllCondTileCPointer deriving Eq
 
 data PMacro = PMacro {
     mName :: PName,
@@ -278,6 +278,7 @@ instance Show PMode where
     show PNoPP = "-No-Preprocessing"
     show PMUnroll = "-unroll-multi-kernel"
     show PAllCondTileMacro = "-all-cond-tile-macro"
+    show PAllCondTileCPointer = "-all-cond-tile-c-pointer"
 
 instance Show PType where
     show ptype = typeName ptype

@@ -160,6 +160,10 @@ parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL
         let l_mode = PAllCondTileMacro
             aL' = delete "-all-cond-tile-macro" aL
         in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+    | elem "-all-cond-tile-c-pointer" aL =
+        let l_mode = PAllCondTileCPointer
+            aL' = delete "-all-cond-tile-c-pointer" aL
+        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
     | elem "-unroll-multi-kernel" aL =
         let l_mode = PMUnroll
             aL' = delete "-unroll-multi-kernel" aL

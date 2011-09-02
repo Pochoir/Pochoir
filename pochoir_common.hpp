@@ -70,6 +70,8 @@ static inline int lcm(int a, int b) {
 // #define DEBUG 0
 #define END_SYNC -1
 
+// define an alias to the array of array of Pochoir_Kernel
+#define POCHOIR_TILE Pochoir_Kernel
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
 /* a bit tricky version of modulo operation, assuming a < 2 * b */

@@ -204,15 +204,6 @@ getValidTile l_state l_tileName =
         Nothing -> emptyTile { tName = l_tileName, tComment = cUnknown "Tile" }
         Just l_pTile -> l_pTile { tComment = cKnown "Tile" }
 
-{-
-getTileKernels :: PTile -> [PKernel]
-getTileKernels l_tile = getKernelsTile [] 0 $ tKernel l_tile
-    where getKernelsTile l_indices l_index l_tileKernel 
---            | SK l_kernel = [l_kernel]
---            | LK l_tKs@(t:ts) = foldr `union` (getKernelsTile t) $ map getKernelsTile ts
---            | LK l_tKs@(t:ts) = concatMap getKernelsTile l_tKs
--}
-
 getTileKernels :: PTile -> [PKernel]
 getTileKernels l_tile = getKernelsTile [] 0 $ tKernel l_tile
 
