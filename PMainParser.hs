@@ -117,7 +117,7 @@ pParsePochoirKernel =
                                         l_shape ++ ", " ++ l_kernelFunc ++ 
                                         "); /* UNKNOWN Kernel Func */ " ++ breakline)
                      Just l_pKernelFunc -> 
-                          do let l_kernel = PKernel { kName = l_name, kRank = l_rank, kShape = l_pShape, kFunc = l_pKernelFunc { kfShape = l_pShape, kfName = l_name } }
+                          do let l_kernel = PKernel { kName = l_name, kRank = l_rank, kShape = l_pShape, kFunc = l_pKernelFunc { kfShape = l_pShape, kfName = l_name }, kIndex = [], kComment = "" }
                              updateState $ updatePKernel l_kernel
                              return (breakline ++ "Pochoir_Kernel <" ++ show l_rank ++
                                      "> " ++ l_name ++ "(" ++ l_kernelFunc ++ ", " ++
@@ -132,12 +132,17 @@ pParsePochoirTile =
        reservedOp "="
        l_tile_kernel <- pParseTileKernel
        semi
-       -- let l_tile_kernel = emptyTileKernel
-       let l_tile = PTile { tName = l_name, tRank = l_rank, tSize = l_sizes, tKernel = l_tile_kernel }
+       let l_tile = PTile { tName = l_name, tRank = l_rank, tSize = l_sizes, tKernel = l_tile_kernel, tComment = "" }
+       let l_kernels = getTileKernels l_tile
        updateState $ updatePTile l_tile
        return (breakline ++ "Pochoir_Kernel <" ++ show l_rank ++ "> " ++ l_name ++
                pShowArrayDims l_sizes ++ " = " ++ show l_tile_kernel ++ ";" ++ 
-               " /* Known! */" ++ breakline)
+               " /* Known! */" ++ breakline ++ 
+               "/* " ++ 
+               (intercalate "; " $ 
+                    zipWith (++) (map kName l_kernels) 
+                                 (map (show . kIndex) l_kernels)) ++
+               " */" ++ breakline)
 
 pParsePochoirGuard :: GenParser Char ParserState String
 pParsePochoirGuard =
@@ -152,7 +157,7 @@ pParsePochoirGuard =
                                "> " ++ l_name ++ "(" ++ l_guardFunc ++ 
                                "); /* UNKNOWN Guard Func */" ++ breakline)
             Just l_pGuardFunc -> 
-                 do let l_guard = PGuard { gName = l_name, gRank = l_rank, gFunc = l_pGuardFunc { gfName = l_name } }
+                 do let l_guard = PGuard { gName = l_name, gRank = l_rank, gFunc = l_pGuardFunc { gfName = l_name }, gComment = "" }
                     updateState $ updatePGuard l_guard
                     return (breakline ++ "Pochoir_Guard <" ++ show l_rank ++
                             "> " ++ l_name ++ "(" ++ l_guardFunc ++ 
@@ -174,7 +179,7 @@ pParsePochoirShapeInfo =
        let l_pShape = PShape {shapeName = l_name, shapeRank = l_rank, 
                               shapeLen = l_len, shapeToggle = l_toggle, 
                               shapeSlopes = l_slopes, shapeTimeShift = l_timeShift, 
-                              shape = l_shapes}
+                              shape = l_shapes, shapeComment = ""}
        updateState $ updatePShape l_pShape
        return (show l_pShape)
 
@@ -222,7 +227,7 @@ pParsePochoirAutoKernelFunc =
        let l_kernelFunc = PKernelFunc { kfName = l_kernel_name, 
                                         kfParams = l_kernel_params,
                                         kfStmt = exprStmts, kfIter = [],
-                                        kfShape = emptyShape }
+                                        kfShape = emptyShape, kfComment = "" }
        updateState $ updatePKernelFunc l_kernelFunc
        return (pShowAutoKernelFunc l_kernel_name l_kernelFunc) 
 
@@ -238,7 +243,7 @@ pParsePochoirAutoGuardFunc =
        reserved "{"
        exprStmts <- manyTill pStatement (try $ reserved "};")
        let l_guardFunc = PGuardFunc { gfName = l_guard_name, gfParams = l_guard_params,
-                                      gfStmt = exprStmts, gfIter = [] }
+                                      gfStmt = exprStmts, gfIter = [], gfComment = "" }
        updateState $ updatePGuardFunc l_guardFunc
        return (pShowAutoGuardFunc l_guard_name l_guardFunc) 
 
@@ -258,7 +263,7 @@ transPArray (l_type, l_rank) [] = []
 transPArray (l_type, l_rank) (p:ps) =
     let l_name = pSecond p
         l_dims = pThird p
-    in  (l_name, PArray {aName = l_name, aType = l_type, aRank = l_rank, aDims = l_dims, aMaxShift = 0, aToggle = 0, aRegBound = False}) : transPArray (l_type, l_rank) ps
+    in  (l_name, PArray {aName = l_name, aType = l_type, aRank = l_rank, aDims = l_dims, aMaxShift = 0, aToggle = 0, aRegBound = False, aComment = ""}) : transPArray (l_type, l_rank) ps
 
 transPStencil :: Int -> [PName] -> [(PName, PStencil)]
 transPStencil l_rank [] = []
@@ -267,11 +272,12 @@ transPStencil l_rank (p:ps) =
     (p, PStencil 
         {sName = p, sRank = l_rank, sToggle = 0, sUnroll = 1, 
          sTimeShift = 0, sArrayInUse = [], sShape = emptyShape, 
-         sRegBound = False, sRegKernel = []}) : transPStencil l_rank ps
+         sRegBound = False, sRegStaggerKernel = [], sRegTileKernel = [], 
+         sComment = ""}) : transPStencil l_rank ps
 
 transURange :: [([PName], PName, [DimExpr])] -> [(PName, PRange)]
 transURange [] = []
-transURange (p:ps) = (l_name, PRange {rName = l_name, rFirst = l_first, rLast = l_last, rStride = DimINT 1}) : transURange ps
+transURange (p:ps) = (l_name, PRange {rName = l_name, rFirst = l_first, rLast = l_last, rStride = DimINT 1, rComment = ""}) : transURange ps
     where l_name = pSecond p
           l_first = head $ pThird p
           l_last = head . tail $ pThird p

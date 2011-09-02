@@ -54,15 +54,6 @@ updatePGuard l_guard parserState =
 updateObase :: PMode -> ParserState -> ParserState
 updateObase mode parserState = parserState { pMode = mode }
 
-updatePState :: PState -> ParserState -> ParserState
-updatePState pstate parserState
-    | (pstate == PochoirBegin && pState parserState == Unrelated) = parserState { pState = PochoirBegin }
-    | (pstate == PochoirEnd && pState parserState == PochoirBegin) = parserState { pState = Unrelated }
-    | ((pstate == PochoirMacro || pstate == PochoirDeclArray || pstate == PochoirDeclRange)
-            && pState parserState == Unrelated) = parserState { pState = pstate }
-    | pstate == Unrelated = parserState { pState = Unrelated }
-    | otherwise = parserState { pState = PochoirError }
-
 updatePMacro :: (PName, PValue) -> ParserState -> ParserState
 updatePMacro (l_name, l_value) parserState =
     parserState { pMacro = Map.insert l_name l_value (pMacro parserState) }
@@ -111,11 +102,19 @@ updateStencilBoundary l_id l_regBound parserState =
                 else Nothing
     in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
 
-updateStencilRegKernel :: String -> [(PGuard, [PKernel])] -> ParserState -> ParserState
-updateStencilRegKernel l_id l_regKernel parserState =
+updateStencilRegStaggerKernel :: String -> [(PGuard, [PKernel])] -> ParserState -> ParserState
+updateStencilRegStaggerKernel l_id l_regStaggerKernel parserState =
     let f k x =
             if sName x == l_id
-                then Just $ x { sRegKernel = l_regKernel }
+                then Just $ x { sRegStaggerKernel = l_regStaggerKernel }
+                else Nothing
+    in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
+
+updateStencilRegTileKernel :: String -> [(PGuard, PTile)] -> ParserState -> ParserState
+updateStencilRegTileKernel l_id l_regTileKernel parserState =
+    let f k x =
+            if sName x == l_id
+                then Just $ x { sRegTileKernel = l_regTileKernel }
                 else Nothing
     in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
 
@@ -187,17 +186,48 @@ getArrayRegBound l_state l_pArray =
         Nothing -> False
         Just l_array -> aRegBound l_array
     
-getValidKernel :: ParserState -> String -> (Bool, PKernel)
-getValidKernel l_state l_kernel =
-    case Map.lookup l_kernel $ pKernel l_state of
-        Nothing -> (False, emptyKernel) 
-        Just l_pKernel -> (True, l_pKernel)
+getValidKernel :: ParserState -> String -> PKernel
+getValidKernel l_state l_kernelName =
+    case Map.lookup l_kernelName $ pKernel l_state of
+        Nothing -> emptyKernel { kName = l_kernelName, kComment = cUnknown "Kernel" }
+        Just l_pKernel -> l_pKernel { kComment = cKnown "Kernel" }
 
-getValidGuard :: ParserState -> String -> (Bool, PGuard)
-getValidGuard l_state l_guard =
-    case Map.lookup l_guard $ pGuard l_state of
-        Nothing -> (False, emptyGuard)
-        Just l_pGuard -> (True, l_pGuard)
+getValidGuard :: ParserState -> String -> PGuard
+getValidGuard l_state l_guardName =
+    case Map.lookup l_guardName $ pGuard l_state of
+        Nothing -> emptyGuard { gName = l_guardName, gComment = cUnknown "Guard" }
+        Just l_pGuard -> l_pGuard { gComment = cKnown "Guard" }
+
+getValidTile :: ParserState -> String -> PTile
+getValidTile l_state l_tileName =
+    case Map.lookup l_tileName $ pTile l_state of
+        Nothing -> emptyTile { tName = l_tileName, tComment = cUnknown "Tile" }
+        Just l_pTile -> l_pTile { tComment = cKnown "Tile" }
+
+{-
+getTileKernels :: PTile -> [PKernel]
+getTileKernels l_tile = getKernelsTile [] 0 $ tKernel l_tile
+    where getKernelsTile l_indices l_index l_tileKernel 
+--            | SK l_kernel = [l_kernel]
+--            | LK l_tKs@(t:ts) = foldr `union` (getKernelsTile t) $ map getKernelsTile ts
+--            | LK l_tKs@(t:ts) = concatMap getKernelsTile l_tKs
+-}
+
+getTileKernels :: PTile -> [PKernel]
+getTileKernels l_tile = getKernelsTile [] 0 $ tKernel l_tile
+
+getKernelsTile :: [Int] -> Int -> PTileKernel -> [PKernel]
+getKernelsTile l_indices l_index (SK l_kernel) =
+    let ll_indices = l_indices ++ [l_index]
+        ll_kernel = l_kernel { kIndex = ll_indices }
+    in  [ll_kernel]
+getKernelsTile l_indices l_index (LK l_tKs@(t:ts)) =
+    let ll_indices = l_indices ++ [l_index]
+    in  getKernelsTile ll_indices 0 t ++ getKernelsTile l_indices (l_index + 1) (LK ts)
+getKernelsTile l_indices l_index (LK []) = []
+
+getTileSizes :: [[Int]] -> [Int]
+getTileSizes l_tile_indices = map ((+) 1 . maximum) $ transpose l_tile_indices
 
 getPShape :: ParserState -> String -> PShape
 getPShape l_state l_shape =
@@ -311,7 +341,8 @@ mergePShapes a b = PShape { shapeName = shapeName a ++ shapeName b,
                             shapeToggle = max (shapeToggle a) (shapeToggle b),
                             shapeSlopes = zipWith max (shapeSlopes a) (shapeSlopes b),
                             shapeTimeShift = min (shapeTimeShift a) (shapeTimeShift b),
-                            shape = union (shape a) (shape b) }
+                            shape = union (shape a) (shape b),
+                            shapeComment = "" }
 
 pSysShape :: PShape -> PShape
 pSysShape a = a { shapeName = "__" ++ shapeName a ++ "__" }

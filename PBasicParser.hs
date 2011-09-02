@@ -17,7 +17,7 @@
  -   You should have received a copy of the GNU General Public License
  -   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  -
- -   Suggestsions:                  yuantang@csail.mit.edu
+ -   Suggestions:                   yuantang@csail.mit.edu
  -   Bugs:                          yuantang@csail.mit.edu
  -
  --------------------------------------------------------------------------------
@@ -187,44 +187,61 @@ ppStencil l_id l_state =
     -- convert "Register_Kernel(g, k, ... ks) " to 
     -- "Register_Stagger_Obase_Kernels(g, k, bk)"
     <|> do try $ pMember "Register_Stagger_Kernels"
-           (l_guard, l_kernels) <- parens pStencilRegisterKernelParams
+           (l_guard, l_kernels) <- parens pStencilRegisterStaggerKernelParams
            semi
            case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Register_Stagger_Kernels(" ++ l_guard ++ 
-                                  ", " ++ intercalate ", " l_kernels ++ 
+               Nothing -> return (l_id ++ ".Register_Stagger_Kernels(" ++ 
+                                  (gName l_guard) ++ (gComment l_guard) ++ ", " ++ 
+                                  intercalate ", " (zipWith (++) (map kName l_kernels) 
+                                                   (map kComment l_kernels)) ++ 
                                   "); /* UNKNOWN Stencil " ++ 
                                   l_id ++ "*/" ++ breakline)
                Just l_stencil ->
-                   do let l_arrayInUse = sArrayInUse l_stencil
-                      let l_unroll = length l_kernels
+                   do let l_unroll = length l_kernels
                       updateState $ updateStencilUnroll l_id l_unroll
                       l_newState <- getState
                       let l_revStencil = getPStencil l_id l_newState l_stencil
-                      let l_pKernels = map (getValidKernel l_newState) l_kernels
-                      let l_pGuard = getValidGuard l_newState l_guard
-                      let l_validKernel = foldr (&&) True $ map fst l_pKernels
-                      let l_validGuard = fst l_pGuard
-                      if (l_validKernel == False || l_validGuard == False) 
-                         then return (l_id ++ ".Register_Stagger_Kernels(" ++ 
-                                      l_guard ++ ", " ++ intercalate ", " l_kernels ++ 
-                                      ");" ++ "/* Not all kernels are valid */ " ++ 
-                                      breakline)
-                         else do let l_sRegKernel = sRegKernel l_stencil
-                                 let l_rev_sRegKernel = l_sRegKernel ++ [(snd l_pGuard, map snd l_pKernels)]
-                                 updateState $ updateStencilRegKernel l_id l_rev_sRegKernel
-                                 let l_pShapes = map kShape (map snd l_pKernels)
-                                 let l_merged_pShape = foldr mergePShapes (sShape l_revStencil) l_pShapes
-                                 updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
-                                 updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
-                                 updateState $ updateStencilShape l_id l_merged_pShape
-                                 -- We don't return anything in Register_Kernel 
-                                 -- until 'Run', because we know the Register_Array
-                                 -- only after Register_Kernel
-                                 return (l_id ++ ".Register_Stagger_Kernels(" ++
-                                         l_guard ++ ", " ++ 
-                                         intercalate ", " l_kernels ++ ");" ++ 
-                                         "/* All kernels are recognized! */" ++
-                                         breakline)
+                      let l_sRegStaggerKernel = sRegStaggerKernel l_stencil
+                      let l_rev_sRegStaggerKernel = l_sRegStaggerKernel ++ [(l_guard, l_kernels)]
+                      updateState $ updateStencilRegStaggerKernel l_id l_rev_sRegStaggerKernel
+                      let l_pShapes = map kShape l_kernels
+                      let l_merged_pShape = foldr mergePShapes (sShape l_revStencil) l_pShapes
+                      updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
+                      updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
+                      updateState $ updateStencilShape l_id l_merged_pShape
+                      -- We don't return anything in Register_Kernel 
+                      -- until 'Run', because we know the Register_Array
+                      -- only after Register_Kernel
+                      return (l_id ++ ".Register_Stagger_Kernels(" ++
+                              (gName l_guard) ++ (gComment l_guard) ++ ", " ++ 
+                              intercalate ", " (zipWith (++) (map kName l_kernels) 
+                                               (map kComment l_kernels)) ++ 
+                              ");" ++ breakline)
+    <|> do try $ pMember "Register_Tile_Kernels"
+           (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
+           semi
+           case Map.lookup l_id $ pStencil l_state of
+               Nothing -> return (l_id ++ ".Register_Stagger_Kernels(" ++ 
+                                  (gName l_guard) ++ (gComment l_guard) ++ ", " ++ 
+                                  (tName l_tile) ++ (tComment l_tile) ++ 
+                                  "); /* UNKNOWN Stencil " ++ 
+                                  l_id ++ "*/" ++ breakline)
+               Just l_stencil ->
+                   do let l_sRegTileKernel = sRegTileKernel l_stencil
+                      let l_rev_sRegTileKernel = l_sRegTileKernel ++ [(l_guard, l_tile)]
+                      updateState $ updateStencilRegTileKernel l_id l_rev_sRegTileKernel
+                      let l_pShapes = map kShape $ getTileKernels l_tile
+                      let l_merged_pShape = foldr mergePShapes (sShape l_stencil) l_pShapes
+                      updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
+                      updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
+                      updateState $ updateStencilShape l_id l_merged_pShape
+                      -- We don't return anything in Register_Kernel 
+                      -- until 'Run', because we know the Register_Array
+                      -- only after Register_Kernel
+                      return (l_id ++ ".Register_Tile_Kernels(" ++
+                              (gName l_guard) ++ (gComment l_guard) ++ ", " ++ 
+                              (tName l_tile) ++ (tComment l_tile)  ++ 
+                              ");" ++ breakline)
     <|> do return (l_id)
 
 -- get all iterators from Kernel
@@ -266,8 +283,8 @@ transKernel l_stencil l_mode l_kernelFunc =
            l_revIters = transIterN 0 l_iters
        in  l_kernelFunc { kfIter = l_revIters }
 
-pShowRegKernel :: PMode -> PStencil -> (PGuard, [PKernel]) -> String
-pShowRegKernel l_mode l_stencil (l_guard, l_kernels) =
+pShowRegStaggerKernel :: PMode -> PStencil -> (PGuard, [PKernel]) -> String
+pShowRegStaggerKernel l_mode l_stencil (l_guard, l_kernels) =
     let l_revKernelFunc = map (transKernel l_stencil l_mode) (map kFunc l_kernels) 
         l_id = sName l_stencil
         l_guardName = gName l_guard
@@ -315,6 +332,53 @@ pShowRegKernel l_mode l_stencil (l_guard, l_kernels) =
                    ("C_Pointer_", l_id, l_guardName, l_revKernelFunc, 
                      l_stencil) 
                    pShowSingleCPointerKernel
+
+pShowRegTileKernel :: PMode -> PStencil -> (PGuard, PTile) -> String
+pShowRegTileKernel l_mode l_stencil (l_guard, l_tile) =
+    let l_kernels = getTileKernels l_tile
+        l_tile_indices = map kIndex l_kernels
+        l_revKernelFunc = map (transKernel l_stencil l_mode) (map kFunc l_kernels) 
+        l_id = sName l_stencil
+        l_guardName = gName l_guard
+    in  case l_mode of
+             PAllCondTileMacro -> 
+                 pSplitTileScope 
+                   ("Macro_", l_id, l_guardName, l_tile_indices, l_revKernelFunc, l_stencil) 
+                   pShowTileMacroKernels
+{-
+             PDefault -> 
+                 let l_showKernel = 
+                       if sRank l_stencil < 3
+                          then pShowSingleOptPointerKernel
+                          else pShowSinglePointerKernel
+                 in  pSplitTileKernel
+                      ("Default_", l_id, l_guardName, l_revKernelFunc, l_stencil) 
+                      l_showKernel
+             PMUnroll -> 
+                 let l_showKernel = 
+                       if sRank l_stencil < 3
+                          then pShowSingleOptPointerKernel
+                          else pShowSinglePointerKernel
+                 in  pUnrollTileMultiKernel
+                      ("MUnroll_", l_id, l_guardName, l_revKernelFunc, l_stencil) 
+                      l_showKernel
+             PPointer -> 
+                  pSplitTileKernel
+                   ("Pointer_", l_id, l_guardName, l_revKernelFunc, l_stencil) 
+                   pShowSinglePointerKernel
+             POptPointer -> 
+                  pSplitTileKernel 
+                   ("Opt_Pointer_", l_id, l_guardName, l_revKernelFunc, l_stencil) 
+                   pShowSingleOptPointerKernel
+             PCaching -> 
+                  pSplitTileScope 
+                   ("Caching_", l_id, l_guardName, l_revKernelFunc, l_stencil) 
+                   (pShowUnrolledCachingKernels l_stencil)
+             PCPointer -> 
+                  pSplitTileKernel 
+                   ("C_Pointer_", l_id, l_guardName, l_revKernelFunc, l_stencil) 
+                   pShowSingleCPointerKernel
+-}
 
 -- for mode -unroll-multi-kernel
 pUnrollMultiKernel :: (String, String, String, [PKernelFunc], PStencil) -> (Bool -> String -> Int -> Int -> [PKernelFunc] -> String) -> String
@@ -406,6 +470,29 @@ pSplitScope (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showKernels =
         l_id ++ ".Register_Stagger_Obase_Kernels(" ++ l_guard ++ ", " ++ 
         show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
+-- For modes : -split-macro-shadow, -split-caching
+pSplitTileScope :: (String, String, String, [[Int]], [PKernelFunc], PStencil) -> (Bool -> String -> PStencil -> [[Int]] -> [PKernelFunc] -> String) -> String
+pSplitTileScope (l_tag, l_id, l_guardName, l_tile_indices, l_kernelFuncs, l_stencil) l_showKernels = 
+    let oldKernelName = intercalate "_" $ map kfName l_kernelFuncs
+        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
+        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
+        regBound = sRegBound l_stencil
+        unroll = length l_tile_indices
+        bdryKernel = if regBound 
+                        then pShowTileMacroKernels True bdryKernelName 
+                                l_stencil l_tile_indices l_kernelFuncs 
+                        else ""
+        obaseKernel = l_showKernels False obaseKernelName 
+                            l_stencil l_tile_indices l_kernelFuncs
+        runKernel = if regBound 
+                       then obaseKernelName ++ ", " ++ bdryKernelName
+                       else obaseKernelName
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kernelFuncs)
+    in (breakline ++ show l_pShape ++
+        bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
+        l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++ ", " ++ 
+        show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
+
 -------------------------------------------------------------------------------------------
 --                             Following are C++ Grammar Parser                         ---
 -------------------------------------------------------------------------------------------
@@ -419,13 +506,30 @@ pStencilRun =
 
 -- parse the input parameters of Register_Kernel:
 -- it contains one guard function, and multiple computing kernels
-pStencilRegisterKernelParams :: GenParser Char ParserState (String, [String])
-pStencilRegisterKernelParams = 
-        do l_guard <- identifier 
+pStencilRegisterStaggerKernelParams :: GenParser Char ParserState (PGuard, [PKernel])
+pStencilRegisterStaggerKernelParams = 
+        do l_guardName <- identifier 
            comma
-           l_kernels <- commaSep1 identifier
+           l_kernelNames <- commaSep1 identifier
+           l_state <- getState
+           let l_guard = getValidGuard l_state l_guardName
+           let l_kernels = map (getValidKernel l_state) l_kernelNames
            return (l_guard, l_kernels)
-    <?> "Stencil Register_Kernel Parameters"
+    <?> "Stencil Register_Stagger_Kernels Parameters"
+
+-- for tile kernel, because the kernels has been tiled up in an array of array,
+-- so we only need to parse one kernel
+-- bookmark
+pStencilRegisterTileKernelParams :: GenParser Char ParserState (PGuard, PTile)
+pStencilRegisterTileKernelParams = 
+        do l_guardName <- identifier 
+           comma
+           l_tileName <- identifier
+           l_state <- getState
+           let l_guard = getValidGuard l_state l_guardName
+           let l_tile = getValidTile l_state l_tileName
+           return (l_guard, l_tile)
+    <?> "Stencil Register_Tile_Kernels Parameters"
 
 -- pDeclStatic <type, rank>
 pDeclStatic :: GenParser Char ParserState (PType, PValue)

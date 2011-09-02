@@ -45,25 +45,33 @@ ppStencil1 :: String -> ParserState -> GenParser Char ParserState String
 ppStencil1 l_id l_state = 
     -- convert "Register_Kernel(g, k, ... ks) " to "Register_Obase_Kernel(g, k, bk)"
         do try $ pMember "Register_Stagger_Kernels"
-           (l_guard, l_kernels) <- parens pStencilRegisterKernelParams
+           (l_guard, l_kernels) <- parens pStencilRegisterStaggerKernelParams
            semi
            case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Register_Stagger_Kernels(" ++ l_guard ++ ", " ++ 
-                                  intercalate ", " l_kernels ++ 
+               Nothing -> return (l_id ++ ".Register_Stagger_Kernels(" ++ 
+                                  (gName l_guard) ++ (gComment l_guard) ++ ", " ++ 
+                                  (intercalate ", " $ zipWith (++) 
+                                       (map kName l_kernels) 
+                                       (map kComment l_kernels)) ++ 
                                   "); /* UNKNOWN Stencil " ++ l_id ++ " */" ++ 
                                   breakline)
                Just l_stencil ->
-                   do let l_pKernels = map (getValidKernel l_state) l_kernels
-                      let l_pGuard = getValidGuard l_state l_guard
-                      let l_validKernel = foldr (&&) True $ map fst l_pKernels
-                      let l_validGuard = fst l_pGuard
-                      if (l_validKernel == False || l_validGuard == False) 
-                         then return (l_id ++ ".Register_Stagger_Kernel(" ++ 
-                                      l_guard ++ ", " ++ intercalate ", " l_kernels ++ 
-                                      ");" ++ "/* Not all kernels are valid */ " ++ 
-                                      breakline)
-                         else do let l_regKernels = pShowRegKernel (pMode l_state) l_stencil (snd l_pGuard, map snd l_pKernels)
-                                 return (l_regKernels)
+                   do let l_regKernels = pShowRegStaggerKernel (pMode l_state) l_stencil (l_guard, l_kernels)
+                      return (l_regKernels)
+    -- convert "Register_Kernel(g, k, ... ks) " to "Register_Obase_Kernel(g, k, bk)"
+    <|> do try $ pMember "Register_Tile_Kernels"
+           (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
+           semi
+           case Map.lookup l_id $ pStencil l_state of
+               Nothing -> return (l_id ++ ".Register_Tile_Kernels(" ++ 
+                                  (gName l_guard) ++ (gComment l_guard) ++ ", " ++
+                                  (tName l_tile) ++ (tComment l_tile) ++
+                                  "); /* UNKNOWN Stencil " ++ l_id ++ " */" ++ 
+                                  breakline)
+               Just l_stencil ->
+               -- convert "Register_Kernel(g, k, ... ks) " to "Register_Obase_Kernel(g, k, bk)"
+                   do let l_regKernels = pShowRegTileKernel (pMode l_state) l_stencil (l_guard, l_tile)
+                      return (l_regKernels)
     -- Ad hoc implementation of Run_Unroll
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
@@ -71,7 +79,7 @@ ppStencil1 l_id l_state =
            let l_mode = pMode l_state
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ ");")
-               Just l_stencil -> if l_mode == PMUnroll 
+               Just l_stencil -> if l_mode == PMUnroll || l_mode == PAllCondTileMacro 
                                     then return (breakline ++ l_id ++ 
                                          ".Run_Obase_Merge(" ++ show l_tstep ++ 
                                          "); /* Run with Stencil " ++ l_id ++ " */" ++ 

@@ -120,7 +120,7 @@ getObjFile dir fname = ["-o"] ++ [dir++name]
     where (name, suffix) = break ('.' ==) fname 
 -}
 
-pInitState = ParserState { pMode = PCaching, pState = Unrelated, pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty }
+pInitState = ParserState { pMode = PCaching, pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty }
 
 icc = "icpc"
 
@@ -155,6 +155,10 @@ parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL
     | elem "-split-caching" aL =
         let l_mode = PCaching
             aL' = delete "-split-caching" aL
+        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+    | elem "-all-cond-tile-macro" aL =
+        let l_mode = PAllCondTileMacro
+            aL' = delete "-all-cond-tile-macro" aL
         in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
     | elem "-unroll-multi-kernel" aL =
         let l_mode = PMUnroll

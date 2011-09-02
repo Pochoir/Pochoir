@@ -95,7 +95,7 @@ diamond_2 : tb_diamond_2.cpp # tb_diamond_2_pochoir.cpp
 
 tile : tb_tile.cpp # tb_tile_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o tile ${OPT_FLAGS} tb_tile.cpp
+	${CC} -o tile ${OPT_FLAGS} -all-cond-tile-macro tb_tile.cpp
 #	${ICC} -o tile_gdb ${ICC_DEBUG_FLAGS} tb_tile_pochoir.cpp
 #	${CC} -o tile ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_tile.cpp
 #	${ICC} -o tile ${OPT_FLAGS} tb_tile_pochoir.cpp

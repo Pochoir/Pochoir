@@ -51,12 +51,13 @@ data PType = PType {
     basicType :: PBasicType,
     typeName :: String
 } deriving Eq
-data PState = PochoirBegin | PochoirEnd | PochoirMacro | PochoirDeclArray | PochoirDeclRange | PochoirError | Unrelated deriving (Show, Eq)
-data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP deriving Eq
+data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro deriving Eq
+
 data PMacro = PMacro {
     mName :: PName,
     mValue :: PValue
 } deriving Show
+
 data PArray = PArray {
     aName :: PName,
     aType :: PType,
@@ -64,8 +65,10 @@ data PArray = PArray {
     aMaxShift :: Int,
     aToggle :: Int,
     aDims :: [DimExpr],
-    aRegBound :: Bool
+    aRegBound :: Bool,
+    aComment :: String
 } deriving (Show, Eq)
+
 data PStencil = PStencil {
     sName :: PName,
     sRank :: Int,
@@ -74,8 +77,10 @@ data PStencil = PStencil {
     sTimeShift :: Int,
     sArrayInUse :: [PArray],
     sShape :: PShape,
-    sRegKernel :: [(PGuard, [PKernel])],
-    sRegBound :: Bool
+    sRegStaggerKernel :: [(PGuard, [PKernel])],
+    sRegTileKernel :: [(PGuard, PTile)],
+    sRegBound :: Bool,
+    sComment :: String
 } deriving Show
 
 data PShape = PShape {
@@ -85,14 +90,16 @@ data PShape = PShape {
     shapeToggle :: Int,
     shapeSlopes :: [Int],
     shapeTimeShift :: Int,
-    shape :: [[Int]]
-} 
+    shape :: [[Int]],
+    shapeComment :: String
+} deriving Eq
 
 data PRange = PRange {
     rName :: PName,
     rFirst :: DimExpr,
     rLast :: DimExpr,
-    rStride :: DimExpr 
+    rStride :: DimExpr,
+    rComment :: String
 } deriving Show 
 
 -- (NameOfIter, arrayInUse, correspondingDimExpr, RWMode)
@@ -103,78 +110,87 @@ data PKernelFunc = PKernelFunc {
     kfParams :: [PName],
     kfStmt :: [Stmt],
     kfIter :: [Iter],
-    kfShape :: PShape
-} deriving Show
+    kfShape :: PShape,
+    kfComment :: String
+} deriving (Eq, Show)
 
 data PGuardFunc = PGuardFunc {
     gfName :: PName,
     gfParams :: [PName],
     gfStmt :: [Stmt],
-    gfIter :: [Iter]
+    gfIter :: [Iter],
+    gfComment :: String
 } deriving Show
 
 data PGuard = PGuard {
     gName :: PName,
     gRank :: Int,
-    gFunc :: PGuardFunc
+    gFunc :: PGuardFunc,
+    gComment :: String
 } deriving Show
 
 data PKernel = PKernel {
     kName :: PName,
     kRank :: Int,
     kFunc :: PKernelFunc,
-    kShape :: PShape
-} deriving Show
+    kShape :: PShape,
+    kIndex :: [Int],
+    kComment :: String
+} deriving (Eq, Show)
 
 data PTileKernel = SK PKernel 
                  | LK [PTileKernel]
---                 deriving Show
+                 deriving Eq
 
 data PTile = PTile {
     tName :: PName,
     tRank :: Int,
     tSize :: [Int],
-    tKernel :: PTileKernel
+    tKernel :: PTileKernel,
+    tComment :: String
 } deriving Show
-
-instance Show PTileKernel where
-    show (SK k) = kName k
-    show (LK kList) = "{" ++ showList kList "" ++ "}"
-    showList [] = showString ""
-    showList (k:ks) = shows k . showL ks
-        where showL [] = showString ""
-              showL (k:ks) = showString ", " . shows k . showL ks
 
 emptyPType :: PType
 emptyPType = PType { basicType = PUserType, typeName = "" }
 
 emptyPArray :: PArray
-emptyPArray = PArray { aName = "", aType = emptyPType, aRank = 0, aMaxShift = 0, aToggle = 0, aDims = [], aRegBound = False }
+emptyPArray = PArray { aName = "", aType = emptyPType, aRank = 0, aMaxShift = 0, aToggle = 0, aDims = [], aRegBound = False, aComment = cEmpty "Pochoir_Array" }
 
 emptyShape :: PShape
-emptyShape = PShape { shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = [] }
+emptyShape = PShape { shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = [], shapeComment = cEmpty "Pochoir_Shape" }
 
 emptyKernelFunc :: PKernelFunc
-emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfIter = [], kfShape = emptyShape }
+emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfIter = [], kfShape = emptyShape, kfComment = cEmpty "Pochoir_Kernel_Func" }
 
 emptyKernel :: PKernel
-emptyKernel = PKernel { kName = "", kRank = 0, kFunc = emptyKernelFunc, kShape = emptyShape }
+emptyKernel = PKernel { kName = "", kRank = 0, kFunc = emptyKernelFunc, kShape = emptyShape, kIndex = [], kComment = cEmpty "Pochoir_Kernel" }
 
 emptyGuardFunc :: PGuardFunc
-emptyGuardFunc = PGuardFunc { gfName = "", gfParams = [], gfStmt = [], gfIter = [] }
+emptyGuardFunc = PGuardFunc { gfName = "", gfParams = [], gfStmt = [], gfIter = [], gfComment = cEmpty "Pochoir_Guard_Func" }
 
 emptyGuard :: PGuard
-emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc }
+emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc, gComment = cEmpty "Pochoir_Guard" }
 
 emptyTileKernel :: PTileKernel
 emptyTileKernel = LK [] 
 
 emptyTile :: PTile
-emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel }
+emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel, tComment = cEmpty "Pochoir_Tile" }
+
+-- prefix 'c' means "comment"
+cUnknown :: String -> String
+cUnknown l_name = "/* Unknown " ++ l_name ++ " */"
+
+-- prefix 'c' means "comment"
+cKnown :: String -> String
+cKnown l_name = "/* Known " ++ l_name ++ " */"
+
+-- prefix 'c' means "comment"
+cEmpty :: String -> String
+cEmpty l_name = "/* Empty " ++ l_name ++ " */"
 
 data ParserState = ParserState {
     pMode  :: PMode,
-    pState :: PState, 
     pMacro :: Map.Map PName PValue, 
     pArray :: Map.Map PName PArray,
     pStencil :: Map.Map PName PStencil,
@@ -261,6 +277,7 @@ instance Show PMode where
     show PMacroShadow = "-split-macro-shadow" 
     show PNoPP = "-No-Preprocessing"
     show PMUnroll = "-unroll-multi-kernel"
+    show PAllCondTileMacro = "-all-cond-tile-macro"
 
 instance Show PType where
     show ptype = typeName ptype
@@ -275,6 +292,14 @@ instance Show PShape where
                         "> " ++ l_name ++ " [ ] = " ++ pShowShapes l_shapes ++ 
                         ";" ++ breakline ++ "/* toggle: " ++ show l_toggle ++ 
                         "; slopes: " ++ show l_slopes ++ " */" ++ breakline
+
+instance Show PTileKernel where
+    show (SK k) = kName k
+    show (LK kList) = "{" ++ showList kList "" ++ "}"
+    showList [] = showString ""
+    showList (k:ks) = shows k . showL ks
+        where showL [] = showString ""
+              showL (k:ks) = showString ", " . shows k . showL ks
 
 instance Show Expr where
     show (VAR q str) = q ++ str
