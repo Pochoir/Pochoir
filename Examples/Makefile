@@ -8,7 +8,7 @@ OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST 
 # POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -debug -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
 # ICC_DEBUG_FLAGS = -O1 -g3 -DDEBUG -Wall -Werror -std=c++0x -I/opt/intel/composer_xe_2011_sp1.6.023/compiler/include/cilk/ -include cilk_stub.h
-ICC_DEBUG_FLAGS = -O3 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -std=c++0x 
+ICC_DEBUG_FLAGS = -O0 -g3 -Wall -Werror -std=c++0x 
 POCHOIR_LIB_FILES = "../pochoir.hpp ../pochoir_common.hpp ../pochoir_types.hpp ../pochoir_array.hpp ../pochoir_walk.hpp ../pochoir_walk_recursive.hpp ../pochoir_walk_loops.hpp ../pochoir_wrapper.hpp ../pochoir_range.hpp"
 
 # ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x
@@ -95,8 +95,8 @@ diamond_2 : tb_diamond_2.cpp # tb_diamond_2_pochoir.cpp
 
 tile : tb_tile.cpp # tb_tile_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o tile ${OPT_FLAGS} -all-cond-tile-c-pointer tb_tile.cpp
-#	${ICC} -o tile_gdb ${ICC_DEBUG_FLAGS} tb_tile_pochoir.cpp
+	${CC} -o tile ${OPT_FLAGS} -all-cond-tile-pointer tb_tile.cpp
+	${ICC} -o tile_gdb ${ICC_DEBUG_FLAGS} tb_tile_pochoir.cpp
 #	${CC} -o tile ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_tile.cpp
 #	${ICC} -o tile ${OPT_FLAGS} tb_tile_pochoir.cpp
 #	Phase-I compilation with debugging aid

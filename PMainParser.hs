@@ -226,8 +226,10 @@ pParsePochoirAutoKernelFunc =
        exprStmts <- manyTill pStatement (try $ reserved "};")
        let l_kernelFunc = PKernelFunc { kfName = l_kernel_name, 
                                         kfParams = l_kernel_params,
-                                        kfStmt = exprStmts, kfIter = [],
-                                        kfShape = emptyShape, kfComment = "" }
+                                        kfStmt = exprStmts, 
+                                        kfStmtSize = length exprStmts,
+                                        kfIter = [], kfShape = emptyShape, 
+                                        kfComment = "" }
        updateState $ updatePKernelFunc l_kernelFunc
        return (pShowAutoKernelFunc l_kernel_name l_kernelFunc) 
 
@@ -243,7 +245,9 @@ pParsePochoirAutoGuardFunc =
        reserved "{"
        exprStmts <- manyTill pStatement (try $ reserved "};")
        let l_guardFunc = PGuardFunc { gfName = l_guard_name, gfParams = l_guard_params,
-                                      gfStmt = exprStmts, gfIter = [], gfComment = "" }
+                                      gfStmt = exprStmts, 
+                                      gfStmtSize = length exprStmts, 
+                                      gfIter = [], gfComment = "" }
        updateState $ updatePGuardFunc l_guardFunc
        return (pShowAutoGuardFunc l_guard_name l_guardFunc) 
 

@@ -51,7 +51,7 @@ data PType = PType {
     basicType :: PBasicType,
     typeName :: String
 } deriving Eq
-data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro | PAllCondTileCPointer deriving Eq
+data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro | PAllCondTileCPointer | PAllCondTilePointer deriving Eq
 
 data PMacro = PMacro {
     mName :: PName,
@@ -109,6 +109,8 @@ data PKernelFunc = PKernelFunc {
     kfName :: PName,
     kfParams :: [PName],
     kfStmt :: [Stmt],
+    -- How many lines of statement do we have
+    kfStmtSize :: Int,
     kfIter :: [Iter],
     kfShape :: PShape,
     kfComment :: String
@@ -118,6 +120,8 @@ data PGuardFunc = PGuardFunc {
     gfName :: PName,
     gfParams :: [PName],
     gfStmt :: [Stmt],
+    -- How many lines of statement do we have
+    gfStmtSize :: Int,
     gfIter :: [Iter],
     gfComment :: String
 } deriving Show
@@ -160,13 +164,13 @@ emptyShape :: PShape
 emptyShape = PShape { shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = [], shapeComment = cEmpty "Pochoir_Shape" }
 
 emptyKernelFunc :: PKernelFunc
-emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfIter = [], kfShape = emptyShape, kfComment = cEmpty "Pochoir_Kernel_Func" }
+emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfStmtSize = 0, kfIter = [], kfShape = emptyShape, kfComment = cEmpty "Pochoir_Kernel_Func" }
 
 emptyKernel :: PKernel
 emptyKernel = PKernel { kName = "", kRank = 0, kFunc = emptyKernelFunc, kShape = emptyShape, kIndex = [], kComment = cEmpty "Pochoir_Kernel" }
 
 emptyGuardFunc :: PGuardFunc
-emptyGuardFunc = PGuardFunc { gfName = "", gfParams = [], gfStmt = [], gfIter = [], gfComment = cEmpty "Pochoir_Guard_Func" }
+emptyGuardFunc = PGuardFunc { gfName = "", gfParams = [], gfStmt = [], gfStmtSize = 0, gfIter = [], gfComment = cEmpty "Pochoir_Guard_Func" }
 
 emptyGuard :: PGuard
 emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc, gComment = cEmpty "Pochoir_Guard" }
@@ -279,6 +283,7 @@ instance Show PMode where
     show PMUnroll = "-unroll-multi-kernel"
     show PAllCondTileMacro = "-all-cond-tile-macro"
     show PAllCondTileCPointer = "-all-cond-tile-c-pointer"
+    show PAllCondTilePointer = "-all-cond-tile-pointer"
 
 instance Show PType where
     show ptype = typeName ptype

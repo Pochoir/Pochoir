@@ -256,6 +256,16 @@ transIterN :: Int -> [Iter] -> [Iter]
 transIterN _ [] = []
 transIterN n ((name, array, dim, rw):is) = (name ++ show n, array, dim, rw) : (transIterN (n+1) is)
 
+pFillIters :: [Iter] -> PKernelFunc -> PKernelFunc
+pFillIters l_iters l_kernel_func = l_kernel_func { kfIter = l_iters}
+
+pTileLength :: PTile -> Int
+pTileLength l_tile =
+    let l_tile_kernel = tKernel l_tile
+    in  case l_tile_kernel of
+            SK _ -> 1
+            LK l_tKs -> length l_tKs
+
 transArrayMap :: [PArray] -> Map.Map PName PArray
 transArrayMap aL = Map.fromList $ transAssocList aL
     where transAssocList [] = []

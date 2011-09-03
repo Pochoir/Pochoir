@@ -215,7 +215,8 @@ pShowMacroKernel l_macro l_kernel =
 
 pShowUnrolledMacroKernels :: Bool -> PName -> [PKernelFunc] -> String
 pShowUnrolledMacroKernels l_cond l_name l_kL@(l_kernel:l_kernels)  = 
-    let l_iters = concatMap kfIter l_kL
+    let -- l_iters = concatMap kfIter l_kL
+        l_iters = foldr union (kfIter $ head l_kL) (map kfIter $ tail l_kL)
         l_arrayInUse = unionArrayIter l_iters 
         l_t = "t"
         l_t_begin = l_t ++ "0"
@@ -694,23 +695,38 @@ pShowTileSingleCPointerKernel l_t l_tile_indices l_kL@(l_kf:l_kfs) =
                                     (shapeTimeShift $ kfShape l_kf)
         l_guard_tail = pShowUnrollGuardTail l_t (length l_kfs) 
     in  breakline ++ l_guard_head ++
-        -- breakline ++ "{" ++
-        -- breakline ++ pShowRawForHeader l_spatial_params ++
         breakline ++ pShowRefMacro l_params l_arrayInUse ++
         breakline ++ pShowCPointerStmt l_kf ++ breakline ++ 
         breakline ++ pShowRefUnMacro l_arrayInUse ++
-        -- pShowObaseForTail l_rank ++
-        -- pAdjustTrape l_rank ++ breakline ++ l_adjust_T ++
-        -- breakline ++ "}" ++ 
         breakline ++ l_guard_tail ++
         pShowTileSingleCPointerKernel l_t (tail l_tile_indices) l_kfs
 
-pShowTileKernels :: String -> PStencil -> [[Int]] -> [PKernelFunc] -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
-pShowTileKernels l_name l_stencil l_tile_indices l_kL@(l_kf:l_kfs) l_showSingleKernel= 
-    let l_rank = length (kfParams l_kf) - 1
-        l_iter = concatMap kfIter l_kL
+pShowTileSinglePointerKernel :: String -> [[Int]] -> [PKernelFunc] -> String
+pShowTileSinglePointerKernel _ _ [] = ""
+pShowTileSinglePointerKernel l_t l_tile_indices l_kL@(l_kf:l_kfs) =
+    let l_spatial_params = tail $ kfParams l_kf
+        l_rank = length l_spatial_params
+        l_params = [l_t] ++ l_spatial_params
+        l_dim_sizes = getTileSizes l_tile_indices
+        l_tile_index = head l_tile_indices
+        l_iter = kfIter l_kf
         l_arrayInUse = unionArrayIter l_iter
-        l_kfParams = kfParams l_kf
+        l_guard_head = pShowTileGuardHead l_params l_dim_sizes l_tile_index 
+                                    (shapeTimeShift $ kfShape l_kf)
+        l_guard_tail = pShowUnrollGuardTail l_t (length l_kfs) 
+    in  breakline ++ l_guard_head ++
+        breakline ++ pShowPointerStmt True l_kf ++ 
+        breakline ++ l_guard_tail ++ 
+        pShowTileSinglePointerKernel l_t (tail l_tile_indices) l_kfs
+ 
+pShowTileKernels :: PMode -> String -> PStencil -> [[Int]] -> [PKernelFunc] -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
+pShowTileKernels l_mode l_name l_stencil l_tile_indices l_kL@(l_kf:l_kfs) l_showSingleKernel= 
+    let l_rank = length (kfParams l_kf) - 1
+        -- l_iter = concatMap kfIter l_kL
+        l_iter = foldr union (kfIter l_kf) (map kfIter l_kfs)
+        l_arrayInUse = unionArrayIter l_iter
+        l_params = kfParams l_kf
+        l_spatial_params = tail l_params
         l_t = "t"
         l_t_begin = l_t ++ "0" 
         l_t_end = l_t ++ "1"
@@ -722,14 +738,24 @@ pShowTileKernels l_name l_stencil l_tile_indices l_kL@(l_kf:l_kfs) l_showSingleK
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
                  shapeName l_pShape ++ " );" ++ breakline 
+        l_spatial_loop_header =
+            case l_mode of
+                PAllCondTileCPointer -> pShowMetaGridHeader False l_spatial_params
+                PAllCondTilePointer -> pShowPointers l_iter ++ breakline ++ 
+                            pShowPointerSet l_iter l_params ++ breakline ++ 
+                            pShowPointerForHeader l_rank True l_iter l_spatial_params
+        l_spatial_loop_tail =
+            case l_mode of
+                PAllCondTileCPointer -> pShowMetaGridTail l_spatial_params 
+                PAllCondTilePointer -> pShowObaseForTail l_rank 
     in  breakline ++ l_header ++ 
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++ 
         breakline ++ pShowRankAttr l_rank "stride" l_arrayInUse ++ 
         breakline ++ pShowTimeLoopHeader l_t l_t_begin l_t_end ++ 
-        breakline ++ pShowMetaGridHeader False (tail l_kfParams) ++
+        breakline ++ l_spatial_loop_header ++ 
         l_showSingleKernel l_t l_tile_indices l_kL ++
-        breakline ++ pShowMetaGridTail (tail l_kfParams) ++
+        breakline ++ l_spatial_loop_tail ++ 
         breakline ++ pAdjustTrape l_rank ++
         breakline ++ pShowTimeLoopTail ++ breakline ++ l_tail ++ breakline
 

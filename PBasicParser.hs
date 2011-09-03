@@ -245,53 +245,47 @@ ppStencil l_id l_state =
     <|> do return (l_id)
 
 -- get all iterators from Kernel
-transKernel :: PStencil -> PMode -> PKernelFunc -> PKernelFunc
-transKernel l_stencil l_mode l_kernelFunc =
-       let l_exprStmts = kfStmt l_kernelFunc
-           l_kernelFuncParams = kfParams l_kernelFunc
+transKernel :: PMode -> PStencil -> PKernelFunc -> PKernelFunc
+transKernel l_mode l_stencil l_kernelFunc =
+       let l_stmts = kfStmt l_kernelFunc
+           l_params = kfParams l_kernelFunc
            l_iters =
                    case l_mode of 
                        PMacroShadow -> getFromStmts getIter PRead 
                                     (transArrayMap $ sArrayInUse l_stencil) 
-                                    l_exprStmts
-                       PAllCondTileMacro -> getFromStmts getIter PRead 
-                                    (transArrayMap $ sArrayInUse l_stencil) 
-                                    l_exprStmts
+                                    l_stmts
                        PCPointer -> getFromStmts getIter PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
-                                    l_exprStmts
-                       PAllCondTileCPointer -> getFromStmts getIter PRead
+                                    l_stmts
+                       PPointer -> getFromStmts (getPointer $ l_params) PRead 
                                     (transArrayMap $ sArrayInUse l_stencil) 
-                                    l_exprStmts
-                       PPointer -> getFromStmts (getPointer $ l_kernelFuncParams) PRead 
-                                    (transArrayMap $ sArrayInUse l_stencil) 
-                                    l_exprStmts
+                                    l_stmts
                        POptPointer -> getFromStmts getIter PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
-                                    l_exprStmts 
-                       PCaching -> getFromStmts (getPointer $ l_kernelFuncParams) PRead
+                                    l_stmts 
+                       PCaching -> getFromStmts (getPointer $ l_params) PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
-                                    l_exprStmts 
+                                    l_stmts 
                        PMUnroll -> let l_get = 
                                             if sRank l_stencil < 3 
                                                 then getIter
-                                                else (getPointer $ l_kernelFuncParams)
+                                                else (getPointer $ l_params)
                                    in  getFromStmts l_get PRead
                                          (transArrayMap $ sArrayInUse l_stencil) 
-                                         l_exprStmts 
+                                         l_stmts 
                        PDefault -> let l_get = 
                                             if sRank l_stencil < 3 
                                                 then getIter
-                                                else (getPointer $ l_kernelFuncParams)
+                                                else (getPointer $ l_params)
                                    in  getFromStmts l_get PRead
                                          (transArrayMap $ sArrayInUse l_stencil) 
-                                         l_exprStmts 
+                                         l_stmts 
            l_revIters = transIterN 0 l_iters
        in  l_kernelFunc { kfIter = l_revIters }
 
 pShowRegStaggerKernel :: PMode -> PStencil -> (PGuard, [PKernel]) -> String
 pShowRegStaggerKernel l_mode l_stencil (l_guard, l_kernels) =
-    let l_revKernelFunc = map (transKernel l_stencil l_mode) (map kFunc l_kernels) 
+    let l_revKernelFunc = map (transKernel l_mode l_stencil) (map kFunc l_kernels) 
         l_id = sName l_stencil
         l_guardName = gName l_guard
     in  case l_mode of
@@ -339,58 +333,50 @@ pShowRegStaggerKernel l_mode l_stencil (l_guard, l_kernels) =
                      l_stencil) 
                    pShowSingleCPointerKernel
 
+-- get all iterators from Kernel
+getIterFromKernel :: PMode -> PStencil -> [PName] -> [Stmt] -> [Iter]
+getIterFromKernel l_mode l_stencil l_params l_stmts =
+       let l_iters =
+                   case l_mode of 
+                       PAllCondTileMacro -> getFromStmts getIter PRead 
+                                    (transArrayMap $ sArrayInUse l_stencil) 
+                                    l_stmts
+                       PAllCondTileCPointer -> getFromStmts getIter PRead
+                                    (transArrayMap $ sArrayInUse l_stencil) 
+                                    l_stmts
+                       PAllCondTilePointer -> 
+                                getFromStmts (getPointer $ l_params) PRead 
+                                    (transArrayMap $ sArrayInUse l_stencil) 
+                                    l_stmts
+           l_revIters = transIterN 0 l_iters
+       in  l_revIters
+
 pShowRegTileKernel :: PMode -> PStencil -> (PGuard, PTile) -> String
 pShowRegTileKernel l_mode l_stencil (l_guard, l_tile) =
     let l_kernels = getTileKernels l_tile
+        l_unroll = pTileLength l_tile
         l_tile_indices = map kIndex l_kernels
-        l_revKernelFunc = map (transKernel l_stencil l_mode) (map kFunc l_kernels) 
+        l_kernel_funcs = map kFunc l_kernels
+        l_stmts = concatMap kfStmt l_kernel_funcs
+        l_params = foldr union (kfParams $ head l_kernel_funcs) (map kfParams $ tail l_kernel_funcs)
+        l_iters = getIterFromKernel l_mode l_stencil l_params l_stmts
+        l_rev_kernel_funcs = map (pFillIters l_iters) l_kernel_funcs
         l_id = sName l_stencil
         l_guardName = gName l_guard
     in  case l_mode of
              PAllCondTileMacro -> 
                  pSplitTileScope 
-                   ("Macro_", l_id, l_guardName, l_tile_indices, l_revKernelFunc, l_stencil) 
+                   ("Macro_", l_id, l_guardName, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
                    (pShowTileMacroKernels False)
              PAllCondTileCPointer ->
                  pSplitTileKernel 
-                   ("C_Pointer_", l_id, l_guardName, l_tile_indices, l_revKernelFunc, l_stencil) 
+                   ("C_Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
                    pShowTileSingleCPointerKernel
-                 
-{-
-             PDefault -> 
-                 let l_showKernel = 
-                       if sRank l_stencil < 3
-                          then pShowSingleOptPointerKernel
-                          else pShowSinglePointerKernel
-                 in  pSplitTileKernel
-                      ("Default_", l_id, l_guardName, l_revKernelFunc, l_stencil) 
-                      l_showKernel
-             PMUnroll -> 
-                 let l_showKernel = 
-                       if sRank l_stencil < 3
-                          then pShowSingleOptPointerKernel
-                          else pShowSinglePointerKernel
-                 in  pUnrollTileMultiKernel
-                      ("MUnroll_", l_id, l_guardName, l_revKernelFunc, l_stencil) 
-                      l_showKernel
-             PPointer -> 
-                  pSplitTileKernel
-                   ("Pointer_", l_id, l_guardName, l_revKernelFunc, l_stencil) 
-                   pShowSinglePointerKernel
-             POptPointer -> 
-                  pSplitTileKernel 
-                   ("Opt_Pointer_", l_id, l_guardName, l_revKernelFunc, l_stencil) 
-                   pShowSingleOptPointerKernel
-             PCaching -> 
-                  pSplitTileScope 
-                   ("Caching_", l_id, l_guardName, l_revKernelFunc, l_stencil) 
-                   (pShowUnrolledCachingKernels l_stencil)
-             PCPointer -> 
-                  pSplitTileKernel 
-                   ("C_Pointer_", l_id, l_guardName, l_revKernelFunc, l_stencil) 
-                   pShowSingleCPointerKernel
--}
-
+             PAllCondTilePointer ->
+                 pSplitTileKernel 
+                   ("Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
+                   pShowTileSinglePointerKernel
+                  
 -- for mode -unroll-multi-kernel
 pUnrollMultiKernel :: (String, String, String, [PKernelFunc], PStencil) -> (Bool -> String -> Int -> Int -> [PKernelFunc] -> String) -> String
 pUnrollMultiKernel (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showSingleKernel = 
@@ -505,18 +491,17 @@ pSplitTileScope (l_tag, l_id, l_guardName, l_tile_indices, l_kfs, l_stencil) l_s
         show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 -- For modes : -split-pointer -split-opt-pointer -split-c-pointer
-pSplitTileKernel :: (String, String, String, [[Int]], [PKernelFunc], PStencil) -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
-pSplitTileKernel (l_tag, l_id, l_guardName, l_tile_indices, l_kfs, l_stencil) l_showSingleKernel = 
+pSplitTileKernel :: (String, PMode, String, String, Int, [[Int]], [PKernelFunc], PStencil) -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
+pSplitTileKernel (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfs, l_stencil) l_showSingleKernel = 
     let oldKernelName = intercalate "_" $ map kfName l_kfs
         bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
         obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
         regBound = sRegBound l_stencil
-        unroll = length l_tile_indices
         bdryKernel = if regBound 
                         then pShowTileMacroKernels True bdryKernelName 
                                 l_stencil l_tile_indices l_kfs
                         else ""
-        obaseKernel = pShowTileKernels obaseKernelName 
+        obaseKernel = pShowTileKernels l_mode obaseKernelName 
                            l_stencil l_tile_indices l_kfs l_showSingleKernel
         runKernel = if regBound 
                        then obaseKernelName ++ ", " ++ bdryKernelName
@@ -525,7 +510,7 @@ pSplitTileKernel (l_tag, l_id, l_guardName, l_tile_indices, l_kfs, l_stencil) l_
     in  (breakline ++ show l_pShape ++
          bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
          l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++ ", " ++ 
-         show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
+         show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 -------------------------------------------------------------------------------------------
 --                             Following are C++ Grammar Parser                         ---
