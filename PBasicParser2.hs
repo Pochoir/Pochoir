@@ -79,9 +79,11 @@ ppStencil1 l_id l_state =
            let l_mode = pMode l_state
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ ");")
-               Just l_stencil -> if l_mode == PMUnroll || l_mode == PAllCondTileMacro 
+               Just l_stencil -> if l_mode == PMUnroll 
+                                    || l_mode == PAllCondTileMacro 
                                     || l_mode == PAllCondTileCPointer 
                                     || l_mode == PAllCondTilePointer
+                                    || l_mode == PAllCondTileOptPointer
                                     then return (breakline ++ l_id ++ 
                                          ".Run_Obase_Merge(" ++ show l_tstep ++ 
                                          "); /* Run with Stencil " ++ l_id ++ " */" ++ 

@@ -675,7 +675,7 @@ pShowTileSingleMacroKernel l_t l_tile_indices l_kL@(l_kf:l_kfs) =
         -- l_modOp = if l_unroll == 2 then " & " else " % "
         l_guard_head = pShowTileGuardHead l_params l_dim_sizes l_tile_index
                                             (shapeTimeShift $ kfShape l_kf)
-        l_guard_tail = pShowUnrollGuardTail l_t (length l_kfs)
+        l_guard_tail = pShowUnrollGuardTail l_t $ length l_kfs
     in  breakline ++ l_guard_head ++ 
         breakline ++ show (kfStmt l_kf) ++ 
         breakline ++ l_guard_tail ++
@@ -693,7 +693,7 @@ pShowTileSingleCPointerKernel l_t l_tile_indices l_kL@(l_kf:l_kfs) =
         l_arrayInUse = unionArrayIter l_iter
         l_guard_head = pShowTileGuardHead l_params l_dim_sizes l_tile_index 
                                     (shapeTimeShift $ kfShape l_kf)
-        l_guard_tail = pShowUnrollGuardTail l_t (length l_kfs) 
+        l_guard_tail = pShowUnrollGuardTail l_t $ length l_kfs 
     in  breakline ++ l_guard_head ++
         breakline ++ pShowRefMacro l_params l_arrayInUse ++
         breakline ++ pShowCPointerStmt l_kf ++ breakline ++ 
@@ -713,11 +713,29 @@ pShowTileSinglePointerKernel l_t l_tile_indices l_kL@(l_kf:l_kfs) =
         l_arrayInUse = unionArrayIter l_iter
         l_guard_head = pShowTileGuardHead l_params l_dim_sizes l_tile_index 
                                     (shapeTimeShift $ kfShape l_kf)
-        l_guard_tail = pShowUnrollGuardTail l_t (length l_kfs) 
+        l_guard_tail = pShowUnrollGuardTail l_t $ length l_kfs
     in  breakline ++ l_guard_head ++
         breakline ++ pShowPointerStmt True l_kf ++ 
         breakline ++ l_guard_tail ++ 
         pShowTileSinglePointerKernel l_t (tail l_tile_indices) l_kfs
+
+pShowTileSingleOptPointerKernel :: String -> [[Int]] -> [PKernelFunc] -> String
+pShowTileSingleOptPointerKernel _ _ [] = ""
+pShowTileSingleOptPointerKernel l_t l_tile_indices l_kL@(l_kf:l_kfs) =
+    let l_spatial_params = tail $ kfParams l_kf
+        l_rank = length l_spatial_params
+        l_params = [l_t] ++ l_spatial_params
+        l_dim_sizes = getTileSizes l_tile_indices
+        l_tile_index = head l_tile_indices
+        l_iter = kfIter l_kf
+        l_arrayInUse = unionArrayIter l_iter
+        l_guard_head = pShowTileGuardHead l_params l_dim_sizes l_tile_index 
+                                    (shapeTimeShift $ kfShape l_kf)
+        l_guard_tail = pShowUnrollGuardTail l_t $ length l_kfs 
+    in  breakline ++ l_guard_head ++ 
+        breakline ++ pShowOptPointerStmt l_kf ++ 
+        breakline ++ l_guard_tail ++
+        pShowTileSingleOptPointerKernel l_t (tail l_tile_indices) l_kfs
  
 pShowTileKernels :: PMode -> String -> PStencil -> [[Int]] -> [PKernelFunc] -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
 pShowTileKernels l_mode l_name l_stencil l_tile_indices l_kL@(l_kf:l_kfs) l_showSingleKernel= 
@@ -744,10 +762,14 @@ pShowTileKernels l_mode l_name l_stencil l_tile_indices l_kL@(l_kf:l_kfs) l_show
                 PAllCondTilePointer -> pShowPointers l_iter ++ breakline ++ 
                             pShowPointerSet l_iter l_params ++ breakline ++ 
                             pShowPointerForHeader l_rank True l_iter l_spatial_params
+                PAllCondTileOptPointer -> pShowPointers l_iter ++ breakline ++ 
+                            pShowOptPointerSet l_iter l_params ++ breakline ++ 
+                            pShowPointerForHeader l_rank True l_iter l_spatial_params
         l_spatial_loop_tail =
             case l_mode of
                 PAllCondTileCPointer -> pShowMetaGridTail l_spatial_params 
                 PAllCondTilePointer -> pShowObaseForTail l_rank 
+                PAllCondTileOptPointer -> pShowObaseForTail l_rank 
     in  breakline ++ l_header ++ 
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++ 

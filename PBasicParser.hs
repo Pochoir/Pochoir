@@ -338,16 +338,22 @@ getIterFromKernel :: PMode -> PStencil -> [PName] -> [Stmt] -> [Iter]
 getIterFromKernel l_mode l_stencil l_params l_stmts =
        let l_iters =
                    case l_mode of 
-                       PAllCondTileMacro -> getFromStmts getIter PRead 
+                       PAllCondTileMacro -> 
+                                getFromStmts getIter PRead 
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts
-                       PAllCondTileCPointer -> getFromStmts getIter PRead
+                       PAllCondTileCPointer -> 
+                                getFromStmts getIter PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts
                        PAllCondTilePointer -> 
                                 getFromStmts (getPointer $ l_params) PRead 
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts
+                       PAllCondTileOptPointer -> 
+                                getFromStmts getIter PRead
+                                    (transArrayMap $ sArrayInUse l_stencil) 
+                                    l_stmts 
            l_revIters = transIterN 0 l_iters
        in  l_revIters
 
@@ -376,6 +382,10 @@ pShowRegTileKernel l_mode l_stencil (l_guard, l_tile) =
                  pSplitTileKernel 
                    ("Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
                    pShowTileSinglePointerKernel
+             PAllCondTileOptPointer ->
+                 pSplitTileKernel 
+                   ("Opt_Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
+                   pShowTileSingleOptPointerKernel
                   
 -- for mode -unroll-multi-kernel
 pUnrollMultiKernel :: (String, String, String, [PKernelFunc], PStencil) -> (Bool -> String -> Int -> Int -> [PKernelFunc] -> String) -> String
@@ -444,12 +454,6 @@ pSplitScope (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showKernels =
                         then pShowUnrolledBoundaryKernels False bdryKernelName 
                                 l_stencil l_kernels 
                         else ""
-{-
-        cond_bdryKernel = if unroll > 1
-                             then pShowUnrolledBoundaryKernels True 
-                                    cond_bdryKernelName l_stencil l_kernels
-                             else bdryKernel
-                                 -}
         cond_bdryKernel = pShowUnrolledBoundaryKernels True 
                                    cond_bdryKernelName l_stencil l_kernels
         obaseKernel = l_showKernels False obaseKernelName l_kernels
