@@ -105,7 +105,7 @@ tile : tb_tile.cpp # tb_tile_pochoir.cpp
 
 tile_stagger : tb_tile_stagger.cpp # tb_tile_stagger_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o tile_stagger ${OPT_FLAGS} -unroll-t-tile-pointer tb_tile_stagger.cpp
+	${CC} -o tile_stagger ${OPT_FLAGS} -all-cond-tile-pointer tb_tile_stagger.cpp
 #	${ICC} -o tile_stagger_gdb ${ICC_DEBUG_FLAGS} tb_tile_stagger_pochoir.cpp
 #	${CC} -o tile_stagger ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_tile_stagger.cpp
 #	${ICC} -o tile_stagger ${OPT_FLAGS} tb_tile_stagger_pochoir.cpp

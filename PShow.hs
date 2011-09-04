@@ -612,27 +612,39 @@ pShowUnrollTGuardHead l_t l_resid l_unroll l_timeShift =
 {------------------------------------------------------------------------------------
  - starting procedures for tile                                                     -
  ------------------------------------------------------------------------------------}
+pInsCheckMod :: String -> String -> String
+pInsCheckMod a b 
+    | b == "1" = ""
+    | otherwise = a ++ " % " ++ b
+
+pInsCheckEq :: String -> String -> String
+pInsCheckEq a b
+    | a == "" || b == "" = ""
+    | otherwise = a ++ " == " ++ b
+
 pShowTileGuardHeadOnAll :: [String] -> [Int] -> [Int] -> Int -> String
 pShowTileGuardHeadOnAll l_params l_dim_sizes l_tile_index l_time_shift =
     let l_t = head l_params
         l_t_dividend = " ( " ++ l_t ++ " + " ++ show l_time_shift ++ " ) "
         l_dividends = [l_t_dividend] ++ tail l_params
         l_divisors = map show l_dim_sizes
-        l_lefts = zipWith (pIns " % ") l_dividends l_divisors
+        l_lefts = zipWith pInsCheckMod l_dividends l_divisors
         l_rights = map show l_tile_index
-        l_dim_guards = zipWith (pIns " == ") l_lefts l_rights
-        l_guards = intercalate " && " l_dim_guards
-    in  "if (" ++ l_guards ++ ") {"
+        l_dim_guards = zipWith pInsCheckEq l_lefts l_rights
+        l_rev_dim_guards = filter (/= "") l_dim_guards
+        l_guards = intercalate " && " l_rev_dim_guards
+    in  if null l_guards then "{" else  "if (" ++ l_guards ++ ") {"
 
 pShowTileGuardHeadOnSpatial :: [String] -> [Int] -> [Int] -> String
 pShowTileGuardHeadOnSpatial l_spatial_params l_spatial_dim_sizes l_tile_spatial_index =
     let l_dividends = l_spatial_params
         l_divisors = map show l_spatial_dim_sizes
-        l_lefts = zipWith (pIns " % ") l_dividends l_divisors
+        l_lefts = zipWith pInsCheckMod l_dividends l_divisors
         l_rights = map show l_tile_spatial_index
-        l_dim_guards = zipWith (pIns " == ") l_lefts l_rights
-        l_guards = intercalate " && " l_dim_guards
-    in  "if (" ++ l_guards ++ ") {"
+        l_dim_guards = zipWith pInsCheckEq l_lefts l_rights
+        l_rev_dim_guards = filter (/= "") l_dim_guards
+        l_guards = intercalate " && " l_rev_dim_guards
+    in  if null l_guards then "{" else "if (" ++ l_guards ++ ") {"
 
 pShowUnrollGuardTail :: Int -> String
 pShowUnrollGuardTail l_len 
