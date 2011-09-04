@@ -80,6 +80,8 @@ class Pochoir {
     /* this is for 2D checkerboard style tile.
      * the total dimensions here include the time dimension
      */
+    template <int N_SIZE1>
+    void Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1]);
     template <int N_SIZE1, int N_SIZE2>
     void Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2]);
     void Register_Stagger_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & bk);
@@ -201,6 +203,31 @@ void Pochoir<N_RANK>::reg_tile_dim(int dim, I i, IS ... is) {
     pts_[sz_pgk_].size_[dim] = i;
     pts_[sz_pgk_].pointer_[dim] = 0;
     reg_tile_dim(dim-1, is ...);
+    return;
+}
+
+template <int N_RANK> template <int N_SIZE1>
+void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1]) {
+    typedef Pochoir_Kernel<N_RANK> T_Kernel;
+    if (pts_ == NULL) {
+        pts_ = new Pochoir_Tile_Kernel<N_RANK>[ARRAY_SIZE];
+        sz_pgk_ = 0;
+        assert(pgs_ == NULL);
+        pgs_ = new Pochoir_Guard<N_RANK>[ARRAY_SIZE];
+    }
+    assert(sz_pgk_ < ARRAY_SIZE);
+    if (sz_pgk_ >= ARRAY_SIZE) {
+        printf("Pochoir Error: Register_Tile_Kernels > %d\n", sz_pgk_);
+        exit(1);
+    }
+    pts_[sz_pgk_].kernel_ = new T_Kernel[N_SIZE1];
+    pgs_[sz_pgk_] = g;
+    for (int i = 0; i < N_SIZE1; ++i) {
+        pts_[sz_pgk_].kernel_[i] = tile[i];
+        Register_Shape(tile[i].Get_Shape(), tile[i].Get_Shape_Size());
+    }
+    reg_tile_dim(N_RANK, N_SIZE1, 1);
+    ++sz_pgk_;
     return;
 }
 
