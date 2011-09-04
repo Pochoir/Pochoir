@@ -220,6 +220,9 @@ getKernelsTile l_indices l_index (LK []) = []
 getTileSizes :: [[Int]] -> [Int]
 getTileSizes l_tile_indices = map ((+) 1 . maximum) $ transpose l_tile_indices
 
+eqTPKernel :: PKernel -> PKernel -> Bool
+eqTPKernel a b = (head $ kIndex a) == (head $ kIndex b)
+
 getPShape :: ParserState -> String -> PShape
 getPShape l_state l_shape =
     case Map.lookup l_shape $ pShape l_state of

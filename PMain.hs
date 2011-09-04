@@ -172,6 +172,22 @@ parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL
         let l_mode = PAllCondTileOptPointer
             aL' = delete "-all-cond-tile-opt-pointer" aL
         in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+    | elem "-unroll-t-tile-macro" aL =
+        let l_mode = PUnrollTimeTileMacro
+            aL' = delete "-unroll-t-tile-macro" aL
+        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+    | elem "-unroll-t-tile-c-pointer" aL =
+        let l_mode = PUnrollTimeTileCPointer
+            aL' = delete "-unroll-t-tile-c-pointer" aL
+        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+    | elem "-unroll-t-tile-pointer" aL =
+        let l_mode = PUnrollTimeTilePointer
+            aL' = delete "-unroll-t-tile-pointer" aL
+        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+    | elem "-unroll-t-tile-opt-pointer" aL =
+        let l_mode = PUnrollTimeTileOptPointer
+            aL' = delete "-unroll-t-tile-opt-pointer" aL
+        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
     | elem "-unroll-multi-kernel" aL =
         let l_mode = PMUnroll
             aL' = delete "-unroll-multi-kernel" aL

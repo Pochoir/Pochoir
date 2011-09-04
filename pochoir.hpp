@@ -85,6 +85,7 @@ class Pochoir {
     void Register_Stagger_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & bk);
     void Register_Stagger_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk);
     void Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & bk);
+    void Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk); 
     // get slope(s)
     int slope(int const _idx) { return slope_[_idx]; }
     Pochoir() {
@@ -329,6 +330,44 @@ void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int
     lcm_unroll_ = lcm(lcm_unroll_, unroll);
     ++sz_pgk_;
 }
+
+template <int N_RANK> 
+void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk) {
+    typedef Pochoir_Obase_Kernel<N_RANK> T_Kernel;
+    if (opks_ == NULL) {
+        opks_ = new Pochoir_Combined_Obase_Kernel<N_RANK>[ARRAY_SIZE];
+        sz_pgk_ = 0;
+        assert(lcm_unroll_ == 1);
+        assert(pgs_ == NULL);
+        pgs_ = new Pochoir_Guard<N_RANK>[ARRAY_SIZE];
+    }
+    assert(sz_pgk_ < ARRAY_SIZE);
+    if (sz_pgk_ >= ARRAY_SIZE) {
+        printf("Pochoir Error: Register_Tile_Kernels > %d\n", sz_pgk_);
+        exit(1);
+    }
+    pgs_[sz_pgk_] = g;
+    opks_[sz_pgk_].unroll_ = unroll;
+    // opks_[sz_pgk_].kernel_ = (T_Kernel *) calloc(1, sizeof(T_Kernel));
+    opks_[sz_pgk_].kernel_ = new T_Kernel;
+    opks_[sz_pgk_].kernel_[0] = k;
+    Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
+    // opks_[sz_pgk_].cond_kernel_ = (T_Kernel *) calloc(1, sizeof(T_Kernel));
+    opks_[sz_pgk_].cond_kernel_ = new T_Kernel;
+    opks_[sz_pgk_].cond_kernel_[0] = cond_k;
+    Register_Shape(cond_k.Get_Shape(), cond_k.Get_Shape_Size());
+    // opks_[sz_pgk_].bkernel_ = (T_Kernel *) calloc(1, sizeof(T_Kernel));
+    opks_[sz_pgk_].bkernel_ = new T_Kernel;
+    opks_[sz_pgk_].bkernel_[0] = bk;
+    Register_Shape(bk.Get_Shape(), bk.Get_Shape_Size());
+    // opks_[sz_pgk_].cond_bkernel_ = (T_Kernel *) calloc(1, sizeof(T_Kernel));
+    opks_[sz_pgk_].cond_bkernel_ = new T_Kernel;
+    opks_[sz_pgk_].cond_bkernel_[0] = cond_bk;
+    Register_Shape(cond_bk.Get_Shape(), cond_bk.Get_Shape_Size());
+    lcm_unroll_ = lcm(lcm_unroll_, unroll);
+    ++sz_pgk_;
+}
+
 
 template <int N_RANK>
 void Pochoir<N_RANK>::checkFlag(bool flag, char const * str) {

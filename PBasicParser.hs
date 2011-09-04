@@ -354,6 +354,22 @@ getIterFromKernel l_mode l_stencil l_params l_stmts =
                                 getFromStmts getIter PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts 
+                       PUnrollTimeTileMacro -> 
+                                getFromStmts getIter PRead 
+                                    (transArrayMap $ sArrayInUse l_stencil) 
+                                    l_stmts
+                       PUnrollTimeTileCPointer -> 
+                                getFromStmts getIter PRead
+                                    (transArrayMap $ sArrayInUse l_stencil) 
+                                    l_stmts
+                       PUnrollTimeTilePointer -> 
+                                getFromStmts (getPointer $ l_params) PRead 
+                                    (transArrayMap $ sArrayInUse l_stencil) 
+                                    l_stmts
+                       PUnrollTimeTileOptPointer -> 
+                                getFromStmts getIter PRead
+                                    (transArrayMap $ sArrayInUse l_stencil) 
+                                    l_stmts 
            l_revIters = transIterN 0 l_iters
        in  l_revIters
 
@@ -361,32 +377,163 @@ pShowRegTileKernel :: PMode -> PStencil -> (PGuard, PTile) -> String
 pShowRegTileKernel l_mode l_stencil (l_guard, l_tile) =
     let l_kernels = getTileKernels l_tile
         l_unroll = pTileLength l_tile
+        -- l_kernels_by_t : group the [PKernel] by the stagger on time step
+        l_kernels_by_t = groupBy eqTPKernel l_kernels
         l_tile_indices = map kIndex l_kernels
+        l_tile_indices_group_by_t = map (map kIndex) l_kernels_by_t
         l_kernel_funcs = map kFunc l_kernels
+        l_kernel_funcs_by_t = map (map kFunc) l_kernels_by_t
         l_stmts = concatMap kfStmt l_kernel_funcs
         l_params = foldr union (kfParams $ head l_kernel_funcs) (map kfParams $ tail l_kernel_funcs)
         l_iters = getIterFromKernel l_mode l_stencil l_params l_stmts
         l_rev_kernel_funcs = map (pFillIters l_iters) l_kernel_funcs
+        l_rev_kernel_funcs_group_by_t = map (map (pFillIters l_iters)) l_kernel_funcs_by_t
         l_id = sName l_stencil
         l_guardName = gName l_guard
     in  case l_mode of
              PAllCondTileMacro -> 
-                 pSplitTileScope 
-                   ("Macro_", l_id, l_guardName, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
-                   (pShowTileMacroKernels False)
+                 pSplitAllCondTileScope 
+                   ("Macro_", l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
+                   (pShowAllCondTileMacroKernels False)
              PAllCondTileCPointer ->
-                 pSplitTileKernel 
+                 pSplitAllCondTileKernel 
                    ("C_Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
-                   pShowTileSingleCPointerKernel
+                   pShowAllCondTileSingleCPointerKernel
              PAllCondTilePointer ->
-                 pSplitTileKernel 
+                 pSplitAllCondTileKernel 
                    ("Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
-                   pShowTileSinglePointerKernel
+                   pShowAllCondTileSinglePointerKernel
              PAllCondTileOptPointer ->
-                 pSplitTileKernel 
+                 pSplitAllCondTileKernel 
                    ("Opt_Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
-                   pShowTileSingleOptPointerKernel
-                  
+                   pShowAllCondTileSingleOptPointerKernel
+             PUnrollTimeTileMacro ->
+                 pSplitUnrollTimeTileScope
+                   ("Macro_", l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_group_by_t, l_rev_kernel_funcs_group_by_t, l_stencil) 
+                   (pShowAllCondTileMacroKernels False) (pShowUnrollTimeTileMacroKernels False)
+             PUnrollTimeTileCPointer ->
+                 pSplitUnrollTimeTileKernel
+                   ("C_Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_group_by_t, l_rev_kernel_funcs_group_by_t, l_stencil) 
+                   pShowAllCondTileSingleCPointerKernel pShowUnrollTimeTileSingleCPointerKernel 
+             PUnrollTimeTilePointer ->
+                 pSplitUnrollTimeTileKernel
+                   ("Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_group_by_t, l_rev_kernel_funcs_group_by_t, l_stencil) 
+                   pShowAllCondTileSinglePointerKernel pShowUnrollTimeTileSinglePointerKernel 
+                   
+             PUnrollTimeTileOptPointer ->
+                 pSplitUnrollTimeTileKernel
+                   ("Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_group_by_t, l_rev_kernel_funcs_group_by_t, l_stencil) 
+                   pShowAllCondTileSingleOptPointerKernel pShowUnrollTimeTileSingleOptPointerKernel 
+
+-- For modes : -split-macro-shadow, -split-caching
+pSplitUnrollTimeTileScope :: (String, String, String, Int, [[Int]], [PKernelFunc], [[[Int]]], [[PKernelFunc]], PStencil) -> (String -> PStencil -> [[Int]] -> [PKernelFunc] -> String) -> (String -> PStencil -> [[[Int]]] -> [[PKernelFunc]] -> String) -> String
+pSplitUnrollTimeTileScope (l_tag, l_id, l_guardName, l_unroll, l_tile_indices, l_kfs, l_tile_indices_group_by_t, l_kfs_group_by_t, l_stencil) l_showAllCondTileKernels l_showUnrollTimeTileKernels = 
+    let oldKernelName = intercalate "_" $ map kfName l_kfs
+        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
+        cond_bdryKernelName = l_tag ++ "cond_boundary_" ++ oldKernelName
+        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
+        cond_obaseKernelName = l_tag ++ "cond_interior_" ++ oldKernelName
+        regBound = sRegBound l_stencil
+        cond_bdryKernel = if regBound 
+                        then pShowAllCondTileMacroKernels True cond_bdryKernelName 
+                                l_stencil l_tile_indices l_kfs 
+                        else ""
+        bdryKernel = pShowUnrollTimeTileMacroKernels True bdryKernelName 
+                                l_stencil l_tile_indices_group_by_t l_kfs_group_by_t
+        cond_obaseKernel = l_showAllCondTileKernels cond_obaseKernelName 
+                                l_stencil l_tile_indices l_kfs
+        obaseKernel = l_showUnrollTimeTileKernels obaseKernelName
+                                l_stencil l_tile_indices_group_by_t l_kfs_group_by_t
+        runKernel = if regBound 
+                       then obaseKernelName ++ ", " ++ cond_obaseKernelName ++
+                            ", " ++ bdryKernelName ++ ", " ++ cond_bdryKernelName
+                       else obaseKernelName ++ ", " ++ cond_obaseKernelName
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kfs)
+    in (breakline ++ show l_pShape ++
+        bdryKernel ++ breakline ++ cond_bdryKernel ++ breakline ++
+        obaseKernel ++ breakline ++ cond_obaseKernel ++ breakline ++
+        l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++ ", " ++ 
+        show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
+
+-- For modes : -split-pointer -split-opt-pointer -split-c-pointer
+pSplitUnrollTimeTileKernel :: (String, PMode, String, String, Int, [[Int]], [PKernelFunc], [[[Int]]], [[PKernelFunc]], PStencil) -> (String -> [[Int]] -> [PKernelFunc] -> String) -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
+pSplitUnrollTimeTileKernel (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfs, l_tile_indices_group_by_t, l_kfs_group_by_t, l_stencil) l_showAllCondTileSingleKernel l_showUnrollTimeTileSingleKernel = 
+    let oldKernelName = intercalate "_" $ map kfName l_kfs
+        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
+        cond_bdryKernelName = l_tag ++ "cond_boundary_" ++ oldKernelName
+        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
+        cond_obaseKernelName = l_tag ++ "cond_interior_" ++ oldKernelName
+        regBound = sRegBound l_stencil
+        cond_bdryKernel = if regBound 
+                        then pShowAllCondTileMacroKernels True cond_bdryKernelName 
+                                l_stencil l_tile_indices l_kfs 
+                        else ""
+        bdryKernel = pShowUnrollTimeTileMacroKernels True bdryKernelName 
+                                l_stencil l_tile_indices_group_by_t l_kfs_group_by_t
+        cond_obaseKernel = pShowAllCondTileKernels l_mode cond_obaseKernelName 
+                                l_stencil l_tile_indices l_kfs 
+                                l_showAllCondTileSingleKernel
+        obaseKernel = pShowUnrollTimeTileKernels l_mode obaseKernelName 
+                                l_stencil l_tile_indices_group_by_t l_kfs_group_by_t
+                                l_showUnrollTimeTileSingleKernel
+        runKernel = if regBound 
+                       then obaseKernelName ++ ", " ++ cond_obaseKernelName ++
+                            ", " ++ bdryKernelName ++ ", " ++ cond_bdryKernelName
+                       else obaseKernelName ++ ", " ++ cond_obaseKernelName
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kfs)
+    in  (breakline ++ show l_pShape ++
+         bdryKernel ++ breakline ++ cond_bdryKernel ++ breakline ++
+         obaseKernel ++ breakline ++ cond_obaseKernel ++ breakline ++
+         l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++ ", " ++ 
+         show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
+
+-- For modes : -split-macro-shadow, -split-caching
+pSplitAllCondTileScope :: (String, String, String, Int, [[Int]], [PKernelFunc], PStencil) -> (String -> PStencil -> [[Int]] -> [PKernelFunc] -> String) -> String
+pSplitAllCondTileScope (l_tag, l_id, l_guardName, l_unroll, l_tile_indices, l_kfs, l_stencil) l_showAllCondTileSingleKernel = 
+    let oldKernelName = intercalate "_" $ map kfName l_kfs
+        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
+        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
+        regBound = sRegBound l_stencil
+        bdryKernel = if regBound 
+                        then pShowAllCondTileMacroKernels True bdryKernelName 
+                                l_stencil l_tile_indices l_kfs 
+                        else ""
+        -- usually, the l_showAllCondTileSingleKernel is just
+        -- (pShowAllCondTileMacroKernels False)
+        obaseKernel = l_showAllCondTileSingleKernel obaseKernelName 
+                            l_stencil l_tile_indices l_kfs
+        runKernel = if regBound 
+                       then obaseKernelName ++ ", " ++ bdryKernelName
+                       else obaseKernelName
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kfs)
+    in (breakline ++ show l_pShape ++
+        bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
+        l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++ ", " ++ 
+        show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
+
+-- For modes : -split-pointer -split-opt-pointer -split-c-pointer
+pSplitAllCondTileKernel :: (String, PMode, String, String, Int, [[Int]], [PKernelFunc], PStencil) -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
+pSplitAllCondTileKernel (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfs, l_stencil) l_showAllCondTileSingleKernel = 
+    let oldKernelName = intercalate "_" $ map kfName l_kfs
+        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
+        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
+        regBound = sRegBound l_stencil
+        bdryKernel = if regBound 
+                        then pShowAllCondTileMacroKernels True bdryKernelName 
+                                l_stencil l_tile_indices l_kfs
+                        else ""
+        obaseKernel = pShowAllCondTileKernels l_mode obaseKernelName 
+                           l_stencil l_tile_indices l_kfs 
+                           l_showAllCondTileSingleKernel
+        runKernel = if regBound 
+                       then obaseKernelName ++ ", " ++ bdryKernelName
+                       else obaseKernelName
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kfs)
+    in  (breakline ++ show l_pShape ++
+         bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
+         l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++ ", " ++ 
+         show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
+
 -- for mode -unroll-multi-kernel
 pUnrollMultiKernel :: (String, String, String, [PKernelFunc], PStencil) -> (Bool -> String -> Int -> Int -> [PKernelFunc] -> String) -> String
 pUnrollMultiKernel (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showSingleKernel = 
@@ -470,51 +617,6 @@ pSplitScope (l_tag, l_id, l_guard, l_kernels, l_stencil) l_showKernels =
         obaseKernel ++ breakline ++ cond_obaseKernel ++
         l_id ++ ".Register_Stagger_Obase_Kernels(" ++ l_guard ++ ", " ++ 
         show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
-
--- For modes : -split-macro-shadow, -split-caching
-pSplitTileScope :: (String, String, String, [[Int]], [PKernelFunc], PStencil) -> (String -> PStencil -> [[Int]] -> [PKernelFunc] -> String) -> String
-pSplitTileScope (l_tag, l_id, l_guardName, l_tile_indices, l_kfs, l_stencil) l_showKernels = 
-    let oldKernelName = intercalate "_" $ map kfName l_kfs
-        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
-        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
-        regBound = sRegBound l_stencil
-        unroll = length l_tile_indices
-        bdryKernel = if regBound 
-                        then pShowTileMacroKernels True bdryKernelName 
-                                l_stencil l_tile_indices l_kfs 
-                        else ""
-        obaseKernel = l_showKernels obaseKernelName 
-                            l_stencil l_tile_indices l_kfs
-        runKernel = if regBound 
-                       then obaseKernelName ++ ", " ++ bdryKernelName
-                       else obaseKernelName
-        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kfs)
-    in (breakline ++ show l_pShape ++
-        bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
-        l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++ ", " ++ 
-        show unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
-
--- For modes : -split-pointer -split-opt-pointer -split-c-pointer
-pSplitTileKernel :: (String, PMode, String, String, Int, [[Int]], [PKernelFunc], PStencil) -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
-pSplitTileKernel (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfs, l_stencil) l_showSingleKernel = 
-    let oldKernelName = intercalate "_" $ map kfName l_kfs
-        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
-        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
-        regBound = sRegBound l_stencil
-        bdryKernel = if regBound 
-                        then pShowTileMacroKernels True bdryKernelName 
-                                l_stencil l_tile_indices l_kfs
-                        else ""
-        obaseKernel = pShowTileKernels l_mode obaseKernelName 
-                           l_stencil l_tile_indices l_kfs l_showSingleKernel
-        runKernel = if regBound 
-                       then obaseKernelName ++ ", " ++ bdryKernelName
-                       else obaseKernelName
-        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kfs)
-    in  (breakline ++ show l_pShape ++
-         bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
-         l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++ ", " ++ 
-         show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 -------------------------------------------------------------------------------------------
 --                             Following are C++ Grammar Parser                         ---
