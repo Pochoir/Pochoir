@@ -257,6 +257,15 @@ printOptions =
                "using macro tricks to split the interior and boundary regions")
        putStrLn ("-split-pointer $filename : " ++ breakline ++ 
                "Default Mode : split the interior and boundary region, and using C-style pointer to optimize the base case")
+       putStrLn ("\n--Following modes are for experimental tiled specification of irregular stencil computation--\n")
+       putStrLn ("-all-cond-tile-macro $filename : " ++ breakline ++
+               "put all conditional check in inner-most loop, and use -split-macro-shadow mode for optimizing the base case")
+       putStrLn ("-all-cond-tile-pointer $filename : " ++ breakline ++
+               "put all conditional check in inner-most loop, and use -split-pointer mode for optimizing the base case")
+       putStrLn ("-unroll-t-tile-macro $filename : " ++ breakline ++
+               "unroll the tiled kernels along time dimension, for conditional check on spatial dimension, we leave them in the inner-most kernel, and use -split-macro-shadow mode for optimizing the base case")
+       putStrLn ("-unroll-t-tile-pointer $filename : " ++ breakline ++
+               "unroll the tiled kernels along time dimension, for conditional check on spatial dimension, we leave them in the inner-most kernel, and use -split-macro-pointer mode for optimizing the base case")
 
 pProcess :: PMode -> Handle -> Handle -> IO ()
 pProcess mode inh outh = 
