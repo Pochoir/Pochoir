@@ -184,8 +184,6 @@ ppStencil l_id l_state =
                              updateState $ updateStencilBoundary l_id l_regBound 
                              return (breakline ++ l_id ++ ".Run(" ++ show l_tstep ++
                                      ");" ++ breakline)
-    -- convert "Register_Kernel(g, k, ... ks) " to 
-    -- "Register_Stagger_Obase_Kernels(g, k, bk)"
     <|> do try $ pMember "Register_Stagger_Kernels"
            (l_guard, l_kernels) <- parens pStencilRegisterStaggerKernelParams
            semi
@@ -257,26 +255,26 @@ transKernel l_mode l_stencil l_kernelFunc =
                        PCPointer -> getFromStmts getIter PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts
-                       PPointer -> getFromStmts (getPointer $ l_params) PRead 
+                       PPointer -> getFromStmts (getPointer l_params) PRead 
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts
                        POptPointer -> getFromStmts getIter PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts 
-                       PCaching -> getFromStmts (getPointer $ l_params) PRead
+                       PCaching -> getFromStmts (getPointer l_params) PRead
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts 
                        PMUnroll -> let l_get = 
                                             if sRank l_stencil < 3 
                                                 then getIter
-                                                else (getPointer $ l_params)
+                                                else (getPointer l_params)
                                    in  getFromStmts l_get PRead
                                          (transArrayMap $ sArrayInUse l_stencil) 
                                          l_stmts 
                        PDefault -> let l_get = 
                                             if sRank l_stencil < 3 
                                                 then getIter
-                                                else (getPointer $ l_params)
+                                                else (getPointer l_params)
                                    in  getFromStmts l_get PRead
                                          (transArrayMap $ sArrayInUse l_stencil) 
                                          l_stmts 
@@ -309,7 +307,7 @@ pShowRegStaggerKernel l_mode l_stencil (l_guard, l_kernels) =
                       l_showKernel
              PMacroShadow -> 
                  pSplitScope 
-                   ("macro_", l_id, l_guardName, l_revKernelFunc, 
+                   ("Macro_", l_id, l_guardName, l_revKernelFunc, 
                      l_stencil) 
                    pShowUnrolledMacroKernels
              PPointer -> 
@@ -347,7 +345,7 @@ getIterFromKernel l_mode l_stencil l_params l_stmts =
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts
                        PAllCondTilePointer -> 
-                                getFromStmts (getPointer $ l_params) PRead 
+                                getFromStmts (getPointer l_params) PRead 
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts
                        PAllCondTileOptPointer -> 
@@ -363,7 +361,7 @@ getIterFromKernel l_mode l_stencil l_params l_stmts =
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts
                        PUnrollTimeTilePointer -> 
-                                getFromStmts (getPointer $ l_params) PRead 
+                                getFromStmts (getPointer l_params) PRead 
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts
                        PUnrollTimeTileOptPointer -> 
@@ -727,7 +725,7 @@ pStatement = try pParenStmt
          <|> try pRetStmt
          <|> try pReturnStmt
          <|> try pContStmt
-          -- pStubStatement scan in everything else except the "Pochoir_kernel_end" or "};"
+      -- pStubStatement scan in everything else except the "Pochoir_kernel_end" or "};"
          <|> try pStubStatement
          <?> "Statement"
 
@@ -877,19 +875,6 @@ pElseBranch = do reserved "else"
                  l_stmt <- pStatement
                  return l_stmt
 
-{-
-pSimpleType :: GenParser Char ParserState PType
-pSimpleType = 
-        do reserved "double" 
-           return (PDouble)
-    <|> do reserved "int"
-           return (PInt)
-    <|> do reserved "float"
-           return (PFloat)
-    <|> do reserved "bool"
-           return (PBool)
--}
-
 pType :: GenParser Char ParserState PType
 pType = do reserved "double" 
            return PType{typeName = "double", basicType = PDouble}
@@ -943,14 +928,6 @@ tableDeclDim = [[Prefix (reservedOp "-" >> return negate)],
 termDeclDim :: GenParser Char ParserState Int
 termDeclDim = 
        try (parens exprDeclDim)
-{-
-   <|> do literal_dim <- try (identifier)
-          l_state <- getState
-          case Map.lookup literal_dim $ pMacro l_state of
-              -- FIXME: If it's nothing, then something must be wrong
-              Nothing -> return (0)
-              Just num_dim -> return (num_dim)
--}
    <|> do num_dim <- try (natural)
           return (fromInteger num_dim)
    <?> "termDeclDim"
@@ -970,13 +947,6 @@ termStmtDim = do e <- try (parens exprStmtDim)
                  return (DimParen e)
           <|> do literal_dim <- try (identifier)
                  return (DimVAR literal_dim)
-{-
-                 l_state <- getState
-                 -- check whether it's an effective Range name
-                 case Map.lookup literal_dim $ pMacro l_state of
-                     Nothing -> return (DimVAR literal_dim)
-                     Just l_dim -> return (DimINT l_dim)
--}
           <|> do num_dim <- try (natural)
                  return (DimINT $ fromInteger num_dim)
           <?> "TermStmtDim"
@@ -1028,7 +998,6 @@ tableStmt = [[Postfix (reservedOp "++" >> return (PostUno "++")),
 termStmt :: GenParser Char ParserState Expr
 termStmt =  do try pArrayOfStructTermStmt
         <|> do try ppArrayOfStructTermStmt
---        <|> do try pPArrayOfStructTermStmt
         <|> do l_expr <- try (parens exprStmt) 
                return (PARENS l_expr)
         <|> do l_num <- try (number)

@@ -1543,7 +1543,7 @@ pShowOptPointerStmt l_kernel =
     let oldStmts = kfStmt l_kernel
         l_iter = kfIter l_kernel
         obaseStmts = transStmts oldStmts $ transOptPointer l_iter
-    in show obaseStmts
+    in  show obaseStmts
 
 transOptPointer :: [Iter] -> Expr -> Expr
 transOptPointer l_iters (PVAR q v dL) =
@@ -1551,6 +1551,33 @@ transOptPointer l_iters (PVAR q v dL) =
         Nothing -> PVAR q v dL
         Just iterName -> VAR q $ "(*" ++ iterName ++ ")"
 transOptPointer l_iters e = e
+
+-- convert the input parameters in all stmts to new, 
+-- uniform version aligned only to the length of the kernel params
+transKernelParams :: [String] -> Int -> Int -> Expr -> Expr
+transKernelParams l_params idx l_len_params (PVAR q v dL) = 
+    let dL' = transKernelParamsItem l_params idx l_len_params dL
+    in  (PVAR q v dL')
+transKernelParams _ _ _ e = e
+
+transKernelParamsItem :: [String] -> Int -> Int -> [DimExpr] -> [DimExpr]
+transKernelParamsItem _ _ _ [] = []
+transKernelParamsItem [] _ _ dL = dL
+transKernelParamsItem l_params@(p:ps) idx l_len_params dL@(d:ds) = 
+    [(transKernelParamsItemTerm p idx l_len_params d)] ++ 
+    (transKernelParamsItem ps (idx+1) l_len_params ds)
+   
+transKernelParamsItemTerm :: String -> Int -> Int -> DimExpr -> DimExpr
+transKernelParamsItemTerm p idx len (DimVAR i) =
+    if p == i then if idx == 0 then DimVAR "t" else DimVAR ("i" ++ show (len - idx))
+              else DimVAR i
+transKernelParamsItemTerm p idx len (DimDuo bop i j) = 
+    DimDuo bop 
+        (transKernelParamsItemTerm p idx len i) 
+        (transKernelParamsItemTerm p idx len j)
+transKernelParamsItemTerm p idx len (DimParen d) = 
+    DimParen (transKernelParamsItemTerm p idx len d)
+transKernelParamsItemTerm p idx len (DimINT n) = DimINT n
 
 transPointer :: Bool -> [Iter] -> Expr -> Expr
 transPointer global l_iters (PVAR q v dL) =

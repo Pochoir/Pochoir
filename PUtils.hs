@@ -235,6 +235,15 @@ getPStencil l_id l_state l_oldStencil =
         Nothing -> l_oldStencil
         Just l_stencil -> l_stencil
 
+-- generate new kernel parameters (t, i0, i1, ...) according to the number
+-- of old kernel params
+getKernelParams :: Int -> [String]
+getKernelParams 0 = []
+getKernelParams n = ["t"] ++ getSpaceKernelParams (n-1)
+    where getSpaceKernelParams 0 = []
+          getSpaceKernelParams k = let i' = "i" ++ show (k-1)
+                                   in  [i'] ++ getSpaceKernelParams (k-1)
+
 getIter :: PArray -> Expr -> PRWMode -> [Iter]
 getIter arrayInUse (PVAR q v dL) l_rw =
     let iterName = "iter"
