@@ -593,14 +593,14 @@ pShowSinglePointerKernel l_cond l_t l_resid l_unroll l_kL@(l_kernel:l_kernels) =
  
 pShowSingleMacroKernel :: Bool -> String -> [PKernelFunc] -> String
 pShowSingleMacroKernel _ _ [] = ""
-pShowSingleMacroKernel l_boundary l_t (l_kernel:l_kernels) =
+pShowSingleMacroKernel l_bound l_t (l_kernel:l_kernels) =
     let l_params = tail $ kfParams l_kernel
         l_rank = length (kfParams l_kernel) - 1
-    in  breakline ++ pShowMetaGridHeader l_boundary l_params ++
+    in  breakline ++ pShowMetaGridHeader l_bound l_params ++
         breakline ++ show (kfStmt l_kernel) ++
         breakline ++ pShowMetaGridTail l_params ++ 
         breakline ++ pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++ 
-        pShowSingleMacroKernel l_boundary l_t l_kernels 
+        pShowSingleMacroKernel l_bound l_t l_kernels 
 
 pShowUnrollTGuardHead :: String -> Int -> Int -> Int -> String
 pShowUnrollTGuardHead l_t l_resid l_unroll l_timeShift =
@@ -777,7 +777,7 @@ pShowUnrollTimeTileMacroKernels l_bound l_name l_stencil l_tile_indices_group_by
         l_undefMacro = pUndefMacroArrayInUse l_arrayInUse l_kfParams
         l_showPhysGrid = "Grid_Info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
                          sName l_stencil ++ ".get_phys_grid();"
-        l_unfold_kernels = pShowUnrollTimeTileMacroKernelOnT l_t l_tile_indices_group_by_t l_kfs_group_by_t
+        l_unfold_kernels = pShowUnrollTimeTileMacroKernelOnT l_bound l_t l_tile_indices_group_by_t l_kfs_group_by_t
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape $ concat l_kfs_group_by_t)
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
@@ -797,19 +797,18 @@ pShowUnrollTimeTileMacroKernels l_bound l_name l_stencil l_tile_indices_group_by
         breakline ++ l_tail ++
         breakline ++ l_undefMacro ++ breakline
 
-pShowUnrollTimeTileMacroKernelOnT :: String -> [[[Int]]] -> [[PKernelFunc]] -> String
-pShowUnrollTimeTileMacroKernelOnT _ _ [] = ""
-pShowUnrollTimeTileMacroKernelOnT l_t l_tile_indices_group_by_t@(t:ts) l_kL_group_by_t@(kf:kfs) =
+pShowUnrollTimeTileMacroKernelOnT :: Bool -> String -> [[[Int]]] -> [[PKernelFunc]] -> String
+pShowUnrollTimeTileMacroKernelOnT l_bound _ _ [] = ""
+pShowUnrollTimeTileMacroKernelOnT l_bound l_t l_tile_indices_group_by_t@(t:ts) l_kL_group_by_t@(kf:kfs) =
     let l_spatial_params = tail $ kfParams $ head kf
         l_rank = length l_spatial_params
         l_adjust_T = if length kfs > 0 then pAdjustT l_t kfs else ""
         l_unfold_kernels = pShowUnrollTimeTileSingleMacroKernel t kf
-        -- pShowMetaGridHeader (l_bound = False) because it's for interior region
-    in  breakline ++ pShowMetaGridHeader False l_spatial_params ++
+    in  breakline ++ pShowMetaGridHeader l_bound l_spatial_params ++
         l_unfold_kernels ++
         breakline ++ pShowMetaGridTail l_spatial_params ++
         breakline ++ pAdjustTrape l_rank ++ breakline ++ l_adjust_T ++
-        pShowUnrollTimeTileMacroKernelOnT l_t ts kfs 
+        pShowUnrollTimeTileMacroKernelOnT l_bound l_t ts kfs 
 
 pShowUnrollTimeTileSingleMacroKernel :: [[Int]] -> [PKernelFunc] -> String
 pShowUnrollTimeTileSingleMacroKernel _ [] = ""
@@ -931,6 +930,7 @@ pShowAllCondTileSingleOptPointerKernel l_t l_tile_indices l_kL@(l_kf:l_kfs) =
         breakline ++ l_guard_tail ++
         pShowAllCondTileSingleOptPointerKernel l_t (tail l_tile_indices) l_kfs
  
+-- This function is used for interior region only!!
 pShowAllCondTileKernels :: PMode -> String -> PStencil -> [[Int]] -> [PKernelFunc] -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
 pShowAllCondTileKernels l_mode l_name l_stencil l_tile_indices l_kL@(l_kf:l_kfs) l_showAllCondTileSingleKernel = 
     let l_rank = length (kfParams l_kf) - 1
@@ -990,7 +990,7 @@ pShowAllCondTileKernels l_mode l_name l_stencil l_tile_indices l_kL@(l_kf:l_kfs)
  ------------------------------------------------------------------------------------}
 pShowCondMacroKernel :: Bool -> String -> Int -> Int -> [PKernelFunc] -> String
 pShowCondMacroKernel _ _ _ _ [] = ""
-pShowCondMacroKernel l_boundary l_t l_resid l_unroll (l_kernel:l_kernels) =
+pShowCondMacroKernel l_bound l_t l_resid l_unroll (l_kernel:l_kernels) =
     let l_params = tail $ kfParams l_kernel
         l_rank = length (kfParams l_kernel) - 1
         -- l_modOp = if l_unroll == 2 then " & " else " % "
@@ -1001,28 +1001,33 @@ pShowCondMacroKernel l_boundary l_t l_resid l_unroll (l_kernel:l_kernels) =
         l_guard_tail = if l_unroll > 1 then pShowUnrollGuardTail (length l_kernels) else ""
         l_adjust_T = if l_unroll > 1 then "" else pAdjustT l_t l_kernels
     in  breakline ++ l_guard_head ++ 
-        breakline ++ pShowMetaGridHeader l_boundary l_params ++
+        breakline ++ pShowMetaGridHeader l_bound l_params ++
         breakline ++ show (kfStmt l_kernel) ++ 
         breakline ++ pShowMetaGridTail l_params ++ 
         breakline ++ pAdjustTrape l_rank ++ breakline ++ 
         breakline ++ l_adjust_T ++
         breakline ++ l_guard_tail ++
-        pShowCondMacroKernel l_boundary l_t (l_resid + 1) l_unroll l_kernels 
+        pShowCondMacroKernel l_bound l_t (l_resid + 1) l_unroll l_kernels 
 
 pAdjustT :: String -> [a] -> String
 pAdjustT l_t l = if null l then "" else "++" ++ l_t ++ ";" 
 
+-- l_bound == True : generate spatial loop header for boundary clone
+-- l_bound == False : generate spatial loop header for interior clone
+-- when it's for boundary clone, we have macro 'pmod_lu' which is to 
+-- adjust the index for the home cell (the point on the left side of 
+-- assignment operator) !!!
 pShowMetaGridHeader :: Bool -> [String] -> String
 pShowMetaGridHeader _ [] = ""
-pShowMetaGridHeader l_boundary pL@(p:ps) =
+pShowMetaGridHeader l_bound pL@(p:ps) =
     let l_rank = show (length pL - 1)
-        l_iter = if l_boundary then "old_" ++ p else p
+        l_iter = if l_bound then "old_" ++ p else p
         l_start = "l_grid.x0[" ++ l_rank ++ "]"
         l_end = "l_grid.x1[" ++ l_rank ++ "]"
         l_new_iter = p
         l_phys_start = "l_phys_grid.x0[" ++ l_rank ++ "]"
         l_phys_end = "l_phys_grid.x1[" ++ l_rank ++ "]"
-        l_adjust_iter = if l_boundary 
+        l_adjust_iter = if l_bound 
                             then breakline ++ "int " ++ l_new_iter ++ 
                                  " = pmod_lu(" ++ l_iter ++ ", " ++ 
                                  l_phys_start ++ ", " ++ 
@@ -1030,7 +1035,7 @@ pShowMetaGridHeader l_boundary pL@(p:ps) =
                             else ""
     in  breakline ++ "for (int " ++ l_iter ++ " = " ++ l_start ++ "; " ++
         l_iter ++ " < " ++ l_end ++ "; ++" ++ l_iter ++ ") {" ++ l_adjust_iter ++
-        pShowMetaGridHeader l_boundary ps 
+        pShowMetaGridHeader l_bound ps 
 
 pShowMetaGridTail :: [String] -> String
 pShowMetaGridTail [] = ""

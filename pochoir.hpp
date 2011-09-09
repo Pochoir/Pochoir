@@ -290,6 +290,36 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     return;
 }
 
+template <int N_RANK> template <int N_SIZE1, int N_SIZE2, int N_SIZE3>
+void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2][N_SIZE3]) {
+    typedef Pochoir_Kernel<N_RANK> T_Kernel;
+    if (pts_ == NULL) {
+        pts_ = new Pochoir_Tile_Kernel<N_RANK>[ARRAY_SIZE];
+        sz_pgk_ = 0;
+        assert(pgs_ == NULL);
+        pgs_ = new Pochoir_Guard<N_RANK>[ARRAY_SIZE];
+    }
+    assert(sz_pgk_ < ARRAY_SIZE);
+    if (sz_pgk_ >= ARRAY_SIZE) {
+        printf("Pochoir Error: Register_Tile_Kernels > %d\n", sz_pgk_);
+        exit(1);
+    }
+    // pts_[sz_pgk_].kernel_ = (T_Kernel *) calloc(N_SIZE1 * N_SIZE2, sizeof(T_Kernel));
+    pts_[sz_pgk_].kernel_ = new T_Kernel[N_SIZE1 * N_SIZE2 * N_SIZE3];
+    pgs_[sz_pgk_] = g;
+    for (int i = 0; i < N_SIZE1; ++i) {
+        for (int j = 0; j < N_SIZE2; ++j) {
+    for (int k = 0; k < N_SIZE3; ++k) {
+        pts_[sz_pgk_].kernel_[i * N_SIZE2 * N_SIZE3 + j * N_SIZE3 + k] = tile[i][j][k];
+        Register_Shape(tile[i][j][k].Get_Shape(), tile[i][j][k].Get_Shape_Size());
+    }
+        }
+    }
+    reg_tile_dim(3, N_SIZE1, N_SIZE2, N_SIZE3);
+    ++sz_pgk_;
+    return;
+}
+
 template <int N_RANK> 
 void Pochoir<N_RANK>::Register_Stagger_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk) {
     typedef Pochoir_Obase_Kernel<N_RANK> T_Kernel;

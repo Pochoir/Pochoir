@@ -152,7 +152,7 @@ int main(int argc, char * argv[])
     Pochoir_Kernel<1> tile_stagger[4][1] = {{k0}, {k1}, {k2}, {k3}};
     Pochoir_Kernel<1> tile_stagger_1[4] = {k0, k1, k2, k3};
     Pochoir_Kernel<1> tile_2D_checkerboard[2][2] = {{k0, k1}, {k2, k3}};
-    leap_frog.Register_Tile_Kernels(Default_Guard_1D, tile_stagger_1);
+    leap_frog.Register_Tile_Kernels(Default_Guard_1D, tile_stagger);
     leap_frog.Register_Array(a);
 
     /* initialization */
