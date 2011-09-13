@@ -2645,7 +2645,7 @@ inline void Algorithm<N_RANK>::plan_space_bicut_m(int t0, int t1, Grid_Info<N_RA
 #if USE_CILK_FOR 
                 /* use cilk_for to spawn all the sub-grid */
 // #pragma cilk_grainsize = 1
-                for (int j = 0; j < queue_len_[curr_dep_pointer]; ++j) {
+                cilk_for (int j = 0; j < queue_len_[curr_dep_pointer]; ++j) {
                     int i = pmod((queue_head_[curr_dep_pointer]+j), ALGOR_QUEUE_SIZE);
                     queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
                     /* assert all the sub-grid has done N_RANK spatial cuts */

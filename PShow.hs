@@ -671,7 +671,7 @@ pShowUnrollTimeTileKernels l_mode l_name l_stencil l_tile_indices_group_by_t l_k
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
-                   show l_rank ++ "> const grid) {"
+                   show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
                  shapeName l_pShape ++ " );" ++ breakline 
@@ -791,7 +791,7 @@ pShowUnrollTimeTileMacroKernels l_bound l_name l_stencil l_tile_indices_group_by
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
-                   show l_rank ++ "> const grid) {"
+                   show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
                  shapeName l_pShape ++ " );" ++ breakline 
@@ -857,7 +857,7 @@ pShowAllCondTileMacroKernels l_bound l_name l_stencil l_tile_indices l_kL@(l_kf:
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
-                   show l_rank ++ "> const grid) {"
+                   show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
                  shapeName l_pShape ++ " );"
@@ -957,7 +957,7 @@ pShowAllCondTileKernels l_mode l_name l_stencil l_tile_indices l_kL@(l_kf:l_kfs)
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
-                   show l_rank ++ "> const grid) {"
+                   show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
                  shapeName l_pShape ++ " );" ++ breakline 
@@ -1061,7 +1061,7 @@ pShowObaseKernel l_name l_kernel =
         l_t_begin = l_t ++ "0"
         l_t_end = l_t ++ "1"
     in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
-        "int t0, int t1, Grid_Info<" ++ show l_rank ++ "> const grid) {" ++ 
+        "int t0, int t1, Grid_Info<" ++ show l_rank ++ "> const & grid) {" ++ 
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayGaps l_rank l_array ++
         breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++
