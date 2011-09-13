@@ -592,12 +592,17 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> * shape, int N_SIZE) 
     toggle_ = max(toggle_, depth + 1);
     for (int i = 0; i < N_SIZE; ++i) {
         for (int r = 0; r < N_RANK+1; ++r) {
+//            shape_[shape_size_ + i].shift[r] = (r > 0) ? shape[i].shift[r] : shape[i].shift[r] + time_shift_;
+            shape_[shape_size_ + i].shift[r] = shape[i].shift[r];
+        }
+    }
+    for (int i = 0; i < N_SIZE; ++i) {
+        for (int r = 0; r < N_RANK+1; ++r) {
             slope_[N_RANK-r] = (r > 0) ? max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[N_RANK-r]/(l_max_time_shift - shape_[i].shift[0])))) : 0;
-            shape_[shape_size_ + i].shift[r] = (r > 0) ? shape[i].shift[r] : shape[i].shift[r] + time_shift_;
         }
     }
     shape_size_ += N_SIZE;
-#if DEBUG
+#if 1
     printf("time_shift_ = %d, toggle = %d\n", time_shift_, toggle_);
     for (int r = 0; r < N_RANK; ++r) {
         printf("slope[%d] = %d, ", r, slope_[r]);

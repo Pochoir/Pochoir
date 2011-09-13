@@ -475,7 +475,7 @@ struct Algorithm {
         _num_bkernel_ = num_bkernel_; _num_cond_bkernel_ = num_cond_bkernel_;
     }
     inline void set_thres(int arr_type_size) {
-#if 0 
+#if 0
         dt_recursive_ = 1;
         dx_recursive_[0] = 1;
         for (int i = N_RANK-1; i >= 1; --i)

@@ -258,8 +258,10 @@ pShowUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernelFunc:l_kernel
         l_arrayInUse = sArrayInUse l_stencil
         -- We are assuming all kernels have the same number of input parameters
         l_kfParams = kfParams l_kernelFunc
-        l_defMacro = pDefMacroArrayInUse "boundary" l_arrayInUse l_kfParams
-        l_undefMacro = pUndefMacroArrayInUse l_arrayInUse l_kfParams
+        l_defMacro = pDefMacroArrayInUse "boundary" l_arrayInUse l_kfParams ++ 
+                        breakline ++ pDefPMODLU
+        l_undefMacro = pUndefPMODLU ++ breakline ++
+                        pUndefMacroArrayInUse l_arrayInUse l_kfParams 
         l_showPhysGrid = "Grid_Info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
                          sName l_stencil ++ ".get_phys_grid();"
         l_unfold_kernels = 
@@ -274,7 +276,6 @@ pShowUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernelFunc:l_kernel
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
                  shapeName l_pShape ++ " );" ++ breakline 
     in  breakline ++ l_defMacro ++
-        breakline ++ pShowPMODLU ++
         breakline ++ l_header ++
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ l_showPhysGrid ++
@@ -331,8 +332,10 @@ pShowMUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) 
         l_arrayInUse = sArrayInUse l_stencil
         -- We are assuming all kernels have the same number of input parameters
         l_kfParams = kfParams l_kernel
-        l_defMacro = pDefMacroArrayInUse "boundary" l_arrayInUse l_kfParams
-        l_undefMacro = pUndefMacroArrayInUse l_arrayInUse l_kfParams
+        l_defMacro = pDefMacroArrayInUse "boundary" l_arrayInUse l_kfParams ++ 
+                        breakline ++ pDefPMODLU
+        l_undefMacro = pUndefPMODLU ++ breakline ++
+                        pUndefMacroArrayInUse l_arrayInUse l_kfParams 
         l_showPhysGrid = "Grid_Info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
                          sName l_stencil ++ ".get_phys_grid();"
         l_header_kernel = pShowCondMacroKernel True l_t 0 l_unroll l_kL
@@ -349,7 +352,6 @@ pShowMUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) 
     in  breakline ++ pDefMax ++
         breakline ++ pDefMin ++
         breakline ++ l_defMacro ++
-        breakline ++ pShowPMODLU ++
         breakline ++ l_header ++
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ l_showPhysGrid ++
@@ -501,8 +503,11 @@ pShowUnrolledKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) l_showSin
         l_showSingleKernel l_cond l_t 0 l_unroll l_kL ++
         breakline ++ pShowTimeLoopTail ++ breakline ++ l_tail
 
-pShowPMODLU :: String
-pShowPMODLU = "#define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -((a)>=(ub))))"
+pDefPMODLU :: String
+pDefPMODLU = "#define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -((a)>=(ub))))"
+
+pUndefPMODLU :: String
+pUndefPMODLU = "#undef pmod_lu"
 
 pShowSingleCachingKernel :: String -> [PKernelFunc] -> String
 pShowSingleCachingKernel _ [] = ""
@@ -666,7 +671,7 @@ pShowUnrollTimeTileKernels l_mode l_name l_stencil l_tile_indices_group_by_t l_k
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
-                   show l_rank ++ "> const & grid) {"
+                   show l_rank ++ "> const grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
                  shapeName l_pShape ++ " );" ++ breakline 
@@ -772,9 +777,13 @@ pShowUnrollTimeTileMacroKernels l_bound l_name l_stencil l_tile_indices_group_by
         -- We are assuming all kernels have the same number of input parameters
         l_kfParams = kfParams (head l_kf)
         l_defMacro = if l_bound 
-                        then pDefMacroArrayInUse "boundary" l_arrayInUse l_kfParams
+                        then pDefMacroArrayInUse "boundary" l_arrayInUse l_kfParams ++ 
+                                breakline ++ pDefPMODLU
                         else pDefMacroArrayInUse "interior" l_arrayInUse l_kfParams
-        l_undefMacro = pUndefMacroArrayInUse l_arrayInUse l_kfParams
+        l_undefMacro = if l_bound 
+                          then pUndefPMODLU ++ breakline ++
+                                pUndefMacroArrayInUse l_arrayInUse l_kfParams 
+                          else pUndefMacroArrayInUse l_arrayInUse l_kfParams 
         l_showPhysGrid = "Grid_Info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
                          sName l_stencil ++ ".get_phys_grid();"
         l_unfold_kernels = pShowUnrollTimeTileMacroKernelOnT l_bound l_t l_tile_indices_group_by_t l_kfs_group_by_t
@@ -782,12 +791,11 @@ pShowUnrollTimeTileMacroKernels l_bound l_name l_stencil l_tile_indices_group_by
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
-                   show l_rank ++ "> const & grid) {"
+                   show l_rank ++ "> const grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
                  shapeName l_pShape ++ " );" ++ breakline 
     in  breakline ++ l_defMacro ++
-        breakline ++ pShowPMODLU ++
         breakline ++ l_header ++
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ l_showPhysGrid ++
@@ -835,9 +843,13 @@ pShowAllCondTileMacroKernels l_bound l_name l_stencil l_tile_indices l_kL@(l_kf:
         -- We are assuming all kernels have the same number of input parameters
         l_kfParams = kfParams l_kf
         l_defMacro = if l_bound 
-                        then pDefMacroArrayInUse "boundary" l_arrayInUse l_kfParams
+                        then pDefMacroArrayInUse "boundary" l_arrayInUse l_kfParams ++ 
+                                breakline ++ pDefPMODLU
                         else pDefMacroArrayInUse "interior" l_arrayInUse l_kfParams
-        l_undefMacro = pUndefMacroArrayInUse l_arrayInUse l_kfParams
+        l_undefMacro = if l_bound 
+                          then pUndefPMODLU ++ breakline ++
+                                pUndefMacroArrayInUse l_arrayInUse l_kfParams
+                          else pUndefMacroArrayInUse l_arrayInUse l_kfParams
         l_showPhysGrid = "Grid_Info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
                          sName l_stencil ++ ".get_phys_grid();"
         l_unfold_kernels = pShowAllCondTileSingleMacroKernel l_t l_tile_indices l_kL
@@ -845,12 +857,11 @@ pShowAllCondTileMacroKernels l_bound l_name l_stencil l_tile_indices l_kL@(l_kf:
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
-                   show l_rank ++ "> const & grid) {"
+                   show l_rank ++ "> const grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
-                 shapeName l_pShape ++ " );" ++ breakline 
+                 shapeName l_pShape ++ " );"
     in  breakline ++ l_defMacro ++
-        breakline ++ pShowPMODLU ++
         breakline ++ l_header ++
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ l_showPhysGrid ++
@@ -946,7 +957,7 @@ pShowAllCondTileKernels l_mode l_name l_stencil l_tile_indices l_kL@(l_kf:l_kfs)
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
                    " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
-                   show l_rank ++ "> const & grid) {"
+                   show l_rank ++ "> const grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
                  shapeName l_pShape ++ " );" ++ breakline 
@@ -1050,7 +1061,7 @@ pShowObaseKernel l_name l_kernel =
         l_t_begin = l_t ++ "0"
         l_t_end = l_t ++ "1"
     in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
-        "int t0, int t1, Grid_Info<" ++ show l_rank ++ "> const & grid) {" ++ 
+        "int t0, int t1, Grid_Info<" ++ show l_rank ++ "> const grid) {" ++ 
         breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayGaps l_rank l_array ++
         breakline ++ pShowRankAttr l_rank "stride" l_array ++ breakline ++

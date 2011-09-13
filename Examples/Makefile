@@ -4,11 +4,11 @@ ICC = icpc
 # it seems that '-ipo' '-O1' optimization flag will cause unexpected segmentation fault
 # sometimes.
 # OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
-OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
+OPT_FLAGS = -O1 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
 # POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -debug -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
-# ICC_DEBUG_FLAGS = -O1 -g3 -DDEBUG -Wall -Werror -std=c++0x -I/opt/intel/composer_xe_2011_sp1.6.023/compiler/include/cilk/ -include cilk_stub.h
-ICC_DEBUG_FLAGS = -O0 -g3 -Wall -Werror -std=c++0x 
+# ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I/opt/intel/composer_xe_2011_sp1.6.023/compiler/include/cilk/ -include cilk_stub.h
+ICC_DEBUG_FLAGS = -O1 -Wall -Werror -std=c++0x 
 POCHOIR_LIB_FILES = "../pochoir.hpp ../pochoir_common.hpp ../pochoir_types.hpp ../pochoir_array.hpp ../pochoir_walk.hpp ../pochoir_walk_recursive.hpp ../pochoir_walk_loops.hpp ../pochoir_wrapper.hpp ../pochoir_range.hpp"
 
 # ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x
@@ -42,7 +42,8 @@ heat_NP_zero : tb_heat_2D_NP_zero.cpp
 
 heat_P : tb_heat_2D_P.cpp
 #   Phase-II compilation
-	${CC} -o tb_heat_2D_P_pochoir ${OPT_FLAGS} -split-pointer tb_heat_2D_P.cpp
+#	${CC} -o heat_2D_P ${OPT_FLAGS} -all-cond-tile-macro tb_heat_2D_P.cpp
+	${ICC} -o heat_2D_P_gdb ${ICC_DEBUG_FLAGS} tb_heat_2D_P_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_2D_P_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_P.cpp
 
@@ -93,15 +94,25 @@ diamond_2 : tb_diamond_2.cpp # tb_diamond_2_pochoir.cpp
 	${CC} -o diamond_2 ${POCHOIR_DEBUG_FLAGS} tb_diamond_2.cpp 
 #	${ICC} -o diamond_2 ${OPT_FLAGS} tb_diamond_2.cpp 
 
-tile : tb_tile.cpp # tb_tile_pochoir.cpp 
+tile_2D : tb_tile_2D.cpp # tb_tile_2D_pochoir.cpp 
 #   Phase-II compilation
-#	${CC} -o tile ${OPT_FLAGS} -unroll-t-tile-pointer tb_tile.cpp
-#	${ICC} -o tile_gdb ${ICC_DEBUG_FLAGS} tb_tile_pochoir.cpp
-#	${CC} -o tile ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_tile.cpp
-#	${ICC} -o tile ${OPT_FLAGS} tb_tile_pochoir.cpp
+	${CC} -o tile_2D ${OPT_FLAGS} -all-cond-tile-macro tb_tile_2D.cpp
+	${ICC} -o tile_2D_gdb ${ICC_DEBUG_FLAGS} tb_tile_2D_pochoir.cpp
+#	${CC} -o tile_2D ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_tile_2D.cpp
+#	${ICC} -o tile_2D ${OPT_FLAGS} tb_tile_2D_pochoir.cpp
 #	Phase-I compilation with debugging aid
-	${CC} -o tile ${POCHOIR_DEBUG_FLAGS} tb_tile.cpp 
-#	${ICC} -o tile ${OPT_FLAGS} tb_tile.cpp 
+#	${CC} -o tile_2D ${POCHOIR_DEBUG_FLAGS} tb_tile_2D.cpp 
+#	${ICC} -o tile_2D ${OPT_FLAGS} tb_tile_2D.cpp 
+
+tile_3D : tb_tile_3D.cpp tb_tile_3D_pochoir.cpp 
+#   Phase-II compilation
+	${CC} -o tile_3D ${OPT_FLAGS} -unroll-t-tile-pointer tb_tile_3D.cpp
+	${ICC} -o tile_3D_gdb ${ICC_DEBUG_FLAGS} tb_tile_3D_pochoir.cpp
+#	${CC} -o tile_3D ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_tile_3D.cpp
+#	${ICC} -o tile_3D ${OPT_FLAGS} tb_tile_3D_pochoir.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o tile_3D ${POCHOIR_DEBUG_FLAGS} tb_tile_3D.cpp 
+#	${ICC} -o tile_3D ${OPT_FLAGS} tb_tile_3D.cpp 
 
 tile_stagger : tb_tile_stagger.cpp # tb_tile_stagger_pochoir.cpp 
 #   Phase-II compilation

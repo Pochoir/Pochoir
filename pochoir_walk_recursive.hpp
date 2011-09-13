@@ -1869,9 +1869,9 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, Grid_Info<N_RANK
  * Generating Plans of Adaptive region cutting algorithm for irregular stencil      * 
  * computation                                                                      *
  ************************************************************************************/
-#define gen_plan_space_can_cut(_dim) (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim]))
+// #define gen_plan_space_can_cut(_dim) (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim]))
 
-#define gen_plan_space_can_cut_p(_dim) (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim]))
+#define gen_plan_space_can_cut_p(_dim) (cut_lb ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim]))
 
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid)
@@ -2028,7 +2028,6 @@ inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent
     } /* end for (curr_dep < N_RANK+1) */
 }
 
-/* bookmark */
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid)
 {
@@ -2141,7 +2140,7 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
  ************************************************************************************/
 #define plan_space_can_cut(_dim) (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim]))
 
-#define plan_space_can_cut_p(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb + l_padding > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim])) : ((l_touch_boundary) ? (lb == phys_length_[_dim] ? (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim])) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
+#define plan_space_can_cut_p(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb > dx_recursive_[_dim])) : ((l_touch_boundary) ? (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
 
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::plan_space_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
@@ -2621,7 +2620,8 @@ inline void Algorithm<N_RANK>::plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> co
  ************************************************************************************/
 #define plan_space_can_cut_m(_dim) (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim]))
 
-#define plan_space_can_cut_mp(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb + l_padding > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim])) : ((l_touch_boundary) ? (lb == phys_length_[_dim] ? (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim])) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
+// #define plan_space_can_cut_mp(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb + l_padding > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim])) : ((l_touch_boundary) ? (lb == phys_length_[_dim] ? (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim])) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
+#define plan_space_can_cut_mp(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim])) : ((l_touch_boundary) ? (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
 
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::plan_space_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
@@ -2645,7 +2645,7 @@ inline void Algorithm<N_RANK>::plan_space_bicut_m(int t0, int t1, Grid_Info<N_RA
 #if USE_CILK_FOR 
                 /* use cilk_for to spawn all the sub-grid */
 // #pragma cilk_grainsize = 1
-                cilk_for (int j = 0; j < queue_len_[curr_dep_pointer]; ++j) {
+                for (int j = 0; j < queue_len_[curr_dep_pointer]; ++j) {
                     int i = pmod((queue_head_[curr_dep_pointer]+j), ALGOR_QUEUE_SIZE);
                     queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
                     /* assert all the sub-grid has done N_RANK spatial cuts */
@@ -2756,6 +2756,7 @@ inline void Algorithm<N_RANK>::plan_space_bicut_m(int t0, int t1, Grid_Info<N_RA
             } /* end if (performing a space cut) */
         } /* end while (queue_len_[curr_dep] > 0) */
 #if !USE_CILK_FOR
+//        print_sync(stdout);
         cilk_sync;
 #endif
         assert(queue_len_[curr_dep_pointer] == 0);
@@ -2815,7 +2816,6 @@ inline void Algorithm<N_RANK>::plan_space_bicut_mp(int t0, int t1, Grid_Info<N_R
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
                 const int l_padding = 2 * l_slope;
-                const bool cross_region = (region_n < 0);
                 const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
                 const bool can_cut = plan_space_can_cut_mp(level);
                 if (!can_cut) {
@@ -2916,6 +2916,7 @@ inline void Algorithm<N_RANK>::plan_space_bicut_mp(int t0, int t1, Grid_Info<N_R
             } /* end if (performing a space cut) */
         } /* end while (queue_len_[curr_dep] > 0) */
 #if !USE_CILK_FOR
+//        print_sync(stdout);
         cilk_sync;
 #endif
         assert(queue_len_[curr_dep_pointer] == 0);
@@ -2962,9 +2963,9 @@ inline void Algorithm<N_RANK>::plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> co
         return;
     } else {
         // base case
-#if DEBUG
-        printf("call kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
-        print_grid(stdout, t0, t1, grid);
+#if 1
+//        printf("call kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
+//        print_grid(stdout, t0, t1, grid);
 #endif
         opks_[region_n].kernel_[0](t0, t1, grid);
         return;
@@ -3004,7 +3005,6 @@ inline void Algorithm<N_RANK>::plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> c
     if (call_boundary) {
         l_dt_stop = dt_recursive_boundary_;
     } else {
-        assert (region_n >= 0);
         l_dt_stop = dt_recursive_;
     }
 
@@ -3038,8 +3038,6 @@ inline void Algorithm<N_RANK>::plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> c
     } 
 
     // base case
-    assert(region_n >= 0);
-
     if (call_boundary) {
         /* boundary region */
         // if (t1 - t0 < opks_[region_n].unroll_) {
@@ -3047,15 +3045,15 @@ inline void Algorithm<N_RANK>::plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> c
         // in order to get a pure-region, it's possible the bottom bar of current
         // trapezoid is not aligned to the unroll factor if \delta t < lcm_unroll_
         // -- see 'gen_plan' procedure for details!!!
-#if DEBUG
-        printf("call boundary_kernel <%d>, l_unroll = %d!\n", region_n, l_unroll);
-        print_grid(stdout, t0, t1, l_father_grid);
+#if 1
+//        printf("call boundary_kernel <%d>, l_unroll = %d!\n", region_n, l_unroll);
+//        print_grid(stdout, t0, t1, l_father_grid);
 #endif
         opks_[region_n].bkernel_[0](t0, t1, l_father_grid);
     } else {
-#if DEBUG
-        printf("call kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
-        print_grid(stdout, t0, t1, l_father_grid);
+#if 1 
+//        printf("call kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
+//        print_grid(stdout, t0, t1, l_father_grid);
 #endif
         opks_[region_n].kernel_[0](t0, t1, l_father_grid);
     }
