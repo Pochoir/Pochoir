@@ -7,8 +7,8 @@ ICC = icpc
 OPT_FLAGS = -O1 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
 # POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -debug -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
-# ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I/opt/intel/composer_xe_2011_sp1.6.023/compiler/include/cilk/ -include cilk_stub.h
-ICC_DEBUG_FLAGS = -O1 -Wall -Werror -std=c++0x 
+ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I/opt/intel/composer_xe_2011_sp1.6.023/compiler/include/cilk/ -include cilk_stub.h
+# ICC_DEBUG_FLAGS = -O1 -Wall -Werror -std=c++0x 
 POCHOIR_LIB_FILES = "../pochoir.hpp ../pochoir_common.hpp ../pochoir_types.hpp ../pochoir_array.hpp ../pochoir_walk.hpp ../pochoir_walk_recursive.hpp ../pochoir_walk_loops.hpp ../pochoir_wrapper.hpp ../pochoir_range.hpp"
 
 # ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x

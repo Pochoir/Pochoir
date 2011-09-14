@@ -34,6 +34,8 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <functional>
+
 
 static inline double tdiff (struct timeval *a, struct timeval *b)
 {
@@ -112,6 +114,31 @@ struct Pochoir_Shape {
     int shift[N_RANK+1];
 };
  
+template <int N_RANK>
+struct Pochoir_Types {
+    typedef std::function<void (int, int)> T_Kernel;
+    typedef std::function<void (int, int, Grid_Info<N_RANK> const &)> T_Obase_Kernel;
+    typedef std::function<bool (int, int)> T_Guard;
+};
+template <>
+struct Pochoir_Types<1> {
+    typedef std::function<void (int, int)> T_Kernel;
+    typedef std::function<void (int, int, Grid_Info<1> const &)> T_Obase_Kernel;
+    typedef std::function<bool (int, int)> T_Guard;
+};
+template <>
+struct Pochoir_Types<2> {
+    typedef std::function<void (int, int, int)> T_Kernel;
+    typedef std::function<void (int, int, Grid_Info<2> const &)> T_Obase_Kernel;
+    typedef std::function<bool (int, int, int)> T_Guard;
+};
+template <>
+struct Pochoir_Types<3> {
+    typedef std::function<void (int, int, int, int)> T_Kernel;
+    typedef std::function<void (int, int, Grid_Info<3> const &)> T_Obase_Kernel;
+    typedef std::function<bool (int, int, int, int)> T_Guard;
+};
+
 enum Meta_Op { IS_ROOT, IS_SPAWN, IS_SYNC, IS_INTERNAL };
 
 template <int N_RANK>

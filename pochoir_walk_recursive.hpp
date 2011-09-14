@@ -2624,7 +2624,7 @@ inline void Algorithm<N_RANK>::plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> co
 #define plan_space_can_cut_mp(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim])) : ((l_touch_boundary) ? (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
 
 template <int N_RANK> 
-inline void Algorithm<N_RANK>::plan_space_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
+inline void Algorithm<N_RANK>::plan_space_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -2650,7 +2650,7 @@ inline void Algorithm<N_RANK>::plan_space_bicut_m(int t0, int t1, Grid_Info<N_RA
                     queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
                     /* assert all the sub-grid has done N_RANK spatial cuts */
                     assert(l_son->level == -1);
-                    plan_bicut_m(l_son->t0, l_son->t1, l_son->grid, region_n);
+                    plan_bicut_m(l_son->t0, l_son->t1, l_son->grid, region_n, f);
                 } /* end cilk_for */
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
                 queue_len_[curr_dep_pointer] = 0;
@@ -2658,9 +2658,9 @@ inline void Algorithm<N_RANK>::plan_space_bicut_m(int t0, int t1, Grid_Info<N_RA
                 /* use cilk_spawn to spawn all the sub-grid */
                 pop_queue(curr_dep_pointer);
                 if (queue_len_[curr_dep_pointer] == 0)
-                    plan_bicut_m(l_father->t0, l_father->t1, l_father->grid, region_n);
+                    plan_bicut_m(l_father->t0, l_father->t1, l_father->grid, region_n, f);
                 else
-                    cilk_spawn plan_bicut_m(l_father->t0, l_father->t1, l_father->grid, region_n);
+                    cilk_spawn plan_bicut_m(l_father->t0, l_father->t1, l_father->grid, region_n, f);
 #endif
             } else {
                 /* performing a space cut on dimension 'level' */
@@ -2764,7 +2764,7 @@ inline void Algorithm<N_RANK>::plan_space_bicut_m(int t0, int t1, Grid_Info<N_RA
 }
 
 template <int N_RANK> 
-inline void Algorithm<N_RANK>::plan_space_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
+inline void Algorithm<N_RANK>::plan_space_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & bf)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -2790,7 +2790,7 @@ inline void Algorithm<N_RANK>::plan_space_bicut_mp(int t0, int t1, Grid_Info<N_R
                     queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
                     /* assert all the sub-grid has done N_RANK spatial cuts */
                     assert(l_son->level == -1);
-                    plan_bicut_mp(l_son->t0, l_son->t1, l_son->grid, region_n);
+                    plan_bicut_mp(l_son->t0, l_son->t1, l_son->grid, region_n, f, bf);
                 } /* end cilk_for */
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
                 queue_len_[curr_dep_pointer] = 0;
@@ -2798,9 +2798,9 @@ inline void Algorithm<N_RANK>::plan_space_bicut_mp(int t0, int t1, Grid_Info<N_R
                 /* use cilk_spawn to spawn all the sub-grid */
                 pop_queue(curr_dep_pointer);
                 if (queue_len_[curr_dep_pointer] == 0) {
-                    plan_bicut_mp(l_father->t0, l_father->t1, l_father->grid, region_n);
+                    plan_bicut_mp(l_father->t0, l_father->t1, l_father->grid, region_n, f, bf);
                 } else {
-                    cilk_spawn plan_bicut_mp(l_father->t0, l_father->t1, l_father->grid, region_n);
+                    cilk_spawn plan_bicut_mp(l_father->t0, l_father->t1, l_father->grid, region_n, f, bf);
                 }
 #endif
             } else {
@@ -2925,7 +2925,7 @@ inline void Algorithm<N_RANK>::plan_space_bicut_mp(int t0, int t1, Grid_Info<N_R
 
 /* This is the version for interior region cut! */
 template <int N_RANK> 
-inline void Algorithm<N_RANK>::plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
+inline void Algorithm<N_RANK>::plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false;
@@ -2942,7 +2942,7 @@ inline void Algorithm<N_RANK>::plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> co
     }
 
     if (sim_can_cut) {
-        plan_space_bicut_m(t0, t1, grid, region_n);
+        plan_space_bicut_m(t0, t1, grid, region_n, f);
         return;
     } else if (lt > dt_recursive_) {
         /* cut into time */
@@ -2951,7 +2951,7 @@ inline void Algorithm<N_RANK>::plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> co
         /* cutting halflt align to unroll_ factor */
         // halflt -= (halflt > l_unroll ? (halflt % l_unroll) : 0);
         Grid_Info<N_RANK> l_son_grid = grid;
-        plan_bicut_m(t0, t0+halflt, l_son_grid, region_n);
+        plan_bicut_m(t0, t0+halflt, l_son_grid, region_n, f);
 
         for (int i = 0; i < N_RANK; ++i) {
             l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
@@ -2959,7 +2959,7 @@ inline void Algorithm<N_RANK>::plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> co
             l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
             l_son_grid.dx1[i] = grid.dx1[i];
         }
-        plan_bicut_m(t0+halflt, t1, l_son_grid, region_n);
+        plan_bicut_m(t0+halflt, t1, l_son_grid, region_n, f);
         return;
     } else {
         // base case
@@ -2967,14 +2967,15 @@ inline void Algorithm<N_RANK>::plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> co
 //        printf("call kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
 //        print_grid(stdout, t0, t1, grid);
 #endif
-        opks_[region_n].kernel_[0](t0, t1, grid);
+//        opks_[region_n].kernel_[0](t0, t1, grid);
+        f(t0, t1, grid);
         return;
     }  
 }
 
 /* This is the version for boundary region cut! */
 template <int N_RANK> 
-inline void Algorithm<N_RANK>::plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
+inline void Algorithm<N_RANK>::plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & bf)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;
@@ -2996,9 +2997,9 @@ inline void Algorithm<N_RANK>::plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> c
 
     if (sim_can_cut) {
         if (call_boundary) 
-            plan_space_bicut_mp(t0, t1, l_father_grid, region_n);
+            plan_space_bicut_mp(t0, t1, l_father_grid, region_n, f, bf);
         else
-            plan_space_bicut_m(t0, t1, l_father_grid, region_n);
+            plan_space_bicut_m(t0, t1, l_father_grid, region_n, f);
         return;
     } 
 
@@ -3018,9 +3019,9 @@ inline void Algorithm<N_RANK>::plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> c
         // halflt -= (halflt > l_unroll ? (halflt % l_unroll) : 0);
         l_son_grid = l_father_grid;
         if (call_boundary) {
-            plan_bicut_mp(t0, t0+halflt, l_son_grid, region_n);
+            plan_bicut_mp(t0, t0+halflt, l_son_grid, region_n, f, bf);
         } else {
-            plan_bicut_m(t0, t0+halflt, l_son_grid, region_n);
+            plan_bicut_m(t0, t0+halflt, l_son_grid, region_n, f);
         }
 
         for (int i = 0; i < N_RANK; ++i) {
@@ -3030,9 +3031,9 @@ inline void Algorithm<N_RANK>::plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> c
             l_son_grid.dx1[i] = l_father_grid.dx1[i];
         }
         if (call_boundary) {
-            plan_bicut_mp(t0+halflt, t1, l_son_grid, region_n);
+            plan_bicut_mp(t0+halflt, t1, l_son_grid, region_n, f, bf);
         } else {
-            plan_bicut_m(t0+halflt, t1, l_son_grid, region_n);
+            plan_bicut_m(t0+halflt, t1, l_son_grid, region_n, f);
         }
         return;
     } 
@@ -3049,13 +3050,15 @@ inline void Algorithm<N_RANK>::plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> c
 //        printf("call boundary_kernel <%d>, l_unroll = %d!\n", region_n, l_unroll);
 //        print_grid(stdout, t0, t1, l_father_grid);
 #endif
-        opks_[region_n].bkernel_[0](t0, t1, l_father_grid);
+//        opks_[region_n].bkernel_[0](t0, t1, l_father_grid);
+        bf(t0, t1, l_father_grid);
     } else {
 #if 1 
 //        printf("call kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
 //        print_grid(stdout, t0, t1, l_father_grid);
 #endif
-        opks_[region_n].kernel_[0](t0, t1, l_father_grid);
+//        opks_[region_n].kernel_[0](t0, t1, l_father_grid);
+        f(t0, t1, l_father_grid);
     }
     return;
 }

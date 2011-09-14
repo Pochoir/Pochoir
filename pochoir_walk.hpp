@@ -544,10 +544,10 @@ struct Algorithm {
     /* meta functions to run the plan 
      * -- 'm' is the version with merged kernel
      */
-    inline void plan_space_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
-    inline void plan_space_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
-    inline void plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
-    inline void plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void plan_space_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f);
+    inline void plan_space_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & bf);
+    inline void plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f);
+    inline void plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & bf);
     /* meta functions to run the plan */
     /*******************************************************************************/
     /* followings are the sim cut of both top and bottom bar */
