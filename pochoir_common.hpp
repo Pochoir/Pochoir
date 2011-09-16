@@ -600,6 +600,8 @@ size_t ArraySize (Pochoir_Shape<N_RANK> (& arr)[N]) { return N; }
 
 #define KLEIN 0
 #define USE_CILK_FOR 0
+#define NONE_EXCLUSIVE_IFS -1
+#define CROSS_REGION -2
 #define BICUT 1
 #define STAT 0
 static bool inRun = false;

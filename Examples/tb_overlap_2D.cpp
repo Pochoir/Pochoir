@@ -135,27 +135,27 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_1D_Begin(k_exclusive_0, t, i)
         a(t, i) = 0.11 * a(t-1, i-1) + 0.15 * a(t-1, i) + 0.185 * a(t-1, i+1) + 0.8;
-    Pochoir_Kernel_1D_End(k_exclusive_0, shape_k0)
+    Pochoir_Kernel_1D_End(k_exclusive_0, shape_exclusive_0)
 
     Pochoir_Kernel_1D_Begin(k_exclusive_1, t, i)
         a(t, i) = 0.21 * a(t-1, i-1) + 0.25 * a(t-1, i) + 0.285 * a(t-1, i+1) + 0.8;
-    Pochoir_Kernel_1D_End(k_exclusive_1, shape_k1)
+    Pochoir_Kernel_1D_End(k_exclusive_1, shape_exclusive_1)
 
     Pochoir_Kernel_1D_Begin(k_inclusive_0, t, i)
         a(t, i) = 0.31 * a(t-1, i-1) - 0.35 * a(t-1, i) + 0.385 * a(t-1, i+1) - 0.8;
-    Pochoir_Kernel_1D_End(k_inclusive_0, shape_k2)
+    Pochoir_Kernel_1D_End(k_inclusive_0, shape_inclusive_0)
 
     Pochoir_Kernel_1D_Begin(k_inclusive_1, t, i)
         a(t, i) = 0.41 * a(t-1, i-1) - 0.45 * a(t-1, i) + 0.485 * a(t-1, i+1) - 0.8;
-    Pochoir_Kernel_1D_End(k_inclusive_1, shape_k3)
+    Pochoir_Kernel_1D_End(k_inclusive_1, shape_inclusive_1)
 
     Pochoir_Kernel_1D_Begin(k_tiny_inclusive_0, t, i)
         a(t, i) = 0.51 * a(t-1, i-1) + 0.55 * a(t-1, i) - 0.585 * a(t-1, i+1) + 0.8;
-    Pochoir_Kernel_1D_End(k_tiny_inclusive_0, shape_k2)
+    Pochoir_Kernel_1D_End(k_tiny_inclusive_0, shape_tiny_inclusive_0)
 
     Pochoir_Kernel_1D_Begin(k_tiny_inclusive_1, t, i)
         a(t, i) = 0.61 * a(t-1, i-1) + 0.65 * a(t-1, i) - 0.685 * a(t-1, i+1) + 0.8;
-    Pochoir_Kernel_1D_End(k_tiny_inclusive_1, shape_k3)
+    Pochoir_Kernel_1D_End(k_tiny_inclusive_1, shape_tiny_inclusive_1)
 
     /* this is a 2D checkerboard style tiling of the entire rectangular region/domain */
     overlap.Register_Exclusive_Tile_Kernels(g_exclusive_0, k_exclusive_0);
@@ -190,26 +190,26 @@ int main(int argc, char * argv[])
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
             for (int i = 0; i < N; ++i) {
-                if (g_exclusive_0(t, i)) {
+                if (g_exclusive_0(t-1, i)) {
                     /* k_exclusive_0 */
                     b(t, i) = 0.11 * b(t-1, i-1) + 0.15 * b(t-1, i) + 0.185 * b(t-1, i+1) + 0.8;
-                } else if (g_exclusive_1(t, i)) {
+                } else if (g_exclusive_1(t-1, i)) {
                     /* k_exclusive_1 */
                     b(t, i) = 0.21 * b(t-1, i-1) + 0.25 * b(t-1, i) + 0.285 * b(t-1, i+1) + 0.8;
                 }
-                if (g_inclusive_0(t, i)) {
+                if (g_inclusive_0(t-1, i)) {
                     /* k_inclusive_0 */
                     b(t, i) = 0.31 * b(t-1, i-1) - 0.35 * b(t-1, i) + 0.385 * b(t-1, i+1) - 0.8;
                 }
-                if (g_inclusive_1(t, i)) {
+                if (g_inclusive_1(t-1, i)) {
                     /* k_inclusive_1 */
                     b(t, i) = 0.41 * b(t-1, i-1) - 0.45 * b(t-1, i) + 0.485 * b(t-1, i+1) - 0.8;
                 }
-                if (g_tiny_inclusive_0(t, i)) {
+                if (g_tiny_inclusive_0(t-1, i)) {
                     /* k_tiny_inclusive_0 */
                     b(t, i) = 0.51 * b(t-1, i-1) + 0.55 * b(t-1, i) - 0.585 * b(t-1, i+1) + 0.8;
                 }
-                if (g_tiny_inclusive_1(t, i)) {
+                if (g_tiny_inclusive_1(t-1, i)) {
                     /* k_tiny_inclusive_1 */
                     b(t, i) = 0.61 * b(t-1, i-1) + 0.65 * b(t-1, i) - 0.685 * b(t-1, i+1) + 0.8;
                 }

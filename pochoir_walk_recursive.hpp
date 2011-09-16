@@ -1741,7 +1741,7 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, Grid_Info<N_RANK
     Grid_Info<N_RANK> l_father_grid = grid, l_son_grid;
     int l_dt_stop, l_unroll;
     const int region_n = (*pure_region_)(t0, t1, l_father_grid);;
-    const bool cross_region = (region_n < 0);
+    const bool cross_region = (region_n == CROSS_REGION);
 
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
@@ -2036,7 +2036,7 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
     Grid_Info<N_RANK> l_father_grid = grid, l_son_grid;
     int l_dt_stop, l_unroll;
     int region_n = (*pure_region_)(t0, t1, l_father_grid);
-    const bool cross_region = (region_n < 0);
+    const bool cross_region = (region_n == CROSS_REGION);
     Node_Info<N_RANK> * l_internal = new Node_Info<N_RANK>(t0, t1, l_father_grid);
 
     if (!cross_region) {
