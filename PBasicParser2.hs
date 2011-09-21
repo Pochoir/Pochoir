@@ -49,8 +49,8 @@ ppStencil1 l_id l_state =
            semi
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return (l_id ++ ".Register_Stagger_Kernels(" ++ 
-                                  (gName l_guard) ++ (gComment l_guard) ++ ", " ++ 
-                                  (intercalate ", " $ zipWith (++) 
+                                  (gName l_guard) ++ (concat $ gComment l_guard) ++ 
+                                  ", " ++ (intercalate ", " $ zipWith (++) 
                                        (map kName l_kernels) 
                                        (map kComment l_kernels)) ++ 
                                   "); /* UNKNOWN Stencil " ++ l_id ++ " */" ++ 
@@ -64,31 +64,42 @@ ppStencil1 l_id l_state =
            semi
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return (l_id ++ ".Register_Tile_Kernels(" ++ 
-                                  (gName l_guard) ++ (gComment l_guard) ++ ", " ++
-                                  (tName l_tile) ++ (tComment l_tile) ++
+                                  (gName l_guard) ++ (concat $ gComment l_guard) ++ 
+                                  ", " ++ (tName l_tile) ++ (tComment l_tile) ++
                                   "); /* UNKNOWN Stencil " ++ l_id ++ " */" ++ 
                                   breakline)
                Just l_stencil ->
                -- convert "Register_Kernel(g, k, ... ks) " to "Register_Obase_Kernel(g, k, bk)"
                    do let l_regKernels = pShowRegTileKernel (pMode l_state) l_stencil (l_guard, l_tile)
                       return (l_regKernels)
-    -- Ad hoc implementation of Run_Unroll
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
            semi
            let l_mode = pMode l_state
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ ");")
-               Just l_stencil -> if l_mode == PMUnroll 
-                                    || l_mode == PAllCondTileMacro 
-                                    || l_mode == PAllCondTileCPointer 
-                                    || l_mode == PAllCondTilePointer
-                                    || l_mode == PAllCondTileOptPointer
-                                    then return (breakline ++ l_id ++ 
-                                         ".Run_Obase_Merge(" ++ show l_tstep ++ 
-                                         "); /* Run with Stencil " ++ l_id ++ " */" ++ 
-                                         breakline)
-                                    else return (breakline ++ l_id ++ ".Run_Obase(" ++
+               Just l_stencil -> 
+                   if l_mode == PAllCondTileMacroOverlap
+                      then do let l_overlapKernels =
+                                    pShowOverlapKernels l_mode l_stencil
+                                        (sRegTileKernel l_stencil)
+                                        (sRegInclusiveTileKernel l_stencil)
+                                        (sRegTinyInclusiveTileKernel l_stencil)
+                              return (breakline ++ fst l_overlapKernels ++
+                                      breakline ++ l_id ++ ".Run_Obase_Merge(" ++ 
+                                      show l_tstep ++ "); /* Run with Stencil " ++
+                                      l_id ++ " */" ++ breakline)
+                      else if l_mode == PMUnroll 
+                                || l_mode == PAllCondTileMacro 
+                                || l_mode == PAllCondTileCPointer 
+                                || l_mode == PAllCondTilePointer
+                                || l_mode == PAllCondTileOptPointer
+                              then return (breakline ++ l_id ++ 
+                                           ".Run_Obase_Merge(" ++ 
+                                           show l_tstep ++ 
+                                           "); /* Run with Stencil " ++ l_id ++ 
+                                           " */" ++ breakline)
+                              else return (breakline ++ l_id ++ ".Run_Obase(" ++
                                          show l_tstep ++ "); /* Run with Stencil " ++
                                          l_id ++ " */" ++ breakline)
     <|> do return (l_id)

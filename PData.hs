@@ -51,7 +51,7 @@ data PType = PType {
     basicType :: PBasicType,
     typeName :: String
 } deriving Eq
-data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro | PAllCondTileCPointer | PAllCondTilePointer | PAllCondTileOptPointer | PUnrollTimeTileMacro | PUnrollTimeTileCPointer | PUnrollTimeTilePointer | PUnrollTimeTileOptPointer deriving Eq
+data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro | PAllCondTileCPointer | PAllCondTilePointer | PAllCondTileOptPointer | PUnrollTimeTileMacro | PUnrollTimeTileCPointer | PUnrollTimeTilePointer | PUnrollTimeTileOptPointer | PAllCondTileMacroOverlap deriving Eq
 
 data PMacro = PMacro {
     mName :: PName,
@@ -73,12 +73,13 @@ data PStencil = PStencil {
     sName :: PName,
     sRank :: Int,
     sToggle :: Int,
-    sUnroll :: Int,
     sTimeShift :: Int,
     sArrayInUse :: [PArray],
     sShape :: PShape,
     sRegStaggerKernel :: [(PGuard, [PKernel])],
-    sRegTileKernel :: [(PGuard, PTile)],
+    sRegTileKernel :: [(PGuard, PTile)], -- exclusive_if's
+    sRegInclusiveTileKernel :: [(PGuard, PTile)], -- inclusive_if's
+    sRegTinyInclusiveTileKernel :: [(PGuard, PTile)], -- tiny_inclusive_if's
     sRegBound :: Bool,
     sComment :: String
 } deriving Show
@@ -130,7 +131,7 @@ data PGuard = PGuard {
     gName :: PName,
     gRank :: Int,
     gFunc :: PGuardFunc,
-    gComment :: String
+    gComment :: [String]
 } deriving Show
 
 data PKernel = PKernel {
@@ -138,7 +139,7 @@ data PKernel = PKernel {
     kRank :: Int,
     kFunc :: PKernelFunc,
     kShape :: PShape,
-    kIndex :: [Int],
+    kIndex :: [Int], -- this is the index of the tile
     kComment :: String
 } deriving (Eq, Show)
 
@@ -173,7 +174,7 @@ emptyGuardFunc :: PGuardFunc
 emptyGuardFunc = PGuardFunc { gfName = "", gfParams = [], gfStmt = [], gfStmtSize = 0, gfIter = [], gfComment = cEmpty "Pochoir_Guard_Func" }
 
 emptyGuard :: PGuard
-emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc, gComment = cEmpty "Pochoir_Guard" }
+emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc, gComment = [] }
 
 emptyTileKernel :: PTileKernel
 emptyTileKernel = LK [] 
@@ -289,6 +290,7 @@ instance Show PMode where
     show PUnrollTimeTileCPointer = "-unroll-t-tile-c-pointer"
     show PUnrollTimeTilePointer = "-unroll-t-tile-pointer"
     show PUnrollTimeTileOptPointer = "-unroll-t-tile-opt-pointer"
+    show PAllCondTileMacroOverlap = "-all-cond-tile-macro-overlap"
 
 instance Show PType where
     show ptype = typeName ptype

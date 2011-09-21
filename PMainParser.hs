@@ -157,7 +157,7 @@ pParsePochoirGuard =
                                "> " ++ l_name ++ "(" ++ l_guardFunc ++ 
                                "); /* UNKNOWN Guard Func */" ++ breakline)
             Just l_pGuardFunc -> 
-                 do let l_guard = PGuard { gName = l_name, gRank = l_rank, gFunc = l_pGuardFunc { gfName = l_name }, gComment = "" }
+                 do let l_guard = PGuard { gName = l_name, gRank = l_rank, gFunc = l_pGuardFunc { gfName = l_name }, gComment = [""] }
                     updateState $ updatePGuard l_guard
                     return (breakline ++ "Pochoir_Guard <" ++ show l_rank ++
                             "> " ++ l_name ++ "(" ++ l_guardFunc ++ 
@@ -281,9 +281,11 @@ transPStencil l_rank [] = []
 -- sToggle by default is two (2)
 transPStencil l_rank (p:ps) = 
     (p, PStencil 
-        {sName = p, sRank = l_rank, sToggle = 0, sUnroll = 1, 
+        {sName = p, sRank = l_rank, sToggle = 0, 
          sTimeShift = 0, sArrayInUse = [], sShape = emptyShape, 
-         sRegBound = False, sRegStaggerKernel = [], sRegTileKernel = [], 
+         sRegBound = False, sRegStaggerKernel = [], 
+         sRegTileKernel = [], sRegInclusiveTileKernel = [], 
+         sRegTinyInclusiveTileKernel = [], 
          sComment = ""}) : transPStencil l_rank ps
 
 transURange :: [([PName], PName, [DimExpr])] -> [(PName, PRange)]

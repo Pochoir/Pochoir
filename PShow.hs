@@ -656,6 +656,91 @@ pShowUnrollGuardTail l_len
     | l_len == 0 = "}"
     | otherwise = "} else"
 
+    --bookmark
+pGetAllIGuards :: Int -> [String] -> [PGuard] -> [PGuard]
+pGetAllIGuards l_rank l_condStr [] = 
+    let l_pGuard = PGuard { gName = "__" ++ concat l_condStr ++ "__", gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr } 
+    in  [l_pGuard]
+pGetAllIGuards l_rank l_condStr l_iGs@(i:is) =
+    let l_condStr' = l_condStr ++ [gName i]
+        l_condStr'' = l_condStr ++ ["!" ++ gName i]
+    in  pGetAllIGuards l_rank l_condStr' is ++ pGetAllIGuards l_rank l_condStr'' is
+
+pGetExclusiveGuards :: PMode -> Int -> [PGuard] -> [PGuard] -> [PGuard] -> [PGuard]
+pGetExclusiveGuards l_mode l_rank [] l_iGs l_tiGs = 
+    let l_condStr = map ((++) "!" . gName) l_tiGs
+        l_rank = gRank $ head l_iGs
+        l_pGuards = pGetAllIGuards l_rank l_condStr l_iGs
+    in  l_pGuards 
+pGetExclusiveGuards l_mode l_rank l_xGs@(x:xs) l_iGs l_tiGs = 
+    let l_condStr = map ((++) "!" . gName) l_tiGs
+        l_condStr' = [gName x] ++ l_condStr
+        l_pGuards = pGetAllIGuards l_rank l_condStr' l_iGs
+    in  l_pGuards ++ pGetExclusiveGuards l_mode l_rank xs l_iGs l_tiGs
+
+pGetInclusiveGuards :: PMode -> [PGuard] -> [PGuard] -> [PGuard] -> [PGuard]
+pGetInclusiveGuards _ _ _ [] = []
+pGetInclusiveGuards l_mode l_xGs l_iGs l_tiGs =
+    let l_tigStr = map gName l_tiGs 
+        l_pIG = PGuard { gName = "__" ++ concat l_tigStr ++ "__", gRank = gRank $ head l_tiGs, gFunc = emptyGuardFunc, gComment = l_tigStr }
+    in  [l_pIG]
+
+pGetOverlapGuards :: PMode -> [PGuard] -> [PGuard] -> [PGuard] -> (String, [PGuard])
+pGetOverlapGuards l_mode l_xGs l_iGs l_tiGs = 
+    let l_rank = gRank $ head l_xGs
+        l_xPGuards = pGetExclusiveGuards l_mode l_rank l_xGs l_iGs l_tiGs
+        l_iPGuards = pGetInclusiveGuards l_mode l_xGs l_iGs l_tiGs
+        l_xGuards = map (pShowAutoGuardString " && ") l_xPGuards
+        l_iGuards = map (pShowAutoGuardString " || ") l_iPGuards
+    in  (breakline ++ concat l_xGuards ++ breakline ++ concat l_iGuards,
+            l_xPGuards ++ l_iPGuards)
+
+pStripPrefixUnderScore :: String -> String
+pStripPrefixUnderScore l_str = 
+    if isPrefixOf "__" l_str 
+        then drop 2 l_str 
+        else l_str
+
+pStripSuffixUnderScore :: String -> String
+pStripSuffixUnderScore l_str = 
+    if isSuffixOf "__" l_str 
+        then take (length l_str - 2) l_str 
+        else l_str
+
+pReplace :: Eq a => [a] -> [a] -> [a] -> [a]
+pReplace _ _ [] = []
+pReplace find repl str = 
+    if take (length find) str == find
+       then repl ++ (pReplace find repl $ drop (length find) str)
+       else [head str] ++ (pReplace find repl $ tail str)
+
+pShowAutoGuardString :: String -> PGuard -> String
+pShowAutoGuardString l_op l_pGuard = 
+    let l_gfName = pReplace "!" "Not" $ gName l_pGuard
+        l_gName = pStripSuffixUnderScore $ pStripPrefixUnderScore l_gfName
+        l_rank = gRank l_pGuard
+        l_decl_params = "int t, " ++ 
+                    (intercalate ", " $ take l_rank $ map ((++) "int i" . show) [0,1..])
+        l_invoke_params = "t, " ++ 
+                    (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
+        l_decl_params' = " ( " ++ l_decl_params ++ " ) "
+        l_invoke_params' = " ( " ++ l_invoke_params ++ " ) " 
+        l_content = intercalate l_op $ map (flip (++) l_invoke_params') $ 
+                        gComment l_pGuard
+    in  breakline ++ "auto " ++ l_gfName ++ " = [&] " ++ l_decl_params' ++ 
+        " -> bool {" ++
+        breakline ++ "return ( " ++ l_content ++ " );" ++ breakline ++ " };" ++
+        breakline ++ "Pochoir_Guard <" ++ show l_rank ++ "> " ++ l_gName ++ " ( " ++ 
+        l_gfName ++ " ); \n"
+    
+pShowOverlapKernels :: PMode -> PStencil -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> (String, [(PGuard, PTile)])
+pShowOverlapKernels l_mode l_stencil l_xGTs l_iGTs l_tiGTs =
+    let l_Guards = pGetOverlapGuards l_mode (map fst l_xGTs) (map fst l_iGTs) (map fst l_tiGTs)
+        l_string = fst l_Guards
+        l_new_GTs = zip (snd l_Guards)
+                        ((map snd l_xGTs) ++ (map snd l_iGTs) ++ (map snd l_tiGTs))
+    in  (l_string, l_new_GTs)
+
 pShowUnrollTimeTileKernels :: PMode -> String -> PStencil -> [[[Int]]] -> [[PKernelFunc]] -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
 pShowUnrollTimeTileKernels l_mode l_name l_stencil l_tile_indices_group_by_t l_kfs_group_by_t l_showUnrollTimeTileSingleKernel = 
     let l_rank = sRank l_stencil

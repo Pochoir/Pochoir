@@ -118,11 +118,19 @@ updateStencilRegTileKernel l_id l_regTileKernel parserState =
                 else Nothing
     in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
 
-updateStencilUnroll :: String -> Int -> ParserState -> ParserState
-updateStencilUnroll l_id l_unroll parserState =
+updateStencilRegInclusiveTileKernel :: String -> [(PGuard, PTile)] -> ParserState -> ParserState
+updateStencilRegInclusiveTileKernel l_id l_regInclusiveTileKernel parserState =
     let f k x =
             if sName x == l_id
-                then Just $ x { sUnroll = l_unroll }
+                then Just $ x { sRegInclusiveTileKernel = l_regInclusiveTileKernel }
+                else Nothing
+    in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
+
+updateStencilRegTinyInclusiveTileKernel :: String -> [(PGuard, PTile)] -> ParserState -> ParserState
+updateStencilRegTinyInclusiveTileKernel l_id l_regTinyInclusiveTileKernel parserState =
+    let f k x =
+            if sName x == l_id
+                then Just $ x { sRegTinyInclusiveTileKernel = l_regTinyInclusiveTileKernel }
                 else Nothing
     in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
 
@@ -130,7 +138,7 @@ updateStencilToggle :: String -> Int -> ParserState -> ParserState
 updateStencilToggle l_id l_toggle parserState =
     let f k x =
             if sName x == l_id
-                then Just $ x { sToggle = l_toggle }
+                then Just $ x { sToggle = max l_toggle $ sToggle x }
                 else Nothing
     in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
 
@@ -138,7 +146,7 @@ updateStencilTimeShift :: String -> Int -> ParserState -> ParserState
 updateStencilTimeShift l_id l_timeShift parserState =
     let f k x =
             if sName x == l_id
-                then Just $ x { sTimeShift = l_timeShift }
+                then Just $ x { sTimeShift = min l_timeShift $ sTimeShift x }
                 else Nothing
     in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
 
@@ -195,8 +203,8 @@ getValidKernel l_state l_kernelName =
 getValidGuard :: ParserState -> String -> PGuard
 getValidGuard l_state l_guardName =
     case Map.lookup l_guardName $ pGuard l_state of
-        Nothing -> emptyGuard { gName = l_guardName, gComment = cUnknown "Guard" }
-        Just l_pGuard -> l_pGuard { gComment = cKnown "Guard" }
+        Nothing -> emptyGuard { gName = l_guardName, gComment = [cUnknown "Guard"] }
+        Just l_pGuard -> l_pGuard { gComment = [cKnown "Guard"] }
 
 getValidTile :: ParserState -> String -> PTile
 getValidTile l_state l_tileName =
