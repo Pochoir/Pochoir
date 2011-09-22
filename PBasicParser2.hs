@@ -81,7 +81,7 @@ ppStencil1 l_id l_state =
                Just l_stencil -> 
                    if l_mode == PAllCondTileMacroOverlap
                       then do let l_overlapKernels =
-                                    pShowOverlapKernels l_mode l_stencil
+                                    pGetAllCondTileOverlapKernels l_mode l_stencil
                                         (sRegTileKernel l_stencil)
                                         (sRegInclusiveTileKernel l_stencil)
                                         (sRegTinyInclusiveTileKernel l_stencil)

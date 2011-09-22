@@ -52,6 +52,7 @@ data PType = PType {
     typeName :: String
 } deriving Eq
 data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro | PAllCondTileCPointer | PAllCondTilePointer | PAllCondTileOptPointer | PUnrollTimeTileMacro | PUnrollTimeTileCPointer | PUnrollTimeTilePointer | PUnrollTimeTileOptPointer | PAllCondTileMacroOverlap deriving Eq
+data TileOP = PSERIAL | PEXCLUSIVE | PINCLUSIVE deriving (Eq, Show)
 
 data PMacro = PMacro {
     mName :: PName,
@@ -141,6 +142,7 @@ data PKernel = PKernel {
     kShape :: PShape,
     kIndex :: [Int], -- this is the index of the tile
     kComment :: String
+
 } deriving (Eq, Show)
 
 data PTileKernel = SK PKernel 
@@ -152,6 +154,8 @@ data PTile = PTile {
     tRank :: Int,
     tSize :: [Int],
     tKernel :: PTileKernel,
+    tOp :: TileOP, -- the OP is used in determining how to tile in 
+                   -- automatically generated overlapped kernel
     tComment :: String
 } deriving Show
 
