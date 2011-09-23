@@ -214,7 +214,7 @@ getValidTile l_state l_tileName =
                                     Nothing -> emptyKernel
                                     Just l_kernel -> l_kernel
                 l_tileKernel = SK l_kernel
-            in  PTile { tName = l_tileName, tRank = kRank l_kernel, tSize = [1], tKernel = l_tileKernel, tComment = "" }
+            in  PTile { tName = l_tileName, tRank = kRank l_kernel, tSize = [1], tKernel = l_tileKernel, tComment = "", tOp = PNOP }
         Just l_pTile -> l_pTile { tComment = cKnown "Tile" }
 
 getTileKernels :: PTile -> [PKernel]

@@ -52,7 +52,7 @@ data PType = PType {
     typeName :: String
 } deriving Eq
 data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro | PAllCondTileCPointer | PAllCondTilePointer | PAllCondTileOptPointer | PUnrollTimeTileMacro | PUnrollTimeTileCPointer | PUnrollTimeTilePointer | PUnrollTimeTileOptPointer | PAllCondTileMacroOverlap deriving Eq
-data TileOP = PSERIAL | PEXCLUSIVE | PINCLUSIVE deriving (Eq, Show)
+data TileOp = PNOP | PSERIAL | PEXCLUSIVE | PINCLUSIVE deriving (Eq, Show)
 
 data PMacro = PMacro {
     mName :: PName,
@@ -154,8 +154,7 @@ data PTile = PTile {
     tRank :: Int,
     tSize :: [Int],
     tKernel :: PTileKernel,
-    tOp :: TileOP, -- the OP is used in determining how to tile in 
-                   -- automatically generated overlapped kernel
+    tOp :: TileOp, -- the OP is used in determining how to tile in automatically generated overlapped kernel
     tComment :: String
 } deriving Show
 
@@ -184,7 +183,7 @@ emptyTileKernel :: PTileKernel
 emptyTileKernel = LK [] 
 
 emptyTile :: PTile
-emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel, tComment = cEmpty "Pochoir_Tile" }
+emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel, tComment = cEmpty "Pochoir_Tile", tOp = PNOP }
 
 -- prefix 'c' means "comment"
 cUnknown :: String -> String

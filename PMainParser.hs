@@ -132,7 +132,7 @@ pParsePochoirTile =
        reservedOp "="
        l_tile_kernel <- pParseTileKernel
        semi
-       let l_tile = PTile { tName = l_name, tRank = l_rank, tSize = l_sizes, tKernel = l_tile_kernel, tComment = "" }
+       let l_tile = PTile { tName = l_name, tRank = l_rank, tSize = l_sizes, tKernel = l_tile_kernel, tComment = "", tOp = PNOP }
        let l_kernels = getTileKernels l_tile
        updateState $ updatePTile l_tile
        return (breakline ++ "Pochoir_Kernel <" ++ show l_rank ++ "> " ++ l_name ++

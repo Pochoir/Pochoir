@@ -658,7 +658,7 @@ pShowUnrollGuardTail l_len
 
 {- Starting the procedure for overlapped irregular stencils 
  -}
-pSetTileOP :: TileOp -> PTile -> PTile
+pSetTileOp :: TileOp -> PTile -> PTile
 pSetTileOp l_op pTile = pTile { tOp = l_op }
 
 pStripPrefixUnderScore :: String -> String
@@ -706,56 +706,72 @@ pShowAutoGuardString l_op l_pGuard =
         breakline ++ "Pochoir_Guard <" ++ show l_rank ++ "> " ++ l_gName ++ " ( " ++ 
         l_gfName ++ " ); \n"
 
+pShowAutoTileComments :: [PTile] -> String
+pShowAutoTileComments [] = breakline ++ "/* directly return */"
+pShowAutoTileComments l_ts =
+    breakline ++ "/* " ++ 
+    breakline ++ intercalate (";" ++ breakline)
+                    (zipWith (++) (map tName l_ts) 
+                                  (map ((++) " - " . show . tOp) l_ts)) ++
+    breakline ++ " */"
+
+pShowAutoTileString :: PMode -> PStencil -> [PTile] -> String
+pShowAutoTileString l_mode l_stencil l_tiles =
+    let l_comments = pShowAutoTileComments l_tiles
+    in  l_comments
+
 pGetAllIGuardTiles :: Int -> [String] -> [(PGuard, PTile)] -> [PTile] -> [(PGuard, [PTile])]
 pGetAllIGuardTiles l_rank l_condStr [] l_tiles = 
     let l_pGuard = PGuard { gName = "__" ++ concat l_condStr ++ "__", gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr } 
         l_tiles' = map (pSetTileOp PSERIAL) l_tiles
-    in  [(l_pGuard, l_tiles)]
+    in  [(l_pGuard, l_tiles')]
 pGetAllIGuardTiles l_rank l_condStr l_iGTs@(i:is) l_tiles =
     let l_condStr' = l_condStr ++ [gName $ fst i]
         l_tiles' = l_tiles ++ [snd i]
-        l_condStr'' = l_condStr ++ ["!" ++ gName i]
+        l_condStr'' = l_condStr ++ ["!" ++ (gName $ fst i)]
         l_tiles'' = l_tiles
-    in  pGetAllIGuards l_rank l_condStr' is l_tiles' ++ pGetAllIGuards l_rank l_condStr'' is l_tiles''
+    in  pGetAllIGuardTiles l_rank l_condStr' is l_tiles' ++ pGetAllIGuardTiles l_rank l_condStr'' is l_tiles''
 
 pGetExclusiveGuardTiles :: PMode -> Int -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
 pGetExclusiveGuardTiles l_mode l_rank [] l_iGTs l_tiGTs = 
-    let l_condStr = map ((++) "!" . gName) l_tiGs
+    let l_condStr = map ((++) "!" . gName . fst) l_tiGTs
         l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr l_iGTs []
     in  l_pGuardTiles
 pGetExclusiveGuardTiles l_mode l_rank l_xGTs@(x:xs) l_iGTs l_tiGTs = 
-    let l_condStr = map ((++) "!" . gName) l_tiGs
+    let l_condStr = map ((++) "!" . gName . fst) l_tiGTs
         l_condStr' = [gName $ fst x] ++ l_condStr
         l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr' l_iGTs [snd x]
-    in  l_pGuardTiles ++ pGetExclusiveGuards l_mode l_rank xs l_iGTs l_tiGTs
+    in  l_pGuardTiles ++ pGetExclusiveGuardTiles l_mode l_rank xs l_iGTs l_tiGTs
 
 pGetInclusiveGuardTiles :: PMode -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
 pGetInclusiveGuardTiles _ _ _ [] = []
 pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs =
     let l_tiGs = map fst l_tiGTs
         l_xTs = map (pSetTileOp PEXCLUSIVE . snd) l_xGTs
-        l_iTs = map (pSetTileOp PINCLUSIVE . snd) l_iGTs ++ 
-                map (pSetTileOp PINCLUSIVE . snd) l_tiGTs
+        l_iTs = map (pSetTileOp PINCLUSIVE . snd) (l_iGTs ++ l_tiGTs)
         l_tigStr = map gName l_tiGs 
         l_pIG = PGuard { gName = "__" ++ concat l_tigStr ++ "__", gRank = gRank $ head l_tiGs, gFunc = emptyGuardFunc, gComment = l_tigStr }
     in  [(l_pIG, l_xTs ++ l_iTs)]
 
-pGetOverlapGuardTiles :: PMode -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> (String, [(PGuard, [PTile])])
-pGetOverlapGuardTiles l_mode l_xGTs l_iGTs l_tiGTs = 
-    let l_rank = gRank $ fst $ head l_xGTs
+-- bookmark
+pGetOverlapGuardTiles :: PMode -> PStencil -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> (String, [(PGuard, [PTile])])
+pGetOverlapGuardTiles l_mode l_stencil l_xGTs l_iGTs l_tiGTs = 
+    let -- we are assuming that all guards and kernels are of the same rank
+        l_rank = gRank $ fst $ head l_xGTs
         l_xPGuardTiles = pGetExclusiveGuardTiles l_mode l_rank l_xGTs l_iGTs l_tiGTs
         l_iPGuardTiles = pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs
         l_xGuards = map (pShowAutoGuardString " && " . fst) l_xPGuardTiles
         l_iGuards = map (pShowAutoGuardString " || " . fst) l_iPGuardTiles
-        l_xTiles = map (pShowAutoTileString . snd) l_xPGuardTiles
-        l_iTiles = map (pShowAutoTileString . snd) l_iPGuardTiles
-    in  (breakline ++ concat l_xGuards ++ breakline ++ concat l_iGuards ++
-         breakline ++ concat l_xTiles ++ breakline ++ concat l_iTiles,
-            l_xPGuards ++ l_iPGuards)
+        l_xTiles = map (pShowAutoTileString l_mode l_stencil . snd) l_xPGuardTiles
+        l_iTiles = map (pShowAutoTileString l_mode l_stencil . snd) l_iPGuardTiles
+        l_str_xGTs = zipWith (++) l_xGuards l_xTiles
+        l_str_iGTs = zipWith (++) l_iGuards l_iTiles
+    in  (breakline ++ concat l_str_xGTs ++ breakline ++ concat l_str_iGTs,
+            l_xPGuardTiles ++ l_iPGuardTiles)
     
-pGetAllCondTileOverlapKernels :: PMode -> PStencil -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> (String, [(PGuard, PTile)])
+pGetAllCondTileOverlapKernels :: PMode -> PStencil -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> (String, [(PGuard, [PTile])])
 pGetAllCondTileOverlapKernels l_mode l_stencil l_xGTs l_iGTs l_tiGTs =
-    let l_GuardTiles = pGetOverlapGuardTiles l_mode l_xGTs l_iGTs l_tiGTs
+    let l_GuardTiles = pGetOverlapGuardTiles l_mode l_stencil l_xGTs l_iGTs l_tiGTs
     in  l_GuardTiles
 
 {- Ending the procedure for overlapped irregular stencils 
