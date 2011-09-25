@@ -115,8 +115,11 @@ data PKernelFunc = PKernelFunc {
     kfStmtSize :: Int,
     kfIter :: [Iter],
     kfShape :: PShape,
+    kfTileOp :: TileOp,
+    kfGuardFunc :: PGuardFunc, -- each kernel function is guarded by one and only one 
+                               -- guard function
     kfComment :: String
-} deriving (Eq, Show)
+} deriving Show
 
 data PGuardFunc = PGuardFunc {
     gfName :: PName,
@@ -142,18 +145,17 @@ data PKernel = PKernel {
     kShape :: PShape,
     kIndex :: [Int], -- this is the index of the tile
     kComment :: String
-
-} deriving (Eq, Show)
+} deriving Show
 
 data PTileKernel = SK PKernel 
                  | LK [PTileKernel]
-                 deriving Eq
 
 data PTile = PTile {
     tName :: PName,
     tRank :: Int,
     tSize :: [Int],
     tKernel :: PTileKernel,
+    tOrigGuard :: PGuard, -- each tile has one and only one guard
     tOp :: TileOp, -- the OP is used in determining how to tile in automatically generated overlapped kernel
     tComment :: String
 } deriving Show
@@ -168,7 +170,7 @@ emptyShape :: PShape
 emptyShape = PShape { shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = [], shapeComment = cEmpty "Pochoir_Shape" }
 
 emptyKernelFunc :: PKernelFunc
-emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfStmtSize = 0, kfIter = [], kfShape = emptyShape, kfComment = cEmpty "Pochoir_Kernel_Func" }
+emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfStmtSize = 0, kfIter = [], kfShape = emptyShape, kfTileOp = PNOP, kfGuardFunc = emptyGuardFunc, kfComment = cEmpty "Pochoir_Kernel_Func" }
 
 emptyKernel :: PKernel
 emptyKernel = PKernel { kName = "", kRank = 0, kFunc = emptyKernelFunc, kShape = emptyShape, kIndex = [], kComment = cEmpty "Pochoir_Kernel" }
@@ -183,7 +185,7 @@ emptyTileKernel :: PTileKernel
 emptyTileKernel = LK [] 
 
 emptyTile :: PTile
-emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel, tComment = cEmpty "Pochoir_Tile", tOp = PNOP }
+emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel, tComment = cEmpty "Pochoir_Tile", tOp = PNOP, tOrigGuard = emptyGuard }
 
 -- prefix 'c' means "comment"
 cUnknown :: String -> String

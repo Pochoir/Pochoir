@@ -658,34 +658,6 @@ pShowUnrollGuardTail l_len
 
 {- Starting the procedure for overlapped irregular stencils 
  -}
-pSetTileOp :: TileOp -> PTile -> PTile
-pSetTileOp l_op pTile = pTile { tOp = l_op }
-
-pStripPrefixUnderScore :: String -> String
-pStripPrefixUnderScore l_str = 
-    if isPrefixOf "__" l_str 
-        then drop 2 l_str 
-        else l_str
-
-pStripSuffixUnderScore :: String -> String
-pStripSuffixUnderScore l_str = 
-    if isSuffixOf "__" l_str 
-        then take (length l_str - 2) l_str 
-        else l_str
-
-pAddUnderScore :: String -> String
-pAddUnderScore str = 
-    if isPrefixOf "!" str
-        then "!__" ++ drop 1 str ++ "__"
-        else "__" ++ str ++ "__"
-
-pSubstitute :: Eq a => [a] -> [a] -> [a] -> [a]
-pSubstitute _ _ [] = []
-pSubstitute from to xs@(a:as) = 
-    if isPrefixOf from xs
-        then to ++ (pSubstitute from to $ drop (length from) xs)
-        else a:pSubstitute from to as
-
 pShowAutoGuardString :: String -> PGuard -> String
 pShowAutoGuardString l_op l_pGuard = 
     let l_gfName = pSubstitute "!" "_Not_" $ gName l_pGuard
@@ -715,67 +687,91 @@ pShowAutoTileComments l_ts =
                                   (map ((++) " - " . show . tOp) l_ts)) ++
     breakline ++ " */"
 
-pShowAutoTileString :: PMode -> PStencil -> [PTile] -> String
-pShowAutoTileString l_mode l_stencil l_tiles =
-    let l_comments = pShowAutoTileComments l_tiles
-    in  l_comments
+-- pShowOverlapMacroKernels will show the macro kernels with the same tile_index
+-- All kernel functions are groupBy kfTileOp
+pShowOverlapMacroKernels :: String -> [PName] -> [[PKernelFunc]] -> String
+pShowOverlapMacroKernels _ _ [] = ""
+pShowOverlapMacroKernels l_t l_spatial_params l_kfss@(k:ks) =
+    case (kfTileOp . head) k of
+        PSERIAL -> concatMap (show . kfStmt) k ++
+                   pShowOverlapMacroKernels l_t l_spatial_params ks
+        PEXCLUSIVE -> pShowInclusiveMacroKernels PEXCLUSIVE l_t l_spatial_params k ++
+                      pShowOverlapMacroKernels l_t l_spatial_params ks
+        PINCLUSIVE ->  pShowInclusiveMacroKernels PINCLUSIVE l_t l_spatial_params k ++
+                      pShowOverlapMacroKernels l_t l_spatial_params ks
 
-pGetAllIGuardTiles :: Int -> [String] -> [(PGuard, PTile)] -> [PTile] -> [(PGuard, [PTile])]
-pGetAllIGuardTiles l_rank l_condStr [] l_tiles = 
-    let l_pGuard = PGuard { gName = "__" ++ concat l_condStr ++ "__", gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr } 
-        l_tiles' = map (pSetTileOp PSERIAL) l_tiles
-    in  [(l_pGuard, l_tiles')]
-pGetAllIGuardTiles l_rank l_condStr l_iGTs@(i:is) l_tiles =
-    let l_condStr' = l_condStr ++ [gName $ fst i]
-        l_tiles' = l_tiles ++ [snd i]
-        l_condStr'' = l_condStr ++ ["!" ++ (gName $ fst i)]
-        l_tiles'' = l_tiles
-    in  pGetAllIGuardTiles l_rank l_condStr' is l_tiles' ++ pGetAllIGuardTiles l_rank l_condStr'' is l_tiles''
+pShowInclusiveMacroKernels :: TileOp -> String -> [PName] -> [PKernelFunc] -> String
+pShowInclusiveMacroKernels _ _ _ [] = ""
+pShowInclusiveMacroKernels l_tile_op l_t l_spatial_params l_kfs@(k:ks) =
+    let g = (gfName $ kfGuardFunc k) ++ " ( " ++
+            l_t ++ ", " ++ intercalate ", " l_spatial_params ++
+            " ) "
+        l_tail = if (l_tile_op == PEXCLUSIVE && length ks > 0)
+                    then "} else "
+                    else "}"
+    in  (breakline ++ "if (" ++ g ++ ") {" ++
+         breakline ++ (show $ kfStmt k) ++
+         breakline ++ l_tail ++ breakline ++
+         pShowInclusiveMacroKernels l_tile_op l_t l_spatial_params ks)
 
-pGetExclusiveGuardTiles :: PMode -> Int -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
-pGetExclusiveGuardTiles l_mode l_rank [] l_iGTs l_tiGTs = 
-    let l_condStr = map ((++) "!" . gName . fst) l_tiGTs
-        l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr l_iGTs []
-    in  l_pGuardTiles
-pGetExclusiveGuardTiles l_mode l_rank l_xGTs@(x:xs) l_iGTs l_tiGTs = 
-    let l_condStr = map ((++) "!" . gName . fst) l_tiGTs
-        l_condStr' = [gName $ fst x] ++ l_condStr
-        l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr' l_iGTs [snd x]
-    in  l_pGuardTiles ++ pGetExclusiveGuardTiles l_mode l_rank xs l_iGTs l_tiGTs
+pShowAllCondTileOverlapSingleMacroKernel :: String -> [[Int]] -> [[PKernelFunc]] -> String
+pShowAllCondTileOverlapSingleMacroKernel _ [] _ = ""
+pShowAllCondTileOverlapSingleMacroKernel l_t l_tile_indices@(t:ts) l_kL@(k:ks) =
+    let l_spatial_params = tail $ kfParams $ head k
+        l_rank = length l_spatial_params
+        l_params = [l_t] ++ l_spatial_params
+        l_dim_sizes = getTileSizes l_tile_indices
+        l_tile_index = head l_tile_indices
+        l_guard_head = pShowTileGuardHeadOnAll l_params l_dim_sizes l_tile_index
+                                                (shapeTimeShift $ kfShape $ head k)
+        l_guard_tail = pShowUnrollGuardTail $ length ts
+        k' = groupBy eqTileOpPKernelFunc k
+        l_kernels = pShowOverlapMacroKernels l_t l_spatial_params k'
+    in  breakline ++ l_guard_head ++
+        breakline ++ l_kernels ++
+        breakline ++ l_guard_tail ++
+        pShowAllCondTileOverlapSingleMacroKernel l_t ts ks
 
-pGetInclusiveGuardTiles :: PMode -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
-pGetInclusiveGuardTiles _ _ _ [] = []
-pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs =
-    let l_tiGs = map fst l_tiGTs
-        l_xTs = map (pSetTileOp PEXCLUSIVE . snd) l_xGTs
-        l_iTs = map (pSetTileOp PINCLUSIVE . snd) (l_iGTs ++ l_tiGTs)
-        l_tigStr = map gName l_tiGs 
-        l_pIG = PGuard { gName = "__" ++ concat l_tigStr ++ "__", gRank = gRank $ head l_tiGs, gFunc = emptyGuardFunc, gComment = l_tigStr }
-    in  [(l_pIG, l_xTs ++ l_iTs)]
-
--- bookmark
-pGetOverlapGuardTiles :: PMode -> PStencil -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> (String, [(PGuard, [PTile])])
-pGetOverlapGuardTiles l_mode l_stencil l_xGTs l_iGTs l_tiGTs = 
-    let -- we are assuming that all guards and kernels are of the same rank
-        l_rank = gRank $ fst $ head l_xGTs
-        l_xPGuardTiles = pGetExclusiveGuardTiles l_mode l_rank l_xGTs l_iGTs l_tiGTs
-        l_iPGuardTiles = pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs
-        l_xGuards = map (pShowAutoGuardString " && " . fst) l_xPGuardTiles
-        l_iGuards = map (pShowAutoGuardString " || " . fst) l_iPGuardTiles
-        l_xTiles = map (pShowAutoTileString l_mode l_stencil . snd) l_xPGuardTiles
-        l_iTiles = map (pShowAutoTileString l_mode l_stencil . snd) l_iPGuardTiles
-        l_str_xGTs = zipWith (++) l_xGuards l_xTiles
-        l_str_iGTs = zipWith (++) l_iGuards l_iTiles
-    in  (breakline ++ concat l_str_xGTs ++ breakline ++ concat l_str_iGTs,
-            l_xPGuardTiles ++ l_iPGuardTiles)
-    
-pGetAllCondTileOverlapKernels :: PMode -> PStencil -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> (String, [(PGuard, [PTile])])
-pGetAllCondTileOverlapKernels l_mode l_stencil l_xGTs l_iGTs l_tiGTs =
-    let l_GuardTiles = pGetOverlapGuardTiles l_mode l_stencil l_xGTs l_iGTs l_tiGTs
-    in  l_GuardTiles
-
-{- Ending the procedure for overlapped irregular stencils 
- -}
+pShowAllCondTileOverlapMacroKernels :: Bool -> String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String
+pShowAllCondTileOverlapMacroKernels l_bound l_name l_stencil l_pShape l_tile_indices l_kfss@(k:ks) =
+    let l_t = "t"
+        l_t_begin = l_t ++ "0"
+        l_t_end = l_t ++ "1"
+        l_rank = sRank l_stencil
+        l_arrayInUse = sArrayInUse l_stencil
+        -- We are assuming that all kernel functions have the 
+        -- same number of input parameters
+        l_kfParams = (kfParams . head . head) l_kfss
+        l_defMacro = if l_bound
+                        then pDefMacroArrayInUse "boundary" l_arrayInUse l_kfParams ++
+                                breakline ++ pDefPMODLU
+                        else pDefMacroArrayInUse "interior" l_arrayInUse l_kfParams
+        l_undefMacro = if l_bound
+                          then pUndefPMODLU ++ breakline ++
+                                pUndefMacroArrayInUse l_arrayInUse l_kfParams
+                          else pUndefMacroArrayInUse l_arrayInUse l_kfParams
+        l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> l_phys_grid = " ++
+                            sName l_stencil ++ ".get_phys_grid();"
+        l_unfold_kernels = pShowAllCondTileOverlapSingleMacroKernel l_t l_tile_indices l_kfss
+        l_kernelFuncName = pSys l_name
+        l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++
+                   " = [&] (int " ++ l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
+                   " Grid_Info <" ++ show l_rank ++ "> const & grid) {"
+        l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel <" ++ show l_rank ++
+                 "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++
+                 shapeName l_pShape ++ " );"
+    in  breakline ++ l_defMacro ++
+        breakline ++ l_header ++
+        breakline ++ "Grid_Info <" ++ show l_rank ++ "> l_grid = grid;" ++
+        breakline ++ l_showPhysGrid ++
+        breakline ++ pShowTimeLoopHeader l_t l_t_begin l_t_end ++
+        breakline ++ pShowMetaGridHeader l_bound (tail l_kfParams) ++
+        l_unfold_kernels ++
+        breakline ++ pShowMetaGridTail (tail l_kfParams) ++
+        breakline ++ pAdjustTrape l_rank ++
+        breakline ++ pShowTimeLoopTail ++
+        breakline ++ l_tail ++
+        breakline ++ l_undefMacro ++ breakline
 
 pShowUnrollTimeTileKernels :: PMode -> String -> PStencil -> [[[Int]]] -> [[PKernelFunc]] -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
 pShowUnrollTimeTileKernels l_mode l_name l_stencil l_tile_indices_group_by_t l_kfs_group_by_t l_showUnrollTimeTileSingleKernel = 
@@ -971,20 +967,20 @@ pShowAllCondTileMacroKernels l_bound l_name l_stencil l_tile_indices l_kL@(l_kf:
                           then pUndefPMODLU ++ breakline ++
                                 pUndefMacroArrayInUse l_arrayInUse l_kfParams
                           else pUndefMacroArrayInUse l_arrayInUse l_kfParams
-        l_showPhysGrid = "Grid_Info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
+        l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> l_phys_grid = " ++ 
                          sName l_stencil ++ ".get_phys_grid();"
         l_unfold_kernels = pShowAllCondTileSingleMacroKernel l_t l_tile_indices l_kL
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kL)
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
-                   " = [&] (int t0, int t1, " ++ " Grid_Info<" ++ 
+                   " = [&] (int t0, int t1, " ++ " Grid_Info <" ++ 
                    show l_rank ++ "> const & grid) {"
-        l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel<" ++ show l_rank ++
+        l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel <" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++ 
                  shapeName l_pShape ++ " );"
     in  breakline ++ l_defMacro ++
         breakline ++ l_header ++
-        breakline ++ "Grid_Info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        breakline ++ "Grid_Info <" ++ show l_rank ++ "> l_grid = grid;" ++
         breakline ++ l_showPhysGrid ++
         breakline ++ pShowTimeLoopHeader l_t l_t_begin l_t_end ++ 
         breakline ++ pShowMetaGridHeader l_bound (tail l_kfParams) ++

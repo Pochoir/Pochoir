@@ -215,6 +215,7 @@ ppStencil l_id l_state =
                                                (map kComment l_kernels)) ++ 
                               ");" ++ breakline)
     <|> do try $ pMember "Register_Tile_Kernels"
+           -- the returned l_guard and l_tile are of type PGuard, PTile, respectively
            (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
            semi
            case Map.lookup l_id $ pStencil l_state of
@@ -226,9 +227,12 @@ ppStencil l_id l_state =
                                   l_id ++ "*/" ++ breakline)
                Just l_stencil ->
                    do let l_sRegTileKernel = sRegTileKernel l_stencil
-                      let l_rev_sRegTileKernel = l_sRegTileKernel ++ [(l_guard, l_tile)]
+                      let l_tile' = l_tile { tOrigGuard = l_guard }
+                      let l_rev_sRegTileKernel = l_sRegTileKernel ++ 
+                                                 [(l_guard, l_tile')]
+                      updateState $ updateTileOrigGuard (tName l_tile) l_guard
                       updateState $ updateStencilRegTileKernel l_id l_rev_sRegTileKernel
-                      let l_pShapes = map kShape $ getTileKernels l_tile
+                      let l_pShapes = map kShape $ getTileKernels l_tile'
                       let l_merged_pShape = foldr mergePShapes (sShape l_stencil) l_pShapes
                       updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
                       updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
@@ -238,7 +242,7 @@ ppStencil l_id l_state =
                       -- only after Register_Kernel
                       return (l_id ++ ".Register_Tile_Kernels(" ++
                               (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                              ", " ++ (tName l_tile) ++ (tComment l_tile)  ++ 
+                              ", " ++ (tName l_tile') ++ (tComment l_tile')  ++ 
                               ");" ++ breakline)
     <|> do try $ pMember "Register_Exclusive_Tile_Kernels"
            (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
@@ -251,9 +255,12 @@ ppStencil l_id l_state =
                                   l_id ++ "*/" ++ breakline)
                Just l_stencil ->
                    do let l_sRegTileKernel = sRegTileKernel l_stencil
-                      let l_rev_sRegTileKernel = l_sRegTileKernel ++ [(l_guard, l_tile)]
+                      let l_tile' = l_tile { tOrigGuard = l_guard }
+                      let l_rev_sRegTileKernel = l_sRegTileKernel ++ 
+                                                 [(l_guard, l_tile')]
+                      updateState $ updateTileOrigGuard (tName l_tile) l_guard
                       updateState $ updateStencilRegTileKernel l_id l_rev_sRegTileKernel
-                      let l_pShapes = map kShape $ getTileKernels l_tile
+                      let l_pShapes = map kShape $ getTileKernels l_tile'
                       let l_merged_pShape = foldr mergePShapes (sShape l_stencil) l_pShapes
                       updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
                       updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
@@ -263,7 +270,7 @@ ppStencil l_id l_state =
                       -- only after Register_Kernel
                       return (l_id ++ ".Register_Exclusive_Tile_Kernels(" ++
                               (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                              ", " ++ (tName l_tile) ++ (tComment l_tile)  ++ 
+                              ", " ++ (tName l_tile') ++ (tComment l_tile')  ++ 
                               ");" ++ breakline)
     <|> do try $ pMember "Register_Inclusive_Tile_Kernels"
            (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
@@ -276,9 +283,12 @@ ppStencil l_id l_state =
                                   l_id ++ "*/" ++ breakline)
                Just l_stencil ->
                    do let l_sRegInclusiveTileKernel = sRegInclusiveTileKernel l_stencil
-                      let l_rev_sRegInclusiveTileKernel = l_sRegInclusiveTileKernel ++ [(l_guard, l_tile)]
+                      let l_tile' = l_tile { tOrigGuard = l_guard }
+                      let l_rev_sRegInclusiveTileKernel = l_sRegInclusiveTileKernel ++ 
+                                                          [(l_guard, l_tile')]
+                      updateState $ updateTileOrigGuard (tName l_tile) l_guard
                       updateState $ updateStencilRegInclusiveTileKernel l_id l_rev_sRegInclusiveTileKernel
-                      let l_pShapes = map kShape $ getTileKernels l_tile
+                      let l_pShapes = map kShape $ getTileKernels l_tile'
                       let l_merged_pShape = foldr mergePShapes (sShape l_stencil) l_pShapes
                       updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
                       updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
@@ -288,7 +298,7 @@ ppStencil l_id l_state =
                       -- only after Register_Kernel
                       return (l_id ++ ".Register_Inclusive_Tile_Kernels(" ++
                               (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                              ", " ++ (tName l_tile) ++ (tComment l_tile)  ++ 
+                              ", " ++ (tName l_tile') ++ (tComment l_tile')  ++ 
                               ");" ++ breakline)
     <|> do try $ pMember "Register_Tiny_Inclusive_Tile_Kernels"
            (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
@@ -301,9 +311,11 @@ ppStencil l_id l_state =
                                   l_id ++ "*/" ++ breakline)
                Just l_stencil ->
                    do let l_sRegTinyInclusiveTileKernel = sRegTinyInclusiveTileKernel l_stencil
-                      let l_rev_sRegTinyInclusiveTileKernel = l_sRegTinyInclusiveTileKernel ++ [(l_guard, l_tile)]
+                      let l_tile' = l_tile { tOrigGuard = l_guard }
+                      let l_rev_sRegTinyInclusiveTileKernel = l_sRegTinyInclusiveTileKernel ++ [(l_guard, l_tile')]
+                      updateState $ updateTileOrigGuard (tName l_tile) l_guard
                       updateState $ updateStencilRegTinyInclusiveTileKernel l_id l_rev_sRegTinyInclusiveTileKernel
-                      let l_pShapes = map kShape $ getTileKernels l_tile
+                      let l_pShapes = map kShape $ getTileKernels l_tile'
                       let l_merged_pShape = foldr mergePShapes (sShape l_stencil) l_pShapes
                       updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
                       updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
@@ -313,7 +325,7 @@ ppStencil l_id l_state =
                       -- only after Register_Kernel
                       return (l_id ++ ".Register_Tiny_Inclusive_Tile_Kernels(" ++
                               (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                              ", " ++ (tName l_tile) ++ (tComment l_tile)  ++ 
+                              ", " ++ (tName l_tile') ++ (tComment l_tile')  ++ 
                               ");" ++ breakline)
     <|> do return (l_id)
 
@@ -497,6 +509,86 @@ pShowRegTileKernel l_mode l_stencil (l_guard, l_tile) =
                  pSplitUnrollTimeTileKernel
                    ("Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_group_by_t, l_rev_kernel_funcs_group_by_t, l_stencil) 
                    pShowAllCondTileSingleOptPointerKernel pShowUnrollTimeTileSingleOptPointerKernel 
+
+{------------------------------------------------------------------------------------- 
+ - Beginning functions for overlapped modes
+ -------------------------------------------------------------------------------------
+ -}
+pShowAutoTileString :: PMode -> PStencil -> (PGuard, [PTile]) -> String
+pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
+    let l_guardName = (gfName . gFunc) l_guard
+        l_comments = pShowAutoTileComments l_tiles
+        -- getTileKernels also fills the guardFunc/tile_op into PKernelFuncs
+        l_kernels = concatMap getTileKernels l_tiles
+        l_unroll = foldr max 0 $ map pTileLength l_tiles
+        -- group kernels by the tile index
+        l_kernels_by_tIndex = groupBy eqIndexPKernel l_kernels
+        l_tile_indices = map (kIndex . head) l_kernels_by_tIndex
+        -- l_kernel_funcs : [[PKernelFunc]]
+        l_kernel_funcs = map (map kFunc) l_kernels_by_tIndex
+        l_stmts = concatMap kfStmt $ concat l_kernel_funcs
+        l_params = foldr union (kfParams $ head $ head l_kernel_funcs)
+                               (map kfParams $ tail $ head l_kernel_funcs)
+        l_iters = getIterFromKernel l_mode l_stencil l_params l_stmts
+        -- l_rev_kernel_funcs : [[PKernelFunc]]
+        l_rev_kernel_funcs = map (map (pFillIters l_iters)) l_kernel_funcs
+        l_id = sName l_stencil
+    in  case l_mode of
+            PAllCondTileMacroOverlap ->
+                pSplitAllCondTileOverlapScope
+                  ("Macro_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
+                  (pShowAllCondTileOverlapMacroKernels False)
+
+pSplitAllCondTileOverlapScope :: (String, PMode, PName, PName, Int, [[Int]], [[PKernelFunc]], PStencil, String) -> (String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String) -> String
+pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfss, l_stencil, l_comments) l_showAllCondTileOverlapKernel =
+    let oldKernelName = intercalate "_" $ map kfName $ concat l_kfss
+        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
+        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
+        regBound = sRegBound l_stencil
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape $ concat l_kfss)
+        bdryKernel = if regBound
+                        then pShowAllCondTileOverlapMacroKernels True bdryKernelName
+                                l_stencil l_pShape l_tile_indices l_kfss
+                        else ""
+        -- usually, the l_showAllCondTileOverlapKernel is just
+        -- (pShowAllCondTileOverlapMacroKernels False)
+        obaseKernel = l_showAllCondTileOverlapKernel obaseKernelName
+                        l_stencil l_pShape l_tile_indices l_kfss
+        runKernel = if regBound
+                       then obaseKernelName ++ ", " ++ bdryKernelName
+                       else obaseKernelName
+    in  (breakline ++ l_comments ++
+         breakline ++ show l_pShape ++ bdryKernel ++ breakline ++ obaseKernel ++
+         breakline ++ l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++
+         ", " ++ show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
+
+pGetOverlapGuardTiles :: PMode -> PStencil -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> (String, [(PGuard, [PTile])])
+pGetOverlapGuardTiles l_mode l_stencil l_xGTs l_iGTs l_tiGTs =
+    let -- we are assuming that all guards and kernels are of the same rank
+        l_rank = gRank $ fst $ head l_xGTs
+        l_xPGuardTiles = pGetExclusiveGuardTiles l_mode l_rank l_xGTs l_iGTs l_tiGTs
+        l_iPGuardTiles = pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs
+        l_xGuards = map (pShowAutoGuardString " && " . fst) l_xPGuardTiles
+        l_iGuards = map (pShowAutoGuardString " || " . fst) l_iPGuardTiles
+        l_xGuardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_xPGuardTiles
+        l_iGuardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_iPGuardTiles
+        l_xTiles = map (pShowAutoTileString l_mode l_stencil) l_xPGuardTiles
+        l_iTiles = map (pShowAutoTileString l_mode l_stencil) l_iPGuardTiles
+        l_str_xGTs = zipWith (++) l_xGuards l_xTiles
+        l_str_iGTs = zipWith (++) l_iGuards l_iTiles
+    in  (breakline ++ concat l_str_xGTs ++ breakline ++ concat l_str_iGTs,
+            l_xPGuardTiles ++ l_iPGuardTiles)
+
+pGetAllCondTileOverlapKernels :: PMode -> PStencil -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> (String, [(PGuard, [PTile])])
+pGetAllCondTileOverlapKernels l_mode l_stencil l_xGTs l_iGTs l_tiGTs =
+    let l_GuardTiles = pGetOverlapGuardTiles l_mode l_stencil l_xGTs l_iGTs l_tiGTs
+    in  l_GuardTiles
+
+
+{------------------------------------------------------------------------------------- 
+ - Beginning functions for overlapped modes
+ -------------------------------------------------------------------------------------
+ -}
 
 -- For modes : -split-macro-shadow, -split-caching
 pSplitUnrollTimeTileScope :: (String, String, String, Int, [[Int]], [PKernelFunc], [[[Int]]], [[PKernelFunc]], PStencil) -> (String -> PStencil -> [[Int]] -> [PKernelFunc] -> String) -> (String -> PStencil -> [[[Int]]] -> [[PKernelFunc]] -> String) -> String

@@ -102,6 +102,14 @@ updateStencilBoundary l_id l_regBound parserState =
                 else Nothing
     in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
 
+updateTileOrigGuard :: String -> PGuard -> ParserState -> ParserState
+updateTileOrigGuard l_id l_guard parserState =
+    let f k x =
+            if tName x == l_id
+                then Just $ x { tOrigGuard = l_guard }
+                else Nothing
+    in  parserState { pTile = Map.updateWithKey f l_id $ pTile parserState }
+
 updateStencilRegStaggerKernel :: String -> [(PGuard, [PKernel])] -> ParserState -> ParserState
 updateStencilRegStaggerKernel l_id l_regStaggerKernel parserState =
     let f k x =
@@ -214,27 +222,99 @@ getValidTile l_state l_tileName =
                                     Nothing -> emptyKernel
                                     Just l_kernel -> l_kernel
                 l_tileKernel = SK l_kernel
-            in  PTile { tName = l_tileName, tRank = kRank l_kernel, tSize = [1], tKernel = l_tileKernel, tComment = "", tOp = PNOP }
+            in  PTile { tName = l_tileName, tRank = kRank l_kernel, tSize = [1], tKernel = l_tileKernel, tComment = "", tOp = PNOP, tOrigGuard = emptyGuard }
         Just l_pTile -> l_pTile { tComment = cKnown "Tile" }
 
 getTileKernels :: PTile -> [PKernel]
-getTileKernels l_tile = getKernelsTile [] 0 $ tKernel l_tile
+getTileKernels l_tile = getKernelsTile [] 0 (gFunc $ tOrigGuard l_tile) (tOp l_tile) $ tKernel l_tile
 
-getKernelsTile :: [Int] -> Int -> PTileKernel -> [PKernel]
-getKernelsTile l_indices l_index (SK l_kernel) =
+getKernelsTile :: [Int] -> Int -> PGuardFunc -> TileOp -> PTileKernel -> [PKernel]
+getKernelsTile l_indices l_index l_gfunc l_tile_op (SK l_kernel) =
     let ll_indices = l_indices ++ [l_index]
-        ll_kernel = l_kernel { kIndex = ll_indices }
+        ll_kernel_func = kFunc l_kernel
+        ll_kernel = l_kernel { kIndex = ll_indices, kFunc = ll_kernel_func { kfGuardFunc = l_gfunc, kfTileOp = l_tile_op } }
     in  [ll_kernel]
-getKernelsTile l_indices l_index (LK l_tKs@(t:ts)) =
+getKernelsTile l_indices l_index l_gfunc l_tile_op (LK l_tKs@(t:ts)) =
     let ll_indices = l_indices ++ [l_index]
-    in  getKernelsTile ll_indices 0 t ++ getKernelsTile l_indices (l_index + 1) (LK ts)
-getKernelsTile l_indices l_index (LK []) = []
+    in  getKernelsTile ll_indices 0 l_gfunc l_tile_op t ++ 
+        getKernelsTile l_indices (l_index + 1) l_gfunc l_tile_op (LK ts)
+getKernelsTile l_indices l_index l_gfunc l_tile_op (LK []) = []
 
 getTileSizes :: [[Int]] -> [Int]
 getTileSizes l_tile_indices = map ((+) 1 . maximum) $ transpose l_tile_indices
 
+eqTileOpPKernelFunc :: PKernelFunc -> PKernelFunc -> Bool
+eqTileOpPKernelFunc a b = (kfTileOp a) == (kfTileOp b)
+
 eqTPKernel :: PKernel -> PKernel -> Bool
 eqTPKernel a b = (head $ kIndex a) == (head $ kIndex b)
+
+eqTPTile :: [Int] -> [Int] -> Bool
+eqTPTile a b = head a == head b
+
+eqIndexPKernel :: PKernel -> PKernel -> Bool
+eqIndexPKernel a b = (kIndex a) == (kIndex b)
+
+pSetTileOp :: TileOp -> PTile -> PTile
+pSetTileOp l_op pTile = pTile { tOp = l_op }
+
+pStripPrefixUnderScore :: String -> String
+pStripPrefixUnderScore l_str =
+    if isPrefixOf "__" l_str
+        then drop 2 l_str
+        else l_str
+
+pStripSuffixUnderScore :: String -> String
+pStripSuffixUnderScore l_str =
+    if isSuffixOf "__" l_str
+        then take (length l_str - 2) l_str
+        else l_str
+
+pGetAllIGuardTiles :: Int -> [String] -> [(PGuard, PTile)] -> [PTile] -> [(PGuard, [PTile])]
+pGetAllIGuardTiles l_rank l_condStr [] l_tiles =
+    let l_pGuard = PGuard { gName = "__" ++ concat l_condStr ++ "__", gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr }
+        l_tiles' = map (pSetTileOp PSERIAL) l_tiles
+    in  [(l_pGuard, l_tiles')]
+pGetAllIGuardTiles l_rank l_condStr l_iGTs@(i:is) l_tiles =
+    let l_condStr' = l_condStr ++ [gName $ fst i]
+        l_tiles' = l_tiles ++ [snd i]
+        l_condStr'' = l_condStr ++ ["!" ++ (gName $ fst i)]
+        l_tiles'' = l_tiles
+    in  pGetAllIGuardTiles l_rank l_condStr' is l_tiles' ++ pGetAllIGuardTiles l_rank l_condStr'' is l_tiles''
+
+pGetExclusiveGuardTiles :: PMode -> Int -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
+pGetExclusiveGuardTiles l_mode l_rank [] l_iGTs l_tiGTs =
+    let l_condStr = map ((++) "!" . gName . fst) l_tiGTs
+        l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr l_iGTs []
+    in  l_pGuardTiles
+pGetExclusiveGuardTiles l_mode l_rank l_xGTs@(x:xs) l_iGTs l_tiGTs =
+    let l_condStr = map ((++) "!" . gName . fst) l_tiGTs
+        l_condStr' = [gName $ fst x] ++ l_condStr
+        l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr' l_iGTs [snd x]
+    in  l_pGuardTiles ++ pGetExclusiveGuardTiles l_mode l_rank xs l_iGTs l_tiGTs
+
+pGetInclusiveGuardTiles :: PMode -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
+pGetInclusiveGuardTiles _ _ _ [] = []
+pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs =
+    let l_tiGs = map fst l_tiGTs
+        l_xTs = map (pSetTileOp PEXCLUSIVE . snd) l_xGTs
+        l_iTs = map (pSetTileOp PINCLUSIVE . snd) (l_iGTs ++ l_tiGTs)
+        l_tigStr = map gName l_tiGs
+        l_pIG = PGuard { gName = "__" ++ concat l_tigStr ++ "__", gRank = gRank $ head l_tiGs, gFunc = emptyGuardFunc, gComment = l_tigStr }
+    in  [(l_pIG, l_xTs ++ l_iTs)]
+
+pAddUnderScore :: String -> String
+pAddUnderScore str =
+    if isPrefixOf "!" str
+        then "!__" ++ drop 1 str ++ "__"
+        else "__" ++ str ++ "__"
+
+pSubstitute :: Eq a => [a] -> [a] -> [a] -> [a]
+pSubstitute _ _ [] = []
+pSubstitute from to xs@(a:as) =
+    if isPrefixOf from xs
+        then to ++ (pSubstitute from to $ drop (length from) xs)
+        else a:pSubstitute from to as
 
 getPShape :: ParserState -> String -> PShape
 getPShape l_state l_shape =
