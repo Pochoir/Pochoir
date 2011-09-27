@@ -226,7 +226,7 @@ data Expr = VAR String String
           | PSVAR PType Expr String String
           -- Uno is prefix unary operator
           | Uno Uop Expr
-          -- PostUno is postfix unary operator
+          -- PostUno is suffix unary operator
           | PostUno Uop Expr
           | Duo Bop Expr Expr
           | INT Int

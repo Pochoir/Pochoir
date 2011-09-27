@@ -703,7 +703,7 @@ pShowOverlapMacroKernels l_t l_spatial_params l_kfss@(k:ks) =
 pShowInclusiveMacroKernels :: TileOp -> String -> [PName] -> [PKernelFunc] -> String
 pShowInclusiveMacroKernels _ _ _ [] = ""
 pShowInclusiveMacroKernels l_tile_op l_t l_spatial_params l_kfs@(k:ks) =
-    let g = (gfName $ kfGuardFunc k) ++ " ( " ++
+    let g = ("__" ++ (gfName $ kfGuardFunc k) ++ "__") ++ " ( " ++
             l_t ++ ", " ++ intercalate ", " l_spatial_params ++
             " ) "
         l_tail = if (l_tile_op == PEXCLUSIVE && length ks > 0)
@@ -772,6 +772,9 @@ pShowAllCondTileOverlapMacroKernels l_bound l_name l_stencil l_pShape l_tile_ind
         breakline ++ pShowTimeLoopTail ++
         breakline ++ l_tail ++
         breakline ++ l_undefMacro ++ breakline
+
+pShowDefaultTileString :: PMode -> PStencil -> PGuard -> String
+pShowDefaultTileString l_mode l_stencil l_guard = "" 
 
 pShowUnrollTimeTileKernels :: PMode -> String -> PStencil -> [[[Int]]] -> [[PKernelFunc]] -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
 pShowUnrollTimeTileKernels l_mode l_name l_stencil l_tile_indices_group_by_t l_kfs_group_by_t l_showUnrollTimeTileSingleKernel = 

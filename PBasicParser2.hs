@@ -48,30 +48,95 @@ ppStencil1 l_id l_state =
            (l_guard, l_kernels) <- parens pStencilRegisterStaggerKernelParams
            semi
            case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Register_Stagger_Kernels(" ++ 
+               Nothing -> return (breakline ++ l_id ++ ".Register_Stagger_Kernels(" ++ 
                                   (gName l_guard) ++ (concat $ gComment l_guard) ++ 
                                   ", " ++ (intercalate ", " $ zipWith (++) 
                                        (map kName l_kernels) 
                                        (map kComment l_kernels)) ++ 
-                                  "); /* UNKNOWN Stencil " ++ l_id ++ " */" ++ 
-                                  breakline)
+                                  "); /* UNKNOWN Stencil " ++ l_id ++ " */")
                Just l_stencil ->
                    do let l_regKernels = pShowRegStaggerKernel (pMode l_state) l_stencil (l_guard, l_kernels)
                       return (l_regKernels)
+    <|> do try $ pMember "Register_Array"
+           l_arrays <- parens $ commaSep1 identifier
+           semi
+           case Map.lookup l_id $ pStencil l_state of 
+               Nothing -> return (l_id ++ ".Register_Array (" ++
+                                  intercalate ", " l_arrays ++ 
+                                  "); /* UNKNOWN Register_Array with" ++
+                                  l_id ++ " */" ++ breakline)
+               Just l_stencil ->
+                   do let l_mode = pMode l_state
+                      if l_mode == PAllCondTileMacroOverlap
+                         then do let l_overlapKernels =
+                                       pGetAllCondTileOverlapKernels l_mode l_stencil
+                                           (sRegTileKernel l_stencil)
+                                           (sRegInclusiveTileKernel l_stencil)
+                                           (sRegTinyInclusiveTileKernel l_stencil)
+                                 return (breakline ++ fst l_overlapKernels ++
+                                         l_id ++ ".Register_Array (" ++
+                                         intercalate ", " l_arrays ++ 
+                                         "); /* mode : " ++ show l_mode ++
+                                         " */" ++ breakline)
+                         else return (l_id ++ ".Register_Array (" ++
+                                      intercalate ", " l_arrays ++ 
+                                      "); /* Known Register Array with mode " ++ 
+                                      show l_mode ++ " */" ++ breakline)
     -- convert "Register_Kernel(g, k, ... ks) " to "Register_Obase_Kernel(g, k, bk)"
     <|> do try $ pMember "Register_Tile_Kernels"
            (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
            semi
            case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Register_Tile_Kernels(" ++ 
+               Nothing -> return (breakline ++ l_id ++ ".Register_Tile_Kernels(" ++ 
                                   (gName l_guard) ++ (concat $ gComment l_guard) ++ 
                                   ", " ++ (tName l_tile) ++ (tComment l_tile) ++
-                                  "); /* UNKNOWN Stencil " ++ l_id ++ " */" ++ 
-                                  breakline)
+                                  "); /* UNKNOWN Stencil " ++ l_id ++ " */")
                Just l_stencil ->
                -- convert "Register_Kernel(g, k, ... ks) " to "Register_Obase_Kernel(g, k, bk)"
                    do let l_regKernels = pShowRegTileKernel (pMode l_state) l_stencil (l_guard, l_tile)
                       return (l_regKernels)
+    <|> do try $ pMember "Register_Exclusive_Tile_Kernels"
+           (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
+           semi
+           case Map.lookup l_id $ pStencil l_state of
+               Nothing -> return (l_id ++ ".Register_Exclusive_Tile_Kernels(" ++
+                                  (gName l_guard) ++ (concat $ gComment l_guard) ++
+                                  ", " ++ (tName l_tile) ++ (tComment l_tile) ++
+                                  "); /* UNKNOWN Stencil " ++
+                                  l_id ++ "*/" ++ breakline)
+               Just l_stencil -> 
+                          return ("/* " ++ l_id ++ 
+                                  ".Register_Exclusive_Tile_Kernels(" ++ 
+                                  (gName l_guard) ++ ", " ++ (tName l_tile) ++ 
+                                  "); */" ++ breakline)
+    <|> do try $ pMember "Register_Inclusive_Tile_Kernels"
+           (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
+           semi
+           case Map.lookup l_id $ pStencil l_state of
+               Nothing -> return (l_id ++ ".Register_Inclusive_Tile_Kernels(" ++
+                                  (gName l_guard) ++ (concat $ gComment l_guard) ++
+                                  ", " ++ (tName l_tile) ++ (tComment l_tile) ++
+                                  "); /* UNKNOWN Stencil " ++
+                                  l_id ++ "*/" ++ breakline)
+               Just l_stencil -> 
+                          return ("/* " ++ l_id ++ 
+                                  ".Register_Inclusive_Tile_Kernels(" ++ 
+                                  (gName l_guard) ++ ", " ++ (tName l_tile) ++ 
+                                  "); */" ++ breakline)
+    <|> do try $ pMember "Register_Tiny_Inclusive_Tile_Kernels"
+           (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
+           semi
+           case Map.lookup l_id $ pStencil l_state of
+               Nothing -> return (l_id ++ ".Register_Tiny_Inclusive_Tile_Kernels(" ++
+                                  (gName l_guard) ++ (concat $ gComment l_guard) ++
+                                  ", " ++ (tName l_tile) ++ (tComment l_tile) ++
+                                  "); /* UNKNOWN Stencil " ++
+                                  l_id ++ "*/" ++ breakline)
+               Just l_stencil -> 
+                          return ("/* " ++ l_id ++ 
+                                  ".Register_Tiny_Inclusive_Tile_Kernels(" ++ 
+                                  (gName l_guard) ++ ", " ++ (tName l_tile) ++ 
+                                  "); */" ++ breakline)
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
            semi
@@ -79,6 +144,7 @@ ppStencil1 l_id l_state =
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ ");")
                Just l_stencil -> 
+{-
                    if l_mode == PAllCondTileMacroOverlap
                       then do let l_overlapKernels =
                                     pGetAllCondTileOverlapKernels l_mode l_stencil
@@ -102,5 +168,20 @@ ppStencil1 l_id l_state =
                               else return (breakline ++ l_id ++ ".Run_Obase(" ++
                                          show l_tstep ++ "); /* Run with Stencil " ++
                                          l_id ++ " */" ++ breakline)
+-}
+                      if l_mode == PMUnroll 
+                           || l_mode == PAllCondTileMacro 
+                           || l_mode == PAllCondTileCPointer 
+                           || l_mode == PAllCondTilePointer
+                           || l_mode == PAllCondTileOptPointer
+                           || l_mode == PAllCondTileMacroOverlap
+                         then return (breakline ++ l_id ++ 
+                                      ".Run_Obase_Merge(" ++ 
+                                      show l_tstep ++ 
+                                      "); /* Run with Stencil " ++ l_id ++ 
+                                      " */" ++ breakline)
+                         else return (breakline ++ l_id ++ ".Run_Obase(" ++
+                                    show l_tstep ++ "); /* Run with Stencil " ++
+                                    l_id ++ " */" ++ breakline)
     <|> do return (l_id)
 

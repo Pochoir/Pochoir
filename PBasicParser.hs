@@ -164,12 +164,14 @@ ppStencil l_id l_state =
                           then do let l_pArrays = map snd l_pArrayStatus 
                                   let l_revPArrays = map (flip fillToggleInPArray (sToggle l_stencil)) l_pArrays
                                   updateStencilArray l_id l_revPArrays
-                                  return (l_id ++ ".Register_Array (" ++ 
+                                  return (l_id ++ ".Register_Array(" ++ 
                                           intercalate ", " l_arrays ++ 
                                           "); /* Known Register Array */" ++ breakline)
+--                                          ");" ++ breakline)
                           else return (l_id ++ ".Register_Array(" ++ 
                                        intercalate ", " l_arrays ++ 
                                        "); /* UNKNOWN Pochoir Array */" ++ breakline)
+--                                     ");" ++ breakline)
     -- Ad hoc implementation of Run_Unroll
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
@@ -515,8 +517,9 @@ pShowRegTileKernel l_mode l_stencil (l_guard, l_tile) =
  -------------------------------------------------------------------------------------
  -}
 pShowAutoTileString :: PMode -> PStencil -> (PGuard, [PTile]) -> String
+pShowAutoTileString l_mode l_stencil (l_guard, []) = pShowDefaultTileString l_mode l_stencil l_guard
 pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
-    let l_guardName = (gfName . gFunc) l_guard
+    let l_guardName = (pStripPrefixUnderScore . pStripSuffixUnderScore . pSubstitute "!" "_Not_" . gName) l_guard
         l_comments = pShowAutoTileComments l_tiles
         -- getTileKernels also fills the guardFunc/tile_op into PKernelFuncs
         l_kernels = concatMap getTileKernels l_tiles
