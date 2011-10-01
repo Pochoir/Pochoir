@@ -297,20 +297,35 @@ pGetAllIGuardTiles l_rank l_condStr l_iGTs@(i:is) l_tiles =
         l_tiles'' = l_tiles
     in  pGetAllIGuardTiles l_rank l_condStr' is l_tiles' ++ pGetAllIGuardTiles l_rank l_condStr'' is l_tiles''
 
+pInvertIdxN :: Int -> Int -> [String ]
+pInvertIdxN l_xIdx l_xLen =
+    let l_condStr = if l_xIdx < l_xLen 
+                       then replicate l_xIdx "" ++ ["!"] ++ replicate (l_xLen - l_xIdx - 1) ""
+                       else []
+    in  l_condStr
+
 pGetExclusiveGuardTiles :: PMode -> Int -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
 pGetExclusiveGuardTiles l_mode l_rank [] l_iGTs l_tiGTs = []
 pGetExclusiveGuardTiles l_mode l_rank l_xGTs l_iGTs l_tiGTs =
     let l_condStr = map ((++) "!" . gName . fst) l_xGTs 
         l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr l_iGTs []
-    in  l_pGuardTiles ++ pGetExclusiveGuardTilesTerm l_mode l_rank l_xGTs l_iGTs l_tiGTs
+        l_xLen = length l_xGTs
+    in  l_pGuardTiles ++ pGetExclusiveGuardTilesTerm l_mode l_rank 0 l_xLen l_xGTs l_iGTs l_tiGTs
 
-pGetExclusiveGuardTilesTerm :: PMode -> Int -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
-pGetExclusiveGuardTilesTerm l_mode l_rank [] l_iGTs l_tiGTs = []
-pGetExclusiveGuardTilesTerm l_mode l_rank l_xGTs@(x:xs) l_iGTs l_tiGTs =
+pGetExclusiveGuardTilesTerm :: PMode -> Int -> Int -> Int -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
+pGetExclusiveGuardTilesTerm l_mode l_rank l_xIdx l_xLen [] l_iGTs l_tiGTs = []
+pGetExclusiveGuardTilesTerm l_mode l_rank l_xIdx l_xLen l_xGTs l_iGTs l_tiGTs =
     let l_tiCondStr = map ((++) "!" . gName . fst) l_tiGTs
-        l_condStr' = [gName $ fst x] ++ l_tiCondStr
-        l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr' l_iGTs [snd x]
-    in  l_pGuardTiles ++ pGetExclusiveGuardTilesTerm l_mode l_rank xs l_iGTs l_tiGTs
+        l_xCondStr = zipWith (++) (pInvertIdxN l_xIdx l_xLen) (map (gName . fst) l_xGTs)
+        l_x = l_xGTs !! l_xIdx
+        l_condStr = l_xCondStr ++ l_tiCondStr
+        l_pGuardTiles = if l_xIdx < l_xLen 
+                           then pGetAllIGuardTiles l_rank l_condStr l_iGTs [snd l_x]
+                           else []
+        l_rest = if l_xIdx < l_xLen
+                    then pGetExclusiveGuardTilesTerm l_mode l_rank (l_xIdx + 1) l_xLen l_xGTs l_iGTs l_tiGTs
+                    else []
+    in  l_pGuardTiles ++ l_rest
 
 pGetInclusiveGuardTiles :: PMode -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
 pGetInclusiveGuardTiles _ _ _ [] = []

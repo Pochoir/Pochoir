@@ -65,6 +65,10 @@ static inline int lcm(int a, int b) {
 /* due to the fact that bit trick is much slower than conditional instruction,
  * let's disable it for now!!!
  */
+#define cilk_for for
+#define cilk_spawn 
+#define cilk_sync
+
 #define BIT_TRICK 0
 #define INF 100000000
 #define SUPPORT_RANK 9
