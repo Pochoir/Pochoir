@@ -519,7 +519,7 @@ pShowRegTileKernel l_mode l_stencil (l_guard, l_tile) =
 pShowAutoTileString :: PMode -> PStencil -> (PGuard, [PTile]) -> String
 pShowAutoTileString l_mode l_stencil (l_guard, []) = pShowDefaultTileString l_mode l_stencil l_guard
 pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
-    let l_guardName = (pStripPrefixUnderScore . pStripSuffixUnderScore . pSubstitute "!" "_Not_" . gName) l_guard
+    let l_guardName = pGetOverlapGuardName l_guard
         l_comments = pShowAutoTileComments l_tiles
         -- getTileKernels also fills the guardFunc/tile_op into PKernelFuncs
         l_kernels = concatMap getTileKernels l_tiles

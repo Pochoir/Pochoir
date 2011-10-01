@@ -660,8 +660,8 @@ pShowUnrollGuardTail l_len
  -}
 pShowAutoGuardString :: String -> PGuard -> String
 pShowAutoGuardString l_op l_pGuard = 
-    let l_gfName = pSubstitute "!" "_Not_" $ gName l_pGuard
-        l_gName = pStripSuffixUnderScore $ pStripPrefixUnderScore l_gfName
+    let l_gfName = pGetOverlapGuardFuncName l_pGuard
+        l_gName = pGetOverlapGuardName l_pGuard
         l_rank = gRank l_pGuard
         l_decl_params = "int t, " ++ 
                     (intercalate ", " $ take l_rank $ map ((++) "int i" . show) [0,1..])

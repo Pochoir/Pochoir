@@ -270,6 +270,21 @@ pStripSuffixUnderScore l_str =
         then take (length l_str - 2) l_str
         else l_str
 
+pGetOverlapGuardFuncName :: PGuard -> String
+pGetOverlapGuardFuncName l_pGuard = 
+    let l_gComment = gComment l_pGuard
+        l_gfName = filter (not . isPrefixOf "!") l_gComment
+        l_gfName' = "__POCHOIR__" ++ (intercalate "_" l_gfName) ++ "__"
+    in  l_gfName'
+
+pGetOverlapGuardName :: PGuard -> String
+pGetOverlapGuardName l_pGuard =
+    let l_gComment = gComment l_pGuard
+        l_gfName = filter (not . isPrefixOf "!") l_gComment
+        l_gfName' = "__POCHOIR__" ++ (intercalate "_" l_gfName) ++ "__"
+        l_gName = pStripSuffixUnderScore $ pStripPrefixUnderScore l_gfName'
+    in  l_gName
+
 pGetAllIGuardTiles :: Int -> [String] -> [(PGuard, PTile)] -> [PTile] -> [(PGuard, [PTile])]
 pGetAllIGuardTiles l_rank l_condStr [] l_tiles =
     let l_pGuard = PGuard { gName = "__" ++ (intercalate "_" l_condStr) ++ "__", gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr }
@@ -283,15 +298,19 @@ pGetAllIGuardTiles l_rank l_condStr l_iGTs@(i:is) l_tiles =
     in  pGetAllIGuardTiles l_rank l_condStr' is l_tiles' ++ pGetAllIGuardTiles l_rank l_condStr'' is l_tiles''
 
 pGetExclusiveGuardTiles :: PMode -> Int -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
-pGetExclusiveGuardTiles l_mode l_rank [] l_iGTs l_tiGTs =
-    let l_condStr = map ((++) "!" . gName . fst) l_tiGTs
+pGetExclusiveGuardTiles l_mode l_rank [] l_iGTs l_tiGTs = []
+pGetExclusiveGuardTiles l_mode l_rank l_xGTs l_iGTs l_tiGTs =
+    let l_condStr = map ((++) "!" . gName . fst) l_xGTs 
         l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr l_iGTs []
-    in  l_pGuardTiles
-pGetExclusiveGuardTiles l_mode l_rank l_xGTs@(x:xs) l_iGTs l_tiGTs =
-    let l_condStr = map ((++) "!" . gName . fst) l_tiGTs
-        l_condStr' = [gName $ fst x] ++ l_condStr
+    in  l_pGuardTiles ++ pGetExclusiveGuardTilesTerm l_mode l_rank l_xGTs l_iGTs l_tiGTs
+
+pGetExclusiveGuardTilesTerm :: PMode -> Int -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
+pGetExclusiveGuardTilesTerm l_mode l_rank [] l_iGTs l_tiGTs = []
+pGetExclusiveGuardTilesTerm l_mode l_rank l_xGTs@(x:xs) l_iGTs l_tiGTs =
+    let l_tiCondStr = map ((++) "!" . gName . fst) l_tiGTs
+        l_condStr' = [gName $ fst x] ++ l_tiCondStr
         l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr' l_iGTs [snd x]
-    in  l_pGuardTiles ++ pGetExclusiveGuardTiles l_mode l_rank xs l_iGTs l_tiGTs
+    in  l_pGuardTiles ++ pGetExclusiveGuardTilesTerm l_mode l_rank xs l_iGTs l_tiGTs
 
 pGetInclusiveGuardTiles :: PMode -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
 pGetInclusiveGuardTiles _ _ _ [] = []
