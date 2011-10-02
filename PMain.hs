@@ -168,6 +168,10 @@ parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL
         let l_mode = PAllCondTilePointerOverlap
             aL' = delete "-all-cond-tile-pointer-overlap" aL
         in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+    | elem "-all-cond-tile-opt-pointer-overlap" aL =
+        let l_mode = PAllCondTileOptPointerOverlap
+            aL' = delete "-all-cond-tile-opt-pointer-overlap" aL
+        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
     | elem "-all-cond-tile-macro" aL =
         let l_mode = PAllCondTileMacro
             aL' = delete "-all-cond-tile-macro" aL

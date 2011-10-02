@@ -472,6 +472,10 @@ getIterFromKernel l_mode l_stencil l_params l_stmts =
                                 getFromStmts (getPointer l_params) PRead 
                                     (transArrayMap $ sArrayInUse l_stencil) 
                                     l_stmts
+                       PAllCondTileOptPointerOverlap -> 
+                                getFromStmts getIter PRead
+                                    (transArrayMap $ sArrayInUse l_stencil) 
+                                    l_stmts 
            l_revIters = transIterN 0 l_iters
        in  l_revIters
 
@@ -559,11 +563,15 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
             PAllCondTileCPointerOverlap ->
                 pSplitAllCondTileOverlapScope
                   ("CPointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
-                  (pShowAllCondTileOverlapKernels pShowAllCondTileOverlapCPointerSingleKernel)
+                  (pShowAllCondTileOverlapKernels pShowCPointerStmt)
             PAllCondTilePointerOverlap ->
                 pSplitAllCondTileOverlapScope
                   ("Pointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
-                  (pShowAllCondTileOverlapKernels pShowAllCondTileOverlapPointerSingleKernel)
+                  (pShowAllCondTileOverlapKernels (pShowPointerStmt True))
+            PAllCondTileOptPointerOverlap ->
+                pSplitAllCondTileOverlapScope
+                  ("Opt_Pointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
+                  (pShowAllCondTileOverlapKernels pShowOptPointerStmt)
 
     -- for mode  : -all-cond-tile-macro-overlap
     -- for modes : -all-cond-tile-c-pointer-overlap -all-cond-tile-pointer-overlap

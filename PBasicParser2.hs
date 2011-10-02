@@ -70,6 +70,7 @@ ppStencil1 l_id l_state =
                       if l_mode == PAllCondTileMacroOverlap
                             || l_mode == PAllCondTileCPointerOverlap
                             || l_mode == PAllCondTilePointerOverlap
+                            || l_mode == PAllCondTileOptPointerOverlap
                          then do let l_overlapKernels =
                                        pGetAllCondTileOverlapKernels l_mode l_stencil
                                            (sRegTileKernel l_stencil)

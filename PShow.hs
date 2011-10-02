@@ -539,9 +539,7 @@ pShowSingleCPointerKernel l_cond l_t l_resid l_unroll l_kL@(l_kernel:l_kernels) 
     in  breakline ++ l_guard_head ++
         breakline ++ "{" ++
         breakline ++ pShowRawForHeader (tail $ kfParams l_kernel) ++
-        breakline ++ pShowRefMacro (kfParams l_kernel) l_arrayInUse ++
         breakline ++ pShowCPointerStmt l_kernel ++ breakline ++ 
-        breakline ++ pShowRefUnMacro l_arrayInUse ++
         pShowObaseForTail l_rank ++
         pAdjustTrape l_rank ++ breakline ++ l_adjust_T ++
         breakline ++ "}" ++ 
@@ -773,27 +771,15 @@ pShowAllCondTileMacroOverlapKernels l_bound l_mode l_name l_stencil l_pShape l_t
         breakline ++ l_tail ++
         breakline ++ l_undefMacro ++ breakline
 
-pShowAllCondTileOverlapPointerSerialKernel :: String -> [PKernelFunc] -> String
-pShowAllCondTileOverlapPointerSerialKernel _ [] = ""
-pShowAllCondTileOverlapPointerSerialKernel l_t l_kL@(k:ks) =
-    breakline ++ pShowPointerStmt True k ++
-    breakline ++ pShowAllCondTileOverlapPointerSerialKernel l_t ks
+pShowAllCondTileOverlapSerialKernel :: (PKernelFunc -> String) -> [PKernelFunc] -> String
+pShowAllCondTileOverlapSerialKernel _ [] = ""
+pShowAllCondTileOverlapSerialKernel l_showSingleKernel l_kL@(k:ks) =
+    breakline ++ l_showSingleKernel k ++
+    breakline ++ pShowAllCondTileOverlapSerialKernel l_showSingleKernel ks
 
-pShowAllCondTileOverlapCPointerSerialKernel :: String -> [PKernelFunc] -> String
-pShowAllCondTileOverlapCPointerSerialKernel _ [] = ""
-pShowAllCondTileOverlapCPointerSerialKernel l_t l_kL@(k:ks) =
-    let l_spatial_params = tail $ kfParams k
-        l_params = [l_t] ++ l_spatial_params
-        l_iter = kfIter k
-        l_arrayInUse = unionArrayIter l_iter
-    in  breakline ++ pShowRefMacro l_params l_arrayInUse ++
-        breakline ++ pShowCPointerStmt k ++
-        breakline ++ pShowRefUnMacro l_arrayInUse ++
-        breakline ++ pShowAllCondTileOverlapCPointerSerialKernel l_t ks
-
-pShowAllCondTileOverlapPointerInclusiveKernel :: TileOp -> String -> [PKernelFunc] -> String
-pShowAllCondTileOverlapPointerInclusiveKernel _ _ [] = ""
-pShowAllCondTileOverlapPointerInclusiveKernel l_tile_op l_t l_kL@(k:ks) =
+pShowAllCondTileOverlapInclusiveKernel :: (PKernelFunc -> String) -> TileOp -> String -> [PKernelFunc] -> String
+pShowAllCondTileOverlapInclusiveKernel _ _ _ [] = ""
+pShowAllCondTileOverlapInclusiveKernel l_showSingleKernel l_tile_op l_t l_kL@(k:ks) =
     let l_spatial_params = tail $ kfParams k
         l_params = [l_t] ++ l_spatial_params
         l_iter = kfIter k
@@ -804,60 +790,29 @@ pShowAllCondTileOverlapPointerInclusiveKernel l_tile_op l_t l_kL@(k:ks) =
                     then "} else "
                     else "}"
     in  (breakline ++ "if (" ++ g ++ ") {" ++
-         breakline ++ pShowPointerStmt True k ++
+         breakline ++ l_showSingleKernel k ++
          breakline ++ l_tail ++
-         breakline ++ pShowAllCondTileOverlapPointerInclusiveKernel l_tile_op l_t ks)
+         breakline ++ pShowAllCondTileOverlapInclusiveKernel l_showSingleKernel l_tile_op l_t ks)
 
-pShowAllCondTileOverlapCPointerInclusiveKernel :: TileOp -> String -> [PKernelFunc] -> String
-pShowAllCondTileOverlapCPointerInclusiveKernel _ _ [] = ""
-pShowAllCondTileOverlapCPointerInclusiveKernel l_tile_op l_t l_kL@(k:ks) =
-    let l_spatial_params = tail $ kfParams k
-        l_params = [l_t] ++ l_spatial_params
-        l_iter = kfIter k
-        l_arrayInUse = unionArrayIter l_iter
-        g = ("__" ++ (gfName $ kfGuardFunc k) ++ "__") ++ " ( " ++
-            l_t ++ ", " ++ intercalate ", " l_spatial_params ++ " ) "
-        l_tail = if (l_tile_op == PEXCLUSIVE && length ks > 0)
-                    then "} else "
-                    else "}"
-    in  (breakline ++ "if (" ++ g ++ ") {" ++
-         breakline ++ pShowRefMacro l_params l_arrayInUse ++
-         breakline ++ pShowCPointerStmt k ++
-         breakline ++ pShowRefUnMacro l_arrayInUse ++
-         breakline ++ l_tail ++
-         breakline ++ pShowAllCondTileOverlapCPointerInclusiveKernel l_tile_op l_t ks)
-
-pShowAllCondTileOverlapPointerSingleKernel :: String -> [[PKernelFunc]] -> String
-pShowAllCondTileOverlapPointerSingleKernel _ [] = ""
-pShowAllCondTileOverlapPointerSingleKernel l_t l_kfss@(k:ks) =
+pShowAllCondTileOverlapSingleKernel :: (PKernelFunc -> String) -> String -> [[PKernelFunc]] -> String
+pShowAllCondTileOverlapSingleKernel _ _ [] = ""
+pShowAllCondTileOverlapSingleKernel l_showSingleKernel l_t l_kfss@(k:ks) =
     case (kfTileOp . head) k of
         PSERIAL -> 
-            pShowAllCondTileOverlapPointerSerialKernel l_t k ++
-            pShowAllCondTileOverlapPointerSingleKernel l_t ks
+            pShowAllCondTileOverlapSerialKernel l_showSingleKernel k ++
+            pShowAllCondTileOverlapSingleKernel l_showSingleKernel l_t ks
         PEXCLUSIVE ->
-            pShowAllCondTileOverlapPointerInclusiveKernel PEXCLUSIVE l_t k ++
-            pShowAllCondTileOverlapPointerSingleKernel l_t ks
+            pShowAllCondTileOverlapInclusiveKernel 
+                    l_showSingleKernel PEXCLUSIVE l_t k ++
+            pShowAllCondTileOverlapSingleKernel l_showSingleKernel l_t ks
         PINCLUSIVE -> 
-            pShowAllCondTileOverlapPointerInclusiveKernel PINCLUSIVE l_t k ++
-            pShowAllCondTileOverlapPointerSingleKernel l_t ks
+            pShowAllCondTileOverlapInclusiveKernel 
+                    l_showSingleKernel PINCLUSIVE l_t k ++
+            pShowAllCondTileOverlapSingleKernel l_showSingleKernel l_t ks
 
-pShowAllCondTileOverlapCPointerSingleKernel :: String -> [[PKernelFunc]] -> String
-pShowAllCondTileOverlapCPointerSingleKernel _ [] = ""
-pShowAllCondTileOverlapCPointerSingleKernel l_t l_kfss@(k:ks) =
-    case (kfTileOp . head) k of
-        PSERIAL -> 
-            pShowAllCondTileOverlapCPointerSerialKernel l_t k ++
-            pShowAllCondTileOverlapCPointerSingleKernel l_t ks
-        PEXCLUSIVE ->
-            pShowAllCondTileOverlapCPointerInclusiveKernel PEXCLUSIVE l_t k ++
-            pShowAllCondTileOverlapCPointerSingleKernel l_t ks
-        PINCLUSIVE -> 
-            pShowAllCondTileOverlapCPointerInclusiveKernel PINCLUSIVE l_t k ++
-            pShowAllCondTileOverlapCPointerSingleKernel l_t ks
-
-pShowAllCondTileOverlapKernelLoops :: (String -> [[PKernelFunc]] -> String) -> String -> [[Int]] -> [[PKernelFunc]] -> String
+pShowAllCondTileOverlapKernelLoops :: (PKernelFunc -> String) -> String -> [[Int]] -> [[PKernelFunc]] -> String
 pShowAllCondTileOverlapKernelLoops _ _ [] _ = ""
-pShowAllCondTileOverlapKernelLoops l_showAllCondTileOverlapSingleKernel l_t l_tile_indices@(t:ts) l_kL@(k:ks) =
+pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_t l_tile_indices@(t:ts) l_kL@(k:ks) =
     let l_spatial_params = tail $ kfParams $ head k
         l_rank = length l_spatial_params
         l_params = [l_t] ++ l_spatial_params
@@ -867,14 +822,14 @@ pShowAllCondTileOverlapKernelLoops l_showAllCondTileOverlapSingleKernel l_t l_ti
                                                 (shapeTimeShift $ kfShape $ head k)
         l_guard_tail = pShowUnrollGuardTail $ length ts
         k' = groupBy eqTileOpPKernelFunc k
-        l_kernels = l_showAllCondTileOverlapSingleKernel l_t k'
+        l_kernels = pShowAllCondTileOverlapSingleKernel l_showSingleKernel l_t k'
     in  breakline ++ l_guard_head ++
         breakline ++ l_kernels ++
         breakline ++ l_guard_tail ++
-        pShowAllCondTileOverlapKernelLoops l_showAllCondTileOverlapSingleKernel l_t ts ks
+        pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_t ts ks
 
-pShowAllCondTileOverlapKernels :: (String -> [[PKernelFunc]] -> String) -> PMode -> String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String
-pShowAllCondTileOverlapKernels l_showAllCondTileOverlapSingleKernel l_mode l_name l_stencil l_pShape l_tile_indices l_kfss@(k:ks) =
+pShowAllCondTileOverlapKernels :: (PKernelFunc -> String) -> PMode -> String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String
+pShowAllCondTileOverlapKernels l_showSingleKernel l_mode l_name l_stencil l_pShape l_tile_indices l_kfss@(k:ks) =
     let l_t = "t"
         l_t_begin = l_t ++ "0"
         l_t_end = l_t ++ "1"
@@ -902,14 +857,20 @@ pShowAllCondTileOverlapKernels l_showAllCondTileOverlapSingleKernel l_mode l_nam
                             pShowPointers l_iter ++ breakline ++
                             pShowPointerSet l_iter l_params ++ breakline ++
                             pShowPointerForHeader l_rank True l_iter l_spatial_params
+                PAllCondTileOptPointerOverlap ->
+                            pShowPointers l_iter ++ breakline ++
+                            pShowOptPointerSet l_iter l_params ++ breakline ++
+                            pShowPointerForHeader l_rank True l_iter l_spatial_params
         l_spatial_loop_tail = 
             case l_mode of
                 PAllCondTileCPointerOverlap ->
                             pShowMetaGridTail l_spatial_params
                 PAllCondTilePointerOverlap -> 
                             pShowObaseForTail l_rank
+                PAllCondTileOptPointerOverlap ->
+                            pShowObaseForTail l_rank
         l_unfold_kernels = 
-            pShowAllCondTileOverlapKernelLoops l_showAllCondTileOverlapSingleKernel 
+            pShowAllCondTileOverlapKernelLoops l_showSingleKernel 
                 l_t l_tile_indices l_kfss
     in  breakline ++ l_header ++
         breakline ++ "Grid_Info <" ++ show l_rank ++ "> l_grid = grid;" ++
@@ -1003,9 +964,7 @@ pShowUnrollTimeTileSingleCPointerKernel l_t l_tile_indices l_kL@(l_kf:l_kfs) =
                             (tail l_dim_sizes) (tail l_tile_index)
         l_guard_tail = pShowUnrollGuardTail $ length l_kfs
     in  breakline ++ l_guard_head ++ 
-        breakline ++ pShowRefMacro l_params l_arrayInUse ++
         breakline ++ pShowCPointerStmt l_kf ++ 
-        breakline ++ pShowRefUnMacro l_arrayInUse ++
         breakline ++ l_guard_tail ++
         pShowUnrollTimeTileSingleCPointerKernel l_t (tail l_tile_indices) l_kfs 
 
@@ -1175,9 +1134,7 @@ pShowAllCondTileSingleCPointerKernel l_t l_tile_indices l_kL@(l_kf:l_kfs) =
                                     (shapeTimeShift $ kfShape l_kf)
         l_guard_tail = pShowUnrollGuardTail $ length l_kfs 
     in  breakline ++ l_guard_head ++
-        breakline ++ pShowRefMacro l_params l_arrayInUse ++
         breakline ++ pShowCPointerStmt l_kf ++ 
-        breakline ++ pShowRefUnMacro l_arrayInUse ++
         breakline ++ l_guard_tail ++
         pShowAllCondTileSingleCPointerKernel l_t (tail l_tile_indices) l_kfs
 
@@ -1726,10 +1683,15 @@ pShowEndIndex l_rank l_end l_array =
 
 pShowCPointerStmt :: PKernelFunc -> String
 pShowCPointerStmt l_kernel = 
-    let oldStmts = kfStmt l_kernel
+    let l_params = kfParams l_kernel
+        l_spatial_params = tail l_params
         l_iter = kfIter l_kernel
+        l_arrayInUse = unionArrayIter l_iter
+        oldStmts = kfStmt l_kernel
         obaseStmts = transStmts oldStmts $ transCPointer l_iter
-    in show obaseStmts
+    in  breakline ++ pShowRefMacro l_params l_arrayInUse ++
+        breakline ++ show obaseStmts ++
+        breakline ++ pShowRefUnMacro l_arrayInUse
 
 transCPointer :: [Iter] -> Expr -> Expr
 transCPointer l_iters (PVAR q v dL) =
