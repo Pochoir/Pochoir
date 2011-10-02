@@ -300,14 +300,14 @@ pGetAllIGuardTiles l_rank l_condStr l_iGTs@(i:is) l_tiles =
 pInvertIdxN :: Int -> Int -> [String ]
 pInvertIdxN l_xIdx l_xLen =
     let l_condStr = if l_xIdx < l_xLen 
-                       then replicate l_xIdx "" ++ ["!"] ++ replicate (l_xLen - l_xIdx - 1) ""
+                       then replicate l_xIdx "!" ++ [""] ++ replicate (l_xLen - l_xIdx - 1) "!"
                        else []
     in  l_condStr
 
 pGetExclusiveGuardTiles :: PMode -> Int -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
 pGetExclusiveGuardTiles l_mode l_rank [] l_iGTs l_tiGTs = []
 pGetExclusiveGuardTiles l_mode l_rank l_xGTs l_iGTs l_tiGTs =
-    let l_condStr = map ((++) "!" . gName . fst) l_xGTs 
+    let l_condStr = map ((++) "!" . gName . fst) l_xGTs ++ map ((++) "!" . gName . fst) l_tiGTs 
         l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr l_iGTs []
         l_xLen = length l_xGTs
     in  l_pGuardTiles ++ pGetExclusiveGuardTilesTerm l_mode l_rank 0 l_xLen l_xGTs l_iGTs l_tiGTs
