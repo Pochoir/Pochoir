@@ -51,7 +51,7 @@ data PType = PType {
     basicType :: PBasicType,
     typeName :: String
 } deriving Eq
-data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro | PAllCondTileCPointer | PAllCondTilePointer | PAllCondTileOptPointer | PUnrollTimeTileMacro | PUnrollTimeTileCPointer | PUnrollTimeTilePointer | PUnrollTimeTileOptPointer | PAllCondTileMacroOverlap deriving Eq
+data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro | PAllCondTileCPointer | PAllCondTilePointer | PAllCondTileOptPointer | PUnrollTimeTileMacro | PUnrollTimeTileCPointer | PUnrollTimeTilePointer | PUnrollTimeTileOptPointer | PAllCondTileMacroOverlap | PAllCondTileCPointerOverlap | PAllCondTilePointerOverlap deriving Eq
 data TileOp = PNOP | PSERIAL | PEXCLUSIVE | PINCLUSIVE deriving (Eq, Show)
 
 data PMacro = PMacro {
@@ -296,6 +296,8 @@ instance Show PMode where
     show PUnrollTimeTilePointer = "-unroll-t-tile-pointer"
     show PUnrollTimeTileOptPointer = "-unroll-t-tile-opt-pointer"
     show PAllCondTileMacroOverlap = "-all-cond-tile-macro-overlap"
+    show PAllCondTileCPointerOverlap = "-all-cond-tile-c-pointer-overlap"
+    show PAllCondTilePointerOverlap = "-all-cond-tile-pointer-overlap"
 
 instance Show PType where
     show ptype = typeName ptype
