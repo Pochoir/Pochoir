@@ -499,20 +499,20 @@ pShowRegTileKernel l_mode l_stencil (l_guard, l_tile) =
     in  case l_mode of
              PAllCondTileMacro -> 
                  pSplitAllCondTileScope 
-                   ("Macro_", l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
-                   (pShowAllCondTileMacroKernels False)
+                   ("Macro", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
+                   (pShowMacroStmt False)
              PAllCondTileCPointer ->
-                 pSplitAllCondTileKernel 
-                   ("C_Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
-                   pShowAllCondTileSingleCPointerKernel
+                 pSplitAllCondTileScope 
+                   ("CPointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
+                   pShowCPointerStmt
              PAllCondTilePointer ->
-                 pSplitAllCondTileKernel 
-                   ("Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
-                   pShowAllCondTileSinglePointerKernel
+                 pSplitAllCondTileScope 
+                   ("Pointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
+                   (pShowPointerStmt True)
              PAllCondTileOptPointer ->
-                 pSplitAllCondTileKernel 
-                   ("Opt_Pointer_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
-                   pShowAllCondTileSingleOptPointerKernel
+                 pSplitAllCondTileScope 
+                   ("Opt_Pointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil) 
+                   pShowOptPointerStmt
              PUnrollTimeTileMacro ->
                  pSplitUnrollTimeTileScope
                    ("Macro_", l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_group_by_t, l_rev_kernel_funcs_group_by_t, l_stencil) 
@@ -577,18 +577,12 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
     -- for modes : -all-cond-tile-c-pointer-overlap -all-cond-tile-pointer-overlap
     --             -all-cond-tile-opt-pointer-overlap
 pSplitAllCondTileOverlapScope :: (String, PMode, PName, PName, Int, [[Int]], [[PKernelFunc]], PStencil, String) -> (PKernelFunc -> String) -> String
-pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfss, l_stencil, l_comments) l_showAllCondTileOverlapSingleKernel =
+pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfss, l_stencil, l_comments) l_showSingleKernel =
     let oldKernelName = intercalate "_" $ map kfName $ concat l_kfss
         bdryKernelName = l_tag ++ "_boundary_" ++ oldKernelName
         obaseKernelName = l_tag ++ "_interior_" ++ oldKernelName
         regBound = sRegBound l_stencil
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape $ concat l_kfss)
-{-
-        bdryKernel = if regBound
-                        then pShowAllCondTileMacroOverlapKernels True l_mode 
-                                bdryKernelName l_stencil l_pShape l_tile_indices l_kfss
-                        else ""
- -}
         bdryKernel = if regBound
                         then pShowAllCondTileOverlapKernels (pShowMacroStmt True) 
                                 regBound PAllCondTileMacroOverlap 
@@ -598,7 +592,7 @@ pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_til
         -- usually, the l_showAllCondTileOverlapKernel is just
         -- (pShowAllCondTileMacroOverlapKernels False)
         obaseKernel = pShowAllCondTileOverlapKernels 
-                        l_showAllCondTileOverlapSingleKernel 
+                        l_showSingleKernel 
                         False l_mode obaseKernelName l_stencil l_pShape 
                         l_tile_indices l_kfss
         runKernel = if regBound
@@ -682,9 +676,12 @@ pSplitUnrollTimeTileKernel (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_i
                         else ""
         bdryKernel = pShowUnrollTimeTileMacroKernels True bdryKernelName 
                                 l_stencil l_tile_indices_group_by_t l_kfs_group_by_t
+{-
         cond_obaseKernel = pShowAllCondTileKernels l_mode cond_obaseKernelName 
                                 l_stencil l_tile_indices l_kfs 
                                 l_showAllCondTileSingleKernel
+ -}
+        cond_obaseKernel = ""
         obaseKernel = pShowUnrollTimeTileKernels l_mode obaseKernelName 
                                 l_stencil l_tile_indices_group_by_t l_kfs_group_by_t
                                 l_showUnrollTimeTileSingleKernel
@@ -699,48 +696,28 @@ pSplitUnrollTimeTileKernel (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_i
          l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++ ", " ++ 
          show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
--- For modes : -split-macro-shadow, -split-caching
-pSplitAllCondTileScope :: (String, String, String, Int, [[Int]], [PKernelFunc], PStencil) -> (String -> PStencil -> [[Int]] -> [PKernelFunc] -> String) -> String
-pSplitAllCondTileScope (l_tag, l_id, l_guardName, l_unroll, l_tile_indices, l_kfs, l_stencil) l_showAllCondTileSingleKernel = 
-    let oldKernelName = intercalate "_" $ map kfName l_kfs
-        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
-        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
-        regBound = sRegBound l_stencil
-        bdryKernel = if regBound 
-                        then pShowAllCondTileMacroKernels True bdryKernelName 
-                                l_stencil l_tile_indices l_kfs 
-                        else ""
-        -- usually, the l_showAllCondTileSingleKernel is just
-        -- (pShowAllCondTileMacroKernels False)
-        obaseKernel = l_showAllCondTileSingleKernel obaseKernelName 
-                            l_stencil l_tile_indices l_kfs
-        runKernel = if regBound 
-                       then obaseKernelName ++ ", " ++ bdryKernelName
-                       else obaseKernelName
-        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kfs)
-    in (breakline ++ show l_pShape ++
-        bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
-        l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++ ", " ++ 
-        show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
-
 -- For modes : -split-pointer -split-opt-pointer -split-c-pointer
-pSplitAllCondTileKernel :: (String, PMode, String, String, Int, [[Int]], [PKernelFunc], PStencil) -> (String -> [[Int]] -> [PKernelFunc] -> String) -> String
-pSplitAllCondTileKernel (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfs, l_stencil) l_showAllCondTileSingleKernel = 
+pSplitAllCondTileScope :: (String, PMode, String, String, Int, [[Int]], [PKernelFunc], PStencil) -> (PKernelFunc -> String) -> String
+pSplitAllCondTileScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfs, l_stencil) l_showSingleKernel = 
     let oldKernelName = intercalate "_" $ map kfName l_kfs
-        bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
-        obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
+        bdryKernelName = l_tag ++ "_boundary_" ++ oldKernelName
+        obaseKernelName = l_tag ++ "_interior_" ++ oldKernelName
         regBound = sRegBound l_stencil
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape $ map kfShape l_kfs
         bdryKernel = if regBound 
-                        then pShowAllCondTileMacroKernels True bdryKernelName 
-                                l_stencil l_tile_indices l_kfs
+                        then pShowAllCondTileKernels 
+                                (pShowMacroStmt True)
+                                regBound PAllCondTileMacro 
+                                bdryKernelName l_stencil l_pShape
+                                l_tile_indices l_kfs
                         else ""
-        obaseKernel = pShowAllCondTileKernels l_mode obaseKernelName 
-                           l_stencil l_tile_indices l_kfs 
-                           l_showAllCondTileSingleKernel
+        obaseKernel = pShowAllCondTileKernels 
+                           l_showSingleKernel 
+                           False l_mode obaseKernelName l_stencil l_pShape
+                           l_tile_indices l_kfs 
         runKernel = if regBound 
                        then obaseKernelName ++ ", " ++ bdryKernelName
                        else obaseKernelName
-        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kfs)
     in  (breakline ++ show l_pShape ++
          bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
          l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++ ", " ++ 

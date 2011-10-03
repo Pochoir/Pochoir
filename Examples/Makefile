@@ -4,7 +4,7 @@ ICC = icpc
 # it seems that '-ipo' '-O1' optimization flag will cause unexpected segmentation fault
 # sometimes.
 # OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
-OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
+OPT_FLAGS = -O1 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
 # POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -debug -Wall -Werror -std=c++0x -I/opt/intel/composerxe-2011.2.137/compiler/include/cilk/ -include cilk_stub.h
 ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I/opt/intel/composer_xe_2011_sp1.6.023/compiler/include/cilk/ -include cilk_stub.h
@@ -96,7 +96,7 @@ diamond_2 : tb_diamond_2.cpp # tb_diamond_2_pochoir.cpp
 
 tile_2D : tb_tile_2D.cpp # tb_tile_2D_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o tile_2D ${OPT_FLAGS} -all-cond-tile-macro tb_tile_2D.cpp
+	${CC} -o tile_2D ${OPT_FLAGS} -all-cond-tile-opt-pointer tb_tile_2D.cpp
 	${ICC} -o tile_2D_gdb ${ICC_DEBUG_FLAGS} tb_tile_2D_pochoir.cpp
 #	${CC} -o tile_2D ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_tile_2D.cpp
 #	${ICC} -o tile_2D ${OPT_FLAGS} tb_tile_2D_pochoir.cpp
@@ -114,9 +114,9 @@ overlap_2D : tb_overlap_2D.cpp # tb_overlap_2D_pochoir.cpp
 #	${CC} -o overlap_2D ${POCHOIR_DEBUG_FLAGS} tb_overlap_2D.cpp 
 #	${ICC} -o overlap_2D ${OPT_FLAGS} tb_overlap_2D.cpp 
 
-tile_3D : tb_tile_3D.cpp tb_tile_3D_pochoir.cpp 
+tile_3D : tb_tile_3D.cpp # tb_tile_3D_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o tile_3D ${OPT_FLAGS} -unroll-t-tile-pointer tb_tile_3D.cpp
+	${CC} -o tile_3D ${OPT_FLAGS} -all-cond-tile-pointer tb_tile_3D.cpp
 	${ICC} -o tile_3D_gdb ${ICC_DEBUG_FLAGS} tb_tile_3D_pochoir.cpp
 #	${CC} -o tile_3D ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_tile_3D.cpp
 #	${ICC} -o tile_3D ${OPT_FLAGS} tb_tile_3D_pochoir.cpp

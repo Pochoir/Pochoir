@@ -181,7 +181,7 @@ int main(int argc, char * argv[])
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
-            cilk_for (int i = 0; i < N; ++i) {
+            for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 0) {
                 /* k0 */
