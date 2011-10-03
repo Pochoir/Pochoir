@@ -828,8 +828,8 @@ pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_t l_tile_indices@(t:ts) 
         breakline ++ l_guard_tail ++
         pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_t ts ks
 
-pShowAllCondTileOverlapKernels :: (PKernelFunc -> String) -> PMode -> String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String
-pShowAllCondTileOverlapKernels l_showSingleKernel l_mode l_name l_stencil l_pShape l_tile_indices l_kfss@(k:ks) =
+pShowAllCondTileOverlapKernels :: (PKernelFunc -> String) -> Bool -> PMode -> String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String
+pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pShape l_tile_indices l_kfss@(k:ks) =
     let l_t = "t"
         l_t_begin = l_t ++ "0"
         l_t_end = l_t ++ "1"
@@ -843,6 +843,8 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_mode l_name l_stencil l_pSha
         l_params = (kfParams . head . head) l_kfss
         l_spatial_params = tail l_params
         l_kernelFuncName = pSys l_name
+        l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> l_phys_grid = " ++
+                            sName l_stencil ++ ".get_phys_grid();"
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++
                    " = [&] (int " ++ l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
                    " Grid_Info <" ++ show l_rank ++ "> const & grid) {"
@@ -851,6 +853,8 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_mode l_name l_stencil l_pSha
                  shapeName l_pShape ++ " );"
         l_spatial_loop_header = 
             case l_mode of
+                PAllCondTileMacroOverlap ->
+                            pShowMetaGridHeader l_bound l_spatial_params
                 PAllCondTileCPointerOverlap -> 
                             pShowMetaGridHeader False l_spatial_params
                 PAllCondTilePointerOverlap ->
@@ -863,6 +867,8 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_mode l_name l_stencil l_pSha
                             pShowPointerForHeader l_rank True l_iter l_spatial_params
         l_spatial_loop_tail = 
             case l_mode of
+                PAllCondTileMacroOverlap ->
+                            pShowMetaGridTail l_spatial_params
                 PAllCondTileCPointerOverlap ->
                             pShowMetaGridTail l_spatial_params
                 PAllCondTilePointerOverlap -> 
@@ -872,17 +878,21 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_mode l_name l_stencil l_pSha
         l_unfold_kernels = 
             pShowAllCondTileOverlapKernelLoops l_showSingleKernel 
                 l_t l_tile_indices l_kfss
-    in  breakline ++ l_header ++
+        l_def_mod_lu = if l_bound then breakline ++ pDefPMODLU else ""
+        l_undef_mod_lu = if l_bound then breakline ++ pUndefPMODLU else ""
+    in  l_def_mod_lu ++
+        breakline ++ l_header ++
         breakline ++ "Grid_Info <" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++
         breakline ++ pShowRankAttr l_rank "stride" l_arrayInUse ++
+        breakline ++ l_showPhysGrid ++
         breakline ++ pShowTimeLoopHeader l_t l_t_begin l_t_end ++
         breakline ++ l_spatial_loop_header ++
         l_unfold_kernels ++
         breakline ++ l_spatial_loop_tail ++
         breakline ++ pAdjustTrape l_rank ++
         breakline ++ pShowTimeLoopTail ++
-        breakline ++ l_tail ++ breakline
+        breakline ++ l_tail ++ l_undef_mod_lu ++ breakline
 
 pShowDefaultTileString :: PMode -> PStencil -> PGuard -> String
 pShowDefaultTileString l_mode l_stencil l_guard = "" 
@@ -1680,6 +1690,19 @@ pShowEndIndex l_rank l_end l_array =
         l_rr1s = zipWith (pIns " : ") l_rr0s l_r2s
         l_rights = map (flip (++) ";") l_rr1s
     in  intercalate breakline $ zipWith (pIns " = ") l_lefts l_rights
+
+pShowMacroStmt :: Bool -> PKernelFunc -> String
+pShowMacroStmt l_bound l_kernel =
+    let l_params = kfParams l_kernel
+        l_iter = kfIter l_kernel
+        l_arrayInUse = unionArrayIter l_iter
+        l_def_macro = if l_bound 
+                         then pDefMacroArrayInUse "boundary" l_arrayInUse l_params 
+                         else pDefMacroArrayInUse "interior" l_arrayInUse l_params
+        l_undef_macro = pUndefMacroArrayInUse l_arrayInUse l_params
+    in  breakline ++ l_def_macro ++
+        breakline ++ (show . kfStmt) l_kernel ++
+        breakline ++ l_undef_macro
 
 pShowCPointerStmt :: PKernelFunc -> String
 pShowCPointerStmt l_kernel = 

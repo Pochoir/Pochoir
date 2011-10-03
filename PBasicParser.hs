@@ -559,38 +559,48 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
             PAllCondTileMacroOverlap ->
                 pSplitAllCondTileOverlapScope
                   ("Macro", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
-                  (pShowAllCondTileMacroOverlapKernels False)
+                  (pShowMacroStmt False)
             PAllCondTileCPointerOverlap ->
                 pSplitAllCondTileOverlapScope
                   ("CPointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
-                  (pShowAllCondTileOverlapKernels pShowCPointerStmt)
+                  pShowCPointerStmt
             PAllCondTilePointerOverlap ->
                 pSplitAllCondTileOverlapScope
                   ("Pointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
-                  (pShowAllCondTileOverlapKernels (pShowPointerStmt True))
+                  (pShowPointerStmt True)
             PAllCondTileOptPointerOverlap ->
                 pSplitAllCondTileOverlapScope
                   ("Opt_Pointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
-                  (pShowAllCondTileOverlapKernels pShowOptPointerStmt)
+                  pShowOptPointerStmt
 
     -- for mode  : -all-cond-tile-macro-overlap
     -- for modes : -all-cond-tile-c-pointer-overlap -all-cond-tile-pointer-overlap
     --             -all-cond-tile-opt-pointer-overlap
-pSplitAllCondTileOverlapScope :: (String, PMode, PName, PName, Int, [[Int]], [[PKernelFunc]], PStencil, String) -> (PMode -> String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String) -> String
-pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfss, l_stencil, l_comments) l_showAllCondTileOverlapKernel =
+pSplitAllCondTileOverlapScope :: (String, PMode, PName, PName, Int, [[Int]], [[PKernelFunc]], PStencil, String) -> (PKernelFunc -> String) -> String
+pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfss, l_stencil, l_comments) l_showAllCondTileOverlapSingleKernel =
     let oldKernelName = intercalate "_" $ map kfName $ concat l_kfss
         bdryKernelName = l_tag ++ "_boundary_" ++ oldKernelName
         obaseKernelName = l_tag ++ "_interior_" ++ oldKernelName
         regBound = sRegBound l_stencil
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape $ concat l_kfss)
+{-
         bdryKernel = if regBound
                         then pShowAllCondTileMacroOverlapKernels True l_mode 
                                 bdryKernelName l_stencil l_pShape l_tile_indices l_kfss
                         else ""
+ -}
+        bdryKernel = if regBound
+                        then pShowAllCondTileOverlapKernels (pShowMacroStmt True) 
+                                regBound PAllCondTileMacroOverlap 
+                                bdryKernelName l_stencil l_pShape 
+                                l_tile_indices l_kfss
+                        else ""
         -- usually, the l_showAllCondTileOverlapKernel is just
         -- (pShowAllCondTileMacroOverlapKernels False)
-        obaseKernel = l_showAllCondTileOverlapKernel l_mode obaseKernelName
-                        l_stencil l_pShape l_tile_indices l_kfss
+        obaseKernel = pShowAllCondTileOverlapKernels 
+                        l_showAllCondTileOverlapSingleKernel 
+                        False l_mode obaseKernelName l_stencil l_pShape 
+                        l_tile_indices l_kfss
         runKernel = if regBound
                        then obaseKernelName ++ ", " ++ bdryKernelName
                        else obaseKernelName

@@ -178,6 +178,9 @@ ppStencil1 l_id l_state =
                            || l_mode == PAllCondTilePointer
                            || l_mode == PAllCondTileOptPointer
                            || l_mode == PAllCondTileMacroOverlap
+                           || l_mode == PAllCondTileCPointerOverlap
+                           || l_mode == PAllCondTilePointerOverlap
+                           || l_mode == PAllCondTileOptPointerOverlap
                          then return (breakline ++ l_id ++ 
                                       ".Run_Obase_Merge(" ++ 
                                       show l_tstep ++ 
