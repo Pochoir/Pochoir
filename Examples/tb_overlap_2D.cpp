@@ -197,31 +197,31 @@ int main(int argc, char * argv[])
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
             for (int i = 0; i < N; ++i) {
-                if (g_exclusive_0(t, i)) {
+                if (g_exclusive_0(t-1, i)) {
                     /* k_exclusive_0 */
 //                    printf("<k_exclusive_0> : b(%d, %d)\n", t, i);
                     b(t, i) = 0.11 * b(t-1, i-1) + 0.15 * b(t-1, i) + 0.185 * b(t-1, i+1) + 0.8;
-                } else if (g_exclusive_1(t, i)) {
+                } else if (g_exclusive_1(t-1, i)) {
                     /* k_exclusive_1 */
 //                    printf("<k_exclusive_1> : b(%d, %d)\n", t, i);
                     b(t, i) = 0.21 * b(t-1, i-1) + 0.25 * b(t-1, i) + 0.285 * b(t-1, i+1) + 0.8;
                 }
-                if (g_inclusive_0(t, i)) {
+                if (g_inclusive_0(t-1, i)) {
                     /* k_inclusive_0 */
 //                    printf("<k_inclusive_0> : b(%d, %d)\n", t, i);
                     b(t, i) = 0.31 * b(t-1, i-1) - 0.35 * b(t-1, i) + 0.385 * b(t-1, i+1) - 0.8;
                 }
-                if (g_inclusive_1(t, i)) {
+                if (g_inclusive_1(t-1, i)) {
                     /* k_inclusive_1 */
 //                    printf("<k_inclusive_1> : b(%d, %d)\n", t, i);
                     b(t, i) = 0.41 * b(t-1, i-1) - 0.45 * b(t-1, i) + 0.485 * b(t-1, i+1) - 0.8;
                 }
-                if (g_tiny_inclusive_0(t, i)) {
+                if (g_tiny_inclusive_0(t-1, i)) {
                     /* k_tiny_inclusive_0 */
 //                    printf("<k_tiny_inclusive_0> : b(%d, %d)\n", t, i);
                     b(t, i) = 0.51 * b(t-1, i-1) + 0.55 * b(t-1, i) - 0.585 * b(t-1, i+1) + 0.8;
                 }
-                if (g_tiny_inclusive_1(t, i)) {
+                if (g_tiny_inclusive_1(t-1, i)) {
                     /* k_tiny_inclusive_1 */
 //                    printf("<k_tiny_inclusive_1> : b(%d, %d)\n", t, i);
                     b(t, i) = 0.61 * b(t-1, i-1) + 0.65 * b(t-1, i) - 0.685 * b(t-1, i+1) + 0.8;
