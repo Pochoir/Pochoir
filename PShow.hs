@@ -738,6 +738,8 @@ pShowAllCondTileOverlapSingleKernel l_showSingleKernel l_kfss@(k:ks) =
                     l_showSingleKernel PINCLUSIVE k ++
             pShowAllCondTileOverlapSingleKernel l_showSingleKernel ks
 
+pShowOverlapGuardTail :: Int -> String
+pShowOverlapGuardTail _ = "}"
             --bookmark
 pShowAllCondTileOverlapKernelLoops :: (PKernelFunc -> String) -> [[Int]] -> [[PKernelFunc]] -> String
 pShowAllCondTileOverlapKernelLoops _ [] _ = ""
@@ -749,7 +751,8 @@ pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kL
         l_tile_index = head l_tile_indices
         l_guard_head = pShowTileGuardHeadOnAll l_params l_dim_sizes l_tile_index
                                                 (shapeTimeShift $ kfShape $ head k)
-        l_guard_tail = pShowUnrollGuardTail $ length ts
+        -- l_guard_tail = pShowUnrollGuardTail $ length ts
+        l_guard_tail = pShowOverlapGuardTail $ length ts
         k' = pGroupBy eqTileOpPKernelFunc k
         l_kernels = pShowAllCondTileOverlapSingleKernel l_showSingleKernel k'
     in  breakline ++ l_guard_head ++
