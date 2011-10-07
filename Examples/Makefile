@@ -106,7 +106,7 @@ tile_2D : tb_tile_2D.cpp # tb_tile_2D_pochoir.cpp
 
 overlap_stagger_2D : tb_overlap_stagger_2D.cpp # tb_overlap_stagger_2D_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o overlap_stagger_2D ${OPT_FLAGS} -all-cond-tile-macro-overlap tb_overlap_stagger_2D.cpp
+	${CC} -o overlap_stagger_2D ${OPT_FLAGS} -all-cond-tile-pointer-overlap tb_overlap_stagger_2D.cpp
 	${ICC} -o overlap_stagger_2D_gdb ${ICC_DEBUG_FLAGS} tb_overlap_stagger_2D_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o overlap_stagger_2D ${POCHOIR_DEBUG_FLAGS} tb_overlap_stagger_2D.cpp 
