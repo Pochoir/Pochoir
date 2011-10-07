@@ -214,15 +214,15 @@ pShowMacroKernel l_macro l_kernel =
     in  shadowArrayInUse ++ pShowAutoKernelFunc l_name l_kernel ++ unshadowArrayInUse
 
 pShowUnrolledMacroKernels :: Bool -> PName -> [PKernelFunc] -> String
-pShowUnrolledMacroKernels l_cond l_name l_kL@(l_kernel:l_kernels)  = 
+pShowUnrolledMacroKernels l_cond l_name l_kL@(k:ks)  = 
     let -- l_iters = concatMap kfIter l_kL
-        l_iters = foldr union (kfIter $ head l_kL) (map kfIter $ tail l_kL)
+        l_iters = foldr union (kfIter k) (map kfIter ks)
         l_arrayInUse = unionArrayIter l_iters 
         l_t = "t"
         l_t_begin = l_t ++ "0"
         l_t_end = l_t ++ "1"
         -- We are assuming all kernels have the same number of input parameters
-        l_kfParams = kfParams l_kernel
+        l_kfParams = kfParams k
         l_unroll = length l_kL
         l_unfold_kernels = 
             if l_cond then pShowCondMacroKernel False l_t 0 l_unroll l_kL
@@ -738,6 +738,7 @@ pShowAllCondTileOverlapSingleKernel l_showSingleKernel l_kfss@(k:ks) =
                     l_showSingleKernel PINCLUSIVE k ++
             pShowAllCondTileOverlapSingleKernel l_showSingleKernel ks
 
+            --bookmark
 pShowAllCondTileOverlapKernelLoops :: (PKernelFunc -> String) -> [[Int]] -> [[PKernelFunc]] -> String
 pShowAllCondTileOverlapKernelLoops _ [] _ = ""
 pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kL@(k:ks) =
@@ -749,7 +750,7 @@ pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kL
         l_guard_head = pShowTileGuardHeadOnAll l_params l_dim_sizes l_tile_index
                                                 (shapeTimeShift $ kfShape $ head k)
         l_guard_tail = pShowUnrollGuardTail $ length ts
-        k' = groupBy eqTileOpPKernelFunc k
+        k' = pGroupBy eqTileOpPKernelFunc k
         l_kernels = pShowAllCondTileOverlapSingleKernel l_showSingleKernel k'
     in  breakline ++ l_guard_head ++
         breakline ++ l_kernels ++
@@ -757,6 +758,7 @@ pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kL
         pShowAllCondTileOverlapKernelLoops l_showSingleKernel ts ks
 
 pShowAllCondTileOverlapKernels :: (PKernelFunc -> String) -> Bool -> PMode -> String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String
+pShowAllCondTileOverlapKernels _ _ _ _ _ _ _ [] = ""
 pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pShape l_tile_indices l_kfss@(k:ks) =
     let l_rank = sRank l_stencil
         l_arrayInUse = sArrayInUse l_stencil
@@ -808,7 +810,11 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
                 l_tile_indices l_kfss
         l_def_mod_lu = if l_bound then pDefPMODLU else ""
         l_undef_mod_lu = if l_bound then pUndefPMODLU else ""
+        l_str_tile_indices = "/* " ++ show l_tile_indices ++ " */"
+        l_str_kernel_funcs = "/* " ++ show (map (map kfName) l_kfss) ++ " */"
     in  breakline ++ l_def_mod_lu ++
+        breakline ++ l_str_tile_indices ++
+        breakline ++ l_str_kernel_funcs ++
         breakline ++ l_header ++
         breakline ++ "Grid_Info <" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++
@@ -861,7 +867,6 @@ pShowUnrollTimeTileKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_
         breakline ++ pShowTimeLoopTail ++ 
         breakline ++ l_tail ++ breakline ++ l_undef_mod_lu ++ breakline
    
--- bookmark
 pShowUnrollTimeTileKernelOnT :: (PKernelFunc -> String) -> Bool -> PMode -> PStencil -> [[[Int]]] -> [[PKernelFunc]] -> String
 pShowUnrollTimeTileKernelOnT _ _ _ _ [] _ = ""
 pShowUnrollTimeTileKernelOnT l_showSingleKernel l_bound l_mode l_stencil l_tile_indices_group_by_t@(t:ts) l_kfs_group_by_t@(k:ks) =

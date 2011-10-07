@@ -255,6 +255,16 @@ eqTPTile a b = head a == head b
 eqIndexPKernel :: PKernel -> PKernel -> Bool
 eqIndexPKernel a b = (kIndex a) == (kIndex b)
 
+pGroupBy :: (a -> a -> Bool) -> [a] -> [[a]]
+pGroupBy b l = pGroupByTerm b l []
+
+pGroupByTerm :: (a -> a -> Bool) -> [a] -> [[a]] -> [[a]]
+pGroupByTerm b [] ass = ass
+pGroupByTerm b l@(x:xs) ass =
+    let (as1, as2) = partition (b x) l
+        ass' = ass ++ [as1]
+    in  pGroupByTerm b as2 ass'
+
 pSetTileOp :: TileOp -> PTile -> PTile
 pSetTileOp l_op pTile = pTile { tOp = l_op }
 
@@ -329,6 +339,12 @@ pGetExclusiveGuardTilesTerm l_mode l_rank l_xIdx l_xLen l_xGTs l_iGTs l_tiGTs =
 
 pGetInclusiveGuardTiles :: PMode -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
 pGetInclusiveGuardTiles _ _ _ [] = []
+pGetInclusiveGuardTiles l_mode [] l_iGTs l_tiGTs =
+    let l_tiGs = map fst l_tiGTs
+        l_iTs = map (pSetTileOp PINCLUSIVE . snd) (l_iGTs ++ l_tiGTs)
+        l_tigStr = map gName l_tiGs
+        l_pIG = PGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = gRank $ head l_tiGs, gFunc = emptyGuardFunc, gComment = l_tigStr }
+    in  [(l_pIG, l_iTs)]
 pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs =
     let l_tiGs = map fst l_tiGTs
         l_xTs = map (pSetTileOp PEXCLUSIVE . snd) l_xGTs
@@ -467,7 +483,7 @@ pGetMinIters iL@(i:is) = map (minimumBy cmpDim) $ groupIterByArray $ sortIterByA
     where cmpDim (iName, iArray, iDims, iRW) (jName, jArray, jDims, jRW) = compare iDims jDims 
 
 groupIterByArray :: [Iter] -> [[Iter]]
-groupIterByArray iL@(i:is) = groupBy eqArray iL
+groupIterByArray iL@(i:is) = pGroupBy eqArray iL
     where eqArray (iName, iArray, iDims, iRW) (jName, jArray, jDims, jRW) = aName iArray == aName jArray 
 
 sortIterByArray :: [Iter] -> [Iter]

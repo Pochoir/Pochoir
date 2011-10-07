@@ -484,13 +484,14 @@ pShowRegTileKernel l_mode l_stencil (l_guard, l_tile) =
     let l_kernels = getTileKernels l_tile
         l_unroll = pTileLength l_tile
         -- l_kernels_by_t : group the [PKernel] by the stagger on time step
-        l_kernels_by_t = groupBy eqTPKernel l_kernels
+        l_kernels_by_t = pGroupBy eqTPKernel l_kernels
         l_tile_indices = map kIndex l_kernels
         l_tile_indices_group_by_t = map (map kIndex) l_kernels_by_t
         l_kernel_funcs = map kFunc l_kernels
         l_kernel_funcs_by_t = map (map kFunc) l_kernels_by_t
         l_stmts = concatMap kfStmt l_kernel_funcs
-        l_params = foldr union (kfParams $ head l_kernel_funcs) (map kfParams $ tail l_kernel_funcs)
+        -- l_params = foldr union (kfParams $ head l_kernel_funcs) (map kfParams $ tail l_kernel_funcs)
+        l_params = kfParams $ head l_kernel_funcs
         l_iters = getIterFromKernel l_mode l_stencil l_params l_stmts
         l_rev_kernel_funcs = map (pFillIters l_iters) l_kernel_funcs
         l_rev_kernel_funcs_group_by_t = map (map (pFillIters l_iters)) l_kernel_funcs_by_t
@@ -543,14 +544,16 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
         -- getTileKernels also fills the guardFunc/tile_op into PKernelFuncs
         l_kernels = concatMap getTileKernels l_tiles
         l_unroll = foldr max 0 $ map pTileLength l_tiles
-        -- group kernels by the tile index
-        l_kernels_by_tIndex = groupBy eqIndexPKernel l_kernels
+        -- group kernels by the tile index (tIndex)
+        l_kernels_by_tIndex = pGroupBy eqIndexPKernel l_kernels
+        -- for each l_tile_index, there could be a list of kernel functions
         l_tile_indices = map (kIndex . head) l_kernels_by_tIndex
         -- l_kernel_funcs : [[PKernelFunc]]
         l_kernel_funcs = map (map kFunc) l_kernels_by_tIndex
         l_stmts = concatMap kfStmt $ concat l_kernel_funcs
-        l_params = foldr union (kfParams $ head $ head l_kernel_funcs)
-                               (map kfParams $ tail $ head l_kernel_funcs)
+        l_params = kfParams $ head $ head l_kernel_funcs
+--        l_params = foldr union (kfParams $ head $ head l_kernel_funcs)
+--                               (map kfParams $ tail $ head l_kernel_funcs)
         l_iters = getIterFromKernel l_mode l_stencil l_params l_stmts
         -- l_rev_kernel_funcs : [[PKernelFunc]]
         l_rev_kernel_funcs = map (map (pFillIters l_iters)) l_kernel_funcs
@@ -604,9 +607,20 @@ pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_til
          ", " ++ show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 pGetOverlapGuardTiles :: PMode -> PStencil -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> (String, [(PGuard, [PTile])])
-pGetOverlapGuardTiles l_mode l_stencil l_xGTs l_iGTs l_tiGTs =
+pGetOverlapGuardTiles l_mode l_stencil [] l_iGTs l_tiGTs =
     let -- we are assuming that all guards and kernels are of the same rank
-        l_rank = gRank $ fst $ head l_xGTs
+        l_rank = if null l_tiGTs 
+                    then gRank $ fst $ head l_iGTs
+                    else gRank $ fst $ head l_tiGTs
+        l_iPGuardTiles = pGetInclusiveGuardTiles l_mode [] l_iGTs l_tiGTs
+        l_iGuards = map (pShowAutoGuardString " || ") l_iPGuardTiles
+        l_iGuardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_iPGuardTiles
+        l_iTiles = map (pShowAutoTileString l_mode l_stencil) l_iPGuardTiles
+        l_str_iGTs = zipWith (++) l_iGuards l_iTiles
+    in  (breakline ++ concat l_str_iGTs, l_iPGuardTiles)
+pGetOverlapGuardTiles l_mode l_stencil l_xGTs@(x:xs) l_iGTs l_tiGTs =
+    let -- we are assuming that all guards and kernels are of the same rank
+        l_rank = gRank $ fst x
         l_xPGuardTiles = pGetExclusiveGuardTiles l_mode l_rank l_xGTs l_iGTs l_tiGTs
         l_iPGuardTiles = pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs
         l_xGuards = map (pShowAutoGuardString " && ") l_xPGuardTiles

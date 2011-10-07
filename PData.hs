@@ -143,7 +143,7 @@ data PKernel = PKernel {
     kRank :: Int,
     kFunc :: PKernelFunc,
     kShape :: PShape,
-    kIndex :: [Int], -- this is the index of the tile
+    kIndex :: [Int], -- this is the index in the tile
     kComment :: String
 } deriving Show
 

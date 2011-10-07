@@ -148,7 +148,7 @@ int main(int argc, char * argv[])
         a(t, i) = 0.111 * a(t-1, i-1) + 0.151 * a(t-1, i) + 0.185 * a(t-1, i+1) + 0.81;
     Pochoir_Kernel_1D_End(k_exclusive_0_1, shape_exclusive_0)
 
-    Pochoir_Kernel<1> tile_exclusive_0[] = {k_exclusive_0_0, k_exclusive_0_1};
+    Pochoir_Kernel<1> tile_exclusive_0[2] = {k_exclusive_0_0, k_exclusive_0_1};
 
     Pochoir_Kernel_1D_Begin(k_exclusive_1_0, t, i)
 #if APP_DEBUG
@@ -164,7 +164,7 @@ int main(int argc, char * argv[])
         a(t, i) = 0.212 * a(t-1, i-1) + 0.252 * a(t-1, i) + 0.285 * a(t-1, i+1) + 0.82;
     Pochoir_Kernel_1D_End(k_exclusive_1_1, shape_exclusive_1)
 
-    Pochoir_Kernel<1> tile_exclusive_1[] = {k_exclusive_1_0, k_exclusive_1_1};
+    Pochoir_Kernel<1> tile_exclusive_1[2] = {k_exclusive_1_0, k_exclusive_1_1};
 
     Pochoir_Kernel_1D_Begin(k_inclusive_0_0, t, i)
 #if APP_DEBUG
@@ -180,7 +180,7 @@ int main(int argc, char * argv[])
         a(t, i) = 0.313 * a(t-1, i-1) - 0.353 * a(t-1, i) + 0.385 * a(t-1, i+1) - 0.83;
     Pochoir_Kernel_1D_End(k_inclusive_0_1, shape_inclusive_0)
 
-    Pochoir_Kernel<1> tile_inclusive_0[] = {k_inclusive_0_0, k_inclusive_0_1};
+    Pochoir_Kernel<1> tile_inclusive_0[2] = {k_inclusive_0_0, k_inclusive_0_1};
 
     Pochoir_Kernel_1D_Begin(k_inclusive_1_0, t, i)
 #if APP_DEBUG
@@ -196,7 +196,7 @@ int main(int argc, char * argv[])
         a(t, i) = 0.414 * a(t-1, i-1) - 0.454 * a(t-1, i) + 0.485 * a(t-1, i+1) - 0.84;
     Pochoir_Kernel_1D_End(k_inclusive_1_1, shape_inclusive_1)
 
-    Pochoir_Kernel<1> tile_inclusive_1[] = {k_inclusive_1_0, k_inclusive_1_1};
+    Pochoir_Kernel<1> tile_inclusive_1[2] = {k_inclusive_1_0, k_inclusive_1_1};
 
     Pochoir_Kernel_1D_Begin(k_tiny_inclusive_0_0, t, i)
 #if APP_DEBUG
@@ -212,7 +212,7 @@ int main(int argc, char * argv[])
         a(t, i) = 0.515 * a(t-1, i-1) + 0.555 * a(t-1, i) - 0.585 * a(t-1, i+1) + 0.85;
     Pochoir_Kernel_1D_End(k_tiny_inclusive_0_1, shape_tiny_inclusive_0)
 
-    Pochoir_Kernel<1> tile_tiny_inclusive_0[] = {k_tiny_inclusive_0_0, k_tiny_inclusive_0_1};
+    Pochoir_Kernel<1> tile_tiny_inclusive_0[2] = {k_tiny_inclusive_0_0, k_tiny_inclusive_0_1};
 
     Pochoir_Kernel_1D_Begin(k_tiny_inclusive_1_0, t, i)
 #if APP_DEBUG
@@ -228,7 +228,7 @@ int main(int argc, char * argv[])
         a(t, i) = 0.616 * a(t-1, i-1) + 0.656 * a(t-1, i) - 0.685 * a(t-1, i+1) + 0.86;
     Pochoir_Kernel_1D_End(k_tiny_inclusive_1_1, shape_tiny_inclusive_1)
 
-    Pochoir_Kernel<1> tile_tiny_inclusive_1[] = {k_tiny_inclusive_1_0, k_tiny_inclusive_1_1};
+    Pochoir_Kernel<1> tile_tiny_inclusive_1[2] = {k_tiny_inclusive_1_0, k_tiny_inclusive_1_1};
 
     /* this is a 2D checkerboard style tiling of the entire rectangular region/domain */
     overlap.Register_Exclusive_Tile_Kernels(g_exclusive_0, tile_exclusive_0);
