@@ -249,6 +249,9 @@ eqTileOpPKernelFunc a b = (kfTileOp a) == (kfTileOp b)
 eqTPKernel :: PKernel -> PKernel -> Bool
 eqTPKernel a b = (head $ kIndex a) == (head $ kIndex b)
 
+eqTGroupPKernel :: [PKernel] -> [PKernel] -> Bool
+eqTGroupPKernel a b = (head . kIndex . head) a == (head . kIndex . head) b
+
 eqTPTile :: [Int] -> [Int] -> Bool
 eqTPTile a b = head a == head b
 

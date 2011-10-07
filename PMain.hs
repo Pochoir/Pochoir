@@ -70,13 +70,6 @@ ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) =
           putStrLn ("Pochoir environment variable not set:")
           putStrLn ("POCHOIR_LIB_PATH")
           exitFailure
-{-
-       cilkStubPath <- catch (getEnv "CILK_HEADER_PATH")(\e -> return "EnvError")
-       whilst (cilkStubPath == "EnvError") $ do
-          putStrLn ("Environment variable CILK_HEADER_PATH is NOT set")
-          exitFailure
-       let envPath = ["-I" ++ cilkStubPath] ++ ["-I" ++ pochoirLibPath]
--}
        let envPath = ["-I" ++ pochoirLibPath]
        let iccPPFile = inDir ++ getPPFile inFile
        let iccPPArgs = if debug == False
@@ -113,12 +106,6 @@ rename pSuffix fname = name ++ pSuffix ++ ".cpp"
 getPPFile :: String -> String
 getPPFile fname = name ++ ".i"
     where (name, suffix) = break ('.' ==) fname
-
-{-
-getObjFile :: String -> String -> [String]
-getObjFile dir fname = ["-o"] ++ [dir++name]
-    where (name, suffix) = break ('.' ==) fname 
--}
 
 pInitState = ParserState { pMode = PCaching, pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty }
 
@@ -171,6 +158,22 @@ parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL
     | elem "-all-cond-tile-opt-pointer-overlap" aL =
         let l_mode = PAllCondTileOptPointerOverlap
             aL' = delete "-all-cond-tile-opt-pointer-overlap" aL
+        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+    | elem "-unroll-t-tile-macro-overlap" aL =
+        let l_mode = PUnrollTimeTileMacroOverlap
+            aL' = delete "-unroll-t-tile-macro-overlap" aL
+        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+    | elem "-unroll-t-tile-c-pointer-overlap" aL =
+        let l_mode = PUnrollTimeTileCPointerOverlap
+            aL' = delete "-unroll-t-tile-c-pointer-overlap" aL
+        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+    | elem "-unroll-t-tile-pointer-overlap" aL =
+        let l_mode = PUnrollTimeTilePointerOverlap
+            aL' = delete "-unroll-t-tile-pointer-overlap" aL
+        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+    | elem "-unroll-t-tile-opt-pointer-overlap" aL =
+        let l_mode = PUnrollTimeTileOptPointerOverlap
+            aL' = delete "-unroll-t-tile-opt-pointer-overlap" aL
         in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
     | elem "-all-cond-tile-macro" aL =
         let l_mode = PAllCondTileMacro

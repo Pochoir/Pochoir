@@ -71,6 +71,10 @@ ppStencil1 l_id l_state =
                             || l_mode == PAllCondTileCPointerOverlap
                             || l_mode == PAllCondTilePointerOverlap
                             || l_mode == PAllCondTileOptPointerOverlap
+                            || l_mode == PUnrollTimeTileMacroOverlap
+                            || l_mode == PUnrollTimeTileCPointerOverlap
+                            || l_mode == PUnrollTimeTilePointerOverlap
+                            || l_mode == PUnrollTimeTileOptPointerOverlap
                          then do let l_overlapKernels =
                                        pGetAllCondTileOverlapKernels l_mode l_stencil
                                            (sRegTileKernel l_stencil)
@@ -147,31 +151,6 @@ ppStencil1 l_id l_state =
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ ");")
                Just l_stencil -> 
-{-
-                   if l_mode == PAllCondTileMacroOverlap
-                      then do let l_overlapKernels =
-                                    pGetAllCondTileOverlapKernels l_mode l_stencil
-                                        (sRegTileKernel l_stencil)
-                                        (sRegInclusiveTileKernel l_stencil)
-                                        (sRegTinyInclusiveTileKernel l_stencil)
-                              return (breakline ++ fst l_overlapKernels ++
-                                      breakline ++ l_id ++ ".Run_Obase_Merge(" ++ 
-                                      show l_tstep ++ "); /* Run with Stencil " ++
-                                      l_id ++ " */" ++ breakline)
-                      else if l_mode == PMUnroll 
-                                || l_mode == PAllCondTileMacro 
-                                || l_mode == PAllCondTileCPointer 
-                                || l_mode == PAllCondTilePointer
-                                || l_mode == PAllCondTileOptPointer
-                              then return (breakline ++ l_id ++ 
-                                           ".Run_Obase_Merge(" ++ 
-                                           show l_tstep ++ 
-                                           "); /* Run with Stencil " ++ l_id ++ 
-                                           " */" ++ breakline)
-                              else return (breakline ++ l_id ++ ".Run_Obase(" ++
-                                         show l_tstep ++ "); /* Run with Stencil " ++
-                                         l_id ++ " */" ++ breakline)
--}
                       if l_mode == PMUnroll 
                            || l_mode == PAllCondTileMacro 
                            || l_mode == PAllCondTileCPointer 
