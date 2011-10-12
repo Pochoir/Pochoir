@@ -440,12 +440,23 @@ struct Pure_Region_All<2> {
             int new_i = pmod_lu(i, phys_grid_.x0[1], phys_grid_.x1[1]);
         for (int j = l_grid.x0[0]; j < l_grid.x1[0]; ++j) {
             int new_j = pmod_lu(j, phys_grid_.x0[0], phys_grid_.x1[0]);
+            int l_region = NONE_EXCLUSIVE_IFS;
             for (int pt = 0; pt < sz_pgk_; ++pt) {
                 bool is_pure = pgs_[pt](t, new_i, new_j);
+                if (is_pure) {
+                    l_region = pt;
+                    break;
+                }
+                /* 
                 if (is_pure && pt != start_region) {
                     return CROSS_REGION;
                 }
-            } } }
+                */
+            } 
+            if (l_region != start_region) {
+                return CROSS_REGION;
+            }
+        } }
         /* Adjust trapezoid */
         l_grid.x0[0] += l_grid.dx0[0]; l_grid.x1[0] += l_grid.dx1[0];
         l_grid.x0[1] += l_grid.dx0[1]; l_grid.x1[1] += l_grid.dx1[1];

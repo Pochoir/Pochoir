@@ -65,9 +65,9 @@ static inline int lcm(int a, int b) {
 /* due to the fact that bit trick is much slower than conditional instruction,
  * let's disable it for now!!!
  */
-#define cilk_for for
-#define cilk_spawn 
-#define cilk_sync
+// #define cilk_for for
+// #define cilk_spawn 
+// #define cilk_sync
 
 #define BIT_TRICK 0
 #define INF 100000000
@@ -165,25 +165,25 @@ struct Region_Info {
         fs << "t = {" << r.t0 << ", " << r.t1 << "}, {";
 
         fs << "x0 = {";
-        for (i = 0; i < N_RANK-1; ++i) {
+        for (i = N_RANK-1; i > 0; --i) {
             fs << r.grid.x0[i] << ", ";
         }
         fs << r.grid.x0[i] << "}, ";
 
         fs << "x1 = {";
-        for (i = 0; i < N_RANK-1; ++i) {
+        for (i = N_RANK-1; i > 0; --i) {
             fs << r.grid.x1[i] << ", ";
         }
         fs << r.grid.x1[i] << "}, ";
 
         fs << "dx0 = {";
-        for (i = 0; i < N_RANK-1; ++i) {
+        for (i = N_RANK-1; i > 0; --i) {
             fs << r.grid.dx0[i] << ", ";
         }
         fs << r.grid.dx0[i] << "}, ";
 
         fs << "dx1 = {";
-        for (i = 0; i < N_RANK-1; ++i) {
+        for (i = N_RANK-1; i > 0; --i) {
             fs << r.grid.dx1[i] << ", ";
         }
         fs << r.grid.dx1[i] << "}}, " << r.region_n << "}";
@@ -196,25 +196,25 @@ struct Region_Info {
         fscanf(fs, "t = {%d, %d}, {",  &(t0), &(t1));
 
         fscanf(fs, "x0 = {");
-        for (i = 0; i < N_RANK-1; ++i) {
+        for (i = N_RANK-1; i > 0; --i) {
             fscanf(fs, "%d, ", &(grid.x0[i]));
         }
         fscanf(fs, "%d}, ", &(grid.x0[i]));
 
         fscanf(fs, "x1 = {");
-        for (i = 0; i < N_RANK-1; ++i) {
+        for (i = N_RANK-1; i > 0; --i) {
             fscanf(fs, "%d, ", &(grid.x1[i]));
         }
         fscanf(fs, "%d}, ", &(grid.x1[i]));
 
         fscanf(fs, "dx0 = {");
-        for (i = 0; i < N_RANK-1; ++i) {
+        for (i = N_RANK-1; i > 0; --i) {
             fscanf(fs, "%d, ", &(grid.dx0[i]));
         }
         fscanf(fs, "%d}, ", &(grid.dx0[i]));
 
         fscanf(fs, "dx1 = {");
-        for (i = 0; i < N_RANK-1; ++i) {
+        for (i = N_RANK-1; i > 0; --i) {
             fscanf(fs, "%d, ", &(grid.dx1[i]));
         }
         fscanf(fs, "%d}}, %d}\n", &(grid.dx1[i]), &(region_n));
@@ -227,25 +227,25 @@ struct Region_Info {
         fs << "t = {" << r.t0 << ", " << r.t1 << "}, {";
 
         fs << "x0 = {";
-        for (i = 0; i < N_RANK-1; ++i) {
+        for (i = N_RANK-1; i > 0; --i) {
             fs << r.grid.x0[i] << ", ";
         }
         fs << r.grid.x0[i] << "}, ";
 
         fs << "x1 = {";
-        for (i = 0; i < N_RANK-1; ++i) {
+        for (i = N_RANK-1; i > 0; --i) {
             fs << r.grid.x1[i] << ", ";
         }
         fs << r.grid.x1[i] << "}, ";
 
         fs << "dx0 = {";
-        for (i = 0; i < N_RANK-1; ++i) {
+        for (i = N_RANK-1; i > 0; --i) {
             fs << r.grid.dx0[i] << ", ";
         }
         fs << r.grid.dx0[i] << "}, ";
 
         fs << "dx1 = {";
-        for (i = 0; i < N_RANK-1; ++i) {
+        for (i = N_RANK-1; i > 0; --i) {
             fs << r.grid.dx1[i] << ", ";
         }
         fs << r.grid.dx1[i] << "}}, " << r.region_n << "}";

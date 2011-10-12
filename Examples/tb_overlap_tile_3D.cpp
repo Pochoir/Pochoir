@@ -35,6 +35,7 @@
 #include <pochoir.hpp>
 
 // using namespace std;
+#define APP_DEBUG 0
 #define TIMES 1
 #define TOLERANCE (1e-6)
 
@@ -162,7 +163,7 @@ int main(int argc, char * argv[])
     /* begin Pochoir_Kernel functions */
     Pochoir_Kernel_2D_Begin(k_0_0, t, i, j)
 #if APP_DEBUG
-        printf("<k_0_0> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_0_0> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.1 * a(t-1, i-1, j) + 0.15 * a(t-1, i, j) + 0.15 * a(t-1, i+1, j) 
@@ -171,7 +172,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_0_1, t, i, j)
 #if APP_DEBUG
-        printf("<k_0_1> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_0_1> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.2 * a(t-1, i-1, j) + 0.25 * a(t-1, i, j) + 0.25 * a(t-1, i+1, j) 
@@ -180,7 +181,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_0_2, t, i, j)
 #if APP_DEBUG
-        printf("<k_0_2> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_0_2> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.3 * a(t-1, i-1, j) + 0.35 * a(t-1, i, j) + 0.35 * a(t-1, i+1, j) 
@@ -189,7 +190,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_0_3, t, i, j)
 #if APP_DEBUG
-        printf("<k_0_3> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_0_3> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.4 * a(t-1, i-1, j) + 0.45 * a(t-1, i, j) + 0.45 * a(t-1, i+1, j) 
@@ -198,7 +199,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_0_4, t, i, j)
 #if APP_DEBUG
-        printf("<k_0_4> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_0_4> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.5 * a(t-1, i-1, j) + 0.55 * a(t-1, i, j) + 0.55 * a(t-1, i+1, j) 
@@ -207,7 +208,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_0_5, t, i, j)
 #if APP_DEBUG
-        printf("<k_0_5> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_0_5> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.6 * a(t-1, i-1, j) + 0.65 * a(t-1, i, j) + 0.65 * a(t-1, i+1, j) 
@@ -216,7 +217,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_0_6, t, i, j)
 #if APP_DEBUG
-        printf("<k_0_6> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_0_6> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.7 * a(t-1, i-1, j) + 0.75 * a(t-1, i, j) + 0.75 * a(t-1, i+1, j) 
@@ -225,7 +226,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_0_7, t, i, j)
 #if APP_DEBUG
-        printf("<k_0_7> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_0_7> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.8 * a(t-1, i-1, j) + 0.85 * a(t-1, i, j) + 0.85 * a(t-1, i+1, j) 
@@ -238,7 +239,7 @@ int main(int argc, char * argv[])
     /**************************************************************************/
     Pochoir_Kernel_2D_Begin(k_1_0, t, i, j)
 #if APP_DEBUG
-        printf("<k_1_0> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_1_0> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.11 * a(t-1, i-1, j) + 0.151 * a(t-1, i, j) + 0.151 * a(t-1, i+1, j) 
@@ -247,7 +248,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_1_1, t, i, j)
 #if APP_DEBUG
-        printf("<k_1_1> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_1_1> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.21 * a(t-1, i-1, j) + 0.251 * a(t-1, i, j) + 0.251 * a(t-1, i+1, j) 
@@ -256,7 +257,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_1_2, t, i, j)
 #if APP_DEBUG
-        printf("<k_1_2> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_1_2> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.31 * a(t-1, i-1, j) + 0.351 * a(t-1, i, j) + 0.351 * a(t-1, i+1, j) 
@@ -265,7 +266,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_1_3, t, i, j)
 #if APP_DEBUG
-        printf("<k_1_3> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_1_3> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.41 * a(t-1, i-1, j) + 0.451 * a(t-1, i, j) + 0.451 * a(t-1, i+1, j) 
@@ -278,7 +279,7 @@ int main(int argc, char * argv[])
     /**************************************************************************/
     Pochoir_Kernel_2D_Begin(k_2_0, t, i, j)
 #if APP_DEBUG
-        printf("<k_2_0> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_2_0> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.12 * a(t-1, i-1, j) + 0.152 * a(t-1, i, j) + 0.152 * a(t-1, i+1, j) 
@@ -287,7 +288,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_2_1, t, i, j)
 #if APP_DEBUG
-        printf("<k_2_1> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_2_1> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.22 * a(t-1, i-1, j) + 0.252 * a(t-1, i, j) + 0.252 * a(t-1, i+1, j) 
@@ -300,7 +301,7 @@ int main(int argc, char * argv[])
     /**********************************************************************************/
     Pochoir_Kernel_2D_Begin(k_3_0, t, i, j)
 #if APP_DEBUG
-        printf("<k_3_0> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_3_0> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.13 * a(t-1, i-1, j) + 0.153 * a(t-1, i, j) + 0.153 * a(t-1, i+1, j) 
@@ -309,7 +310,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_3_1, t, i, j)
 #if APP_DEBUG
-        printf("<k_3_1> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_3_1> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.23 * a(t-1, i-1, j) + 0.253 * a(t-1, i, j) + 0.253 * a(t-1, i+1, j) 
@@ -318,7 +319,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_3_2, t, i, j)
 #if APP_DEBUG
-        printf("<k_3_2> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_3_2> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.33 * a(t-1, i-1, j) + 0.353 * a(t-1, i, j) + 0.353 * a(t-1, i+1, j) 
@@ -327,7 +328,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_3_3, t, i, j)
 #if APP_DEBUG
-        printf("<k_3_3> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_3_3> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.43 * a(t-1, i-1, j) + 0.453 * a(t-1, i, j) + 0.453 * a(t-1, i+1, j) 
@@ -336,7 +337,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_3_4, t, i, j)
 #if APP_DEBUG
-        printf("<k_3_4> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_3_4> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.53 * a(t-1, i-1, j) + 0.553 * a(t-1, i, j) + 0.553 * a(t-1, i+1, j) 
@@ -345,7 +346,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_3_5, t, i, j)
 #if APP_DEBUG
-        printf("<k_3_5> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_3_5> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.63 * a(t-1, i-1, j) + 0.653 * a(t-1, i, j) + 0.653 * a(t-1, i+1, j) 
@@ -354,7 +355,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_3_6, t, i, j)
 #if APP_DEBUG
-        printf("<k_3_6> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_3_6> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.73 * a(t-1, i-1, j) + 0.753 * a(t-1, i, j) + 0.753 * a(t-1, i+1, j) 
@@ -363,7 +364,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_3_7, t, i, j)
 #if APP_DEBUG
-        printf("<k_3_7> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_3_7> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.83 * a(t-1, i-1, j) + 0.853 * a(t-1, i, j) + 0.853 * a(t-1, i+1, j) 
@@ -376,7 +377,7 @@ int main(int argc, char * argv[])
     /**************************************************************************/
     Pochoir_Kernel_2D_Begin(k_4_0, t, i, j)
 #if APP_DEBUG
-        printf("<k_4_0> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_4_0> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.14 * a(t-1, i-1, j) + 0.154 * a(t-1, i, j) + 0.154 * a(t-1, i+1, j) 
@@ -385,7 +386,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_4_1, t, i, j)
 #if APP_DEBUG
-        printf("<k_4_1> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_4_1> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.24 * a(t-1, i-1, j) + 0.254 * a(t-1, i, j) + 0.254 * a(t-1, i+1, j) 
@@ -394,7 +395,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_4_2, t, i, j)
 #if APP_DEBUG
-        printf("<k_4_2> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_4_2> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.34 * a(t-1, i-1, j) + 0.354 * a(t-1, i, j) + 0.354 * a(t-1, i+1, j) 
@@ -403,7 +404,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_4_3, t, i, j)
 #if APP_DEBUG
-        printf("<k_4_3> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_4_3> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.44 * a(t-1, i-1, j) + 0.454 * a(t-1, i, j) + 0.454 * a(t-1, i+1, j) 
@@ -416,7 +417,7 @@ int main(int argc, char * argv[])
     /**************************************************************************/
     Pochoir_Kernel_2D_Begin(k_5_0, t, i, j)
 #if APP_DEBUG
-        printf("<k_5_0> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_5_0> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.15 * a(t-1, i-1, j) + 0.155 * a(t-1, i, j) + 0.155 * a(t-1, i+1, j) 
@@ -425,7 +426,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel_2D_Begin(k_5_1, t, i, j)
 #if APP_DEBUG
-        printf("<k_5_1> : a(%d, %d, %d)\n", t, i, j)
+        printf("<k_5_1> : a(%d, %d, %d)\n", t, i, j);
 #endif
         a(t, i, j) = 
             0.25 * a(t-1, i-1, j) + 0.255 * a(t-1, i, j) + 0.255 * a(t-1, i+1, j) 
@@ -479,56 +480,56 @@ int main(int argc, char * argv[])
             if (g_exclusive_0(t-1, i, j)) {
                 if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_0_0> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_0_0> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.1 * b(t-1, i-1, j) + 0.15 * b(t-1, i, j) + 0.15 * b(t-1, i+1, j)
                       - 0.1 * b(t-1, i, j-1) - 0.15 * b(t-1, i, j) - 0.15 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_0_1> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_0_1> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.2 * b(t-1, i-1, j) + 0.25 * b(t-1, i, j) + 0.25 * b(t-1, i+1, j)
                       - 0.2 * b(t-1, i, j-1) - 0.25 * b(t-1, i, j) - 0.25 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 0 && i % 2 == 1 && j % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_0_2> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_0_2> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.3 * b(t-1, i-1, j) + 0.35 * b(t-1, i, j) + 0.35 * b(t-1, i+1, j)
                       - 0.3 * b(t-1, i, j-1) - 0.35 * b(t-1, i, j) - 0.35 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 0 && i % 2 == 1 && j % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_0_3> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_0_3> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.4 * b(t-1, i-1, j) + 0.45 * b(t-1, i, j) + 0.45 * b(t-1, i+1, j)
                       - 0.4 * b(t-1, i, j-1) - 0.45 * b(t-1, i, j) - 0.45 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1 && i % 2 == 0 && j % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_0_4> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_0_4> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.5 * b(t-1, i-1, j) + 0.55 * b(t-1, i, j) + 0.55 * b(t-1, i+1, j)
                       - 0.5 * b(t-1, i, j-1) - 0.55 * b(t-1, i, j) - 0.55 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1 && i % 2 == 0 && j % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_0_5> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_0_5> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.6 * b(t-1, i-1, j) + 0.65 * b(t-1, i, j) + 0.65 * b(t-1, i+1, j)
                       - 0.6 * b(t-1, i, j-1) - 0.65 * b(t-1, i, j) - 0.65 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1 && i % 2 == 1 && j % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_0_6> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_0_6> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.7 * b(t-1, i-1, j) + 0.75 * b(t-1, i, j) + 0.75 * b(t-1, i+1, j)
                       - 0.7 * b(t-1, i, j-1) - 0.75 * b(t-1, i, j) - 0.75 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1 && i % 2 == 1 && j % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_0_7> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_0_7> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.8 * b(t-1, i-1, j) + 0.85 * b(t-1, i, j) + 0.85 * b(t-1, i+1, j)
@@ -537,28 +538,28 @@ int main(int argc, char * argv[])
             } else if (g_exclusive_1(t-1, i, j)) {
                 if ((t-1) % 2 == 0 && i % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_1_0> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_1_0> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.11 * b(t-1, i-1, j) + 0.151 * b(t-1, i, j) + 0.151 * b(t-1, i+1, j)
                       - 0.11 * b(t-1, i, j-1) - 0.151 * b(t-1, i, j) - 0.151 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 0 && i % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_1_1> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_1_1> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.21 * b(t-1, i-1, j) + 0.251 * b(t-1, i, j) + 0.251 * b(t-1, i+1, j)
                       - 0.21 * b(t-1, i, j-1) - 0.251 * b(t-1, i, j) - 0.251 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1 && i % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_1_2> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_1_2> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.31 * b(t-1, i-1, j) + 0.351 * b(t-1, i, j) + 0.351 * b(t-1, i+1, j)
                       - 0.31 * b(t-1, i, j-1) - 0.351 * b(t-1, i, j) - 0.351 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1 && i % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_1_3> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_1_3> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.41 * b(t-1, i-1, j) + 0.451 * b(t-1, i, j) + 0.451 * b(t-1, i+1, j)
@@ -568,14 +569,14 @@ int main(int argc, char * argv[])
             if (g_inclusive_0(t-1, i, j)) {
                 if ((t-1) % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_2_0> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_2_0> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.12 * b(t-1, i-1, j) + 0.152 * b(t-1, i, j) + 0.152 * b(t-1, i+1, j)
                       - 0.12 * b(t-1, i, j-1) - 0.152 * b(t-1, i, j) - 0.152 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_2_1> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_2_1> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.22 * b(t-1, i-1, j) + 0.252 * b(t-1, i, j) + 0.252 * b(t-1, i+1, j)
@@ -585,56 +586,56 @@ int main(int argc, char * argv[])
             if (g_inclusive_1(t-1, i, j)) {
                 if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_3_0> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_3_0> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.13 * b(t-1, i-1, j) + 0.153 * b(t-1, i, j) + 0.153 * b(t-1, i+1, j)
                       - 0.13 * b(t-1, i, j-1) - 0.153 * b(t-1, i, j) - 0.153 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_3_1> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_3_1> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.23 * b(t-1, i-1, j) + 0.253 * b(t-1, i, j) + 0.253 * b(t-1, i+1, j)
                       - 0.23 * b(t-1, i, j-1) - 0.253 * b(t-1, i, j) - 0.253 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 0 && i % 2 == 1 && j % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_3_2> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_3_2> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.33 * b(t-1, i-1, j) + 0.353 * b(t-1, i, j) + 0.353 * b(t-1, i+1, j)
                       - 0.33 * b(t-1, i, j-1) - 0.353 * b(t-1, i, j) - 0.353 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 0 && i % 2 == 1 && j % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_3_3> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_3_3> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.43 * b(t-1, i-1, j) + 0.453 * b(t-1, i, j) + 0.453 * b(t-1, i+1, j)
                       - 0.43 * b(t-1, i, j-1) - 0.453 * b(t-1, i, j) - 0.453 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1 && i % 2 == 0 && j % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_3_4> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_3_4> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.53 * b(t-1, i-1, j) + 0.553 * b(t-1, i, j) + 0.553 * b(t-1, i+1, j)
                       - 0.53 * b(t-1, i, j-1) - 0.553 * b(t-1, i, j) - 0.553 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1 && i % 2 == 0 && j % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_3_5> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_3_5> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.63 * b(t-1, i-1, j) + 0.653 * b(t-1, i, j) + 0.653 * b(t-1, i+1, j)
                       - 0.63 * b(t-1, i, j-1) - 0.653 * b(t-1, i, j) - 0.653 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1 && i % 2 == 1 && j % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_3_6> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_3_6> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.73 * b(t-1, i-1, j) + 0.753 * b(t-1, i, j) + 0.753 * b(t-1, i+1, j)
                       - 0.73 * b(t-1, i, j-1) - 0.753 * b(t-1, i, j) - 0.753 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1 && i % 2 == 1 && j % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_3_7> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_3_7> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.83 * b(t-1, i-1, j) + 0.853 * b(t-1, i, j) + 0.853 * b(t-1, i+1, j)
@@ -644,28 +645,28 @@ int main(int argc, char * argv[])
             if (g_tiny_inclusive_0(t-1, i, j)) {
                 if ((t-1) % 2 == 0 && i % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_4_0> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_4_0> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.14 * b(t-1, i-1, j) + 0.154 * b(t-1, i, j) + 0.154 * b(t-1, i+1, j)
                       - 0.14 * b(t-1, i, j-1) - 0.154 * b(t-1, i, j) - 0.154 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 0 && i % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_4_1> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_4_1> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.24 * b(t-1, i-1, j) + 0.254 * b(t-1, i, j) + 0.254 * b(t-1, i+1, j)
                       - 0.24 * b(t-1, i, j-1) - 0.254 * b(t-1, i, j) - 0.254 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1 && i % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_4_2> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_4_2> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.34 * b(t-1, i-1, j) + 0.354 * b(t-1, i, j) + 0.354 * b(t-1, i+1, j)
                       - 0.34 * b(t-1, i, j-1) - 0.354 * b(t-1, i, j) - 0.354 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1 && i % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_4_3> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_4_3> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.44 * b(t-1, i-1, j) + 0.454 * b(t-1, i, j) + 0.454 * b(t-1, i+1, j)
@@ -675,14 +676,14 @@ int main(int argc, char * argv[])
             if (g_tiny_inclusive_1(t-1, i, j)) {
                 if ((t-1) % 2 == 0) {
 #if APP_DEBUG
-                    printf("<k_5_0> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_5_0> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.15 * b(t-1, i-1, j) + 0.155 * b(t-1, i, j) + 0.155 * b(t-1, i+1, j)
                       - 0.15 * b(t-1, i, j-1) - 0.155 * b(t-1, i, j) - 0.155 * b(t-1, i, j+1);
                 } else if ((t-1) % 2 == 1) {
 #if APP_DEBUG
-                    printf("<k_5_1> : b(%d, %d, %d)\n", t, i, j)
+                    printf("<k_5_1> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.25 * b(t-1, i-1, j) + 0.255 * b(t-1, i, j) + 0.255 * b(t-1, i+1, j)
