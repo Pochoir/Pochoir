@@ -35,6 +35,10 @@ updatePTile :: PTile -> ParserState -> ParserState
 updatePTile l_tile parserState =
     parserState { pTile = Map.insert (tName l_tile) l_tile $ pTile parserState }
 
+updatePTileOrder :: Int -> ParserState -> ParserState
+updatePTileOrder l_tile_order parserState =
+    parserState { pTileOrder = l_tile_order }
+
 updatePKernelFunc :: PKernelFunc -> ParserState -> ParserState
 updatePKernelFunc l_kernelFunc parserState =
     parserState { pKernelFunc = Map.insert (kfName l_kernelFunc) l_kernelFunc $ pKernelFunc parserState }
@@ -222,23 +226,27 @@ getValidTile l_state l_tileName =
                                     Nothing -> emptyKernel
                                     Just l_kernel -> l_kernel
                 l_tileKernel = SK l_kernel
-            in  PTile { tName = l_tileName, tRank = kRank l_kernel, tSize = [1], tKernel = l_tileKernel, tComment = "", tOp = PNOP, tOrigGuard = emptyGuard }
+            in  PTile { tName = l_tileName, tRank = kRank l_kernel, tSize = [1], tKernel = l_tileKernel, tComment = "", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = 0 }
         Just l_pTile -> l_pTile { tComment = cKnown "Tile" }
 
 getTileKernels :: PTile -> [PKernel]
-getTileKernels l_tile = getKernelsTile [] 0 (gFunc $ tOrigGuard l_tile) (tOp l_tile) $ tKernel l_tile
+getTileKernels l_tile = getKernelsTile [] 0 l_tile $ tKernel l_tile
 
-getKernelsTile :: [Int] -> Int -> PGuardFunc -> TileOp -> PTileKernel -> [PKernel]
-getKernelsTile l_indices l_index l_gfunc l_tile_op (SK l_kernel) =
+getKernelsTile :: [Int] -> Int -> PTile -> PTileKernel -> [PKernel]
+getKernelsTile l_indices l_index l_tile (SK l_kernel) =
     let ll_indices = l_indices ++ [l_index]
         ll_kernel_func = kFunc l_kernel
-        ll_kernel = l_kernel { kIndex = ll_indices, kFunc = ll_kernel_func { kfGuardFunc = l_gfunc, kfTileOp = l_tile_op } }
+        ll_indices' = if null ll_indices then [] else init ll_indices
+        l_gfunc = gFunc $ tOrigGuard l_tile
+        l_tile_op = tOp l_tile
+        l_tile_order = tOrder l_tile
+        ll_kernel = l_kernel { kIndex = ll_indices', kFunc = ll_kernel_func { kfGuardFunc = l_gfunc, kfTileOp = l_tile_op, kfTileOrder = l_tile_order } }
     in  [ll_kernel]
-getKernelsTile l_indices l_index l_gfunc l_tile_op (LK l_tKs@(t:ts)) =
+getKernelsTile l_indices l_index l_tile (LK l_tKs@(t:ts)) =
     let ll_indices = l_indices ++ [l_index]
-    in  getKernelsTile ll_indices 0 l_gfunc l_tile_op t ++ 
-        getKernelsTile l_indices (l_index + 1) l_gfunc l_tile_op (LK ts)
-getKernelsTile l_indices l_index l_gfunc l_tile_op (LK []) = []
+    in  getKernelsTile ll_indices 0 l_tile t ++ 
+        getKernelsTile l_indices (l_index + 1) l_tile (LK ts)
+getKernelsTile l_indices l_index l_tile (LK []) = []
 
 getTileSizes :: [[Int]] -> [Int]
 getTileSizes l_tile_indices = map ((+) 1 . maximum) $ transpose l_tile_indices

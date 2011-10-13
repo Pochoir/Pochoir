@@ -31,7 +31,7 @@
 #include "pochoir_walk.hpp"
 #include "pochoir_array.hpp"
 /* assuming there won't be more than 10 Pochoir_Array in one Pochoir object! */
-#define ARRAY_SIZE 20
+#define ARRAY_SIZE 40
 
 template <int N_RANK>
 class Pochoir {
@@ -1197,10 +1197,12 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         cilk_for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
             int l_region_n = _plan.base_data_->region_[i].region_n;
-            int l_t0 = _plan.base_data_->region_[i].t0;
-            int l_t1 = _plan.base_data_->region_[i].t1;
-            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-            algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
+            if (l_region_n >= 0) {
+                int l_t0 = _plan.base_data_->region_[i].t0;
+                int l_t1 = _plan.base_data_->region_[i].t1;
+                Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+                algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
+            }
         }
         offset = _plan.sync_data_->region_[j];
     }
@@ -1209,16 +1211,20 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (i = offset; i < _plan.sync_data_->region_[j]-1; ++i) {
             int l_region_n = _plan.base_data_->region_[i].region_n;
+            if (l_region_n >= 0) {
+                int l_t0 = _plan.base_data_->region_[i].t0;
+                int l_t1 = _plan.base_data_->region_[i].t1;
+                Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+                cilk_spawn algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
+            }
+        }
+        int l_region_n = _plan.base_data_->region_[i].region_n;
+        if (l_region_n >= 0) {
             int l_t0 = _plan.base_data_->region_[i].t0;
             int l_t1 = _plan.base_data_->region_[i].t1;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-            cilk_spawn algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
+            algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
         }
-        int l_region_n = _plan.base_data_->region_[i].region_n;
-        int l_t0 = _plan.base_data_->region_[i].t0;
-        int l_t1 = _plan.base_data_->region_[i].t1;
-        Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-        algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
         cilk_sync;
         offset = _plan.sync_data_->region_[j];
     }
@@ -1252,12 +1258,14 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         cilk_for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
             int l_region_n = _plan.base_data_->region_[i].region_n;
-            int l_t0 = _plan.base_data_->region_[i].t0;
-            int l_t1 = _plan.base_data_->region_[i].t1;
-            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-            typename Pochoir_Types<N_RANK>::T_Obase_Kernel & f = opks_[l_region_n].kernel_[0].Get_Kernel();
-            typename Pochoir_Types<N_RANK>::T_Obase_Kernel & bf = opks_[l_region_n].bkernel_[0].Get_Kernel();
-            algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, f, bf);
+            if (l_region_n >= 0) {
+                int l_t0 = _plan.base_data_->region_[i].t0;
+                int l_t1 = _plan.base_data_->region_[i].t1;
+                Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+                typename Pochoir_Types<N_RANK>::T_Obase_Kernel & f = opks_[l_region_n].kernel_[0].Get_Kernel();
+                typename Pochoir_Types<N_RANK>::T_Obase_Kernel & bf = opks_[l_region_n].bkernel_[0].Get_Kernel();
+                algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, f, bf);
+            }
         }
         offset = _plan.sync_data_->region_[j];
     }
@@ -1266,20 +1274,24 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (i = offset; i < _plan.sync_data_->region_[j]-1; ++i) {
             int l_region_n = _plan.base_data_->region_[i].region_n;
+            if (l_region_n >= 0) {
+                int l_t0 = _plan.base_data_->region_[i].t0;
+                int l_t1 = _plan.base_data_->region_[i].t1;
+                Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+                typename Pochoir_Types<N_RANK>::T_Obase_Kernel & f = opks_[l_region_n].kernel_[0].Get_Kernel();
+                typename Pochoir_Types<N_RANK>::T_Obase_Kernel & bf = opks_[l_region_n].bkernel_[0].Get_Kernel();
+                cilk_spawn algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, f, bf);
+            }
+        }
+        int l_region_n = _plan.base_data_->region_[i].region_n;
+        if (l_region_n >= 0) {
             int l_t0 = _plan.base_data_->region_[i].t0;
             int l_t1 = _plan.base_data_->region_[i].t1;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
             typename Pochoir_Types<N_RANK>::T_Obase_Kernel & f = opks_[l_region_n].kernel_[0].Get_Kernel();
             typename Pochoir_Types<N_RANK>::T_Obase_Kernel & bf = opks_[l_region_n].bkernel_[0].Get_Kernel();
-            cilk_spawn algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, f, bf);
+            algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, f, bf);
         }
-        int l_region_n = _plan.base_data_->region_[i].region_n;
-        int l_t0 = _plan.base_data_->region_[i].t0;
-        int l_t1 = _plan.base_data_->region_[i].t1;
-        Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-        typename Pochoir_Types<N_RANK>::T_Obase_Kernel & f = opks_[l_region_n].kernel_[0].Get_Kernel();
-        typename Pochoir_Types<N_RANK>::T_Obase_Kernel & bf = opks_[l_region_n].bkernel_[0].Get_Kernel();
-        algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, f, bf);
         cilk_sync;
         offset = _plan.sync_data_->region_[j];
     }

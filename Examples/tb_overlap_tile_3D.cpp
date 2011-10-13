@@ -35,7 +35,7 @@
 #include <pochoir.hpp>
 
 // using namespace std;
-#define APP_DEBUG 0
+#define APP_DEBUG 1
 #define TIMES 1
 #define TOLERANCE (1e-6)
 

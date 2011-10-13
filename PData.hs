@@ -116,6 +116,7 @@ data PKernelFunc = PKernelFunc {
     kfIter :: [Iter],
     kfShape :: PShape,
     kfTileOp :: TileOp,
+    kfTileOrder :: Int,
     kfGuardFunc :: PGuardFunc, -- each kernel function is guarded by one and only one 
                                -- guard function
     kfComment :: String
@@ -157,6 +158,7 @@ data PTile = PTile {
     tKernel :: PTileKernel,
     tOrigGuard :: PGuard, -- each tile has one and only one guard
     tOp :: TileOp, -- the OP is used in determining how to tile in automatically generated overlapped kernel
+    tOrder :: Int, -- tile order
     tComment :: String
 } deriving Show
 
@@ -170,7 +172,7 @@ emptyShape :: PShape
 emptyShape = PShape { shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = [], shapeComment = cEmpty "Pochoir_Shape" }
 
 emptyKernelFunc :: PKernelFunc
-emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfStmtSize = 0, kfIter = [], kfShape = emptyShape, kfTileOp = PNOP, kfGuardFunc = emptyGuardFunc, kfComment = cEmpty "Pochoir_Kernel_Func" }
+emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfStmtSize = 0, kfIter = [], kfShape = emptyShape, kfTileOp = PNOP, kfGuardFunc = emptyGuardFunc, kfTileOrder = 0, kfComment = cEmpty "Pochoir_Kernel_Func" }
 
 emptyKernel :: PKernel
 emptyKernel = PKernel { kName = "", kRank = 0, kFunc = emptyKernelFunc, kShape = emptyShape, kIndex = [], kComment = cEmpty "Pochoir_Kernel" }
@@ -185,7 +187,7 @@ emptyTileKernel :: PTileKernel
 emptyTileKernel = LK [] 
 
 emptyTile :: PTile
-emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel, tComment = cEmpty "Pochoir_Tile", tOp = PNOP, tOrigGuard = emptyGuard }
+emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel, tComment = cEmpty "Pochoir_Tile", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = 0 }
 
 -- prefix 'c' means "comment"
 cUnknown :: String -> String
@@ -210,7 +212,8 @@ data ParserState = ParserState {
     pKernel :: Map.Map PName PKernel,
     pGuardFunc :: Map.Map PName PGuardFunc,
     pGuard :: Map.Map PName PGuard,
-    pTile :: Map.Map PName PTile
+    pTile :: Map.Map PName PTile,
+    pTileOrder :: Int
 } deriving Show
 
 data Expr = VAR String String 

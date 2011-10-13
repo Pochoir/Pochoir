@@ -738,13 +738,20 @@ pShowAllCondTileOverlapSingleKernel l_showSingleKernel l_kfss@(k:ks) =
                     l_showSingleKernel PINCLUSIVE k ++
             pShowAllCondTileOverlapSingleKernel l_showSingleKernel ks
 
+{-
 pShowOverlapGuardTail :: [Int] -> [[Int]] -> String
 pShowOverlapGuardTail _ [] = "}"
 pShowOverlapGuardTail t ts = if length t == (length . head) ts
                                 then "} else "
                                 else "}"
+-}
 
- -- bookmark                                
+pShowOverlapGuardTail :: [PKernelFunc] -> [[PKernelFunc]] -> String
+pShowOverlapGuardTail _ [] = "}"
+pShowOverlapGuardTail k ks = if (kfTileOrder . head) k == (kfTileOrder . head . head) ks
+                                then "} else"
+                                else "}"
+
 pShowAllCondTileOverlapKernelLoops :: (PKernelFunc -> String) -> [[Int]] -> [[PKernelFunc]] -> String
 pShowAllCondTileOverlapKernelLoops _ [] _ = ""
 pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kL@(k:ks) =
@@ -755,7 +762,7 @@ pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kL
         l_tile_index = head l_tile_indices
         l_guard_head = pShowTileGuardHeadOnAll l_params l_dim_sizes l_tile_index
                                                 (shapeTimeShift $ kfShape $ head k)
-        l_guard_tail = pShowOverlapGuardTail t ts
+        l_guard_tail = pShowOverlapGuardTail k ks
         k' = pGroupBy eqTileOpPKernelFunc k
         l_kernels = pShowAllCondTileOverlapSingleKernel l_showSingleKernel k'
     in  breakline ++ l_guard_head ++
@@ -953,7 +960,7 @@ pShowUnrollTimeTileOverlapKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l
         l_tile_index = head l_tile_indices
         l_guard_head = pShowTileGuardHeadOnSpatial l_spatial_params
                             (tail l_dim_sizes) (tail l_tile_index)
-        l_guard_tail = pShowOverlapGuardTail t ts
+        l_guard_tail = pShowOverlapGuardTail k ks
         k' = pGroupBy eqTileOpPKernelFunc k
         l_unfold_kernels = pShowAllCondTileOverlapSingleKernel l_showSingleKernel k'
     in  breakline ++ l_guard_head ++
@@ -1052,7 +1059,7 @@ pShowUnrollTimeTileKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kfs@(k
         l_tile_index = t
         l_guard_head = pShowTileGuardHeadOnSpatial l_spatial_params 
                             (tail l_dim_sizes) (tail l_tile_index)
-        l_guard_tail = pShowOverlapGuardTail t ts
+        l_guard_tail = pShowOverlapGuardTail [k] [ks]
     in  breakline ++ l_guard_head ++ 
         breakline ++ l_showSingleKernel k ++ 
         breakline ++ l_guard_tail ++
@@ -1067,7 +1074,7 @@ pShowAllCondTileKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kfs@(k:ks
         l_tile_index = head l_tile_indices
         l_guard_head = pShowTileGuardHeadOnAll l_params l_dim_sizes l_tile_index 
                                     (shapeTimeShift $ kfShape k)
-        l_guard_tail = pShowOverlapGuardTail t ts
+        l_guard_tail = pShowOverlapGuardTail [k] [ks]
     in  breakline ++ l_guard_head ++ 
         breakline ++ l_showSingleKernel k ++ 
         breakline ++ l_guard_tail ++
