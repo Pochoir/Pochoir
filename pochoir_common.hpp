@@ -578,7 +578,7 @@ struct Spawn_Tree {
             return;
         }
         if (node->op == IS_SYNC && node == node->parent->left) {
-            /* remove the biggest sync */
+            /* remove the biggest sync or the sync which has no child */
             rm_node(node);
             return;
         }

@@ -1060,7 +1060,9 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     while (l_tree_size_begin > 1) {
         l_tree->dfs_until_sync(l_root->left, (*(l_plan->base_data_)));
         int l_tree_size_end = l_tree->size();
-        l_plan->sync_data_->add_element(l_tree_size_begin - l_tree_size_end);
+        if (l_tree_size_begin - l_tree_size_end > 0) {
+            l_plan->sync_data_->add_element(l_tree_size_begin - l_tree_size_end);
+        }
         l_tree->dfs_rm_sync(l_root->left);
         l_tree_size_begin = l_tree->size();
 #if DEBUG
