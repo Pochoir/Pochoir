@@ -475,7 +475,7 @@ int main(int argc, char * argv[])
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
-            for (int i = 0; i < N; ++i) {
+            cilk_for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             if (g_exclusive_0(t-1, i, j)) {
                 if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 0) {
@@ -703,7 +703,7 @@ int main(int argc, char * argv[])
     t = T;
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-            check_result(t, i, j, a(t, i, j), b(t, i, j));
+//             check_result(t, i, j, a(t, i, j), b(t, i, j));
         }
     } 
 

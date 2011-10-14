@@ -104,11 +104,13 @@ struct Pochoir_Obase_Kernel {
             }
         }
         shape_size_ = N_SIZE;
+#if DEBUG
         printf("time_shift_ = %d, toggle = %d\n", time_shift_, toggle_);
         for (int r = 0; r < N_RANK; ++r) {
             printf("slope[%d] = %d, ", r, slope_[r]);
         }
         printf("\n");
+#endif
     }
     Pochoir_Shape<N_RANK> * Get_Shape() { return shape_; }
     int Get_Shape_Size() { return shape_size_; }
