@@ -75,6 +75,12 @@ static inline int lcm(int a, int b) {
 #define DEBUG_FACILITY 1
 // #define DEBUG 0
 #define END_SYNC -1
+#define KLEIN 0
+#define USE_CILK_FOR 0
+#define NONE_EXCLUSIVE_IFS -1
+#define CROSS_REGION -2
+#define BICUT 1
+#define STAT 0
 
 // define an alias to the array of array of Pochoir_Kernel
 #define POCHOIR_TILE Pochoir_Kernel
@@ -151,7 +157,7 @@ struct Region_Info {
     Grid_Info<N_RANK> grid;
     int region_n;
     Region_Info() {
-        t0 = 0; t1 = 0; region_n = -1;
+        t0 = 0; t1 = 0; region_n = NONE_EXCLUSIVE_IFS;
     }
 
     Region_Info(int _t0, int _t1, Grid_Info<N_RANK> _grid, int _region_n) {
@@ -459,7 +465,7 @@ struct Spawn_Tree {
     int size_;
     Spawn_Tree() { 
         /* constructor */
-        root_ = new Node_Info<N_RANK>(IS_ROOT); size_ = 1; 
+        root_ = new Node_Info<N_RANK>(IS_ROOT); size_ = 1;
     }
 
     Spawn_Tree(int _t0, int _t1, Grid_Info<N_RANK> & _grid) {
@@ -494,6 +500,8 @@ struct Spawn_Tree {
     }
     Node_Info<N_RANK> * get_root() {  return root_; }
     int size() { return size_; }
+    int size_empty_region() { return size_empty_region_; }
+
     void add_node(Node_Info<N_RANK> * parent, Node_Info<N_RANK> * child, enum Meta_Op _op) {
         if (parent->left == NULL) {
             parent->left = child;
@@ -513,6 +521,12 @@ struct Spawn_Tree {
     }
 
     void add_node(Node_Info<N_RANK> * parent, Node_Info<N_RANK> * child, enum Meta_Op _op, int _region_n) {
+#if !DEBUG
+        if (_op == IS_SPAWN && _region_n == NONE_EXCLUSIVE_IFS) {
+            /* we don't add the empty region into the tree */
+            return;
+        }
+#endif
         if (parent->left == NULL) {
             parent->left = child;
             child->parent = parent;
@@ -548,6 +562,7 @@ struct Spawn_Tree {
             node = NULL;
         --size_;
     }
+
     void dfs_until_sync(Node_Info<N_RANK> * node, Vector_Info< Region_Info<N_RANK> > & base_data) {
         if (node == NULL) {
             return;
@@ -559,6 +574,7 @@ struct Spawn_Tree {
         Node_Info<N_RANK> * l_node = NULL;
         if (node->op == IS_SPAWN) {
             assert(node->left == NULL);
+            assert(node->region_.region_n >= 0);
             l_node = node->right;
             base_data.add_element(node->region_);
             rm_node(node);
@@ -578,7 +594,7 @@ struct Spawn_Tree {
             return;
         }
         if (node->op == IS_SYNC && node == node->parent->left) {
-            /* remove the biggest sync or the sync which has no child */
+            /* remove the biggest sync */
             rm_node(node);
             return;
         }
@@ -602,12 +618,6 @@ struct Spawn_Tree {
 template <int N_RANK, size_t N>
 size_t ArraySize (Pochoir_Shape<N_RANK> (& arr)[N]) { return N; }
 
-#define KLEIN 0
-#define USE_CILK_FOR 0
-#define NONE_EXCLUSIVE_IFS -1
-#define CROSS_REGION -2
-#define BICUT 1
-#define STAT 0
 static bool inRun = false;
 static int home_cell_[9];
 
