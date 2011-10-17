@@ -935,7 +935,7 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
     algor.set_unroll(lcm_unroll_);
     algor.set_time_shift(time_shift_);
     if (pmode_ == Pochoir_Obase_Tile) {
-        algor.set_opks(sz_pxgk_, opgs_.get_root(), opks_.get_root());
+        algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
     } else {
         printf("Something is wrong in Run_Obase(Plan)!\n");
         exit(1);
@@ -992,7 +992,7 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
     algor.set_unroll(lcm_unroll_);
     algor.set_time_shift(time_shift_);
     if (pmode_ == Pochoir_Obase_Tile) {
-        algor.set_opks(sz_pxgk_, opgs_.get_root(), opks_.get_root());
+        algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
     } else {
         printf("Something is wrong in Run_Obase(Plan)!\n");
         exit(1);
