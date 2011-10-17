@@ -413,7 +413,7 @@ struct Algorithm {
         bool boundarySet, physGridSet, slopeSet, pksSet, opksSet, ptsSet;
         int sz_pgk_;
         int lcm_unroll_, time_shift_;
-        Pochoir_Guard<N_RANK> * pgs_;
+        Vector_Info< Pochoir_Guard<N_RANK> > pgs_;
         Pochoir_Stagger_Kernel<N_RANK> * pks_;
         Pochoir_Combined_Obase_Kernel<N_RANK> * opks_;
         Pochoir_Tile_Kernel<N_RANK> * pts_;
@@ -510,8 +510,8 @@ struct Algorithm {
     void set_phys_grid(Grid_Info<N_RANK> const & grid);
     // void set_stride(int const stride[]);
     void set_slope(int const slope[]);
-    void set_opks(int _sz_pgk, Pochoir_Guard<N_RANK> * _pgs, Pochoir_Combined_Obase_Kernel<N_RANK> * _opks);
-    void set_pts(int _sz_pgk, Pochoir_Guard<N_RANK> * _pgs, Pochoir_Tile_Kernel<N_RANK> * _pts);
+    void set_opks(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Combined_Obase_Kernel<N_RANK> * _opks);
+    void set_pts(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Tile_Kernel<N_RANK> * _pts);
     void set_unroll(int _lcm_unroll) { lcm_unroll_ = _lcm_unroll; }
     void set_time_shift(int _time_shift) { time_shift_ = _time_shift; }
 
@@ -673,7 +673,11 @@ void Algorithm<N_RANK>::set_slope(int const slope[])
 }
 
 template <int N_RANK> 
-void Algorithm<N_RANK>::set_pts(int _sz_pgk, Pochoir_Guard<N_RANK> * _pgs, Pochoir_Tile_Kernel<N_RANK> * _pts) {
+void Algorithm<N_RANK>::set_pts(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Tile_Kernel<N_RANK> * _pts) {
+    /* for pgs_, we use the container Vector_Info since it's called in Gen_Plan,
+     * the time of which is not counted into the total running time;
+     * for pts_, we keep using raw pointer for performance
+     */
     sz_pgk_ = _sz_pgk; pgs_ = _pgs; pts_ = _pts; 
     ptsSet = true;
     pure_region_ = new Pure_Region_All<N_RANK>(_sz_pgk, _pgs);
@@ -684,7 +688,11 @@ void Algorithm<N_RANK>::set_pts(int _sz_pgk, Pochoir_Guard<N_RANK> * _pgs, Pocho
 }
 
 template <int N_RANK> 
-void Algorithm<N_RANK>::set_opks(int _sz_pgk, Pochoir_Guard<N_RANK> * _pgs, Pochoir_Combined_Obase_Kernel<N_RANK> * _opks) {
+void Algorithm<N_RANK>::set_opks(int _sz_pgk, Vector_Info<Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Combined_Obase_Kernel<N_RANK> * _opks) {
+    /* for pgs_, we use the container Vector_Info since it's called in Gen_Plan,
+     * the time of which is not counted into the total running time;
+     * for opks_, we keep using raw pointer for performance
+     */
     sz_pgk_ = _sz_pgk; pgs_ = _pgs; opks_ = _opks; 
     opksSet = true;
     pure_region_ = new Pure_Region_All<N_RANK>(_sz_pgk, _pgs);

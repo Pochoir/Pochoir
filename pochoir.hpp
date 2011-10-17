@@ -806,10 +806,10 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     algor.set_thres(arr_type_size_);
     /* set individual unroll factor from opgk_ */
     if (pmode_ == Pochoir_Obase_Tile) {
-        algor.set_opks(sz_pxgk_, opgs_.get_root(), opks_.get_root());
+        algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
     } else if (pmode_ == Pochoir_Tile) {
         /* we partition the computing domain align to the 'exclusive_if's */
-        algor.set_pts(sz_pxgk_, pxgs_.get_root(), pxts_.get_root());
+        algor.set_pts(sz_pxgk_, pxgs_, pxts_.get_root());
     } else {
         printf("Something is wrong in Gen_Plan(Timestep)!\n");
         exit(1);

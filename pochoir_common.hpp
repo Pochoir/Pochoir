@@ -268,26 +268,50 @@ struct Region_Info {
 };
 
 template <typename T>
+bool is_basic_data_type() { return false; };
+template <> bool is_basic_data_type<int>() { return true; };
+template <> bool is_basic_data_type<long>() { return true; };
+template <> bool is_basic_data_type<float>() { return true; };
+template <> bool is_basic_data_type<double>() { return true; };
+
+template <typename T>
 struct Vector_Info {
     T * region_;
     int pointer_, size_;
     Vector_Info() {
-        region_ = (T *) calloc(VECTOR_SIZE, sizeof(T));
+        region_ = new T[VECTOR_SIZE];
         pointer_ = 0; size_ = VECTOR_SIZE;
 #if DEBUG
         printf("init size = %d\n", size_);
 #endif
     }
     Vector_Info(int size) {
-        region_ = (T *) calloc(size, sizeof(T));
+        region_ = new T[size];
         pointer_ = 0; size_ = size;
 #if DEBUG
         printf("init size = %d\n", size_);
 #endif
     }
+    Vector_Info(T & rhs) {
+        int l_rhs_size = rhs.size();
+        region_ = new T[l_rhs_size];
+        size_ = l_rhs_size;
+        for (int i = 0; i < l_rhs_size; ++i) {
+            region_[i] = rhs[i];
+        }
+        pointer_ = l_rhs_size;
+    }
+
     ~Vector_Info() {
         pointer_ = size_ = 0;
-        delete region_;
+        /* how to write a destructor if the region_[] is an array of function objects? 
+         */
+#if DEBUG
+        t = is_basic_data_type<int>();
+#endif
+        if (is_basic_data_type<T>()) {
+            delete [] region_;
+        }
     } 
     void add_element(T ele) {
 #if DEBUG
@@ -329,6 +353,15 @@ struct Vector_Info {
     T * get_root() { return region_; }
     T & operator[] (int _idx) { return region_[_idx]; }
     int size() { return pointer_; }
+    T & operator= (T & rhs) {
+        int l_rhs_size = rhs.size();
+        region_ = new T[l_rhs_size];
+        size_ = l_rhs_size;
+        for (int i = 0; i < l_rhs_size; ++i) {
+            region_[i] = rhs[i];
+        }
+        pointer_ = l_rhs_size;
+    }
 
     friend std::ofstream & operator<<(std::ofstream & fs, Vector_Info<T> const & v) {
         for (int i = 0; i < v.pointer_; ++i) {
@@ -366,7 +399,8 @@ struct Pochoir_Plan {
     }
     void alloc_sync_data(int _sz_sync_data) {
         sz_sync_data_ = _sz_sync_data;
-        sync_data_ = new Vector_Info<int>(_sz_sync_data);
+        // sync_data_ = new Vector_Info<int>(_sz_sync_data);
+        sync_data_ = new Vector_Info<int>;
     }
     ~Pochoir_Plan() {
         sz_base_data_ = sz_sync_data_ = 0;
