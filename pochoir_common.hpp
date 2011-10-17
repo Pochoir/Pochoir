@@ -81,6 +81,14 @@ static inline int lcm(int a, int b) {
 #define CROSS_REGION -2
 #define BICUT 1
 #define STAT 0
+#define VECTOR_SIZE 10
+
+enum Pochoir_Mode {
+    Pochoir_Null,
+    Pochoir_Stagger,
+    Pochoir_Tile,
+    Pochoir_Obase_Tile
+};
 
 // define an alias to the array of array of Pochoir_Kernel
 #define POCHOIR_TILE Pochoir_Kernel
@@ -263,6 +271,13 @@ template <typename T>
 struct Vector_Info {
     T * region_;
     int pointer_, size_;
+    Vector_Info() {
+        region_ = (T *) calloc(VECTOR_SIZE, sizeof(T));
+        pointer_ = 0; size_ = VECTOR_SIZE;
+#if DEBUG
+        printf("init size = %d\n", size_);
+#endif
+    }
     Vector_Info(int size) {
         region_ = (T *) calloc(size, sizeof(T));
         pointer_ = 0; size_ = size;
@@ -276,7 +291,7 @@ struct Vector_Info {
     } 
     void add_element(T ele) {
 #if DEBUG
-//        std::cerr << "add_element " << ele << std::endl;
+        std::cerr << "add_element " << ele << std::endl;
 #endif
         if (pointer_ < size_) {
             region_[pointer_] = ele;
@@ -285,7 +300,11 @@ struct Vector_Info {
 #if DEBUG
             printf("realloc memory size = %d -> %d!\n", size_, 2*size_);
 #endif
+#if 0
             T * l_region = (T *) calloc(2*size_, sizeof(T));
+#else
+            T * l_region = new T[2 * size_];
+#endif
             if (l_region != NULL) {
                 for (int i = 0; i < size_; ++i) {
                     l_region[i] = region_[i];
@@ -307,6 +326,8 @@ struct Vector_Info {
             region_[i] = region_[i] + region_[i-1];
         }
     }
+    T * get_root() { return region_; }
+    T & operator[] (int _idx) { return region_[_idx]; }
     int size() { return pointer_; }
 
     friend std::ofstream & operator<<(std::ofstream & fs, Vector_Info<T> const & v) {
