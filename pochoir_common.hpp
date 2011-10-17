@@ -333,7 +333,9 @@ struct Vector_Info {
                 for (int i = 0; i < size_; ++i) {
                     l_region[i] = region_[i];
                 }
-                delete(region_);
+                if (is_basic_data_type<T>()) {
+                    delete [] region_;
+                }
                 region_ = l_region;
                 region_[pointer_] = ele;
                 ++pointer_;
