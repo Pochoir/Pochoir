@@ -324,11 +324,7 @@ struct Vector_Info {
 #if DEBUG
             printf("realloc memory size = %d -> %d!\n", size_, 2*size_);
 #endif
-#if 0
-            T * l_region = (T *) calloc(2*size_, sizeof(T));
-#else
             T * l_region = new T[2 * size_];
-#endif
             if (l_region != NULL) {
                 for (int i = 0; i < size_; ++i) {
                     l_region[i] = region_[i];

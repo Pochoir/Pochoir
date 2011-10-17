@@ -267,7 +267,9 @@ eqTPTile a b = head a == head b
 
 eqIndexPKernel :: PKernel -> PKernel -> Bool
 eqIndexPKernel a b = (kIndex a) == (kIndex b)
--- eqIndexPKernel a b = (kIndex a) == (kIndex b) && (kfTileOrder $ kFunc a) + 1 == (kfTileOrder $ kFunc b)
+
+eqIndexPKernelTOrder :: PKernel -> PKernel -> Bool
+eqIndexPKernelTOrder a b = (kIndex a) == (kIndex b) && ((kfTileOrder $ kFunc a) + 1 == (kfTileOrder $ kFunc b) || ((kfTileOrder $ kFunc a) == 1 + (kfTileOrder $ kFunc b)))
 
 pGroupBy :: (a -> a -> Bool) -> [a] -> [[a]]
 pGroupBy b l = pGroupByTerm b l []
@@ -280,23 +282,44 @@ pGroupByTerm b l@(x:xs) ass =
     in  pGroupByTerm b as2 ass'
 
 pGroupPKernelBy :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]]
-pGroupPKernelBy b l = pGroupPKernelByTerm b l []
+pGroupPKernelBy b [] = []
+pGroupPKernelBy b l = 
+    let n = (kfTileOrder . kFunc . head) l
+        l' = pSerializePKernel l n 0 []
+    in  pGroupPKernelByTerm b l' []
+        
+pSerializePKernel :: [PKernel] -> Int -> Int -> [PKernel] -> [PKernel]
+pSerializePKernel [] n counter l = l
+pSerializePKernel kL@(k:ks) n counter l =
+    let l_kf = kFunc k
+        l_tOrder = kfTileOrder $ kFunc k
+        n' = if l_tOrder == n
+                    then n
+                    else l_tOrder
+        counter' = if l_tOrder == n
+                then counter
+                else counter+1
+        k' = if l_tOrder == n
+                then k { kFunc = l_kf { kfTileOrder = counter } }
+                else k { kFunc = l_kf { kfTileOrder = counter+1 } }
+        l' = l ++ [k']
+    in  pSerializePKernel ks n' counter' l'
 
 pGroupPKernelByTerm :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]] -> [[PKernel]]
 pGroupPKernelByTerm b [] ass = ass
 pGroupPKernelByTerm b l@(x:xs) ass =
-    let (inSet, outSet) = pGroupPKernelByItem b x xs ([x], [])
+    let (inSet, outSet) = pPartition b x xs ([x], [])
         ass' = ass ++ [inSet]
     in  pGroupPKernelByTerm b outSet ass'
 
-pGroupPKernelByItem :: (PKernel -> PKernel -> Bool) -> PKernel -> [PKernel] -> ([PKernel], [PKernel]) -> ([PKernel], [PKernel])
-pGroupPKernelByItem b x [] (inSet, outSet) = (inSet, outSet)
-pGroupPKernelByItem b x l@(a:as) (inSet, outSet) =
+pPartition :: (PKernel -> PKernel -> Bool) -> PKernel -> [PKernel] -> ([PKernel], [PKernel]) -> ([PKernel], [PKernel])
+pPartition b x [] (inSet, outSet) = (inSet, outSet)
+pPartition b x l@(a:as) (inSet, outSet) =
     if b x a
        then let inSet' = inSet ++ [a]
-            in  pGroupPKernelByItem b a as (inSet', outSet)
+            in  pPartition b a as (inSet', outSet)
        else let outSet' = outSet ++ [a]
-            in  pGroupPKernelByItem b x as (inSet, outSet')
+            in  pPartition b x as (inSet, outSet')
 
 pSetTileOp :: TileOp -> PTile -> PTile
 pSetTileOp l_op pTile = pTile { tOp = l_op }

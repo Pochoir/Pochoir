@@ -703,7 +703,7 @@ int main(int argc, char * argv[])
     t = T;
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-//             check_result(t, i, j, a(t, i, j), b(t, i, j));
+             check_result(t, i, j, a(t, i, j), b(t, i, j));
         }
     } 
 
