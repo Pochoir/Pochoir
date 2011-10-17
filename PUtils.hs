@@ -258,13 +258,16 @@ eqTPKernel :: PKernel -> PKernel -> Bool
 eqTPKernel a b = (head $ kIndex a) == (head $ kIndex b)
 
 eqTGroupPKernel :: [PKernel] -> [PKernel] -> Bool
+eqTGroupPKernel [] [] = True
 eqTGroupPKernel a b = (head . kIndex . head) a == (head . kIndex . head) b
 
 eqTPTile :: [Int] -> [Int] -> Bool
+eqTPTile [] [] = True
 eqTPTile a b = head a == head b
 
 eqIndexPKernel :: PKernel -> PKernel -> Bool
 eqIndexPKernel a b = (kIndex a) == (kIndex b)
+-- eqIndexPKernel a b = (kIndex a) == (kIndex b) && (kfTileOrder $ kFunc a) + 1 == (kfTileOrder $ kFunc b)
 
 pGroupBy :: (a -> a -> Bool) -> [a] -> [[a]]
 pGroupBy b l = pGroupByTerm b l []
@@ -273,8 +276,27 @@ pGroupByTerm :: (a -> a -> Bool) -> [a] -> [[a]] -> [[a]]
 pGroupByTerm b [] ass = ass
 pGroupByTerm b l@(x:xs) ass =
     let (as1, as2) = partition (b x) l
-        ass' = ass ++ [as1]
+        ass' = if null as1 then ass else ass ++ [as1]
     in  pGroupByTerm b as2 ass'
+
+pGroupPKernelBy :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]]
+pGroupPKernelBy b l = pGroupPKernelByTerm b l []
+
+pGroupPKernelByTerm :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]] -> [[PKernel]]
+pGroupPKernelByTerm b [] ass = ass
+pGroupPKernelByTerm b l@(x:xs) ass =
+    let (inSet, outSet) = pGroupPKernelByItem b x xs ([x], [])
+        ass' = ass ++ [inSet]
+    in  pGroupPKernelByTerm b outSet ass'
+
+pGroupPKernelByItem :: (PKernel -> PKernel -> Bool) -> PKernel -> [PKernel] -> ([PKernel], [PKernel]) -> ([PKernel], [PKernel])
+pGroupPKernelByItem b x [] (inSet, outSet) = (inSet, outSet)
+pGroupPKernelByItem b x l@(a:as) (inSet, outSet) =
+    if b x a
+       then let inSet' = inSet ++ [a]
+            in  pGroupPKernelByItem b a as (inSet', outSet)
+       else let outSet' = outSet ++ [a]
+            in  pGroupPKernelByItem b x as (inSet, outSet')
 
 pSetTileOp :: TileOp -> PTile -> PTile
 pSetTileOp l_op pTile = pTile { tOp = l_op }

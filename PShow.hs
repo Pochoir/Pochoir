@@ -748,6 +748,7 @@ pShowOverlapGuardTail t ts = if length t == (length . head) ts
 
 pShowOverlapGuardTail :: [PKernelFunc] -> [[PKernelFunc]] -> String
 pShowOverlapGuardTail _ [] = "}"
+pShowOverlapGuardTail _ [[]] = "}"
 pShowOverlapGuardTail k ks = if (kfTileOrder . head) k == (kfTileOrder . head . head) ks
                                 then "} else"
                                 else "}"
