@@ -510,7 +510,6 @@ struct Algorithm {
     void set_phys_grid(Grid_Info<N_RANK> const & grid);
     // void set_stride(int const stride[]);
     void set_slope(int const slope[]);
-    void set_pks(int _sz_pgk, Pochoir_Guard<N_RANK> * _pgs, Pochoir_Stagger_Kernel<N_RANK> * _pks);
     void set_opks(int _sz_pgk, Pochoir_Guard<N_RANK> * _pgs, Pochoir_Combined_Obase_Kernel<N_RANK> * _opks);
     void set_pts(int _sz_pgk, Pochoir_Guard<N_RANK> * _pgs, Pochoir_Tile_Kernel<N_RANK> * _pts);
     void set_unroll(int _lcm_unroll) { lcm_unroll_ = _lcm_unroll; }
@@ -671,17 +670,6 @@ void Algorithm<N_RANK>::set_slope(int const slope[])
             lub_boundary[i] = phys_grid_.x0[i] + slope_[i];
         }
     }
-}
-
-template <int N_RANK> 
-void Algorithm<N_RANK>::set_pks(int _sz_pgk, Pochoir_Guard<N_RANK> * _pgs, Pochoir_Stagger_Kernel<N_RANK> * _pks) {
-    sz_pgk_ = _sz_pgk; pgs_ = _pgs; pks_ = _pks;  
-    pksSet = true;
-    pure_region_ = new Pure_Region_All<N_RANK>(_sz_pgk, _pgs);
-    if (physGridSet) {
-        pure_region_->set_phys_grid(phys_grid_);
-    }
-    return;
 }
 
 template <int N_RANK> 
