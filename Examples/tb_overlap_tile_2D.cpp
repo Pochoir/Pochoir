@@ -305,7 +305,7 @@ int main(int argc, char * argv[])
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
-            for (int i = 0; i < N; ++i) {
+            cilk_for (int i = 0; i < N; ++i) {
                 if (g_exclusive_0(t-1, i)) {
                     /* k_exclusive_0 */
                     if ((t-1) % 2 == 0 && i % 2 == 0) {

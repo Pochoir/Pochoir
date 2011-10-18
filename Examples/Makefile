@@ -94,6 +94,16 @@ diamond_2 : tb_diamond_2.cpp # tb_diamond_2_pochoir.cpp
 	${CC} -o diamond_2 ${POCHOIR_DEBUG_FLAGS} tb_diamond_2.cpp 
 #	${ICC} -o diamond_2 ${OPT_FLAGS} tb_diamond_2.cpp 
 
+tile_space : tb_tile_space.cpp # tb_tile_space_pochoir.cpp 
+#   Phase-II compilation
+	${CC} -o tile_space ${OPT_FLAGS} -all-cond-tile-macro tb_tile_space.cpp
+#	${ICC} -o tile_space_gdb ${ICC_DEBUG_FLAGS} tb_tile_space_pochoir.cpp
+#	${CC} -o tile_space ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_tile_space.cpp
+#	${ICC} -o tile_space ${OPT_FLAGS} tb_tile_space_pochoir.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o tile_space ${POCHOIR_DEBUG_FLAGS} tb_tile_space.cpp 
+#	${ICC} -o tile_space ${OPT_FLAGS} tb_tile_space.cpp 
+
 tile_2D : tb_tile_2D.cpp # tb_tile_2D_pochoir.cpp 
 #   Phase-II compilation
 	${CC} -o tile_2D ${OPT_FLAGS} -all-cond-tile-pointer tb_tile_2D.cpp
@@ -116,7 +126,7 @@ tile_3D : tb_tile_3D.cpp # tb_tile_3D_pochoir.cpp
 
 overlap_tile_2D : tb_overlap_tile_2D.cpp # tb_overlap_tile_2D_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o overlap_tile_2D ${OPT_FLAGS} -all-cond-tile-macro-overlap tb_overlap_tile_2D.cpp
+	${CC} -o overlap_tile_2D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_overlap_tile_2D.cpp
 	${ICC} -o overlap_tile_2D_gdb ${ICC_DEBUG_FLAGS} tb_overlap_tile_2D_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o overlap_tile_2D ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_2D.cpp 
@@ -124,7 +134,7 @@ overlap_tile_2D : tb_overlap_tile_2D.cpp # tb_overlap_tile_2D_pochoir.cpp
 
 overlap_tile_3D : tb_overlap_tile_3D.cpp # tb_overlap_tile_3D_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o overlap_tile_3D ${OPT_FLAGS} -all-cond-tile-pointer-overlap tb_overlap_tile_3D.cpp
+	${CC} -o overlap_tile_3D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_overlap_tile_3D.cpp
 #	${ICC} -o overlap_tile_3D_gdb ${ICC_DEBUG_FLAGS} tb_overlap_tile_3D_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o overlap_tile_3D ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_3D.cpp 
