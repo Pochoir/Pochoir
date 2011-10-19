@@ -265,29 +265,32 @@ eqTPTile :: [Int] -> [Int] -> Bool
 eqTPTile [] [] = True
 eqTPTile a b = head a == head b
 
-eqIndexPKernel :: PKernel -> PKernel -> Bool
-eqIndexPKernel a b = (kIndex a) == (kIndex b)
+eqTileIndex :: [Int] -> [Int] -> Bool
+eqTileIndex _ [] = True
+eqTileIndex [] _ = True
+eqTileIndex aL@(a:as) bL@(b:bs) = 
+    if a == b
+       then eqTileIndex as bs
+       else False
+
+eqKIndex :: PKernel -> PKernel -> Bool
+eqKIndex a b = (kIndex a) == (kIndex b)
+
+eqKIndexLen :: PKernel -> PKernel -> Bool
+eqKIndexLen a b = (length . kIndex) a == (length . kIndex) b
+
+diffTileOrderPKernel :: PKernel -> PKernel -> Int -> Bool
+diffTileOrderPKernel a b n = (abs $ (kfTileOrder . kFunc) a - (kfTileOrder . kFunc) b) == n
 
 eqIndexPKernelTOrder :: PKernel -> PKernel -> Bool
-eqIndexPKernelTOrder a b = (kIndex a) == (kIndex b) && ((kfTileOrder $ kFunc a) + 1 == (kfTileOrder $ kFunc b) || ((kfTileOrder $ kFunc a) == 1 + (kfTileOrder $ kFunc b)))
+eqIndexPKernelTOrder a b = (eqKIndex a b) && (diffTileOrderPKernel a b 1)
 
-pGroupBy :: (a -> a -> Bool) -> [a] -> [[a]]
-pGroupBy b l = pGroupByTerm b l []
+eqIndexPKernel :: PKernel -> PKernel -> Bool
+eqIndexPKernel a b = (eqKIndexLen a b) && (diffTileOrderPKernel a b 0)
 
-pGroupByTerm :: (a -> a -> Bool) -> [a] -> [[a]] -> [[a]]
-pGroupByTerm b [] ass = ass
-pGroupByTerm b l@(x:xs) ass =
-    let (as1, as2) = partition (b x) l
-        ass' = if null as1 then ass else ass ++ [as1]
-    in  pGroupByTerm b as2 ass'
+eqVarLenIndexPKernelTOrder :: PKernel -> PKernel -> Bool
+eqVarLenIndexPKernelTOrder a b = (eqTileIndex (kIndex a) (kIndex b)) && (diffTileOrderPKernel a b 1)
 
-pGroupPKernelBy :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]]
-pGroupPKernelBy b [] = []
-pGroupPKernelBy b l = 
-    let n = (kfTileOrder . kFunc . head) l
-        l' = pSerializePKernel l n 0 []
-    in  pGroupPKernelByTerm b l' []
-        
 pSerializePKernel :: [PKernel] -> Int -> Int -> [PKernel] -> [PKernel]
 pSerializePKernel [] n counter l = l
 pSerializePKernel kL@(k:ks) n counter l =
@@ -305,13 +308,6 @@ pSerializePKernel kL@(k:ks) n counter l =
         l' = l ++ [k']
     in  pSerializePKernel ks n' counter' l'
 
-pGroupPKernelByTerm :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]] -> [[PKernel]]
-pGroupPKernelByTerm b [] ass = ass
-pGroupPKernelByTerm b l@(x:xs) ass =
-    let (inSet, outSet) = pPartition b x xs ([x], [])
-        ass' = ass ++ [inSet]
-    in  pGroupPKernelByTerm b outSet ass'
-
 pPartition :: (PKernel -> PKernel -> Bool) -> PKernel -> [PKernel] -> ([PKernel], [PKernel]) -> ([PKernel], [PKernel])
 pPartition b x [] (inSet, outSet) = (inSet, outSet)
 pPartition b x l@(a:as) (inSet, outSet) =
@@ -320,6 +316,94 @@ pPartition b x l@(a:as) (inSet, outSet) =
             in  pPartition b a as (inSet', outSet)
        else let outSet' = outSet ++ [a]
             in  pPartition b x as (inSet, outSet')
+
+pFillKIndex :: [Int] -> PKernel -> PKernel
+pFillKIndex index k = k { kIndex = index }
+
+pGroupPKernelByMerge :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]]
+pGroupPKernelByMerge b [] = []
+pGroupPKernelByMerge b l = 
+    let l_pKernel_by_tIndex = pGroupPKernelBy eqIndexPKernel l
+    in  pGroupPKernelByMergeTerm b $ map (map wrapListMonad) l_pKernel_by_tIndex
+
+wrapListMonad :: a -> [a]
+wrapListMonad a = [a]
+
+pGroupPKernelByMergeTerm :: (PKernel -> PKernel -> Bool) -> [[[PKernel]]] -> [[PKernel]]
+pGroupPKernelByMergeTerm _ [] = []
+pGroupPKernelByMergeTerm _ [a] = a
+pGroupPKernelByMergeTerm b ll@(x:y:zs) = 
+    -- firstly, let's merge only the following simplified case
+    if ((length . kIndex . last . last) x <= (length . kIndex . head . head) y 
+        && length x <= length y)
+        then let x' = pMergeForward b x y
+             in  pGroupPKernelByMergeTerm b (x':zs)
+        else if ((length . kIndex . last . last) x > (length . kIndex . head . head) y
+               && length x > length y)
+                then let x' = pMergeBackward b x y []
+                     in  pGroupPKernelByMergeTerm b (x':zs)
+                else x ++ pGroupPKernelByMergeTerm b (y:zs)
+
+pMergeForward :: (PKernel -> PKernel -> Bool) -> [[PKernel]] -> [[PKernel]] -> [[PKernel]]
+pMergeForward b [] y = y
+pMergeForward b x@(a:as) y = 
+    let could_merge = foldr (||) False $ 
+                        map (b (last a)) (map head y)
+    in  if could_merge
+           then pMergeForward b as $ pMergeForwardTerm b a y
+           else a:(pMergeForward b as y)
+
+pMergeForwardTerm :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]] -> [[PKernel]]
+pMergeForwardTerm b x [] = []
+pMergeForwardTerm b x yL@(y:ys) =
+    if b (last x) (head y)
+       then let x' = map (pFillKIndex $ (kIndex . head) y) x
+            in  (x' ++ y):(pMergeForwardTerm b x ys) 
+       else y:(pMergeForwardTerm b x ys)
+
+pMergeBackward :: (PKernel -> PKernel -> Bool) -> [[PKernel]] -> [[PKernel]] -> [[PKernel]] -> [[PKernel]]
+pMergeBackward b x [] l = x ++ l
+pMergeBackward b x y@(a:as) l =
+    let could_merge = foldr (||) False $
+                        map (flip b (head a)) (map last x)
+    in  if could_merge 
+           then pMergeBackward b (pMergeBackwardTerm b x a) as l
+           else pMergeBackward b x as $ l ++ [a]
+
+pMergeBackwardTerm :: (PKernel -> PKernel -> Bool) -> [[PKernel]] -> [PKernel] -> [[PKernel]]
+pMergeBackwardTerm b [] y = []
+pMergeBackwardTerm b xL@(x:xs) y =
+    if b (last x) (head y)
+       then let y' = map (pFillKIndex $ (kIndex . last) x) y
+            in  (x ++ y'):(pMergeBackwardTerm b xs y)
+       else x:(pMergeBackwardTerm b xs y)
+
+pGroupPKernelBy :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]]
+pGroupPKernelBy b [] = []
+pGroupPKernelBy b l = 
+    let n = (kfTileOrder . kFunc . head) l
+        l' = pSerializePKernel l n 0 []
+    in  pGroupPKernelByTerm b l' []
+        
+pGroupPKernelByTerm :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]] -> [[PKernel]]
+pGroupPKernelByTerm b [] ass = ass
+pGroupPKernelByTerm b l@(x:xs) ass =
+    let (inSet, outSet) = pPartition b x xs ([x], [])
+--  if we use the common partition defined in prelude, because it compares 
+--  the tile_order of each PKernel, it will step into an infinite comparison
+--    let (inSet, outSet) = partition (b x) l
+        ass' = ass ++ [inSet]
+    in  pGroupPKernelByTerm b outSet ass'
+
+pGroupBy :: (a -> a -> Bool) -> [a] -> [[a]]
+pGroupBy b l = pGroupByTerm b l []
+
+pGroupByTerm :: (a -> a -> Bool) -> [a] -> [[a]] -> [[a]]
+pGroupByTerm b [] ass = ass
+pGroupByTerm b l@(x:xs) ass =
+    let (as1, as2) = partition (b x) l
+        ass' = if null as1 then ass else ass ++ [as1]
+    in  pGroupByTerm b as2 ass'
 
 pSetTileOp :: TileOp -> PTile -> PTile
 pSetTileOp l_op pTile = pTile { tOp = l_op }

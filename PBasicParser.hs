@@ -562,9 +562,10 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
         l_kernels = concatMap getTileKernels l_tiles
         l_unroll = foldr max 0 $ map pTileLength l_tiles
         -- group kernels by the tile index (tIndex)
-        -- l_kernels_by_tIndex = pGroupBy eqIndexPKernel l_kernels
         -- l_kernels_by_tIndex = groupBy eqIndexPKernel l_kernels
-        l_kernels_by_tIndex = pGroupPKernelBy eqIndexPKernelTOrder l_kernels
+        -- l_kernels_by_tIndex = pGroupBy eqIndexPKernel l_kernels
+        -- l_kernels_by_tIndex = pGroupPKernelBy eqIndexPKernelTOrder l_kernels
+        l_kernels_by_tIndex = pGroupPKernelByMerge eqVarLenIndexPKernelTOrder l_kernels
         l_kernels_by_tIndex_by_t = pGroupBy eqTGroupPKernel l_kernels_by_tIndex
         -- for each l_tile_index, there could be a list of kernel functions
         l_tile_indices = map (kIndex . head) l_kernels_by_tIndex
