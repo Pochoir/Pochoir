@@ -172,6 +172,10 @@ ppStencil l_id l_state =
                                        intercalate ", " l_arrays ++ 
                                        "); /* UNKNOWN Pochoir Array */" ++ breakline)
 --                                     ");" ++ breakline)
+    <|> do try $ pMember "Gen_Plan"
+           l_tstep <- parens exprStmtDim
+           semi
+           return (l_id ++ ".Gen_Plan(" ++ show l_tstep ++ "); /* known */" ++ breakline)
     -- Ad hoc implementation of Run_Unroll
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
@@ -557,6 +561,7 @@ pShowAutoTileString :: PMode -> PStencil -> (PGuard, [PTile]) -> String
 pShowAutoTileString l_mode l_stencil (l_guard, []) = pShowDefaultTileString l_mode l_stencil l_guard
 pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
     let l_guardName = pGetOverlapGuardName l_guard
+        l_order = gOrder l_guard
         l_comments = pShowAutoTileComments l_tiles
         -- getTileKernels also fills the guardFunc/tile_op/tile_order into PKernelFuncs
         l_kernels = concatMap getTileKernels l_tiles
@@ -582,128 +587,131 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
     in  case l_mode of
             PAllCondTileMacroOverlap ->
                 pSplitAllCondTileOverlapScope
-                  ("Macro", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
+                  ("Macro", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
                   (pShowMacroStmt False)
             PAllCondTileCPointerOverlap ->
                 pSplitAllCondTileOverlapScope
-                  ("CPointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
+                  ("CPointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
                   pShowCPointerStmt
             PAllCondTilePointerOverlap ->
                 pSplitAllCondTileOverlapScope
-                  ("Pointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
+                  ("Pointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
                   (pShowPointerStmt True)
             PAllCondTileOptPointerOverlap ->
                 pSplitAllCondTileOverlapScope
-                  ("Opt_Pointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
+                  ("Opt_Pointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
                   pShowOptPointerStmt
             PUnrollTimeTileMacroOverlap ->
                 pSplitUnrollTimeTileOverlapScope 
-                  ("Macro", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_by_t, l_rev_kernel_funcs_by_t, l_stencil, l_comments)
+                  ("Macro", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_by_t, l_rev_kernel_funcs_by_t, l_stencil, l_comments)
                   (pShowMacroStmt False)
             PUnrollTimeTileCPointerOverlap ->
                 pSplitUnrollTimeTileOverlapScope
-                  ("CPointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_by_t, l_rev_kernel_funcs_by_t, l_stencil, l_comments)
+                  ("CPointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_by_t, l_rev_kernel_funcs_by_t, l_stencil, l_comments)
                   pShowCPointerStmt
             PUnrollTimeTilePointerOverlap ->
                 pSplitUnrollTimeTileOverlapScope
-                  ("Pointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_by_t, l_rev_kernel_funcs_by_t, l_stencil, l_comments)
+                  ("Pointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_by_t, l_rev_kernel_funcs_by_t, l_stencil, l_comments)
                   (pShowPointerStmt True)
             PUnrollTimeTileOptPointerOverlap ->
                 pSplitUnrollTimeTileOverlapScope
-                  ("Opt_Pointer", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_by_t, l_rev_kernel_funcs_by_t, l_stencil, l_comments)
+                  ("Opt_Pointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_by_t, l_rev_kernel_funcs_by_t, l_stencil, l_comments)
                   pShowOptPointerStmt
 
-pSplitAllCondTileOverlapScope :: (String, PMode, PName, PName, Int, [[Int]], [[PKernelFunc]], PStencil, String) -> (PKernelFunc -> String) -> String
-pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfss, l_stencil, l_comments) l_showSingleKernel =
+pSplitAllCondTileOverlapScope :: (String, PMode, PName, PName, Int, Int, [[Int]], [[PKernelFunc]], PStencil, String) -> (PKernelFunc -> String) -> String
+pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_kfss, l_stencil, l_comments) l_showSingleKernel =
     let oldKernelName = intercalate "_" $ map kfName $ concat l_kfss
-        bdryKernelName = l_tag ++ "_boundary_" ++ oldKernelName
-        obaseKernelName = l_tag ++ "_interior_" ++ oldKernelName
+        -- bdryKernelName = l_tag ++ "_boundary_" ++ oldKernelName
+        -- obaseKernelName = l_tag ++ "_interior_" ++ oldKernelName
+        bdryKernelName = l_tag ++ "_boundary_kernel_" ++ show l_order
+        obaseKernelName = l_tag ++ "_interior_kernel_" ++ show l_order
         regBound = sRegBound l_stencil
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape $ concat l_kfss)
+        l_pShape' = pFillPShapeName "" l_order l_pShape
         bdryKernel = if regBound
                         then pShowAllCondTileOverlapKernels (pShowMacroStmt True) 
                                 regBound PAllCondTileMacroOverlap 
-                                bdryKernelName l_stencil l_pShape 
+                                bdryKernelName l_stencil l_pShape'
                                 l_tile_indices l_kfss
                         else ""
         obaseKernel = pShowAllCondTileOverlapKernels 
                         l_showSingleKernel 
-                        False l_mode obaseKernelName l_stencil l_pShape 
+                        False l_mode obaseKernelName l_stencil l_pShape'
                         l_tile_indices l_kfss
         runKernel = if regBound
                        then obaseKernelName ++ ", " ++ bdryKernelName
                        else obaseKernelName
     in  (breakline ++ l_comments ++
-         breakline ++ show l_pShape ++ bdryKernel ++ breakline ++ obaseKernel ++
+         breakline ++ show l_pShape' ++ bdryKernel ++ breakline ++ obaseKernel ++
          breakline ++ l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++
          ", " ++ show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
-pSplitUnrollTimeTileOverlapScope :: (String, PMode, PName, PName, Int, [[Int]], [[PKernelFunc]], [[[Int]]], [[[PKernelFunc]]], PStencil, String) -> (PKernelFunc -> String) -> String
-pSplitUnrollTimeTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfss, l_tile_indices_by_t, l_kfss_by_t, l_stencil, l_comments) l_showSingleKernel =
+pSplitUnrollTimeTileOverlapScope :: (String, PMode, PName, PName, Int, Int, [[Int]], [[PKernelFunc]], [[[Int]]], [[[PKernelFunc]]], PStencil, String) -> (PKernelFunc -> String) -> String
+pSplitUnrollTimeTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_kfss, l_tile_indices_by_t, l_kfss_by_t, l_stencil, l_comments) l_showSingleKernel =
     let oldKernelName = intercalate "_" $ map kfName $ concat l_kfss
-        bdryKernelName = l_tag ++ "_boundary_" ++ oldKernelName
-        cond_bdryKernelName = l_tag ++ "_cond_boundary_" ++ oldKernelName
-        obaseKernelName = l_tag ++ "_interior_" ++ oldKernelName
-        cond_obaseKernelName = l_tag ++ "_cond_interior_" ++ oldKernelName
+        -- bdryKernelName = l_tag ++ "_boundary_" ++ oldKernelName
+        -- cond_bdryKernelName = l_tag ++ "_cond_boundary_" ++ oldKernelName
+        -- obaseKernelName = l_tag ++ "_interior_" ++ oldKernelName
+        -- cond_obaseKernelName = l_tag ++ "_cond_interior_" ++ oldKernelName
+        bdryKernelName = l_tag ++ "_boundary_kernel_" ++ show l_order
+        cond_bdryKernelName = l_tag ++ "_cond_boundary_kernel_" ++ show l_order
+        obaseKernelName = l_tag ++ "_interior_kernel_" ++ show l_order
+        cond_obaseKernelName = l_tag ++ "_cond_interior_kernel_" ++ show l_order
         regBound = sRegBound l_stencil
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape $ concat l_kfss)
+        l_pShape' = pFillPShapeName "" l_order l_pShape
         cond_bdryKernel = if regBound
                              then pShowAllCondTileOverlapKernels 
                                      (pShowMacroStmt True) 
                                      regBound PAllCondTileMacroOverlap 
-                                     cond_bdryKernelName l_stencil l_pShape 
+                                     cond_bdryKernelName l_stencil l_pShape'
                                      l_tile_indices l_kfss
                              else ""
         bdryKernel = if regBound
                         then pShowUnrollTimeTileOverlapKernels
                                 (pShowMacroStmt True)
                                 regBound PUnrollTimeTileMacroOverlap
-                                bdryKernelName l_stencil l_pShape
+                                bdryKernelName l_stencil l_pShape'
                                 l_tile_indices_by_t l_kfss_by_t
                         else ""
         cond_obaseKernel = pShowAllCondTileOverlapKernels 
                                 l_showSingleKernel 
                                 False l_mode 
-                                cond_obaseKernelName l_stencil l_pShape 
+                                cond_obaseKernelName l_stencil l_pShape'
                                 l_tile_indices l_kfss
         obaseKernel = pShowUnrollTimeTileOverlapKernels
                                 l_showSingleKernel
                                 False l_mode 
-                                obaseKernelName l_stencil l_pShape
+                                obaseKernelName l_stencil l_pShape'
                                 l_tile_indices_by_t l_kfss_by_t
         runKernel = if regBound
                        then obaseKernelName ++ ", " ++ cond_obaseKernelName ++
                             ", " ++ bdryKernelName ++ ", " ++ cond_bdryKernelName
                        else obaseKernelName ++ ", " ++ cond_obaseKernelName
-    in  (breakline ++ l_comments ++ breakline ++ show l_pShape ++ 
+    in  (breakline ++ l_comments ++ breakline ++ show l_pShape' ++ 
          bdryKernel ++ breakline ++ cond_bdryKernel ++ breakline ++
          obaseKernel ++ breakline ++ cond_obaseKernel ++ breakline ++ 
          l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++
          ", " ++ show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
 pGetOverlapGuardTiles :: PMode -> PStencil -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> (String, [(PGuard, [PTile])])
-pGetOverlapGuardTiles l_mode l_stencil [] l_iGTs l_tiGTs =
+pGetOverlapGuardTiles l_mode l_stencil l_xGTs l_iGTs l_tiGTs =
     let -- we are assuming that all guards and kernels are of the same rank
-        l_rank = if null l_tiGTs 
-                    then gRank $ fst $ head l_iGTs
-                    else gRank $ fst $ head l_tiGTs
-        l_iPGuardTiles = pGetInclusiveGuardTiles l_mode [] l_iGTs l_tiGTs
-        l_iGuards = map (pShowAutoGuardString " || ") l_iPGuardTiles
-        l_iGuardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_iPGuardTiles
-        l_iTiles = map (pShowAutoTileString l_mode l_stencil) l_iPGuardTiles
-        l_str_iGTs = zipWith (++) l_iGuards l_iTiles
-    in  (breakline ++ concat l_str_iGTs, l_iPGuardTiles)
-pGetOverlapGuardTiles l_mode l_stencil l_xGTs@(x:xs) l_iGTs l_tiGTs =
-    let -- we are assuming that all guards and kernels are of the same rank
-        l_rank = gRank $ fst x
+        l_rank = if length l_xGTs > 0
+                    then gRank $ fst $ head l_xGTs
+                    else if length l_iGTs > 0
+                            then gRank $ fst $ head l_iGTs
+                            else gRank $ fst $ head l_tiGTs
         l_xPGuardTiles = pGetExclusiveGuardTiles l_mode l_rank l_xGTs l_iGTs l_tiGTs
         l_iPGuardTiles = pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs
-        l_xGuards = map (pShowAutoGuardString " && ") l_xPGuardTiles
-        l_iGuards = map (pShowAutoGuardString " || ") l_iPGuardTiles
-        l_xGuardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_xPGuardTiles
-        l_iGuardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_iPGuardTiles
-        l_xTiles = map (pShowAutoTileString l_mode l_stencil) l_xPGuardTiles
-        l_iTiles = map (pShowAutoTileString l_mode l_stencil) l_iPGuardTiles
+        l_xPGuardTiles' = zipWith pFillGuardOrder [0..] l_xPGuardTiles
+        l_iPGuardTiles' = zipWith pFillGuardOrder [0..] l_iPGuardTiles
+        l_xGuards = map (pShowAutoGuardString " && ") l_xPGuardTiles'
+        l_iGuards = map (pShowAutoGuardString " || ") l_iPGuardTiles'
+        l_xGuardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_xPGuardTiles'
+        l_iGuardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_iPGuardTiles'
+        l_xTiles = map (pShowAutoTileString l_mode l_stencil) l_xPGuardTiles'
+        l_iTiles = map (pShowAutoTileString l_mode l_stencil) l_iPGuardTiles'
         l_str_xGTs = zipWith (++) l_xGuards l_xTiles
         l_str_iGTs = zipWith (++) l_iGuards l_iTiles
     in  (breakline ++ concat l_str_xGTs ++ breakline ++ concat l_str_iGTs,

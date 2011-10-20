@@ -136,6 +136,7 @@ data PGuard = PGuard {
     gName :: PName,
     gRank :: Int,
     gFunc :: PGuardFunc,
+    gOrder :: Int,
     gComment :: [String]
 } deriving Show
 
@@ -181,7 +182,7 @@ emptyGuardFunc :: PGuardFunc
 emptyGuardFunc = PGuardFunc { gfName = "", gfParams = [], gfStmt = [], gfStmtSize = 0, gfIter = [], gfComment = cEmpty "Pochoir_Guard_Func" }
 
 emptyGuard :: PGuard
-emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc, gComment = [] }
+emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc, gComment = [], gOrder = 0 }
 
 emptyTileKernel :: PTileKernel
 emptyTileKernel = LK [] 

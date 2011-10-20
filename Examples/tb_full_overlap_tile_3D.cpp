@@ -116,50 +116,6 @@ int main(int argc, char * argv[])
     b.Register_Shape(twod_5pt);
     b.Register_Boundary(aperiodic_2D);
 
-    /* begin Pochoir_Guard functions */
-    Pochoir_Guard_2D_Begin(g_exclusive_0, t, i, j)
-        if (i < N/2 && j < N/2)
-            return true;
-        else
-            return false;
-    Pochoir_Guard_2D_End(g_exclusive_0)
-
-    Pochoir_Guard_2D_Begin(g_exclusive_1, t, i, j)
-        if (i >= N/2 && j >= N/2)
-            return true;
-        else
-            return false;
-    Pochoir_Guard_2D_End(g_exclusive_1)
-
-    Pochoir_Guard_2D_Begin(g_inclusive_0, t, i, j)
-        if (i < N/2 && j < N/2 && t < T/2)
-            return true;
-        else
-            return false;
-    Pochoir_Guard_2D_End(g_inclusive_0)
-
-    Pochoir_Guard_2D_Begin(g_inclusive_1, t, i, j)
-        if (i >= N/4 && i < N/3 && j >= N/4 && j < N/3 && t < T*2/3)
-            return true;
-        else
-            return false;
-    Pochoir_Guard_2D_End(g_inclusive_1);
-
-    Pochoir_Guard_2D_Begin(g_tiny_inclusive_0, t, i, j)
-        if (i >= 1 && i < 5 && j >= 1 && j < 5 && t > 1 && t <= 2)
-            return true;
-        else
-            return false;
-    Pochoir_Guard_2D_End(g_tiny_inclusive_0)
-
-    Pochoir_Guard_2D_Begin(g_tiny_inclusive_1, t, i, j)
-        if (i > 5 && i <= 10 && j > 5 && j <= 10 && t > 2 && t < 4)
-            return true;
-        else
-            return false;
-    Pochoir_Guard_2D_End(g_tiny_inclusive_1)
-    /* end Pochoir_Guard functions */
-
     /* begin Pochoir_Kernel functions */
     Pochoir_Kernel_2D_Begin(k_0_0, t, i, j)
 #if APP_DEBUG
@@ -438,12 +394,12 @@ int main(int argc, char * argv[])
 
     /* end Pochoir_Kernel functions */
 
-    leap_frog.Register_Exclusive_Tile_Kernels(g_exclusive_0, tile_3D_checkerboard_0);
-    leap_frog.Register_Exclusive_Tile_Kernels(g_exclusive_1, tile_2D_checkerboard_1);
-    leap_frog.Register_Inclusive_Tile_Kernels(g_inclusive_0, tile_1D_checkerboard_2);
-    leap_frog.Register_Inclusive_Tile_Kernels(g_inclusive_1, tile_3D_checkerboard_3);
-    leap_frog.Register_Tiny_Inclusive_Tile_Kernels(g_tiny_inclusive_0, tile_2D_checkerboard_4);
-    leap_frog.Register_Tiny_Inclusive_Tile_Kernels(g_tiny_inclusive_1, tile_1D_checkerboard_5);
+    leap_frog.Register_Inclusive_Tile_Kernels(Default_Guard_2D, tile_3D_checkerboard_0);
+    leap_frog.Register_Inclusive_Tile_Kernels(Default_Guard_2D, tile_2D_checkerboard_1);
+    leap_frog.Register_Inclusive_Tile_Kernels(Default_Guard_2D, tile_1D_checkerboard_2);
+    leap_frog.Register_Inclusive_Tile_Kernels(Default_Guard_2D, tile_3D_checkerboard_3);
+    leap_frog.Register_Inclusive_Tile_Kernels(Default_Guard_2D, tile_2D_checkerboard_4);
+    leap_frog.Register_Inclusive_Tile_Kernels(Default_Guard_2D, tile_1D_checkerboard_5);
     leap_frog.Register_Array(a);
 
     /* initialization */
@@ -477,7 +433,7 @@ int main(int argc, char * argv[])
         for (int t = 1; t < T + 1; ++t) {
             cilk_for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-            if (g_exclusive_0(t-1, i, j)) {
+            if (Default_Guard_2D(t-1, i, j)) {
                 if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_0_0> : b(%d, %d, %d)\n", t, i, j);
@@ -535,7 +491,8 @@ int main(int argc, char * argv[])
                         0.8 * b(t-1, i-1, j) + 0.85 * b(t-1, i, j) + 0.85 * b(t-1, i+1, j)
                       - 0.8 * b(t-1, i, j-1) - 0.85 * b(t-1, i, j) - 0.85 * b(t-1, i, j+1);
                 }
-            } else if (g_exclusive_1(t-1, i, j)) {
+            } 
+            if (Default_Guard_2D(t-1, i, j)) {
                 if ((t-1) % 2 == 0 && i % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_1_0> : b(%d, %d, %d)\n", t, i, j);
@@ -566,7 +523,7 @@ int main(int argc, char * argv[])
                       - 0.41 * b(t-1, i, j-1) - 0.451 * b(t-1, i, j) - 0.451 * b(t-1, i, j+1);
                 }
             }
-            if (g_inclusive_0(t-1, i, j)) {
+            if (Default_Guard_2D(t-1, i, j)) {
                 if ((t-1) % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_2_0> : b(%d, %d, %d)\n", t, i, j);
@@ -583,7 +540,7 @@ int main(int argc, char * argv[])
                       - 0.22 * b(t-1, i, j-1) - 0.252 * b(t-1, i, j) - 0.252 * b(t-1, i, j+1);
                 }
             }
-            if (g_inclusive_1(t-1, i, j)) {
+            if (Default_Guard_2D(t-1, i, j)) {
                 if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_3_0> : b(%d, %d, %d)\n", t, i, j);
@@ -642,7 +599,7 @@ int main(int argc, char * argv[])
                       - 0.83 * b(t-1, i, j-1) - 0.853 * b(t-1, i, j) - 0.853 * b(t-1, i, j+1);
                 }
             }
-            if (g_tiny_inclusive_0(t-1, i, j)) {
+            if (Default_Guard_2D(t-1, i, j)) {
                 if ((t-1) % 2 == 0 && i % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_4_0> : b(%d, %d, %d)\n", t, i, j);
@@ -673,7 +630,7 @@ int main(int argc, char * argv[])
                       - 0.44 * b(t-1, i, j-1) - 0.454 * b(t-1, i, j) - 0.454 * b(t-1, i, j+1);
                 }
             }
-            if (g_tiny_inclusive_1(t-1, i, j)) {
+            if (Default_Guard_2D(t-1, i, j)) {
                 if ((t-1) % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_5_0> : b(%d, %d, %d)\n", t, i, j);
@@ -703,7 +660,7 @@ int main(int argc, char * argv[])
     t = T;
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-//             check_result(t, i, j, a(t, i, j), b(t, i, j));
+             check_result(t, i, j, a(t, i, j), b(t, i, j));
         }
     } 
 

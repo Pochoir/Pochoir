@@ -516,18 +516,22 @@ template <int N_RANK>
 struct Spawn_Tree {
     Node_Info<N_RANK> * root_;
     int size_;
+    bool add_empty_region_;
     Spawn_Tree() { 
         /* constructor */
         root_ = new Node_Info<N_RANK>(IS_ROOT); size_ = 1;
+        add_empty_region_ = false;
     }
 
     Spawn_Tree(int _t0, int _t1, Grid_Info<N_RANK> & _grid) {
         /* constructor */
         root_ = new Node_Info<N_RANK>(_t0, _t1, _grid);
         size_ = 1;
+        add_empty_region_ = false;
     }
     ~Spawn_Tree() {
         /* free the entire tree */
+        add_empty_region_ = false;
         if (root_->left == NULL) {
             delete root_;
             return;
@@ -535,6 +539,9 @@ struct Spawn_Tree {
             dfs_rm_tree(root_);
             return;
         }
+    }
+    void set_add_empty_region(bool _add_empty_region) { 
+        add_empty_region_ = _add_empty_region;
     }
     void dfs_rm_tree(Node_Info<N_RANK> * parent) {
         Node_Info<N_RANK> * l_node;
@@ -553,7 +560,6 @@ struct Spawn_Tree {
     }
     Node_Info<N_RANK> * get_root() {  return root_; }
     int size() { return size_; }
-    int size_empty_region() { return size_empty_region_; }
 
     void add_node(Node_Info<N_RANK> * parent, Node_Info<N_RANK> * child, enum Meta_Op _op) {
         if (parent->left == NULL) {
@@ -574,12 +580,10 @@ struct Spawn_Tree {
     }
 
     void add_node(Node_Info<N_RANK> * parent, Node_Info<N_RANK> * child, enum Meta_Op _op, int _region_n) {
-#if !DEBUG
-        if (_op == IS_SPAWN && _region_n == NONE_EXCLUSIVE_IFS) {
+        if (_op == IS_SPAWN && _region_n == NONE_EXCLUSIVE_IFS && !add_empty_region_) {
             /* we don't add the empty region into the tree */
             return;
         }
-#endif
         if (parent->left == NULL) {
             parent->left = child;
             child->parent = parent;

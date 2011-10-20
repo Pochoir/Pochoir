@@ -156,6 +156,7 @@ class Pochoir {
     void Run(int timestep);
     void Run_Obase(int timestep);
     Pochoir_Plan<N_RANK> & Gen_Plan(int timepstep);
+    Pochoir_Plan<N_RANK> & Gen_Plan_Obase(int timepstep);
     Pochoir_Plan<N_RANK> & Load_Plan(const char * file_name);
     void Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & _plan);
     void Run(Pochoir_Plan<N_RANK> & _plan);
@@ -796,6 +797,9 @@ void Pochoir<N_RANK>::Run_Obase(int timestep) {
 
 template <int N_RANK> 
 Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
+    /* we don't squeeze out the NONE_EXCLUSIVE_IFS in Gen_Plan, 
+     * but do in Gen_Plan_Obase
+     */
     Pochoir_Plan<N_RANK> * l_plan = new Pochoir_Plan<N_RANK>();
     int l_sz_base_data, l_sz_sync_data;
     Spawn_Tree<N_RANK> * l_tree;
@@ -818,6 +822,65 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     timestep_ = timestep;
     checkFlags();
     l_tree = new Spawn_Tree<N_RANK>();
+    l_tree->set_add_empty_region(true);
+    l_root = l_tree->get_root();
+    algor.set_tree(l_tree);
+    algor.gen_plan_bicut_p(l_root, 0 + time_shift_, timestep + time_shift_, logic_grid_);
+    l_sz_base_data = algor.get_sz_base_data();
+    l_sz_sync_data = max(1, algor.get_sz_sync_data());
+    l_plan->alloc_base_data(l_sz_base_data);
+    l_plan->alloc_sync_data(l_sz_sync_data);
+    int l_tree_size_begin = l_tree->size();
+#if DEBUG
+    printf("sz_base_data = %d, sz_sync_data = %d\n", l_sz_base_data, l_sz_sync_data);
+    printf("tree size = %d\n", l_tree_size_begin);
+#endif
+    /* after remove all nodes, the only remaining node will be the 'root' */
+    while (l_tree_size_begin > 1) {
+        l_tree->dfs_until_sync(l_root->left, (*(l_plan->base_data_)));
+        int l_tree_size_end = l_tree->size();
+        if (l_tree_size_begin - l_tree_size_end > 0) {
+            l_plan->sync_data_->add_element(l_tree_size_begin - l_tree_size_end);
+        }
+        l_tree->dfs_rm_sync(l_root->left);
+        l_tree_size_begin = l_tree->size();
+#if DEBUG
+        printf("tree size = %d\n", l_tree_size_begin);
+#endif
+    }
+    l_plan->sync_data_->scan();
+    l_plan->sync_data_->add_element(END_SYNC);
+    return (*l_plan);
+}
+
+template <int N_RANK> 
+Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep) {
+    /* we don't squeeze out the NONE_EXCLUSIVE_IFS in Gen_Plan, 
+     * but do in Gen_Plan_Obase
+     */
+    Pochoir_Plan<N_RANK> * l_plan = new Pochoir_Plan<N_RANK>();
+    int l_sz_base_data, l_sz_sync_data;
+    Spawn_Tree<N_RANK> * l_tree;
+    Node_Info<N_RANK> * l_root;
+
+    Algorithm<N_RANK> algor(slope_);
+    algor.set_phys_grid(phys_grid_);
+    algor.set_thres(arr_type_size_);
+    /* set individual unroll factor from opgk_ */
+    if (pmode_ == Pochoir_Obase_Tile) {
+        algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
+    } else if (pmode_ == Pochoir_Tile) {
+        /* we partition the computing domain align to the 'exclusive_if's */
+        algor.set_pts(sz_pxgk_, pxgs_, pxts_.get_root());
+    } else {
+        printf("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
+        exit(1);
+    }
+    algor.set_unroll(lcm_unroll_);
+    timestep_ = timestep;
+    checkFlags();
+    l_tree = new Spawn_Tree<N_RANK>();
+    l_tree->set_add_empty_region(false);
     l_root = l_tree->get_root();
     algor.set_tree(l_tree);
     algor.gen_plan_bicut_p(l_root, 0 + time_shift_, timestep + time_shift_, logic_grid_);
@@ -876,18 +939,20 @@ void Pochoir<N_RANK>::Run_Stagger(Pochoir_Plan<N_RANK> & _plan) {
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
             int l_region_n = _plan.base_data_->region_[i].region_n;
-            int l_t0 = _plan.base_data_->region_[i].t0;
-            int l_t1 = _plan.base_data_->region_[i].t1;
-            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-            Pochoir_Run_Regional_Stagger_Kernel<N_RANK> l_kernel(pks_[l_region_n]);
-            l_kernel.set_pointer(l_t0 - time_shift_);
-            for (int t = l_t0; t < l_t1; ) {
-                meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
-                for (int i = 0; i < N_RANK; ++i) {
-                    l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+            if (l_region_n >= 0) {
+                int l_t0 = _plan.base_data_->region_[i].t0;
+                int l_t1 = _plan.base_data_->region_[i].t1;
+                Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+                Pochoir_Run_Regional_Stagger_Kernel<N_RANK> l_kernel(pks_[l_region_n]);
+                l_kernel.set_pointer(l_t0 - time_shift_);
+                for (int t = l_t0; t < l_t1; ) {
+                    meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
+                    for (int i = 0; i < N_RANK; ++i) {
+                        l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+                    }
+                    ++t;
+                    l_kernel.shift_pointer();
                 }
-                ++t;
-                l_kernel.shift_pointer();
             }
         }
         offset = _plan.sync_data_->region_[j];
@@ -902,13 +967,15 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
             int l_region_n = _plan.base_data_->region_[i].region_n;
-            assert(l_region_n >= 0);
             int l_t0 = _plan.base_data_->region_[i].t0;
             int l_t1 = _plan.base_data_->region_[i].t1;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
             for (int t = l_t0; t < l_t1; ++t) {
-                Pochoir_Run_Regional_Tile_Kernel<N_RANK> l_kernel(time_shift_, pxts_[l_region_n]);
-                meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
+                if (l_region_n >= 0) {
+                    /* execute one of the exclusive_if's */
+                    Pochoir_Run_Regional_Tile_Kernel<N_RANK> l_kernel(time_shift_, pxts_[l_region_n]);
+                    meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
+                }
                 for (int i = 0; i < sz_pigk_; ++i) {
                     Pochoir_Run_Regional_Guard_Tile_Kernel<N_RANK> l_kernel(time_shift_, pigs_[i], pits_[i]);
                     meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);

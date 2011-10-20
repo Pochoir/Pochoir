@@ -160,7 +160,7 @@ pParsePochoirGuard =
                                "> " ++ l_name ++ "(" ++ l_guardFunc ++ 
                                "); /* UNKNOWN Guard Func */" ++ breakline)
             Just l_pGuardFunc -> 
-                 do let l_guard = PGuard { gName = l_name, gRank = l_rank, gFunc = l_pGuardFunc { gfName = l_name }, gComment = [""] }
+                 do let l_guard = emptyGuard { gName = l_name, gRank = l_rank, gFunc = l_pGuardFunc { gfName = l_name } }
                     updateState $ updatePGuard l_guard
                     return (breakline ++ "Pochoir_Guard <" ++ show l_rank ++
                             "> " ++ l_name ++ "(" ++ l_guardFunc ++ 

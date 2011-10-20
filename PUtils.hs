@@ -420,24 +420,34 @@ pStripSuffixUnderScore l_str =
         then take (length l_str - 2) l_str
         else l_str
 
+pFillGuardOrder :: Int -> (PGuard, [PTile]) -> (PGuard, [PTile])
+pFillGuardOrder n (l_pGuard, l_pTiles) = (l_pGuard { gOrder = n }, l_pTiles)
+
+pFillPShapeName :: PName -> Int -> PShape -> PShape
+pFillPShapeName l_name n l_pShape = l_pShape { shapeName = "__POCHOIR_Shape_" ++ l_name ++ "_" ++ show n ++ "__" }
+
 pGetOverlapGuardFuncName :: PGuard -> String
 pGetOverlapGuardFuncName l_pGuard = 
     let l_gComment = gComment l_pGuard
+        l_gOrder = gOrder l_pGuard
         l_gfName = filter (not . isPrefixOf "!") l_gComment
-        l_gfName' = "__POCHOIR__" ++ (intercalate "_" l_gfName) ++ "__"
+        -- l_gfName' = "__POCHOIR__" ++ (intercalate "_" l_gfName) ++ show l_gOrder ++ "__"
+        l_gfName' = "__POCHOIR_Guard_" ++ show l_gOrder ++ "__"
     in  l_gfName'
 
 pGetOverlapGuardName :: PGuard -> String
 pGetOverlapGuardName l_pGuard =
     let l_gComment = gComment l_pGuard
+        l_gOrder = gOrder l_pGuard
         l_gfName = filter (not . isPrefixOf "!") l_gComment
-        l_gfName' = "__POCHOIR__" ++ (intercalate "_" l_gfName) ++ "__"
-        l_gName = pStripSuffixUnderScore $ pStripPrefixUnderScore l_gfName'
+        -- l_gfName' = "__POCHOIR__" ++ (intercalate "_" l_gfName) ++ show l_gOrder ++ "__"
+        l_gfName' = "__POCHOIR_Guard_" ++ show l_gOrder ++ "__"
+        l_gName = pStripSuffixUnderScore $ pStripPrefixUnderScore l_gfName' 
     in  l_gName
 
 pGetAllIGuardTiles :: Int -> [String] -> [(PGuard, PTile)] -> [PTile] -> [(PGuard, [PTile])]
 pGetAllIGuardTiles l_rank l_condStr [] l_tiles =
-    let l_pGuard = PGuard { gName = "__" ++ (intercalate "_" l_condStr) ++ "__", gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr }
+    let l_pGuard = PGuard { gName = "__" ++ (intercalate "_" l_condStr) ++ "__", gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr, gOrder = 0 }
         l_tiles' = map (pSetTileOp PSERIAL) l_tiles
     in  [(l_pGuard, l_tiles')]
 pGetAllIGuardTiles l_rank l_condStr l_iGTs@(i:is) l_tiles =
@@ -455,7 +465,10 @@ pInvertIdxN l_xIdx l_xLen =
     in  l_condStr
 
 pGetExclusiveGuardTiles :: PMode -> Int -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
-pGetExclusiveGuardTiles l_mode l_rank [] l_iGTs l_tiGTs = []
+pGetExclusiveGuardTiles l_mode l_rank [] l_iGTs l_tiGTs = 
+    let l_condStr = if null l_tiGTs then [] else map ((++) "!" . gName . fst) l_tiGTs 
+        l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr l_iGTs []
+    in  l_pGuardTiles 
 pGetExclusiveGuardTiles l_mode l_rank l_xGTs l_iGTs l_tiGTs =
     let l_condStr = map ((++) "!" . gName . fst) l_xGTs ++ map ((++) "!" . gName . fst) l_tiGTs 
         l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr l_iGTs []
@@ -478,19 +491,25 @@ pGetExclusiveGuardTilesTerm l_mode l_rank l_xIdx l_xLen l_xGTs l_iGTs l_tiGTs =
     in  l_pGuardTiles ++ l_rest
 
 pGetInclusiveGuardTiles :: PMode -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
-pGetInclusiveGuardTiles _ _ _ [] = []
+pGetInclusiveGuardTiles _ _ _ [] = [] 
+pGetInclusiveGuardTiles l_mode [] [] l_tiGTs =
+    let l_tiGs = map fst l_tiGTs
+        l_iTs = map (pSetTileOp PINCLUSIVE . snd) l_tiGTs
+        l_tigStr = map gName l_tiGs
+        l_pIG = emptyGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = gRank $ head l_tiGs, gComment = l_tigStr }
+    in  [(l_pIG, l_iTs)]
 pGetInclusiveGuardTiles l_mode [] l_iGTs l_tiGTs =
     let l_tiGs = map fst l_tiGTs
         l_iTs = map (pSetTileOp PINCLUSIVE . snd) (l_iGTs ++ l_tiGTs)
         l_tigStr = map gName l_tiGs
-        l_pIG = PGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = gRank $ head l_tiGs, gFunc = emptyGuardFunc, gComment = l_tigStr }
+        l_pIG = emptyGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = gRank $ head l_tiGs, gComment = l_tigStr }
     in  [(l_pIG, l_iTs)]
 pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs =
     let l_tiGs = map fst l_tiGTs
         l_xTs = map (pSetTileOp PEXCLUSIVE . snd) l_xGTs
         l_iTs = map (pSetTileOp PINCLUSIVE . snd) (l_iGTs ++ l_tiGTs)
         l_tigStr = map gName l_tiGs
-        l_pIG = PGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = gRank $ head l_tiGs, gFunc = emptyGuardFunc, gComment = l_tigStr }
+        l_pIG = emptyGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = gRank $ head l_tiGs, gComment = l_tigStr }
     in  [(l_pIG, l_xTs ++ l_iTs)]
 
 pAddUnderScore :: String -> String

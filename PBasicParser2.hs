@@ -57,6 +57,10 @@ ppStencil1 l_id l_state =
                Just l_stencil ->
                    do let l_regKernels = pShowRegStaggerKernel (pMode l_state) l_stencil (l_guard, l_kernels)
                       return (l_regKernels)
+    <|> do try $ pMember "Gen_Plan"
+           l_tstep <- parens exprStmtDim
+           semi
+           return (l_id ++ ".Gen_Plan_Obase(" ++ show l_tstep ++ "); /* known */" ++ breakline)
     <|> do try $ pMember "Register_Array"
            l_arrays <- parens $ commaSep1 identifier
            semi
