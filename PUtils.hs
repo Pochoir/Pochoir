@@ -431,7 +431,6 @@ pGetOverlapGuardFuncName l_pGuard =
     let l_gComment = gComment l_pGuard
         l_gOrder = gOrder l_pGuard
         l_gfName = filter (not . isPrefixOf "!") l_gComment
-        -- l_gfName' = "__POCHOIR__" ++ (intercalate "_" l_gfName) ++ show l_gOrder ++ "__"
         l_gfName' = "__POCHOIR_Guard_" ++ show l_gOrder ++ "__"
     in  l_gfName'
 
@@ -440,7 +439,6 @@ pGetOverlapGuardName l_pGuard =
     let l_gComment = gComment l_pGuard
         l_gOrder = gOrder l_pGuard
         l_gfName = filter (not . isPrefixOf "!") l_gComment
-        -- l_gfName' = "__POCHOIR__" ++ (intercalate "_" l_gfName) ++ show l_gOrder ++ "__"
         l_gfName' = "__POCHOIR_Guard_" ++ show l_gOrder ++ "__"
         l_gName = pStripSuffixUnderScore $ pStripPrefixUnderScore l_gfName' 
     in  l_gName

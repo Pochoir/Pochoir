@@ -426,6 +426,7 @@ int main(int argc, char * argv[])
     }
     printf("Pochoir time = %.6f ms\n", min_tdiff);
 
+#if 0
     min_tdiff = INF;
     /* cilk_for */
     for (int times = 0; times < TIMES; ++times) {
@@ -660,9 +661,10 @@ int main(int argc, char * argv[])
     t = T;
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-             check_result(t, i, j, a(t, i, j), b(t, i, j));
+//             check_result(t, i, j, a(t, i, j), b(t, i, j));
         }
     } 
+#endif
 
     return 0;
 }

@@ -1212,7 +1212,9 @@ pShowMetaGridHeader l_bound pL@(p:ps) =
                                  l_phys_start ++ ", " ++ 
                                  l_phys_end ++ ");"
                             else ""
-    in  breakline ++ "for (int " ++ l_iter ++ " = " ++ l_start ++ "; " ++
+        l_showPragma = if length pL - 1 == 0 then pShowPragma else ""
+    in  breakline ++ l_showPragma ++ 
+        breakline ++ "for (int " ++ l_iter ++ " = " ++ l_start ++ "; " ++
         l_iter ++ " < " ++ l_end ++ "; ++" ++ l_iter ++ ") {" ++ l_adjust_iter ++
         pShowMetaGridHeader l_bound ps 
 
