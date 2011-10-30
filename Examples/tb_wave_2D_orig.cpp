@@ -341,6 +341,7 @@ int main(void) {
       }
 
     // Update vx in 2 PML regions (upper and lower x):
+    /* bug? ix = 1; ix < P? */
     for (int ix = 0; ix < P; ++ix) // lower x layer
       for (int iy = 1; iy < Ny; ++iy) {
         int i = ix*Ny + iy, iSx = 2*(P-ix) - 1;

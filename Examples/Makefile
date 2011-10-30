@@ -4,7 +4,7 @@ ICC = icpc
 # it seems that '-ipo' '-O1' optimization flag will cause unexpected segmentation fault
 # sometimes.
 # OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
-OPT_FLAGS = -O0 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
+OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
 # POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -debug -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
 ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
@@ -126,10 +126,10 @@ tile_3D : tb_tile_3D.cpp # tb_tile_3D_pochoir.cpp
 
 wave_2D : tb_wave_2D.cpp # tb_wave_2D_pochoir.cpp 
 #   Phase-II compilation
-#	${CC} -o wave_2D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_wave_2D.cpp
+	${CC} -o wave_2D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_wave_2D.cpp
 #	${ICC} -o wave_2D_gdb ${ICC_DEBUG_FLAGS} tb_wave_2D_pochoir.cpp
 #	Phase-I compilation with debugging aid
-	${CC} -o wave_2D ${POCHOIR_DEBUG_FLAGS} tb_wave_2D.cpp 
+#	${CC} -o wave_2D ${POCHOIR_DEBUG_FLAGS} tb_wave_2D.cpp 
 #	${ICC} -o wave_2D ${OPT_FLAGS} tb_wave_2D.cpp 
 
 overlap_tile_2D : tb_overlap_tile_2D.cpp # tb_overlap_tile_2D_pochoir.cpp 
