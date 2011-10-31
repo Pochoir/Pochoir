@@ -296,7 +296,7 @@ transURange :: [([PName], PName, [DimExpr])] -> [(PName, PRange)]
 transURange [] = []
 transURange (p:ps) = (l_name, PRange {rName = l_name, rFirst = l_first, rLast = l_last, rStride = DimINT 1, rComment = ""}) : transURange ps
     where l_name = pSecond p
-          l_first = head $ pThird p
-          l_last = head . tail $ pThird p
+          l_first = pHead $ pThird p
+          l_last = pHead . tail $ pThird p
 
     

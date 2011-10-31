@@ -126,10 +126,10 @@ tile_3D : tb_tile_3D.cpp # tb_tile_3D_pochoir.cpp
 
 wave_2D : tb_wave_2D.cpp # tb_wave_2D_pochoir.cpp 
 #   Phase-II compilation
-#	${CC} -o wave_2D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_wave_2D.cpp
+	${CC} -o wave_2D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_wave_2D.cpp
 #	${ICC} -o wave_2D_gdb ${ICC_DEBUG_FLAGS} tb_wave_2D_pochoir.cpp
 #	Phase-I compilation with debugging aid
-	${CC} -o wave_2D ${POCHOIR_DEBUG_FLAGS} tb_wave_2D.cpp 
+#	${CC} -o wave_2D ${POCHOIR_DEBUG_FLAGS} tb_wave_2D.cpp 
 #	${ICC} -o wave_2D ${OPT_FLAGS} tb_wave_2D.cpp 
 
 overlap_tile_2D : tb_overlap_tile_2D.cpp # tb_overlap_tile_2D_pochoir.cpp 

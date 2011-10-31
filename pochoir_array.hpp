@@ -430,10 +430,10 @@ class Pochoir_Array {
                      */
                 }
             }
-#if DEBUG 
-            printf("toggle = %d\n", toggle_);
+#if 1 
+            printf("<%s> toggle = %d\n", __FUNCTION__, toggle_);
             for (int r = 0; r < N_RANK; ++r) {
-                printf("slope[%d] = %d, ", r, slope_[r]);
+                printf("<%s> slope[%d] = %d, ", __FUNCTION__, r, slope_[r]);
             }
             printf("\n");
 #endif

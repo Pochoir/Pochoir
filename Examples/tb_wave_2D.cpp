@@ -90,10 +90,15 @@ using namespace std;
 #define TIMES 1
 #define TOLERANCE (1e-6)
 
+typedef struct {
+    double u;
+    double vx, vy;
+} wave_2D_unit;
+
 void check_result(int t, int i, int j, double a, double b)
 {
     if (abs(a - b) < TOLERANCE) {
-//      printf("a(%d, %d, %d) == b(%d, %d, %d) == %f : passed!\n", t, i, j, t, i, j, a);
+//        printf("a(%d, %d, %d) == b(%d, %d, %d) == %f : passed!\n", t, i, j, t, i, j, a);
     } else {
         printf("a(%d, %d, %d) = %f, b(%d, %d, %d) = %f : FAILED!\n", t, i, j, a, t, i, j, b);
     }
@@ -136,6 +141,20 @@ void output(const char *fname, int t, double *A, int Nx, int Ny, int Sx) {
     fclose(f);
 }
 
+void output_p_u(const char * fname, int t, int P, Pochoir_Array_2D(wave_2D_unit) & p_uv, int Nx, int Ny) {
+    char *fn = new char[strlen(fname) + 1 + 5 + 4 + 1];
+    sprintf(fn, "%s-%05d.csv", fname, t);
+    FILE *f = fopen(fn, "w");
+    if (!f) abort();
+    for (int i = P; i < Nx-1-P; ++i) {
+        int j;
+        for (j = P; j < Ny-1-P-1; ++j)
+            fprintf(f, "%g,", p_uv(t, i, j).u);
+        fprintf(f, "%g\n", p_uv(t, i, j).u);
+    }
+    fclose(f);
+}
+
 // some geometric parameters:
 // We now get the domain size 'sx', 'sy' directly from user's command line argument,
 // also it looks buggy to declare 'sx', 'sy' to be of type double
@@ -158,11 +177,6 @@ double a(double x, double y) {
     // else (y <= 0)
     return x > R && x < R + w ? aw : 1.0;
 }
-
-typedef struct {
-    double u;
-    double vx, vy;
-} wave_2D_unit;
 
 /* It's actual a stagger-stencil,
  * if (t-1 % 2 == 0) compute 'u'
@@ -487,10 +501,8 @@ int main(int argc, char * argv[]) {
 
     Pochoir_Guard_2D_Begin(g_f_g, t, i, j)
         int ix0 = int((X0 + R) * resolution), ix1 = ix0 + int(w * resolution);
-        int l_t = t;
-        if (l_t * dt < 2 * t0 && 
-                i >= ix0 && i <= ix1 &&
-                j = P)
+        if (t * dt < 2 * t0 && i >= ix0 && i <= ix1 &&
+                j == P)
             return true;
         else
             return false;
@@ -564,7 +576,7 @@ int main(int argc, char * argv[]) {
     Pochoir_Kernel_2D_End(k_vy_interior, shape_wave_2D_v)
 
     Pochoir_Guard_2D_Begin(g_vy_lower_y, t, i, j)
-        if (i > = 0 && i < Nx-1 &&
+        if (i >= 0 && i < Nx-1 &&
                 j >= 0 && j < P-1)
             return true;
         else
@@ -591,6 +603,19 @@ int main(int argc, char * argv[]) {
                    + dtdx * p_ay[idx] * (p_uv(t, i, j+1).u - p_uv(t, i, j).u));
     Pochoir_Kernel_2D_End(k_vy_upper_y, shape_wave_2D_v)
 
+    Pochoir_Guard_2D_Begin(g_output_u, t, i, j)
+        if (t % 100 == 0)
+            return true;
+        else 
+            return false;
+    Pochoir_Guard_2D_End(g_output_u)
+
+    Pochoir_Kernel_2D_Begin(k_output_u, t, i, j)
+        printf("on time step %d / %d\n", t, int(T/dt)); fflush(stdout);
+        if (t * dt > t0 - 1/fwidth)
+            output_p_u("p_u", t, P, p_uv, Nx-1, Ny-1);
+    Pochoir_Kernel_2D_End(k_output_u, shape_wave_2D_u)
+
     wave_2D.Register_Exclusive_Tile_Kernels(g_interior, k_interior);
     wave_2D.Register_Exclusive_Tile_Kernels(g_lower_x, k_lower_x);
     wave_2D.Register_Exclusive_Tile_Kernels(g_upper_x, k_upper_x);
@@ -607,6 +632,7 @@ int main(int argc, char * argv[]) {
     wave_2D.Register_Exclusive_Tile_Kernels(g_vy_interior, k_vy_interior);
     wave_2D.Register_Exclusive_Tile_Kernels(g_vy_lower_y, k_vy_lower_y);
     wave_2D.Register_Exclusive_Tile_Kernels(g_vy_upper_y, k_vy_upper_y);
+    wave_2D.Register_Tiny_Inclusive_Tile_Kernels(g_output_u, k_output_u);
     wave_2D.Register_Array(p_uv);
     for (int i = 0; i < Nx - 1; ++i)
         for (int j = 0; j < Ny - 1; ++j) {
@@ -859,7 +885,7 @@ int main(int argc, char * argv[]) {
     min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     cout << "Serial Loop time : " << min_tdiff << " ms " << endl;
 
-#if 0
+#if 1
     /* check results! */
     int t = it;
     for (int i = 0; i < Nx - 1; ++i)

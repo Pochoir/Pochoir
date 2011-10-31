@@ -179,8 +179,9 @@ updateArrayBoundary l_id l_regBound parserState =
     in parserState { pArray = Map.updateWithKey f l_id $ pArray parserState }
 
 getToggleFromShape :: [[Int]] -> Int
+getToggleFromShape [] = 0
 getToggleFromShape l_shapes =
-    let l_t = map head l_shapes
+    let l_t = map pHead l_shapes
         l_t_max = maximum l_t
         l_t_min = minimum l_t
     in  (1 + l_t_max - l_t_min)
@@ -192,8 +193,9 @@ getSlopesFromShape l_height l_shapes =
     in  map (flip div l_height) l_xs
 
 getTimeShiftFromShape :: [[Int]] -> Int
+getTimeShiftFromShape [] = 0
 getTimeShiftFromShape l_shapes =
-    let l_t = map head l_shapes
+    let l_t = map pHead l_shapes
     in  minimum l_t
 
 getXSFromShape :: [[Int]] -> [Int]
@@ -255,17 +257,20 @@ eqTileOpPKernelFunc :: PKernelFunc -> PKernelFunc -> Bool
 eqTileOpPKernelFunc a b = (kfTileOp a) == (kfTileOp b)
 
 eqTPKernel :: PKernel -> PKernel -> Bool
-eqTPKernel a b = (head $ kIndex a) == (head $ kIndex b)
+eqTPKernel a b = (pHead $ kIndex a) == (pHead $ kIndex b)
 
 eqTGroupPKernel :: [PKernel] -> [PKernel] -> Bool
 eqTGroupPKernel [] [] = True
-eqTGroupPKernel a b = (head . kIndex . head) a == (head . kIndex . head) b
+eqTGroupPKernel a b = (pHead . kIndex . pHead) a == (pHead . kIndex . pHead) b
 
 eqTPTile :: [Int] -> [Int] -> Bool
 eqTPTile [] [] = True
-eqTPTile a b = head a == head b
+eqTPTile [] b = False
+eqTPTile a [] = False
+eqTPTile a b = pHead a == pHead b
 
 eqTileIndex :: [Int] -> [Int] -> Bool
+eqTileIndex [] [] = True
 eqTileIndex _ [] = True
 eqTileIndex [] _ = True
 eqTileIndex aL@(a:as) bL@(b:bs) = 
@@ -334,11 +339,11 @@ pGroupPKernelByMergeTerm _ [] = []
 pGroupPKernelByMergeTerm _ [a] = a
 pGroupPKernelByMergeTerm b ll@(x:y:zs) = 
     -- firstly, let's merge only the following simplified case
-    if ((length . kIndex . last . last) x <= (length . kIndex . head . head) y 
+    if ((length . kIndex . last . last) x <= (length . kIndex . pHead . pHead) y 
         && length x <= length y)
         then let x' = pMergeForward b x y
              in  pGroupPKernelByMergeTerm b (x':zs)
-        else if ((length . kIndex . last . last) x > (length . kIndex . head . head) y
+        else if ((length . kIndex . last . last) x > (length . kIndex . pHead . pHead) y
                && length x > length y)
                 then let x' = pMergeBackward b x y []
                      in  pGroupPKernelByMergeTerm b (x':zs)
@@ -348,7 +353,7 @@ pMergeForward :: (PKernel -> PKernel -> Bool) -> [[PKernel]] -> [[PKernel]] -> [
 pMergeForward b [] y = y
 pMergeForward b x@(a:as) y = 
     let could_merge = foldr (||) False $ 
-                        map (b (last a)) (map head y)
+                        map (b (last a)) (map pHead y)
     in  if could_merge
            then pMergeForward b as $ pMergeForwardTerm b a y
            else a:(pMergeForward b as y)
@@ -356,8 +361,8 @@ pMergeForward b x@(a:as) y =
 pMergeForwardTerm :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]] -> [[PKernel]]
 pMergeForwardTerm b x [] = []
 pMergeForwardTerm b x yL@(y:ys) =
-    if b (last x) (head y)
-       then let x' = map (pFillKIndex $ (kIndex . head) y) x
+    if b (last x) (pHead y)
+       then let x' = map (pFillKIndex $ (kIndex . pHead) y) x
             in  (x' ++ y):(pMergeForwardTerm b x ys) 
        else y:(pMergeForwardTerm b x ys)
 
@@ -365,7 +370,7 @@ pMergeBackward :: (PKernel -> PKernel -> Bool) -> [[PKernel]] -> [[PKernel]] -> 
 pMergeBackward b x [] l = x ++ l
 pMergeBackward b x y@(a:as) l =
     let could_merge = foldr (||) False $
-                        map (flip b (head a)) (map last x)
+                        map (flip b (pHead a)) (map last x)
     in  if could_merge 
            then pMergeBackward b (pMergeBackwardTerm b x a) as l
            else pMergeBackward b x as $ l ++ [a]
@@ -373,7 +378,7 @@ pMergeBackward b x y@(a:as) l =
 pMergeBackwardTerm :: (PKernel -> PKernel -> Bool) -> [[PKernel]] -> [PKernel] -> [[PKernel]]
 pMergeBackwardTerm b [] y = []
 pMergeBackwardTerm b xL@(x:xs) y =
-    if b (last x) (head y)
+    if b (last x) (pHead y)
        then let y' = map (pFillKIndex $ (kIndex . last) x) y
             in  (x ++ y'):(pMergeBackwardTerm b xs y)
        else x:(pMergeBackwardTerm b xs y)
@@ -381,7 +386,7 @@ pMergeBackwardTerm b xL@(x:xs) y =
 pGroupPKernelBy :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]]
 pGroupPKernelBy b [] = []
 pGroupPKernelBy b l = 
-    let n = (kfTileOrder . kFunc . head) l
+    let n = (kfTileOrder . kFunc . pHead) l
         l' = pSerializePKernel l n 0 []
     in  pGroupPKernelByTerm b l' []
         
@@ -468,7 +473,7 @@ pGetExclusiveGuardTiles l_mode l_rank [] l_iGTs l_tiGTs =
         l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr l_iGTs []
     in  l_pGuardTiles 
 pGetExclusiveGuardTiles l_mode l_rank l_xGTs l_iGTs l_tiGTs =
-    let l_condStr = map ((++) "!" . gName . fst) l_xGTs ++ map ((++) "!" . gName . fst) l_tiGTs 
+    let l_condStr = if null l_tiGTs then map ((++) "!" . gName . fst) l_xGTs else map ((++) "!" . gName . fst) l_xGTs ++ map ((++) "!" . gName . fst) l_tiGTs 
         l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr l_iGTs []
         l_xLen = length l_xGTs
     in  l_pGuardTiles ++ pGetExclusiveGuardTilesTerm l_mode l_rank 0 l_xLen l_xGTs l_iGTs l_tiGTs
@@ -476,7 +481,7 @@ pGetExclusiveGuardTiles l_mode l_rank l_xGTs l_iGTs l_tiGTs =
 pGetExclusiveGuardTilesTerm :: PMode -> Int -> Int -> Int -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
 pGetExclusiveGuardTilesTerm l_mode l_rank l_xIdx l_xLen [] l_iGTs l_tiGTs = []
 pGetExclusiveGuardTilesTerm l_mode l_rank l_xIdx l_xLen l_xGTs l_iGTs l_tiGTs =
-    let l_tiCondStr = map ((++) "!" . gName . fst) l_tiGTs
+    let l_tiCondStr = if null l_tiGTs then [] else map ((++) "!" . gName . fst) l_tiGTs
         l_xCondStr = zipWith (++) (pInvertIdxN l_xIdx l_xLen) (map (gName . fst) l_xGTs)
         l_x = l_xGTs !! l_xIdx
         l_condStr = l_xCondStr ++ l_tiCondStr
@@ -494,20 +499,33 @@ pGetInclusiveGuardTiles l_mode [] [] l_tiGTs =
     let l_tiGs = map fst l_tiGTs
         l_iTs = map (pSetTileOp PINCLUSIVE . snd) l_tiGTs
         l_tigStr = map gName l_tiGs
-        l_pIG = emptyGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = gRank $ head l_tiGs, gComment = l_tigStr }
+        l_rank = if null l_tiGs then 0 else (gRank . pHead) l_tiGs
+        l_pIG = emptyGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = l_rank, gComment = l_tigStr }
     in  [(l_pIG, l_iTs)]
 pGetInclusiveGuardTiles l_mode [] l_iGTs l_tiGTs =
     let l_tiGs = map fst l_tiGTs
+        l_iGs = map fst l_iGTs
         l_iTs = map (pSetTileOp PINCLUSIVE . snd) (l_iGTs ++ l_tiGTs)
         l_tigStr = map gName l_tiGs
-        l_pIG = emptyGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = gRank $ head l_tiGs, gComment = l_tigStr }
+        l_rank = if null l_tiGs 
+                    then if null l_iGTs 
+                            then 0 
+                            else (gRank . pHead) l_iGs 
+                    else (gRank . pHead) l_tiGs
+        l_pIG = emptyGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = l_rank, gComment = l_tigStr }
     in  [(l_pIG, l_iTs)]
 pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs =
     let l_tiGs = map fst l_tiGTs
+        l_iGs = map fst l_iGTs
         l_xTs = map (pSetTileOp PEXCLUSIVE . snd) l_xGTs
         l_iTs = map (pSetTileOp PINCLUSIVE . snd) (l_iGTs ++ l_tiGTs)
         l_tigStr = map gName l_tiGs
-        l_pIG = emptyGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = gRank $ head l_tiGs, gComment = l_tigStr }
+        l_rank = if null l_tiGs 
+                    then if null l_iGTs 
+                            then 0 
+                            else (gRank . pHead) l_iGs 
+                    else (gRank . pHead) l_tiGs
+        l_pIG = emptyGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = l_rank, gComment = l_tigStr }
     in  [(l_pIG, l_xTs ++ l_iTs)]
 
 pAddUnderScore :: String -> String
@@ -610,6 +628,9 @@ pIterName (a, _, _, _) = a
 pIterArray (_, a, _, _) = a
 pIterDims (_, _, a, _) = a
 pIterRWMode (_, _, _, a) = a
+
+pHead :: [a] -> a
+pHead = head
 
 transInterior :: [PName] -> Expr -> Expr
 transInterior l_arrayInUse (PVAR q v dL) =
