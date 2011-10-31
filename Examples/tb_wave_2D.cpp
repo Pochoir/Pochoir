@@ -90,12 +90,12 @@ using namespace std;
 #define TIMES 1
 #define TOLERANCE (1e-6)
 
-void check_result(int t, int i, double a, double b)
+void check_result(int t, int i, int j, double a, double b)
 {
     if (abs(a - b) < TOLERANCE) {
-//      printf("a(%d, %d) == b(%d, %d) == %f : passed!\n", t, i, t, i, a);
+//      printf("a(%d, %d, %d) == b(%d, %d, %d) == %f : passed!\n", t, i, j, t, i, j, a);
     } else {
-        printf("a(%d, %d) = %f, b(%d, %d) = %f : FAILED!\n", t, i, a, t, i, b);
+        printf("a(%d, %d, %d) = %f, b(%d, %d, %d) = %f : FAILED!\n", t, i, j, a, t, i, j, b);
     }
 }
 
@@ -447,7 +447,7 @@ int main(int argc, char * argv[]) {
             return false;
     Pochoir_Guard_2D_End(g_upper_x_lower_y)
 
-    Pochoir_Kernel_2D_Begin(k_upper_x_lower_y, shape_wave_2D_u)
+    Pochoir_Kernel_2D_Begin(k_upper_x_lower_y, t, i, j)
         int iSx = 2*(i-(Nx-1-P)), iPx = (i-(Nx-1-P))*(Ny-1) + j;
         int iSy = 2*(P-j), iPy = i*P + (j-1);
         int iS = iSx * (2*P) + iSy;
@@ -487,7 +487,8 @@ int main(int argc, char * argv[]) {
 
     Pochoir_Guard_2D_Begin(g_f_g, t, i, j)
         int ix0 = int((X0 + R) * resolution), ix1 = ix0 + int(w * resolution);
-        if (t * dt < 2 * t0 && 
+        int l_t = t;
+        if (l_t * dt < 2 * t0 && 
                 i >= ix0 && i <= ix1 &&
                 j = P)
             return true;
@@ -560,7 +561,7 @@ int main(int argc, char * argv[]) {
     Pochoir_Kernel_2D_Begin(k_vy_interior, t, i, j)
         int idx = i * (Ny-1) + j;
         p_uv(t+1, i, j).vy = p_uv(t, i, j).vy + dtdx * p_ay[idx] * (p_uv(t, i, j+1).u - p_uv(t, i, j).u); 
-    Pochoir_Kernel_2D_End(k_vy_interior)
+    Pochoir_Kernel_2D_End(k_vy_interior, shape_wave_2D_v)
 
     Pochoir_Guard_2D_Begin(g_vy_lower_y, t, i, j)
         if (i > = 0 && i < Nx-1 &&
@@ -614,7 +615,7 @@ int main(int argc, char * argv[]) {
         }
 
     int l_T = int(T/dt);
-    Pochoir_Plan & l_plan = wave_2D.Gen_Plan(l_T);
+    Pochoir_Plan<2> & l_plan = wave_2D.Gen_Plan(l_T);
     min_tdiff = INF;
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
@@ -633,7 +634,9 @@ int main(int argc, char * argv[]) {
     /* start original version of stencil computation on 2D wave equation */
   
     gettimeofday(&start, 0);
-    for (int it = 0; it * dt < T; ++it) {
+    int it;
+    for (int times = 0; times < TIMES; ++times) {
+    for (it = 0; it * dt < T; ++it) {
         /////////////////////////////////////////////////////////////////////////
         // Update u in all 9 disjoint interior/boundary regions:
         
@@ -851,9 +854,21 @@ int main(int argc, char * argv[]) {
         /////////////////////////////////////////////////////////////////////////
 
     } /* end iteration on it */
+    } /* end iteration on times */
     gettimeofday(&end, 0);
     min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     cout << "Serial Loop time : " << min_tdiff << " ms " << endl;
 
+#if 0
+    /* check results! */
+    int t = it;
+    for (int i = 0; i < Nx - 1; ++i)
+        for (int j = 0; j < Ny - 1; ++j) {
+            /* for array 'u', we shift '1' on both i and j dimension because
+             * of the halo point
+             */
+            check_result(t, i, j, p_uv(t, i, j).u, u[(i+1) * Ny + (j+1)]);
+        }
+#endif
     return 0;
 }
