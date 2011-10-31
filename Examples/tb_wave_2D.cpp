@@ -201,14 +201,15 @@ int main(int argc, char * argv[]) {
     double *vx = new double[Nx * Ny]; zero(u, Nx*Ny);
     double *vy = new double[Nx * Ny]; zero(u, Nx*Ny);
     /* this is a forged shape for temporary use only */
-    Pochoir_Shape_2D shape_wave_2D[] = {{0, 0, 0}, {-1, 0, 0}, {-1, -1, 0}, {-1, 0, -1}, {-1, 1, 0}, {-1, 0, 1}};
+    Pochoir_Shape_2D shape_wave_2D_u[] = {{0, 0, 0}, {-1, 0, 0}, {-1, -1, 0}, {-1, 0, -1}, {-1, 1, 0}, {-1, 0, 1}};
+    Pochoir_Shape_2D shape_wave_2D_v[] = {{1, 0, 0}, {0, 0, 0}, {0, -1, 0}, {0, 0, -1}, {0, 1, 0}, {0, 0, 1}};
     /* In Pochoir, we employ the boundary function to implement
      * the periodic boundary condition. So we should exclude that one point
      */
     Pochoir_Array_2D(wave_2D_unit) p_uv(Nx-1, Ny-1); 
     Pochoir_2D wave_2D;
     /* p_u is of periodic boundary condition */
-    p_wave.Register_Boundary(periodic_2D);
+    p_uv.Register_Boundary(periodic_2D);
 
     // Allocate auxiliary PML arrays for upper (U) and lower (L) boundary regions
     double *psiUx = new double[P * Ny]; zero(psiUx, P * Ny);
@@ -281,19 +282,20 @@ int main(int argc, char * argv[]) {
         for (int iy = 0; iy < Ny-1; ++iy) {
             int i = ix * (Ny-1) + iy;
             double x = ix * dx, y = iy * dx;
-            ax[i] = a(x, y);
+            /* a(x, y) is a function call to fill in the array of 'p_ax' */
+            p_ax[i] = a(x, y);
         }
-    output("p_a", 0, ax + P*(Ny-1) + P, (Nx-1) - 2*P, (Ny-1) - 2*P, (Ny-1)); // output interior
+    output("p_a", 0, p_ax + P*(Ny-1) + P, (Nx-1) - 2*P, (Ny-1) - 2*P, (Ny-1)); // output interior
     // Now, compute actual p_ax and p_ay arrays:
     for (int ix = 0; ix < Nx-1; ++ix)
         for (int iy = 0; iy < Ny-1; ++iy) {
             int i = ix * (Ny-1) + iy;
             double x = ix * dx, y = iy * dx;
-            ax[i] = a(x + 0.5*dx, y);
-            ay[i] = a(x, y + 0.5*dx);
+            p_ax[i] = a(x + 0.5*dx, y);
+            p_ay[i] = a(x, y + 0.5*dx);
         }
-    output("p_ax", 0, ax, Nx-1, Ny-1, Ny-1);
-    output("p_ay", 0, ay, Nx-1, Ny-1, Ny-1);
+    output("p_ax", 0, p_ax, Nx-1, Ny-1, Ny-1);
+    output("p_ay", 0, p_ay, Nx-1, Ny-1, Ny-1);
 
     // Gaussian-pulse characteristics of source
     double fcen = 1.0, fwidth = 0.1; // center frequency and width
@@ -315,8 +317,8 @@ int main(int argc, char * argv[]) {
     Pochoir_Guard_2D_End(g_interior)
 
     Pochoir_Kernel_2D_Begin(k_interior, t, i, j)
-        p_uv(t, i, j).u = p_uv(t-1, i, j).u + dtdx * (p_uv(t-1, i, j).vx - p_uv(t-1, i-1, j).vx + p_uv(t-1, i, j).vy - p_uv(t-1, i, j-1).vy);
-    Pochoir_Kernel_2D_End(k_interior, shape_wave_2D)
+        p_uv(t, i, j).u = p_uv(t-1, i, j).u + dtdx * (p_uv(t, i, j).vx - p_uv(t, i-1, j).vx + p_uv(t, i, j).vy - p_uv(t, i, j-1).vy);
+    Pochoir_Kernel_2D_End(k_interior, shape_wave_2D_u)
 
     /* guard and kernel functions for 8 PML regions */
     Pochoir_Guard_2D_Begin(g_lower_x, t, i, j)
@@ -330,12 +332,12 @@ int main(int argc, char * argv[]) {
     Pochoir_Kernel_2D_Begin(k_lower_x, t, i, j)
         int iSx = 2 * (P-i), iPx = (i-1) * (Ny-1) + j;
         double psi_old = p_psiLx[iPx];
-        double dvy = p_uv(t-1, i, j).vy - p_uv(t-1, i, j-1).vy;
+        double dvy = p_uv(t, i, j).vy - p_uv(t, i, j-1).vy;
         p_psiLx[iPx] += dtdx * sigma[iSx] * dvy;
         p_uv(t, i, j).u = sigmadtinv[iSx] * (p_uv(t-1, i, j).u * sigmadt[iSx]
-                            + dtdx * (p_uv(t-1, i, j).vx - p_uv(t-1, i-1, j).vx + dvy)
+                            + dtdx * (p_uv(t, i, j).vx - p_uv(t, i-1, j).vx + dvy)
                             + (0.5 * dt) * (psi_old + p_psiLx[iPx]));
-    Pochoir_Kernel_2D_End(k_lower_x, shape_wave_2D)
+    Pochoir_Kernel_2D_End(k_lower_x, shape_wave_2D_u)
 
     Pochoir_Guard_2D_Begin(g_upper_x, t, i, j)
         if (i >= Nx-1-P && i < Nx-1 &&
@@ -348,12 +350,12 @@ int main(int argc, char * argv[]) {
     Pochoir_Kernel_2D_Begin(k_upper_x, t, i, j)
         int iSx = 2*(i-(Nx-1-P)), iPx = (i-(Nx-1-P))*(Ny-1) + j;
         double psi_old = p_psiUx[iPx];
-        double dvy = p_uv(t-1, i, j).vy - p_uv(t-1, i, j-1).vy;
+        double dvy = p_uv(t, i, j).vy - p_uv(t, i, j-1).vy;
         p_psiUx[iPx] += dtdx * sigma[iSx] * dvy;
         p_uv(t, i, j).u = sigmadtinv[iSx] * (p_uv(t-1, i, j).u * sigmadt[iSx]
-                      + dtdx * (p_uv(t-1, i, j).vx - p_uv(t-1, i-1, j).vx + dvy)
+                      + dtdx * (p_uv(t, i, j).vx - p_uv(t, i-1, j).vx + dvy)
                       + (0.5 * dt) * (psi_old + p_psiUx[iPx]));
-    Pochoir_Kernel_2D_End(k_upper_x, shape_wave_2D)
+    Pochoir_Kernel_2D_End(k_upper_x, shape_wave_2D_u)
 
     Pochoir_Guard_2D_Begin(g_lower_y, t, i, j)
         if (i >= P && i < Nx-1-P &&
@@ -366,12 +368,12 @@ int main(int argc, char * argv[]) {
     Pochoir_Kernel_2D_Begin(k_lower_y, t, i, j)
         int iSy = 2*(P-j), iPy = i*P + (j-1);
         double psi_old = p_psiLy[iPy];
-        double dvx = p_uv(t-1, i, j).vx - p_uv(t-1, i-1, j).vx;
+        double dvx = p_uv(t, i, j).vx - p_uv(t, i-1, j).vx;
         p_psiLy[iPy] += dtdx * sigma[iSy] * dvx;
         p_uv(t, i, j).u = sigmadtinv[iSy] * (p_uv(t-1, i, j).u * sigmadt[iSy]
-                      + dtdx * (dvx + p_uv(t-1, i, j).vy - p_uv(t-1, i, j-1).vy)
+                      + dtdx * (dvx + p_uv(t, i, j).vy - p_uv(t, i, j-1).vy)
                       + (0.5 * dt) * (psi_old + p_psiLy[iPy]));
-    Pochoir_Kernel_2D_End(k_lower_y, shape_wave_2D)
+    Pochoir_Kernel_2D_End(k_lower_y, shape_wave_2D_u)
 
     Pochoir_Guard_2D_Begin(g_upper_y, t, i, j)
         if (i >= P && i < Nx-1-P &&
@@ -384,12 +386,12 @@ int main(int argc, char * argv[]) {
     Pochoir_Kernel_2D_Begin(k_upper_y, t, i, j)
         int iSy = 2*(j-(Ny-1-P)), iPy = i*P + (j-(Ny-1-P));
         double psi_old = p_psiUy[iPy];
-        double dvx = p_uv(t-1, i, j).vx - p_uv(t-1, i-1, j).vx;
+        double dvx = p_uv(t, i, j).vx - p_uv(t, i-1, j).vx;
         p_psiUy[iPy] += dtdx * sigma[iSy] * dvx;
         p_uv(t, i, j).u = sigmadtinv[iSy] * (p_uv(t-1, i, j).u * sigmadt[iSy]
-                      + dtdx * (dvx + p_uv(t-1, i, j).vy - p_uv(t-1, i, j-1).vy)
+                      + dtdx * (dvx + p_uv(t, i, j).vy - p_uv(t, i, j-1).vy)
                       + (0.5 * dt) * (psi_old + p_psiUy[iPy]));
-    Pochoir_Kernel_2D_End(k_upper_y, shape_wave_2D)
+    Pochoir_Kernel_2D_End(k_upper_y, shape_wave_2D_u)
 
     Pochoir_Guard_2D_Begin(g_lower_x_lower_y, t, i, j)
         if (i >= 0 && i <= P-1 &&
@@ -404,15 +406,15 @@ int main(int argc, char * argv[]) {
         int iSy = 2*(P-j), iPy = i*P + (j-1);
         int iS = iSx * (2*P) + iSy;
         double psi_old = p_psiLx[iPx] + p_psiLy[iPy];
-        double dvx = p_uv(t-1, i, j).vx - p_uv(t-1, i-1, j).vx;
-        double dvy = p_uv(t-1, i, j).vy - p_uv(t-1, i, j-1).vy;
+        double dvx = p_uv(t, i, j).vx - p_uv(t, i-1, j).vx;
+        double dvy = p_uv(t, i, j).vy - p_uv(t, i, j-1).vy;
         p_psiLx[iPx] += dtdx * sigma[iSx] * dvy;
         p_psiLy[iPy] += dtdx * sigma[iSy] * dvx;
         p_uv(t, i, j).u = sigmadtinv2[iS] * (p_uv(t-1, i, j).u * sigmadt2[iS]
                       + dtdx * (dvx + dvy)
                       + (0.5 * dt) * (psi_old +
                               p_psiLx[iPx] + p_psiLy[iPy]));
-    Pochoir_Kernel_2D_End(k_lower_x_lower_y, shape_wave_2D)
+    Pochoir_Kernel_2D_End(k_lower_x_lower_y, shape_wave_2D_u)
 
     Pochoir_Guard_2D_Begin(g_lower_x_upper_y, t, i, j)
         if (i >= 0 && i <= P-1 &&
@@ -427,15 +429,15 @@ int main(int argc, char * argv[]) {
         int iSy = 2*(j-(Ny-1-P)), iPy = i*P + (j-(Ny-1-P));
         int iS = iSx * (2*P) + iSy;
         double psi_old = p_psiLx[iPx] + p_psiUy[iPy];
-        double dvx = p_uv(t-1, i, j).vx - p_uv(t-1, i-1, j).vx;
-        double dvy = p_uv(t-1, i, j).vy - p_uv(t-1, i, j-1).vy;
+        double dvx = p_uv(t, i, j).vx - p_uv(t, i-1, j).vx;
+        double dvy = p_uv(t, i, j).vy - p_uv(t, i, j-1).vy;
         p_psiLx[iPx] += dtdx * sigma[iSx] * dvy;
         p_psiUy[iPy] += dtdx * sigma[iSy] * dvx;
         p_uv(t, i, j).u = sigmadtinv2[iS] * (p_uv(t-1, i, j).u * sigmadt2[iS]
                       + dtdx * (dvx + dvy)
                       + (0.5 * dt) * (psi_old +
                               p_psiLx[iPx] + p_psiUy[iPy]));
-    Pochoir_Kernel_2D_End(k_lower_x_upper_y, shape_wave_2D)
+    Pochoir_Kernel_2D_End(k_lower_x_upper_y, shape_wave_2D_u)
 
     Pochoir_Guard_2D_Begin(g_upper_x_lower_y, t, i, j)
         if (i >= Nx-1-P && i < Nx-1  &&
@@ -445,20 +447,20 @@ int main(int argc, char * argv[]) {
             return false;
     Pochoir_Guard_2D_End(g_upper_x_lower_y)
 
-    Pochoir_Kernel_2D_Begin(k_upper_x_lower_y, shape_wave_2D)
+    Pochoir_Kernel_2D_Begin(k_upper_x_lower_y, shape_wave_2D_u)
         int iSx = 2*(i-(Nx-1-P)), iPx = (i-(Nx-1-P))*(Ny-1) + j;
         int iSy = 2*(P-j), iPy = i*P + (j-1);
         int iS = iSx * (2*P) + iSy;
         double psi_old = p_psiUx[iPx] + p_psiLy[iPy];
-        double dvx = p_uv(t-1, i, j).vx - p_uv(t-1, i-1, j).vx;
-        double dvy = p_uv(t-1, i, j).vy - p_uv(t-1, i, j-1).vy;
+        double dvx = p_uv(t, i, j).vx - p_uv(t, i-1, j).vx;
+        double dvy = p_uv(t, i, j).vy - p_uv(t, i, j-1).vy;
         p_psiUx[iPx] += dtdx * sigma[iSx] * dvy;
         p_psiLy[iPy] += dtdx * sigma[iSy] * dvx;
         p_uv(t, i, j).u = sigmadtinv2[iS] * (p_uv(t-1, i, j).u * sigmadt2[iS]
                       + dtdx * (dvx + dvy)
                       + (0.5 * dt) * (psi_old +
                               p_psiUx[iPx] + p_psiLy[iPy]));
-    Pochoir_Kernel_2D_End(k_upper_x_lower_y, shape_wave_2D)
+    Pochoir_Kernel_2D_End(k_upper_x_lower_y, shape_wave_2D_u)
 
     Pochoir_Guard_2D_Begin(g_upper_x_upper_y, t, i, j)
         if (i >= Nx-1-P && i < Nx-1 &&
@@ -473,15 +475,15 @@ int main(int argc, char * argv[]) {
         int iSy = 2*(j-(Ny-1-P)), iPy = i*P + (j-(Ny-1-P));
         int iS = iSx * (2*P) + iSy;
         double psi_old = p_psiUx[iPx] + p_psiUy[iPy];
-        double dvx = p_uv(t-1, i, j).vx - p_uv(t-1, i-1, j).vx;
-        double dvy = p_uv(t-1, i, j).vy - p_uv(t-1, i, j-1).vy;
+        double dvx = p_uv(t, i, j).vx - p_uv(t, i-1, j).vx;
+        double dvy = p_uv(t, i, j).vy - p_uv(t, i, j-1).vy;
         p_psiUx[iPx] += dtdx * sigma[iSx] * dvy;
         p_psiUy[iPy] += dtdx * sigma[iSy] * dvx;
         p_uv(t, i, j).u = sigmadtinv2[iS] * (p_uv(t-1, i, j).u * sigmadt2[iS]
                       + dtdx * (dvx + dvy)
                       + (0.5 * dt) * (psi_old +
                               p_psiUx[iPx] + p_psiUy[iPy]));
-    Pochoir_Kernel_2D_End(k_upper_x_upper_y, shape_wave_2D)
+    Pochoir_Kernel_2D_End(k_upper_x_upper_y, shape_wave_2D_u)
 
     Pochoir_Guard_2D_Begin(g_f_g, t, i, j)
         int ix0 = int((X0 + R) * resolution), ix1 = ix0 + int(w * resolution);
@@ -497,7 +499,7 @@ int main(int argc, char * argv[]) {
         double l_t = t * dt;
         double g = cos(omega * (l_t)) * exp(-(l_t-t0)*(l_t-t0)*decay);
         p_uv(t, i, j).u = p_uv(t-1, i, j).u + dt * g;
-    Pochoir_Kernel_2D_End(k_f_g, shape_wave_2D)
+    Pochoir_Kernel_2D_End(k_f_g, shape_wave_2D_u)
 
     /* we have to stagger the computation between u and (vx, vy),
      * so it's if (t - 1 % 2 == 0) compute 'u' 
@@ -516,8 +518,8 @@ int main(int argc, char * argv[]) {
         /* we employ the (t+1, ...) = f(t, ...) to avoid the dependency
          * on the same level -- a general graph dependency
          */
-        p_uv(t, i, j).vx = p_uv(t-1, i, j).vx ++ dtdx * p_ax[idx] * (p_uv(t-1, i+1, j).u - p_uv(t-1, i, j).u);
-    Pochoir_Kernel_2D_End(k_vx_interior, shape_wave_2D)
+        p_uv(t+1, i, j).vx = p_uv(t, i, j).vx + dtdx * p_ax[idx] * (p_uv(t, i+1, j).u - p_uv(t, i, j).u);
+    Pochoir_Kernel_2D_End(k_vx_interior, shape_wave_2D_v)
 
     Pochoir_Guard_2D_Begin(g_vx_lower_x, t, i, j)
         if (i >= 0 && i < P-1 &&
@@ -529,9 +531,9 @@ int main(int argc, char * argv[]) {
 
     Pochoir_Kernel_2D_Begin(k_vx_lower_x, t, i, j)
         int idx = i * (Ny-1) + j, iSx = 2 * (P-i) - 1;
-        p_uv(t, i, j).vx = sigmadtinv[iSx] * (p_uv(t-1, i, j).vx * sigmadt[iSx]
-                    + dtdx * p_ax[idx] * (p_uv(t-1, i+1, j).u - p_uv(t-1, i, j).u));
-    Pochoir_Kernel_2D_End(k_vx_lower_x, shape_wave_2D)
+        p_uv(t+1, i, j).vx = sigmadtinv[iSx] * (p_uv(t, i, j).vx * sigmadt[iSx]
+                    + dtdx * p_ax[idx] * (p_uv(t, i+1, j).u - p_uv(t, i, j).u));
+    Pochoir_Kernel_2D_End(k_vx_lower_x, shape_wave_2D_v)
 
     Pochoir_Guard_2D_Begin(g_vx_upper_x, t, i, j)
         if (i >= Nx-1-P && i < Nx-1 &&
@@ -543,9 +545,9 @@ int main(int argc, char * argv[]) {
 
     Pochoir_Kernel_2D_Begin(k_vx_upper_x, t, i, j)
         int idx = i*Ny + j, iSx = 2*(i-(Nx-1-P)) + 1;
-        p_uv(t, i, j).vx = sigmadtinv[iSx] * (p_uv(t-1, i, j).vx * sigmadt[iSx]
-                   + dtdx * p_ax[idx] * (p_uv(t-1, i+1, j).u - p_uv(t-1, i, j).u));
-    Pochoir_Kernel_2D_End(k_vx_upper_x, shape_wave_2D)
+        p_uv(t+1, i, j).vx = sigmadtinv[iSx] * (p_uv(t, i, j).vx * sigmadt[iSx]
+                   + dtdx * p_ax[idx] * (p_uv(t, i+1, j).u - p_uv(t, i, j).u));
+    Pochoir_Kernel_2D_End(k_vx_upper_x, shape_wave_2D_v)
 
     Pochoir_Guard_2D_Begin(g_vy_interior, t, i, j)
         if (i >= 0 && i < Nx-1 &&
@@ -557,7 +559,7 @@ int main(int argc, char * argv[]) {
 
     Pochoir_Kernel_2D_Begin(k_vy_interior, t, i, j)
         int idx = i * (Ny-1) + j;
-        p_uv(t, i, j).vy = p_uv(t-1, i, j).vy + dtdx * p_ay[idx] * (p_uv(t-1, i, j+1).u - p_uv(t-1, i, j).u); 
+        p_uv(t+1, i, j).vy = p_uv(t, i, j).vy + dtdx * p_ay[idx] * (p_uv(t, i, j+1).u - p_uv(t, i, j).u); 
     Pochoir_Kernel_2D_End(k_vy_interior)
 
     Pochoir_Guard_2D_Begin(g_vy_lower_y, t, i, j)
@@ -570,9 +572,9 @@ int main(int argc, char * argv[]) {
 
     Pochoir_Kernel_2D_Begin(k_vy_lower_y, t, i, j)
         int idx = i * (Ny-1) + j, iSy = 2*(P-j) - 1;
-        p_uv(t, i, j).vy = sigmadtinv[iSy] * (p_uv(t-1, i, j).vy * sigmadt[iSy]
-                   + dtdx * p_ay[idx] * (p_uv(t-1, i, j+1).u - p_uv(t-1, i, j).u));
-    Pochoir_Kernel_2D_End(k_vy_lower_y, shape_wave_2D)
+        p_uv(t+1, i, j).vy = sigmadtinv[iSy] * (p_uv(t, i, j).vy * sigmadt[iSy]
+                   + dtdx * p_ay[idx] * (p_uv(t, i, j+1).u - p_uv(t, i, j).u));
+    Pochoir_Kernel_2D_End(k_vy_lower_y, shape_wave_2D_v)
 
     Pochoir_Guard_2D_Begin(g_vy_upper_y, t, i, j)
         if (i >= 0 && i < Nx-1 &&
@@ -584,9 +586,9 @@ int main(int argc, char * argv[]) {
 
     Pochoir_Kernel_2D_Begin(k_vy_upper_y, t, i, j)
         int idx = i*(Ny-1) + j, iSy = 2*(j-(Ny-1-P)) + 1;
-        p_uv(t, i, j).vy = sigmadtinv[iSy] * (p_uv(t-1, i, j).vy * sigmadt[iSy]
-                   + dtdx * p_ay[idx] * (p_uv(t-1, i, j+1).u - p_uv(t-1, i, j).u));
-    Pochoir_Kernel_2D_End(k_vy_upper_y, shape_wave_2D)
+        p_uv(t+1, i, j).vy = sigmadtinv[iSy] * (p_uv(t, i, j).vy * sigmadt[iSy]
+                   + dtdx * p_ay[idx] * (p_uv(t, i, j+1).u - p_uv(t, i, j).u));
+    Pochoir_Kernel_2D_End(k_vy_upper_y, shape_wave_2D_v)
 
     wave_2D.Register_Exclusive_Tile_Kernels(g_interior, k_interior);
     wave_2D.Register_Exclusive_Tile_Kernels(g_lower_x, k_lower_x);
