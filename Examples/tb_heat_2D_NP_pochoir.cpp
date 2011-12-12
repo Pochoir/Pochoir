@@ -32475,7 +32475,7 @@ class Pochoir_Domain {
 
 /*  cilk.h                  -*-C++-*-
  *
- *  Copyright 2010 Intel Corporation.  All Rights Reserved.
+ *  Copyright (C) 2010-2011 Intel Corporation.  All Rights Reserved.
  *
  *  The source code contained or described herein and all documents related
  *  to the source code ("Material") are owned by Intel Corporation or its
@@ -32498,7 +32498,7 @@ class Pochoir_Domain {
 /* Define convenient aliases for Cilk keywords */
 
 /*
- *  Copyright 2009-2011 Intel Corporation.  All Rights Reserved.
+ *  Copyright (C) 2009-2011 Intel Corporation.  All Rights Reserved.
  *
  *  The source code contained or described herein and all documents related
  *  to the source code ("Material") are owned by Intel Corporation or its
@@ -32536,7 +32536,7 @@ class Pochoir_Domain {
 
 
 /*
- *  Copyright 2010 Intel Corporation.  All Rights Reserved.
+ *  Copyright (C) 2010-2011 Intel Corporation.  All Rights Reserved.
  *
  *  The source code contained or described herein and all documents related
  *  to the source code ("Material") are owned by Intel Corporation or its
@@ -32780,18 +32780,32 @@ __cilkrts_get_pedigree_info(/* In/Out */ __cilkrts_pedigree_context_t *context,
  * Fetch the rank from the currently executing worker
  *
  * Returns:
- *   0 - Success - rank is valid
+ *    0 - Success - rank is valid
  *   <0 - Failure - -1: No worker bound to thread
  */
 
  int __attribute__((nothrow))
 __cilkrts_get_worker_rank(uint64_t *rank);
 
+
+/**
+ * Pedigree API
+ *
+ * Increment the rank of the currently executing worker
+ *
+ * Returns:
+ *    0 - Success - rank was incremented
+ *   -1 - Failure - No worker bound to thread
+ */
+
+ int __attribute__((nothrow))
+__cilkrts_bump_worker_rank(void);
+
 }
 
 
 /*
- *  Copyright 2009-2011 Intel Corporation.  All Rights Reserved.
+ *  Copyright (C) 2009-2011 Intel Corporation.  All Rights Reserved.
  *
  *  The source code contained or described herein and all documents related
  *  to the source code ("Material") are owned by Intel Corporation or its
@@ -32820,7 +32834,7 @@ __cilkrts_get_worker_rank(uint64_t *rank);
 
 /*  reducer.h                  -*-C++-*-
  *
- *  Copyright 2009-2011 Intel Corporation.  All Rights Reserved.
+ *  Copyright (C) 2009-2011 Intel Corporation.  All Rights Reserved.
  *
  *  The source code contained or described herein and all documents related
  *  to the source code ("Material") are owned by Intel Corporation or its
@@ -32842,7 +32856,7 @@ __cilkrts_get_worker_rank(uint64_t *rank);
 
 
 /*
- *  Copyright 2009-2011 Intel Corporation.  All Rights Reserved.
+ *  Copyright (C) 2009-2011 Intel Corporation.  All Rights Reserved.
  *
  *  The source code contained or described herein and all documents related
  *  to the source code ("Material") are owned by Intel Corporation or its
