@@ -40,14 +40,15 @@ import qualified Data.Map as Map
 
 -- first pass will be gathering the infor
 -- second pass will do the real transformation
-pParser :: GenParser Char ParserState String
+pParser :: GenParser Char ParserState (String, String)
 pParser = do tokens0 <- many $ pToken
              eof
-             return $ concat tokens0
+             let pass0 = concat tokens0
              -- start a second pass!
              setInput $ concat tokens0
              tokens1 <- many pToken1
-             return $ concat tokens1
+             let pass1 = concat tokens1
+             return (pass1, "abcde")
 
 pToken :: GenParser Char ParserState String
 pToken = 

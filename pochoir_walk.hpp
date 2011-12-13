@@ -56,7 +56,7 @@ struct meta_grid_boundary <8>{
         for (int k = grid.x0[5]; k < grid.x1[5]; ++k) {
             int new_k = pmod_lu(k, initial_grid.x0[5], initial_grid.x1[5]);
             for (int l = grid.x0[4]; l < grid.x1[4]; ++l) {
-                int new_l = pmod_lu(l, initial_gird.x0[4], initial_grid.x1[4]);
+                int new_l = pmod_lu(l, initial_grid.x0[4], initial_grid.x1[4]);
         for (int m = grid.x0[3]; m < grid.x1[3]; ++m) {
             int new_m = pmod_lu(m, initial_grid.x0[3], initial_grid.x1[3]);
             for (int n = grid.x0[2]; n < grid.x1[2]; ++n) {
@@ -88,7 +88,7 @@ struct meta_grid_boundary <7>{
         for (int k = grid.x0[4]; k < grid.x1[4]; ++k) {
             int new_k = pmod_lu(k, initial_grid.x0[4], initial_grid.x1[4]);
             for (int l = grid.x0[3]; l < grid.x1[3]; ++l) {
-                int new_l = pmod_lu(l, initial_gird.x0[3], initial_grid.x1[3]);
+                int new_l = pmod_lu(l, initial_grid.x0[3], initial_grid.x1[3]);
         for (int m = grid.x0[2]; m < grid.x1[2]; ++m) {
             int new_m = pmod_lu(m, initial_grid.x0[2], initial_grid.x1[2]);
             for (int n = grid.x0[1]; n < grid.x1[1]; ++n) {
@@ -118,7 +118,7 @@ struct meta_grid_boundary <6>{
         for (int k = grid.x0[3]; k < grid.x1[3]; ++k) {
             int new_k = pmod_lu(k, initial_grid.x0[3], initial_grid.x1[3]);
             for (int l = grid.x0[2]; l < grid.x1[2]; ++l) {
-                int new_l = pmod_lu(l, initial_gird.x0[2], initial_grid.x1[2]);
+                int new_l = pmod_lu(l, initial_grid.x0[2], initial_grid.x1[2]);
         for (int m = grid.x0[1]; m < grid.x1[1]; ++m) {
             int new_m = pmod_lu(m, initial_grid.x0[1], initial_grid.x1[1]);
             for (int n = grid.x0[0]; n < grid.x1[0]; ++n) {
@@ -145,7 +145,7 @@ struct meta_grid_boundary <5>{
         for (int k = grid.x0[2]; k < grid.x1[2]; ++k) {
             int new_k = pmod_lu(k, initial_grid.x0[2], initial_grid.x1[2]);
             for (int l = grid.x0[1]; l < grid.x1[1]; ++l) {
-                int new_l = pmod_lu(l, initial_gird.x0[1], initial_grid.x1[1]);
+                int new_l = pmod_lu(l, initial_grid.x0[1], initial_grid.x1[1]);
         for (int m = grid.x0[0]; m < grid.x1[0]; ++m) {
             int new_m = pmod_lu(m, initial_grid.x0[0], initial_grid.x1[0]);
                 if (inRun) {
@@ -170,7 +170,7 @@ struct meta_grid_boundary <4>{
         for (int k = grid.x0[1]; k < grid.x1[1]; ++k) {
             int new_k = pmod_lu(k, initial_grid.x0[1], initial_grid.x1[1]);
             for (int l = grid.x0[0]; l < grid.x1[0]; ++l) {
-                int new_l = pmod_lu(l, initial_gird.x0[0], initial_grid.x1[0]);
+                int new_l = pmod_lu(l, initial_grid.x0[0], initial_grid.x1[0]);
                 if (inRun) {
                     home_cell_[4] = new_l; home_cell_[3] = new_k;
                     home_cell_[2] = new_j; home_cell_[1] = new_i;
@@ -394,7 +394,6 @@ struct Algorithm {
         const int dt_recursive_boundary_;
         int Z;
         const int r_t; /* # of pieces cut in time dimension */
-        const int pad_point_;
         int N_CORES;
         typedef int index_info[N_RANK];
         typedef struct {
@@ -431,7 +430,7 @@ struct Algorithm {
     typedef enum {TILE_NCORES, TILE_BOUNDARY, TILE_MP} algor_type;
     
     /* constructor */
-    Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1), lcm_unroll_(1), time_shift_(0), pad_point_(2) {
+    Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1), lcm_unroll_(1), time_shift_(0) {
         for (int i = 0; i < N_RANK; ++i) {
             slope_[i] = _slope[i];
             dx_recursive_boundary_[i] = 1;
@@ -447,7 +446,7 @@ struct Algorithm {
         slopeSet = true;
         sz_pgk_ = sz_base_data_ = sz_sync_data_ = 0;
         num_kernel_ = num_cond_kernel_ = num_bkernel_ = num_cond_bkernel_ = 0;
-        pks_ = NULL; opks_ = NULL; pts_ = NULL; pgs_ = NULL;
+        pks_ = NULL; opks_ = NULL; pts_ = NULL; 
         /* ALGOR_QUEUE_SIZE = 3^N_RANK */
         // ALGOR_QUEUE_SIZE = power<N_RANK>::value;
 #define ALGOR_QUEUE_SIZE (power<N_RANK>::value)
@@ -456,7 +455,7 @@ struct Algorithm {
 //            sim_count_cut[i] = 0;
 //        }
 #else
-        N_CORES = __cilkrts_get_nworkers();
+        // N_CORES = __cilkrts_get_nworkers();
 #endif
 //        cout << " N_CORES = " << N_CORES << endl;
 
@@ -735,7 +734,7 @@ template <int N_RANK>
 inline void Algorithm<N_RANK>::base_case_kernel_guard(int t0, int t1, Grid_Info<N_RANK> const grid) {
     /* Each kernel update the entire region independently and entirely!!! */
 	Grid_Info<N_RANK> l_grid = grid;
-    Pochoir_Run_Stagger_Kernel<N_RANK> l_kernel(sz_pgk_, pgs_, pks_);
+    Pochoir_Run_Stagger_Kernels<N_RANK> l_kernel(sz_pgk_, pgs_, pks_);
     for (int t = t0; t < t1; ) {
         home_cell_[0] = t;
         meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);

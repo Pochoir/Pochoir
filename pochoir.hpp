@@ -28,7 +28,8 @@
 
 #include "pochoir_common.hpp"
 #include "pochoir_kernel.hpp"
-#include "pochoir_walk.hpp"
+#include "pochoir_walk_recursive.hpp"
+#include "pochoir_walk_loops.hpp"
 #include "pochoir_array.hpp"
 /* assuming there won't be more than 10 Pochoir_Array in one Pochoir object! */
 // #define ARRAY_SIZE 10
@@ -758,9 +759,7 @@ void Pochoir<N_RANK>::Run(int timestep) {
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
     algor.set_unroll(lcm_unroll_);
-    if (pks_ != NULL) {
-        algor.set_pks(sz_pxgk_, pxgs_, pks_);
-    } else if (pxts_ != NULL) {
+    if (pxts_ != NULL) {
         algor.set_pts(sz_pxgk_, pxgs_, pxts_);
     } else {
         printf("Something is wrong in Run(Timestep)!\n");
@@ -914,9 +913,9 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep) {
 template <int N_RANK>
 void Pochoir<N_RANK>::Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & _plan) {
     char * l_base_file_name = new char[100];
-    sprintf(l_base_file_name, "base_%s\0", file_name);
+    sprintf(l_base_file_name, "base_%s", file_name);
     char * l_sync_file_name = new char[100];
-    sprintf(l_sync_file_name, "sync_%s\0", file_name);
+    sprintf(l_sync_file_name, "sync_%s", file_name);
     _plan.store_plan(l_base_file_name, l_sync_file_name);
     return;
 }
@@ -924,40 +923,12 @@ void Pochoir<N_RANK>::Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & 
 template <int N_RANK>
 Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Load_Plan(const char * file_name) {
     char * l_base_file_name = new char[100];
-    sprintf(l_base_file_name, "base_%s\0", file_name);
+    sprintf(l_base_file_name, "base_%s", file_name);
     char * l_sync_file_name = new char[100];
-    sprintf(l_sync_file_name, "sync_%s\0", file_name);
+    sprintf(l_sync_file_name, "sync_%s", file_name);
     Pochoir_Plan<N_RANK> * l_plan = new Pochoir_Plan<N_RANK>();
     l_plan->load_plan(l_base_file_name, l_sync_file_name);
     return (*l_plan);
-}
-
-template <int N_RANK>
-void Pochoir<N_RANK>::Run_Stagger(Pochoir_Plan<N_RANK> & _plan) {
-    assert(pks_ != NULL);
-    int offset = 0;
-    for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
-        for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
-            int l_region_n = _plan.base_data_->region_[i].region_n;
-            if (l_region_n >= 0) {
-                int l_t0 = _plan.base_data_->region_[i].t0;
-                int l_t1 = _plan.base_data_->region_[i].t1;
-                Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-                Pochoir_Run_Regional_Stagger_Kernel<N_RANK> l_kernel(pks_[l_region_n]);
-                l_kernel.set_pointer(l_t0 - time_shift_);
-                for (int t = l_t0; t < l_t1; ) {
-                    meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
-                    for (int i = 0; i < N_RANK; ++i) {
-                        l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-                    }
-                    ++t;
-                    l_kernel.shift_pointer();
-                }
-            }
-        }
-        offset = _plan.sync_data_->region_[j];
-    }
-    return;
 }
 
 template <int N_RANK>

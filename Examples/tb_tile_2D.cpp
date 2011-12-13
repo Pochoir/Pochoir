@@ -67,7 +67,6 @@ int main(int argc, char * argv[])
     double min_tdiff = INF;
     /* the 1D spatial dimension has 'N' points */
     int N = 0, T = 0;
-    double umin, umax;
     char pochoir_plan_file_name[100];
 
     if (argc < 3) {
@@ -77,11 +76,23 @@ int main(int argc, char * argv[])
     N = StrToInt(argv[1]);
     T = StrToInt(argv[2]);
     printf("N = %d, T = %d\n", N, T);
-    Pochoir_Shape_1D oned_3pt[] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
-    Pochoir_Shape_1D shape_k0[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
-    Pochoir_Shape_1D shape_k1[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
-    Pochoir_Shape_1D shape_k2[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
-    Pochoir_Shape_1D shape_k3[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
+#if 0
+    /* we can initialize the multi-dimensional array like following 
+     * to silent the gcc's error message of "missing braces around 
+     * initializer for 'int [2]' when compiled with flags : -Wall -Werror
+     */
+    Pochoir_Shape_1D oned_3pt[] = {{{0}, {0}}, {{-1}, { 0}}, {{-1}, {-1}}, {{-1}, {1}}};
+    Pochoir_Shape_1D shape_k0[] = {{{0}, {0}}, {{-1}, {-1}}, {{-1}, {0 }}, {{-1}, {1}}};
+    Pochoir_Shape_1D shape_k1[] = {{{0}, {0}}, {{-1}, {-1}}, {{-1}, {0 }}, {{-1}, {1}}};
+    Pochoir_Shape_1D shape_k2[] = {{{0}, {0}}, {{-1}, {-1}}, {{-1}, {0 }}, {{-1}, {1}}};
+    Pochoir_Shape_1D shape_k3[] = {{{0}, {0}}, {{-1}, {-1}}, {{-1}, {0 }}, {{-1}, {1}}};
+#else
+    Pochoir_Shape_1D oned_3pt[] = {{0, 0}, {-1,  0}, {-1, -1}, {-1, 1}};
+    Pochoir_Shape_1D shape_k0[] = {{0, 0}, {-1, -1}, {-1, 0 }, {-1, 1}};
+    Pochoir_Shape_1D shape_k1[] = {{0, 0}, {-1, -1}, {-1, 0 }, {-1, 1}};
+    Pochoir_Shape_1D shape_k2[] = {{0, 0}, {-1, -1}, {-1, 0 }, {-1, 1}};
+    Pochoir_Shape_1D shape_k3[] = {{0, 0}, {-1, -1}, {-1, 0 }, {-1, 1}};
+#endif
     Pochoir_Array_1D(double) a(N);
     Pochoir_Array_1D(double) b(N);
     Pochoir_1D leap_frog;
@@ -146,10 +157,10 @@ int main(int argc, char * argv[])
 #endif
     Pochoir_Kernel_1D_End(k3, shape_k3)
 
-    printf("Pochoir_Kernel size = %d, sizeof(int) = %d\n", sizeof(k3), sizeof(int));
+    printf("Pochoir_Kernel size = %lu, sizeof(int) = %lu\n", sizeof(k3), sizeof(int));
     /* this is a 2D checkerboard style tiling of the entire rectangular region/domain */
-    Pochoir_Kernel<1> tile0[2] = {};
-    Pochoir_Kernel<1> tile1[2] = {k0, k1};
+    // Pochoir_Kernel<1> tile0[2] = {};
+    // Pochoir_Kernel<1> tile1[2] = {k0, k1};
     Pochoir_Kernel<1> tile_2D_checkerboard[2][2] = {{k0, k1}, {k2, k3}};
     leap_frog.Register_Tile_Kernels(Default_Guard_1D, tile_2D_checkerboard);
     leap_frog.Register_Array(a);

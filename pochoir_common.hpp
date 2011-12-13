@@ -62,13 +62,13 @@ static inline int lcm(int a, int b) {
 
 #define ARRAY_LENGTH(x) (int)(sizeof(x)/sizeof(x[0]))
 
+#define cilk_for for
+#define cilk_spawn 
+#define cilk_sync
+
 /* due to the fact that bit trick is much slower than conditional instruction,
  * let's disable it for now!!!
  */
-// #define cilk_for for
-// #define cilk_spawn 
-// #define cilk_sync
-
 #define BIT_TRICK 0
 #define INF 100000000
 #define SUPPORT_RANK 9
@@ -106,6 +106,8 @@ static inline bool select(bool b, bool x, bool y) {
 static inline int select(bool b, int x, int y) {
     return (x&(-b)) | (y&-(!b));
 }
+
+#if 0
 static inline float select(bool b, float x, float y) {
     int __ir__ = ((*(int*)&x) & (-b)) | ((*(int*)&y) & -(!b)); 
     return *(float*)&__ir__; 
@@ -114,6 +116,7 @@ static inline double select(bool b, double x, double y) {
     long __ir__ = ((*(long*)&x) & (-b)) | ((*(long*)&y) & -(!b));
     return *(double*)&__ir__;
 }
+#endif
 
 typedef int T_dim;
 typedef int T_index;
@@ -292,7 +295,7 @@ struct Vector_Info {
         printf("init size = %d\n", size_);
 #endif
     }
-    Vector_Info(T & rhs) {
+    Vector_Info(Vector_Info<T> const & rhs) {
         int l_rhs_size = rhs.size();
         region_ = new T[l_rhs_size];
         size_ = l_rhs_size;

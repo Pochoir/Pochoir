@@ -117,8 +117,8 @@ data PKernelFunc = PKernelFunc {
     kfShape :: PShape,
     kfTileOp :: TileOp,
     kfTileOrder :: Int,
-    kfGuardFunc :: PGuardFunc, -- each kernel function is guarded by one and only one 
-                               -- guard function
+    kfGuardFunc :: PGuardFunc, -- each kernel function is guarded by 
+                               -- one and only one guard function
     kfComment :: String
 } deriving Show
 

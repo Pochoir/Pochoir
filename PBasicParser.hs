@@ -967,7 +967,7 @@ cppQualifier =
           return "register"
 
 ppShape :: GenParser Char ParserState [Int]
-ppShape = do l_shape <- braces (commaSep1 $ integer >>= return . fromInteger)
+ppShape = do l_shape <- braces (commaSep1 $ (integer <|> braces(integer)) >>= return . fromInteger)
              return (l_shape)
 
 {- parse a single statement which is ended by ';' -}

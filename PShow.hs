@@ -178,7 +178,8 @@ pUndefMacroArrayInUse [] _ = ""
 pUndefMacroArrayInUse (a:as) pL = pUndefMacroShadowItem a pL ++ pUndefMacroArrayInUse as pL
     where pUndefMacroShadowItem a pL = 
             let l_arrayName = aName a
-            in  breakline ++ "#undef " ++ pShowArrayTerm l_arrayName pL
+--            in  breakline ++ "#undef " ++ pShowArrayTerm l_arrayName pL
+            in  breakline ++ "#undef " ++ l_arrayName
 
 pShowKernelParams :: [String] -> String
 pShowKernelParams l_kernel_params = intercalate ", " l_kernel_params
@@ -289,13 +290,15 @@ pDefMax :: String
 pDefMax = "#define max(a, b) ((a) > (b) ? (a) : (b))"
 
 pUndefMax :: String
-pUndefMax = "#undef max(a, b)"
+-- pUndefMax = "#undef max(a, b)"
+pUndefMax = "#undef max"
 
 pDefMin :: String
 pDefMin = "#define min(a, b) ((a) < (b) ? (a) : (b))"
 
 pUndefMin :: String
-pUndefMin = "#undef min(a, b)"
+-- pUndefMin = "#undef min(a, b)"
+pUndefMin = "#undef min"
 
 pShowMUnrolledBoundaryKernels :: Bool -> String -> PStencil -> [PKernelFunc] -> String
 pShowMUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernel:l_kernels) = 

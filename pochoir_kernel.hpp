@@ -378,9 +378,12 @@ struct Pure_Region_All {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<N_RANK> > & pgs_;
     Grid_Info<N_RANK> phys_grid_;
-    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs) : sz_pgk_(_sz_pgk), pgs_(_pgs) { assert(_sz_pgk == _pgs.size()); }
-    void set_phys_grid(Grid_Info<N_RANK> & _grid) { phys_grid_ = _grid; }
-    int operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const {};
+    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs) : sz_pgk_(_sz_pgk), pgs_(_pgs) { assert(_sz_pgk == _pgs.size()); return; }
+    void set_phys_grid(Grid_Info<N_RANK> & _grid) { phys_grid_ = _grid; return; }
+    int operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const { 
+        /* return 0 to make g++ happy! */
+        return 0; 
+    }
 };
 
 template <>
@@ -388,8 +391,11 @@ struct Pure_Region_All<1> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<1> > & pgs_;
     Grid_Info<1> phys_grid_;
-    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<1> > & _pgs) : sz_pgk_(_sz_pgk), pgs_(_pgs) { assert(_sz_pgk == _pgs.size()); }
-    void set_phys_grid(Grid_Info<1> & _grid) { phys_grid_ = _grid; }
+    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<1> > & _pgs) : sz_pgk_(_sz_pgk), pgs_(_pgs) { assert(_sz_pgk == _pgs.size()); return; }
+    void set_phys_grid(Grid_Info<1> & _grid) { 
+        phys_grid_ = _grid; 
+        return; 
+    }
     int operator() (int t0, int t1, Grid_Info<1> const & grid) const {
         const int start_i = pmod_lu(grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         Grid_Info<1> l_grid = grid;
@@ -427,8 +433,8 @@ struct Pure_Region_All<2> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<2> > & pgs_;
     Grid_Info<2> phys_grid_;
-    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<2> > & _pgs) : sz_pgk_(_sz_pgk), pgs_(_pgs) { assert(_sz_pgk == _pgs.size()); }
-    void set_phys_grid(Grid_Info<2> & _grid) { phys_grid_ = _grid; }
+    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<2> > & _pgs) : sz_pgk_(_sz_pgk), pgs_(_pgs) { assert(_sz_pgk == _pgs.size()); return; }
+    void set_phys_grid(Grid_Info<2> & _grid) { phys_grid_ = _grid; return; }
     int operator() (int t0, int t1, Grid_Info<2> const & grid) const {
         const int start_j = pmod_lu(grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         const int start_i = pmod_lu(grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
@@ -472,8 +478,8 @@ struct Pure_Region_All<3> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<3> > & pgs_;
     Grid_Info<3> phys_grid_;
-    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<3> > & _pgs) : sz_pgk_(_sz_pgk), pgs_(_pgs) { assert(_sz_pgk == _pgs.size()); }
-    void set_phys_grid(Grid_Info<3> & _grid) { phys_grid_ = _grid; }
+    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<3> > & _pgs) : sz_pgk_(_sz_pgk), pgs_(_pgs) { assert(_sz_pgk == _pgs.size()); return; }
+    void set_phys_grid(Grid_Info<3> & _grid) { phys_grid_ = _grid; return; }
     int operator() (int t0, int t1, Grid_Info<3> const & grid) const {
         const int start_k = pmod_lu(grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         const int start_j = pmod_lu(grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);

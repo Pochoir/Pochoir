@@ -1140,7 +1140,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, Grid_
         assert(lt > dt_recursive_);
         int halflt = lt / 2;
         /* cutting halflt align to unroll_ factor */
-        halflt -= (halflt % unroll_);
+        halflt -= (halflt % lcm_unroll_);
 #if DEBUG
         printf("halflt = %d\n", halflt);
 #endif
@@ -1304,7 +1304,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, Gri
     } 
 
     if (call_boundary)
-        l_dt_stop = max(dt_recursive_boundary_, unroll_);
+        l_dt_stop = max(dt_recursive_boundary_, lcm_unroll_);
     else
         l_dt_stop = dt_recursive_;
 
@@ -1312,7 +1312,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, Gri
         /* cut into time */
         int halflt = lt / 2;
         /* cut halflt align to unroll_ */
-        halflt -= (halflt % unroll_);
+        halflt -= (halflt % lcm_unroll_);
 #if DEBUG
         printf("halflt = %d\n", halflt);
 #endif
@@ -1921,7 +1921,7 @@ inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent
                 const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
-                const int l_padding = 2 * l_slope;
+                // const int l_padding = 2 * l_slope;
                 // const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
                 const bool can_cut = gen_plan_space_can_cut_p(level);
                 if (!can_cut) {
@@ -2026,6 +2026,7 @@ inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent
         ++sz_sync_data_;
         assert(queue_len_[curr_dep_pointer] == 0);
     } /* end for (curr_dep < N_RANK+1) */
+    return;
 }
 
 template <int N_RANK> 
@@ -2056,7 +2057,7 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
         tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
         thres = (slope_[i] * lt);
         bool cut_lb = (lb < tb);
-        const int l_padding = 2 * slope_[i];
+        // const int l_padding = 2 * slope_[i];
         sim_can_cut = sim_can_cut || (gen_plan_space_can_cut_p(i));
         call_boundary |= l_touch_boundary;
     }

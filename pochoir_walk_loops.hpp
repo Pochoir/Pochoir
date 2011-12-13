@@ -209,7 +209,8 @@ inline void Algorithm<N_RANK>::cut_space_ncores_boundary(int dim, int t0, int t1
 #endif
 			call_boundary = false;
 			for (int i = 0; i < N_RANK; i++) {
-				call_boundary |= (grid.x0[i] == initial_grid_.x0[i] || grid.x1[i] == initial_grid_.x1[i]);
+				// call_boundary |= (grid.x0[i] == initial_grid_.x0[i] || grid.x1[i] == initial_grid_.x1[i]);
+				call_boundary |= touch_boundary(i, lt, grid); 
 			}
 			if (call_boundary) 
                 //we will defer the processing of boundary condition later
