@@ -23,7 +23,8 @@
  --------------------------------------------------------------------------------
  -}
 
--- The Basic Parser for a second pass --
+-- The Basic Parser for a second pass, the purpose of which is to transform
+-- the user's specification based on the info collected in the first pass
 module PBasicParser2 where
 
 import Text.ParserCombinators.Parsec
