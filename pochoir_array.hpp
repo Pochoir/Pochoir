@@ -399,7 +399,8 @@ class Pochoir_Array {
             }
         }
 
-        /* This function will be called from Pochoir::Register_Array in pochoir.hpp
+        /* This function will be called by Pochoir::Register_Array
+         * from pochoir.hpp
          */
         void Register_Shape(Pochoir_Shape<N_RANK> * shape, int shape_size) {
             /* currently we just get the slope_[] and toggle_ out of the shape[] */

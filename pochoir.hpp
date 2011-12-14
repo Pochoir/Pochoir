@@ -27,11 +27,11 @@
 #define EXPR_STENCIL_HPP
 
 #include "pochoir_common.hpp"
+#include "pochoir_array.hpp"
 #include "pochoir_kernel.hpp"
 #include "pochoir_dloader.hpp"
 #include "pochoir_walk_recursive.hpp"
 #include "pochoir_walk_loops.hpp"
-#include "pochoir_array.hpp"
 /* assuming there won't be more than 10 Pochoir_Array in one Pochoir object! */
 // #define ARRAY_SIZE 10
 
