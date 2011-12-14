@@ -272,13 +272,15 @@ int main(int argc, char * argv[])
 
     Pochoir_Kernel<1> tile_tiny_inclusive_1[2] = {k_tiny_inclusive_1_0, k_tiny_inclusive_1_1};
 
-    /* this is a 2D checkerboard style tiling of the entire rectangular region/domain */
-    overlap.Register_Exclusive_Tile_Kernels(g_exclusive_0, tile_exclusive_0);
-    overlap.Register_Exclusive_Tile_Kernels(g_exclusive_1, tile_exclusive_1);
-    overlap.Register_Inclusive_Tile_Kernels(g_inclusive_0, tile_inclusive_0);
-    overlap.Register_Inclusive_Tile_Kernels(g_inclusive_1, tile_inclusive_1);
-    overlap.Register_Tiny_Inclusive_Tile_Kernels(g_tiny_inclusive_0, tile_tiny_inclusive_0);
-    overlap.Register_Tiny_Inclusive_Tile_Kernels(g_tiny_inclusive_1, tile_tiny_inclusive_1);
+    /* this is a 2D checkerboard style tiling of the entire rectangular 
+     * region/domain 
+     */
+    overlap.Register_Tile_Kernels(g_exclusive_0, tile_exclusive_0);
+    overlap.Register_Tile_Kernels(g_exclusive_1, tile_exclusive_1);
+    overlap.Register_Tile_Kernels(g_inclusive_0, tile_inclusive_0);
+    overlap.Register_Tile_Kernels(g_inclusive_1, tile_inclusive_1);
+    overlap.Register_Tile_Kernels(g_tiny_inclusive_0, tile_tiny_inclusive_0);
+    overlap.Register_Tile_Kernels(g_tiny_inclusive_1, tile_tiny_inclusive_1);
     overlap.Register_Array(a);
 
     /* initialization */

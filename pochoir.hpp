@@ -28,6 +28,7 @@
 
 #include "pochoir_common.hpp"
 #include "pochoir_kernel.hpp"
+#include "pochoir_dloader.hpp"
 #include "pochoir_walk_recursive.hpp"
 #include "pochoir_walk_loops.hpp"
 #include "pochoir_array.hpp"
@@ -55,12 +56,16 @@ class Pochoir {
         int shape_size_;
         int num_arr_;
         int arr_type_size_;
-        int sz_pxgk_, sz_pigk_, sz_ptigk_;
+        int sz_pxgk_, sz_pigk_;
         int lcm_unroll_;
         Pochoir_Mode pmode_;
         /* assuming that the number of distinct sub-regions is less than 10 */
-        Vector_Info< Pochoir_Guard<N_RANK> > pxgs_, pigs_, ptigs_;
-        Vector_Info< Pochoir_Tile_Kernel<N_RANK> > pxts_, pits_, ptits_;
+        /* We put the pxgs_ here just to make the Gen_Plan compatible
+         * in Phase I, since we may need to store/load the plan from 
+         * disk files
+         */
+        Vector_Info< Pochoir_Guard<N_RANK> > pxgs_, pigs_;
+        Vector_Info< Pochoir_Tile_Kernel<N_RANK> > pits_;
         Vector_Info< Pochoir_Guard<N_RANK> > opgs_;
         Vector_Info< Pochoir_Combined_Obase_Kernel<N_RANK> > opks_;
 
@@ -71,40 +76,7 @@ class Pochoir {
         void reg_tile_dim(Pochoir_Tile_Kernel<N_RANK> & pt, int dim, I i, IS ... is);
 
     public:
-    /* various form of Register_Exclusive_Tile_Kernels */
-    /* this is the version to register a single kernel for the entire region
-     * guarded by 'g'
-     */
-    void Register_Exclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> & k);
-    template <int N_SIZE1>
-    void Register_Exclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1]);
-    /* this is for 2D checkerboard style tile.
-     * the total dimensions here include the time dimension
-     */
-    template <int N_SIZE1, int N_SIZE2>
-    void Register_Exclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2]);
-    template <int N_SIZE1, int N_SIZE2, int N_SIZE3>
-    void Register_Exclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2][N_SIZE3]);
-
-    /* various form of Register_Inclusive_Tile_Kernels */
-    void Register_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> & k);
-    template <int N_SIZE1>
-    void Register_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1]);
-    template <int N_SIZE1, int N_SIZE2>
-    void Register_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2]);
-    template <int N_SIZE1, int N_SIZE2, int N_SIZE3>
-    void Register_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2][N_SIZE3]);
-    
-    /* various form of Register_Tiny_Inclusive_Tile_Kernels */
-    void Register_Tiny_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> & k);
-    template <int N_SIZE1>
-    void Register_Tiny_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1]);
-    template <int N_SIZE1, int N_SIZE2>
-    void Register_Tiny_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2]);
-    template <int N_SIZE1, int N_SIZE2, int N_SIZE3>
-    void Register_Tiny_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2][N_SIZE3]);
-
-     /* various form of Register_Tile_Kernels */
+     /* Register_Tile_Kernels, by default, are inclusive */
     void Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> & k);
     template <int N_SIZE1>
     void Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1]);
@@ -113,6 +85,7 @@ class Pochoir {
     template <int N_SIZE1, int N_SIZE2, int N_SIZE3>
     void Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2][N_SIZE3]);
 
+    /* Register_Tile_Obase_Kernels are exclusive */
     void Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & bk);
     void Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk); 
     // get slope(s)
@@ -128,7 +101,7 @@ class Pochoir {
         regArrayFlag_ = regLogicDomainFlag_ = regPhysDomainFlag_ = regShapeFlag_ = false;
         num_arr_ = 0;
         arr_type_size_ = 0;
-        sz_pxgk_ = 0; sz_pigk_ = 0; sz_ptigk_ = 0;
+        sz_pxgk_ = sz_pigk_ = 0;
         lcm_unroll_ = 1;
         pmode_ = Pochoir_Null;
     }
@@ -154,6 +127,7 @@ class Pochoir {
     Grid_Info<N_RANK> get_phys_grid(void);
 
     /* Executable Spec */
+    /* to remove: Run(timestep) */
     void Run(int timestep);
     void Run_Obase(int timestep);
     Pochoir_Plan<N_RANK> & Gen_Plan(int timepstep);
@@ -161,7 +135,6 @@ class Pochoir {
     Pochoir_Plan<N_RANK> & Load_Plan(const char * file_name);
     void Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & _plan);
     void Run(Pochoir_Plan<N_RANK> & _plan);
-    void Run_Stagger(Pochoir_Plan<N_RANK> & _plan);
     void Run_Obase(Pochoir_Plan<N_RANK> & _plan);
     void Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan);
 };
@@ -186,96 +159,11 @@ void Pochoir<N_RANK>::reg_tile_dim(Pochoir_Tile_Kernel<N_RANK> & pt, int dim, I 
     return;
 }
 
-/* this is the version that register a single kernel for the entire region
- * guarded by 'g'
+/* By default, what the user register in Phase I will be treated as
+ * inclusive tile/kernels
  */
 template <int N_RANK>
-void Pochoir<N_RANK>::Register_Tiny_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> & k) {
-    typedef Pochoir_Kernel<N_RANK> T_Kernel;
-    pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_ptig = new Pochoir_Guard<N_RANK>;
-    *l_ptig = g;
-    ptigs_.add_element(*l_ptig);
-    Pochoir_Tile_Kernel<N_RANK> * l_ptit = new Pochoir_Tile_Kernel<N_RANK>;
-    l_ptit->kernel_ = new T_Kernel;
-    l_ptit->kernel_[0] = k;
-    Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
-    reg_tile_dim(*l_ptit, 1, 1);
-    ptits_.add_element(*l_ptit);
-    ++sz_ptigk_;
-    assert(sz_ptigk_ == ptits_.size());
-    return;
-}
-
-template <int N_RANK> template <int N_SIZE1>
-void Pochoir<N_RANK>::Register_Tiny_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1]) {
-    typedef Pochoir_Kernel<N_RANK> T_Kernel;
-    pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_ptig = new Pochoir_Guard<N_RANK>;
-    *l_ptig = g;
-    ptigs_.add_element(*l_ptig);
-    Pochoir_Tile_Kernel<N_RANK> * l_ptit = new Pochoir_Tile_Kernel<N_RANK>;
-    l_ptit->kernel_ = new T_Kernel[N_SIZE1];
-    for (int i = 0; i < N_SIZE1; ++i) {
-        l_ptit->kernel_[i] = tile[i];
-        Register_Shape(tile[i].Get_Shape(), tile[i].Get_Shape_Size());
-    }
-    reg_tile_dim(*l_ptit, 1, N_SIZE1);
-    ptits_.add_element(*l_ptit);
-    ++sz_ptigk_;
-    assert(sz_ptigk_ == ptits_.size());
-    return;
-}
-
-template <int N_RANK> template <int N_SIZE1, int N_SIZE2>
-void Pochoir<N_RANK>::Register_Tiny_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2]) {
-    typedef Pochoir_Kernel<N_RANK> T_Kernel;
-    pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_ptig = new Pochoir_Guard<N_RANK>;
-    *l_ptig = g;
-    ptigs_.add_element(*l_ptig);
-    Pochoir_Tile_Kernel<N_RANK> * l_ptit = new Pochoir_Tile_Kernel<N_RANK>;
-    l_ptit->kernel_ = new T_Kernel[N_SIZE1 * N_SIZE2];
-    for (int i = 0; i < N_SIZE1; ++i) {
-        for (int j = 0; j < N_SIZE2; ++j) {
-            l_ptit->kernel_[i * N_SIZE2 + j] = tile[i][j];
-            Register_Shape(tile[i][j].Get_Shape(), tile[i][j].Get_Shape_Size());
-        }
-    }
-    reg_tile_dim(*l_ptit, 2, N_SIZE1, N_SIZE2);
-    ptits_.add_element(*l_ptit);
-    ++sz_ptigk_;
-    assert(sz_ptigk_ == ptits_.size());
-    return;
-}
-
-template <int N_RANK> template <int N_SIZE1, int N_SIZE2, int N_SIZE3>
-void Pochoir<N_RANK>::Register_Tiny_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2][N_SIZE3]) {
-    typedef Pochoir_Kernel<N_RANK> T_Kernel;
-    pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_ptig = new Pochoir_Guard<N_RANK>;
-    *l_ptig = g;
-    ptigs_.add_element(*l_ptig);
-    Pochoir_Tile_Kernel<N_RANK> * l_ptit = new Pochoir_Tile_Kernel<N_RANK>;
-    l_ptit->kernel_ = new T_Kernel[N_SIZE1 * N_SIZE2 * N_SIZE3];
-    for (int i = 0; i < N_SIZE1; ++i) {
-        for (int j = 0; j < N_SIZE2; ++j) {
-    for (int k = 0; k < N_SIZE3; ++k) {
-        l_ptit->kernel_[i * N_SIZE2 * N_SIZE3 + j * N_SIZE3 + k] = tile[i][j][k]; 
-        Register_Shape(tile[i][j][k].Get_Shape(), tile[i][j][k].Get_Shape_Size());
-    }
-        }
-    }
-    reg_tile_dim(*l_ptit, 3, N_SIZE1, N_SIZE2, N_SIZE3);
-    ptits_.add_element(*l_ptit);
-    ++sz_ptigk_;
-    assert(sz_ptigk_ == ptits_.size());
-    return;
-}
-
-
-template <int N_RANK>
-void Pochoir<N_RANK>::Register_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> & k) {
+void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> & k) {
     typedef Pochoir_Kernel<N_RANK> T_Kernel;
     pmode_ = Pochoir_Tile;
     Pochoir_Guard<N_RANK> * l_pig = new Pochoir_Guard<N_RANK>;
@@ -293,7 +181,7 @@ void Pochoir<N_RANK>::Register_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g,
 }
 
 template <int N_RANK> template <int N_SIZE1>
-void Pochoir<N_RANK>::Register_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1]) {
+void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1]) {
     typedef Pochoir_Kernel<N_RANK> T_Kernel;
     pmode_ = Pochoir_Tile;
     Pochoir_Guard<N_RANK> * l_pig = new Pochoir_Guard<N_RANK>;
@@ -313,7 +201,7 @@ void Pochoir<N_RANK>::Register_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g,
 }
 
 template <int N_RANK> template <int N_SIZE1, int N_SIZE2>
-void Pochoir<N_RANK>::Register_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2]) {
+void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2]) {
     typedef Pochoir_Kernel<N_RANK> T_Kernel;
     pmode_ = Pochoir_Tile;
     Pochoir_Guard<N_RANK> * l_pig = new Pochoir_Guard<N_RANK>;
@@ -335,7 +223,7 @@ void Pochoir<N_RANK>::Register_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g,
 }
 
 template <int N_RANK> template <int N_SIZE1, int N_SIZE2, int N_SIZE3>
-void Pochoir<N_RANK>::Register_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2][N_SIZE3]) {
+void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2][N_SIZE3]) {
     typedef Pochoir_Kernel<N_RANK> T_Kernel;
     pmode_ = Pochoir_Tile;
     Pochoir_Guard<N_RANK> * l_pig = new Pochoir_Guard<N_RANK>;
@@ -355,176 +243,6 @@ void Pochoir<N_RANK>::Register_Inclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g,
     pits_.add_element(*l_pit);
     ++sz_pigk_;
     assert(sz_pigk_ == pits_.size());
-    return;
-}
-
-
-template <int N_RANK>
-void Pochoir<N_RANK>::Register_Exclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> & k) {
-    typedef Pochoir_Kernel<N_RANK> T_Kernel;
-    pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_pxg = new Pochoir_Guard<N_RANK>;
-    *l_pxg = g;
-    pxgs_.add_element(*l_pxg);
-    Pochoir_Tile_Kernel<N_RANK> * l_pxt = new Pochoir_Tile_Kernel<N_RANK>;
-    l_pxt->kernel_ = new T_Kernel[1];
-    l_pxt->kernel_[0] = k;
-    Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
-    reg_tile_dim(*l_pxt, 1, 1);
-    pxts_.add_element(*l_pxt);
-    ++sz_pxgk_;
-    assert(sz_pxgk_ == pxts_.size());
-    return;
-}
-
-template <int N_RANK> template <int N_SIZE1>
-void Pochoir<N_RANK>::Register_Exclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1]) {
-    typedef Pochoir_Kernel<N_RANK> T_Kernel;
-    pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_pxg = new Pochoir_Guard<N_RANK>;
-    *l_pxg = g;
-    pxgs_.add_element(*l_pxg);
-    Pochoir_Tile_Kernel<N_RANK> * l_pxt = new Pochoir_Tile_Kernel<N_RANK>;
-    l_pxt->kernel_ = new T_Kernel[N_SIZE1];
-    for (int i = 0; i < N_SIZE1; ++i) {
-        l_pxt->kernel_[i] = tile[i];
-        Register_Shape(tile[i].Get_Shape(), tile[i].Get_Shape_Size());
-    }
-    reg_tile_dim(*l_pxt, 1, N_SIZE1);
-    pxts_.add_element(*l_pxt);
-    ++sz_pxgk_;
-    assert(sz_pxgk_ == pxts_.size());
-    return;
-}
-
-template <int N_RANK> template <int N_SIZE1, int N_SIZE2>
-void Pochoir<N_RANK>::Register_Exclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2]) {
-    typedef Pochoir_Kernel<N_RANK> T_Kernel;
-    pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_pxg = new Pochoir_Guard<N_RANK>;
-    *l_pxg = g;
-    pxgs_.add_element(*l_pxg);
-    Pochoir_Tile_Kernel<N_RANK> * l_pxt = new Pochoir_Tile_Kernel<N_RANK>;
-    l_pxt->kernel_ = new T_Kernel[N_SIZE1 * N_SIZE2];
-    for (int i = 0; i < N_SIZE1; ++i) {
-        for (int j = 0; j < N_SIZE2; ++j) {
-            l_pxt->kernel_[i * N_SIZE2 + j] = tile[i][j];
-            Register_Shape(tile[i][j].Get_Shape(), tile[i][j].Get_Shape_Size());
-        }
-    }
-    reg_tile_dim(*l_pxt, 2, N_SIZE1, N_SIZE2);
-    pxts_.add_element(*l_pxt);
-    ++sz_pxgk_;
-    assert(sz_pxgk_ == pxts_.size());
-    return;
-}
-
-template <int N_RANK> template <int N_SIZE1, int N_SIZE2, int N_SIZE3>
-void Pochoir<N_RANK>::Register_Exclusive_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2][N_SIZE3]) {
-    typedef Pochoir_Kernel<N_RANK> T_Kernel;
-    pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_pxg = new Pochoir_Guard<N_RANK>;
-    *l_pxg = g;
-    pxgs_.add_element(*l_pxg);
-    Pochoir_Tile_Kernel<N_RANK> * l_pxt = new Pochoir_Tile_Kernel<N_RANK>;
-    l_pxt->kernel_ = new T_Kernel[N_SIZE1 * N_SIZE2 * N_SIZE3];
-    for (int i = 0; i < N_SIZE1; ++i) {
-        for (int j = 0; j < N_SIZE2; ++j) {
-    for (int k = 0; k < N_SIZE3; ++k) {
-        l_pxt->kernel_[i * N_SIZE2 * N_SIZE3 + j * N_SIZE3 + k] = tile[i][j][k];
-        Register_Shape(tile[i][j][k].Get_Shape(), tile[i][j][k].Get_Shape_Size());
-    }
-        }
-    }
-    reg_tile_dim(*l_pxt, 3, N_SIZE1, N_SIZE2, N_SIZE3);
-    pxts_.add_element(*l_pxt);
-    ++sz_pxgk_;
-    assert(sz_pxgk_ == pxts_.size());
-    return;
-}
-
-
-template <int N_RANK>
-void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> & k) {
-    typedef Pochoir_Kernel<N_RANK> T_Kernel;
-    pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_pxg = new Pochoir_Guard<N_RANK>;
-    *l_pxg = g;
-    pxgs_.add_element(*l_pxg);
-    Pochoir_Tile_Kernel<N_RANK> * l_pxt = new Pochoir_Tile_Kernel<N_RANK>;
-    l_pxt->kernel_ = new T_Kernel[1];
-    l_pxt->kernel_[0] = k;
-    Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
-    reg_tile_dim(*l_pxt, 1, 1);
-    pxts_.add_element(*l_pxt);
-    ++sz_pxgk_;
-    assert(sz_pxgk_ == pxts_.size());
-    return;
-}
-
-template <int N_RANK> template <int N_SIZE1>
-void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1]) {
-    typedef Pochoir_Kernel<N_RANK> T_Kernel;
-    pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_pxg = new Pochoir_Guard<N_RANK>;
-    *l_pxg = g;
-    pxgs_.add_element(*l_pxg);
-    Pochoir_Tile_Kernel<N_RANK> * l_pxt = new Pochoir_Tile_Kernel<N_RANK>;
-    l_pxt->kernel_ = new T_Kernel[N_SIZE1];
-    for (int i = 0; i < N_SIZE1; ++i) {
-        l_pxt->kernel_[i] = tile[i];
-        Register_Shape(tile[i].Get_Shape(), tile[i].Get_Shape_Size());
-    }
-    reg_tile_dim(*l_pxt, 1, N_SIZE1);
-    pxts_.add_element(*l_pxt);
-    ++sz_pxgk_;
-    assert(sz_pxgk_ == pxts_.size());
-    return;
-}
-
-template <int N_RANK> template <int N_SIZE1, int N_SIZE2>
-void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2]) {
-    typedef Pochoir_Kernel<N_RANK> T_Kernel;
-    pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_pxg = new Pochoir_Guard<N_RANK>;
-    *l_pxg = g;
-    pxgs_.add_element(*l_pxg);
-    Pochoir_Tile_Kernel<N_RANK> * l_pxt = new Pochoir_Tile_Kernel<N_RANK>;
-    l_pxt->kernel_ = new T_Kernel[N_SIZE1 * N_SIZE2];
-    for (int i = 0; i < N_SIZE1; ++i) {
-        for (int j = 0; j < N_SIZE2; ++j) {
-            l_pxt->kernel_[i * N_SIZE2 + j] = tile[i][j];
-            Register_Shape(tile[i][j].Get_Shape(), tile[i][j].Get_Shape_Size());
-        }
-    }
-    reg_tile_dim(*l_pxt, 2, N_SIZE1, N_SIZE2);
-    pxts_.add_element(*l_pxt);
-    ++sz_pxgk_;
-    assert(sz_pxgk_ == pxts_.size());
-    return;
-}
-
-template <int N_RANK> template <int N_SIZE1, int N_SIZE2, int N_SIZE3>
-void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2][N_SIZE3]) {
-    typedef Pochoir_Kernel<N_RANK> T_Kernel;
-    pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_pxg = new Pochoir_Guard<N_RANK>;
-    *l_pxg = g;
-    pxgs_.add_element(*l_pxg);
-    Pochoir_Tile_Kernel<N_RANK> * l_pxt = new Pochoir_Tile_Kernel<N_RANK>;
-    l_pxt->kernel_ = new T_Kernel[N_SIZE1 * N_SIZE2 * N_SIZE3];
-    for (int i = 0; i < N_SIZE1; ++i) {
-        for (int j = 0; j < N_SIZE2; ++j) {
-    for (int k = 0; k < N_SIZE3; ++k) {
-        l_pxt->kernel_[i * N_SIZE2 * N_SIZE3 + j * N_SIZE3 + k] = tile[i][j][k];
-        Register_Shape(tile[i][j][k].Get_Shape(), tile[i][j][k].Get_Shape_Size());
-    }
-        }
-    }
-    reg_tile_dim(*l_pxt, 3, N_SIZE1, N_SIZE2, N_SIZE3);
-    pxts_.add_element(*l_pxt);
-    ++sz_pxgk_;
-    assert(sz_pxgk_ == pxts_.size());
     return;
 }
 
@@ -752,7 +470,9 @@ Grid_Info<N_RANK> Pochoir<N_RANK>::get_phys_grid(void) {
     return phys_grid_;
 }
 
-/* Run the kernel functions stored in array of function pointers */
+#if 0
+/* to remove */
+/* Run the kernel functions stored in an array of function pointers */
 template <int N_RANK>
 void Pochoir<N_RANK>::Run(int timestep) {
     Algorithm<N_RANK> algor(slope_);
@@ -793,6 +513,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep) {
     // cutting based on shorter bar
     algor.adaptive_bicut_p(0 + time_shift_, timestep + time_shift_, logic_grid_);
 }
+#endif
 
 template <int N_RANK> 
 Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
@@ -802,31 +523,17 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     Pochoir_Plan<N_RANK> * l_plan = new Pochoir_Plan<N_RANK>();
     int l_sz_base_data, l_sz_sync_data;
     Spawn_Tree<N_RANK> * l_tree;
-    Node_Info<N_RANK> * l_root;
+    Node_Info<N_RANK> * l_root, * l_internal;
 
-    Algorithm<N_RANK> algor(slope_);
-    algor.set_phys_grid(phys_grid_);
-    algor.set_thres(arr_type_size_);
-    /* set individual unroll factor from opgk_ */
-    if (pmode_ == Pochoir_Obase_Tile) {
-        algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
-    } else if (pmode_ == Pochoir_Tile) {
-        /* we partition the computing domain align to the 'exclusive_if's */
-        algor.set_pts(sz_pxgk_, pxgs_, pxts_.get_root());
-    } else {
-        printf("Something is wrong in Gen_Plan(Timestep)!\n");
-        exit(1);
-    }
-    algor.set_unroll(lcm_unroll_);
     timestep_ = timestep;
     checkFlags();
     l_tree = new Spawn_Tree<N_RANK>();
     l_tree->set_add_empty_region(true);
     l_root = l_tree->get_root();
-    algor.set_tree(l_tree);
-    algor.gen_plan_bicut_p(l_root, 0 + time_shift_, timestep + time_shift_, logic_grid_);
-    l_sz_base_data = algor.get_sz_base_data();
-    l_sz_sync_data = max(1, algor.get_sz_sync_data());
+    l_internal = new Node_Info<N_RANK>(0 + time_shift_, timestep + time_shift_, logic_grid_);
+    l_tree->add_node(l_root, l_internal, IS_SPAWN);
+    l_sz_base_data = 2;
+    l_sz_sync_data = 0;
     l_plan->alloc_base_data(l_sz_base_data);
     l_plan->alloc_sync_data(l_sz_sync_data);
     int l_tree_size_begin = l_tree->size();
@@ -868,9 +575,6 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep) {
     /* set individual unroll factor from opgk_ */
     if (pmode_ == Pochoir_Obase_Tile) {
         algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
-    } else if (pmode_ == Pochoir_Tile) {
-        /* we partition the computing domain align to the 'exclusive_if's */
-        algor.set_pts(sz_pxgk_, pxgs_, pxts_.get_root());
     } else {
         printf("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
         exit(1);
@@ -933,7 +637,9 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Load_Plan(const char * file_name) {
 
 template <int N_RANK>
 void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
-    assert(pxts_ != NULL);
+    /* In this Phase I run, we will just run over the entire grid,
+     * with checking of all the pigs_/pits_
+     */
     int offset = 0;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
@@ -942,17 +648,8 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
             int l_t1 = _plan.base_data_->region_[i].t1;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
             for (int t = l_t0; t < l_t1; ++t) {
-                if (l_region_n >= 0) {
-                    /* execute one of the exclusive_if's */
-                    Pochoir_Run_Regional_Tile_Kernel<N_RANK> l_kernel(time_shift_, pxts_[l_region_n]);
-                    meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
-                }
                 for (int i = 0; i < sz_pigk_; ++i) {
                     Pochoir_Run_Regional_Guard_Tile_Kernel<N_RANK> l_kernel(time_shift_, pigs_[i], pits_[i]);
-                    meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
-                }
-                for (int i = 0; i < sz_ptigk_; ++i) {
-                    Pochoir_Run_Regional_Guard_Tile_Kernel<N_RANK> l_kernel(time_shift_, ptigs_[i], ptits_[i]);
                     meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
                 }
                 for (int i = 0; i < N_RANK; ++i) {

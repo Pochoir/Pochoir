@@ -1,0 +1,1084 @@
+ALGOR_QUEUE_SIZE	pochoir_walk.hpp	453
+ARRAY_LENGTH	pochoir_common.hpp	/^#define ARRAY_LENGTH(x) (int)(sizeof(x)\/sizeof(x[0/
+Algorithm	pochoir_walk.hpp	384
+Algorithm::ALGOR_QUEUE_SIZE	pochoir_walk.hpp	406
+Algorithm::Algorithm	pochoir_walk.hpp	/^    Algorithm (int const _slope[]) : dt_recursive_/
+Algorithm::F	pochoir_walk.hpp	558
+Algorithm::F	pochoir_walk.hpp	560
+Algorithm::F	pochoir_walk.hpp	569
+Algorithm::F	pochoir_walk.hpp	571
+Algorithm::F	pochoir_walk.hpp	580
+Algorithm::F	pochoir_walk.hpp	582
+Algorithm::F	pochoir_walk.hpp	607
+Algorithm::F	pochoir_walk.hpp	609
+Algorithm::F	pochoir_walk.hpp	615
+Algorithm::F	pochoir_walk.hpp	617
+Algorithm::F1	pochoir_walk.hpp	589
+Algorithm::G1	pochoir_walk.hpp	589
+Algorithm::G2	pochoir_walk.hpp	589
+Algorithm::N_CORES	pochoir_walk.hpp	398
+Algorithm::TILE_BOUNDARY	pochoir_walk.hpp	431
+Algorithm::TILE_MP	pochoir_walk.hpp	431
+Algorithm::TILE_NCORES	pochoir_walk.hpp	431
+Algorithm::Z	pochoir_walk.hpp	395
+Algorithm::algor_type	pochoir_walk.hpp	431
+Algorithm::boundarySet	pochoir_walk.hpp	413
+Algorithm::boundary_points_count	pochoir_walk.hpp	428
+Algorithm::boundary_region_count	pochoir_walk.hpp	427
+Algorithm::dt_recursive_	pochoir_walk.hpp	393
+Algorithm::dt_recursive_boundary_	pochoir_walk.hpp	394
+Algorithm::dx_recursive_	pochoir_walk.hpp	391
+Algorithm::dx_recursive_boundary_	pochoir_walk.hpp	392
+Algorithm::get_sz_base_data	pochoir_walk.hpp	/^    inline int get_sz_base_data(void) { return sz_/
+Algorithm::get_sz_sync_data	pochoir_walk.hpp	/^    inline int get_sz_sync_data(void) { return sz_/
+Algorithm::grid	pochoir_walk.hpp	403
+Algorithm::index_info	pochoir_walk.hpp	399
+Algorithm::interior_points_count	pochoir_walk.hpp	428
+Algorithm::interior_region_count	pochoir_walk.hpp	427
+Algorithm::lcm_unroll_	pochoir_walk.hpp	415
+Algorithm::level	pochoir_walk.hpp	401
+Algorithm::lub_boundary	pochoir_walk.hpp	412
+Algorithm::num_bkernel_	pochoir_walk.hpp	430
+Algorithm::num_cond_bkernel_	pochoir_walk.hpp	430
+Algorithm::num_cond_kernel_	pochoir_walk.hpp	430
+Algorithm::num_kernel_	pochoir_walk.hpp	430
+Algorithm::opksSet	pochoir_walk.hpp	413
+Algorithm::opks_	pochoir_walk.hpp	418
+Algorithm::pad_point_	pochoir_walk.hpp	397
+Algorithm::pgs_	pochoir_walk.hpp	416
+Algorithm::physGridSet	pochoir_walk.hpp	413
+Algorithm::phys_grid_	pochoir_walk.hpp	409
+Algorithm::phys_length_	pochoir_walk.hpp	410
+Algorithm::pksSet	pochoir_walk.hpp	413
+Algorithm::pks_	pochoir_walk.hpp	417
+Algorithm::ptsSet	pochoir_walk.hpp	413
+Algorithm::pts_	pochoir_walk.hpp	419
+Algorithm::pure_region_	pochoir_walk.hpp	420
+Algorithm::queue_info	pochoir_walk.hpp	404
+Algorithm::r_t	pochoir_walk.hpp	396
+Algorithm::read_stat_kernel	pochoir_walk.hpp	/^    inline void read_stat_kernel(int & _num_kernel/
+Algorithm::set_thres	pochoir_walk.hpp	/^    inline void set_thres(int arr_type_size) {$/
+Algorithm::set_time_shift	pochoir_walk.hpp	/^    void set_time_shift(int _time_shift) { time_sh/
+Algorithm::set_tree	pochoir_walk.hpp	/^    inline void set_tree(Spawn_Tree<N_RANK> * _tre/
+Algorithm::set_unroll	pochoir_walk.hpp	/^    void set_unroll(int _lcm_unroll) { lcm_unroll_/
+Algorithm::sim_count_cut	pochoir_walk.hpp	426
+Algorithm::slopeSet	pochoir_walk.hpp	413
+Algorithm::slope_	pochoir_walk.hpp	411
+Algorithm::sz_base_data_	pochoir_walk.hpp	421
+Algorithm::sz_pgk_	pochoir_walk.hpp	414
+Algorithm::sz_sync_data_	pochoir_walk.hpp	421
+Algorithm::t0	pochoir_walk.hpp	402
+Algorithm::t1	pochoir_walk.hpp	402
+Algorithm::time_shift_	pochoir_walk.hpp	415
+Algorithm::tree_	pochoir_walk.hpp	422
+Algorithm::ulb_boundary	pochoir_walk.hpp	412
+Algorithm::uub_boundary	pochoir_walk.hpp	412
+ArraySize	pochoir_common.hpp	/^size_t ArraySize (Pochoir_Shape<N_RANK> (& arr)[N]/
+BICUT	pochoir_common.hpp	82
+BIT_TRICK	pochoir_common.hpp	72
+CROSS_REGION	pochoir_common.hpp	81
+Copyright	LICENSE	/^ Copyright (C) 2007 Free Software Foundation, Inc./
+D	pochoir.hpp	742
+DEBUG_FACILITY	pochoir_common.hpp	75
+December	LICENSE	183
+E	pochoir	2211
+END_SYNC	pochoir_common.hpp	77
+EXPR_STENCIL_HPP	pochoir.hpp	27
+EXPR_WALK_LOOPS_H	pochoir_walk_loops.hpp	27
+Expr	PData.hs	220
+Expr	PGenData.hs	220
+F	pochoir_walk_recursive.hpp	391
+F	pochoir_walk_recursive.hpp	684
+F	pochoir_walk_recursive.hpp	969
+F	pochoir_walk_recursive.hpp	1250
+F	pochoir_walk_recursive.hpp	3072
+F	pochoir_walk_recursive.hpp	3253
+F	pochoir_walk_recursive.hpp	3470
+F	pochoir_walk_recursive.hpp	3622
+F	pochoir_walk_recursive.hpp	4281
+F	pochoir_walk_recursive.hpp	4425
+Foundation	PBasicParser2.hs	9
+Foundation	PBasicParser.hs	9
+Foundation	PData.hs	9
+Foundation	PGenBasicParser2.hs	9
+Foundation	PGenBasicParser.hs	9
+Foundation	PGenData.hs	9
+Foundation	PGenMain.hs	9
+Foundation	PGenMainParser2.hs	9
+Foundation	PGenMainParser.hs	9
+Foundation	PGenParser2.hs	9
+Foundation	PGenShow.hs	9
+Foundation	PGenUtils.hs	9
+Foundation	PMain.hs	9
+Foundation	PMainParser2.hs	9
+Foundation	PMainParser.hs	9
+Foundation	PParser2.hs	9
+Foundation	PShow.hs	9
+Foundation	PUtils.hs	9
+GEN_FILE	Makefile	/^GEN_FILE=PGenMain.hs PGenMainParser.hs PGenBasicPa/
+Gen_Plan	pochoir.hpp	/^Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(i/
+Gen_Plan_Obase	pochoir.hpp	/^Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_O/
+Grid_Info	pochoir_common.hpp	125
+Grid_Info::dx0	pochoir_common.hpp	127
+Grid_Info::dx1	pochoir_common.hpp	127
+Grid_Info::x0	pochoir_common.hpp	126
+Grid_Info::x1	pochoir_common.hpp	126
+H	pochoir	3140
+However	LICENSE	415
+HÉ≈	PUtils.o	2
+HÉ≈	PUtils.o	20
+HÉ≈	PUtils.o	20
+I	pochoir.hpp	179
+INF	pochoir_common.hpp	73
+Iter	PData.hs	108
+Iter	PGenData.hs	108
+KLEIN	pochoir_common.hpp	78
+License	PBasicParser2.hs	9
+License	PBasicParser.hs	9
+License	PData.hs	9
+License	PGenBasicParser2.hs	9
+License	PGenBasicParser.hs	9
+License	PGenData.hs	9
+License	PGenMain.hs	9
+License	PGenMainParser2.hs	9
+License	PGenMainParser.hs	9
+License	PGenParser2.hs	9
+License	PGenShow.hs	9
+License	PGenUtils.hs	9
+License	PMain.hs	9
+License	PMainParser2.hs	9
+License	PMainParser.hs	9
+License	PParser2.hs	9
+License	PShow.hs	9
+License	PUtils.hs	9
+Load_Plan	pochoir.hpp	/^Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Load_Plan(/
+MAX	pochoir_walk_loops.hpp	/^#define MAX(a, b) ((a) >= (b) ? (a) : (b))$/
+Meta_Op	pochoir_common.hpp	163
+Meta_Op::IS_INTERNAL	pochoir_common.hpp	163
+Meta_Op::IS_ROOT	pochoir_common.hpp	163
+Meta_Op::IS_SPAWN	pochoir_common.hpp	163
+Meta_Op::IS_SYNC	pochoir_common.hpp	163
+NONE_EXCLUSIVE_IFS	pochoir_common.hpp	80
+N_RANK	pochoir_common.hpp	678
+N_SIZE1	pochoir.hpp	229
+N_SIZE1	pochoir.hpp	251
+N_SIZE1	pochoir.hpp	314
+N_SIZE1	pochoir.hpp	336
+N_SIZE1	pochoir.hpp	399
+N_SIZE1	pochoir.hpp	421
+N_SIZE1	pochoir.hpp	484
+N_SIZE1	pochoir.hpp	506
+N_SIZE2	pochoir.hpp	251
+N_SIZE2	pochoir.hpp	336
+N_SIZE2	pochoir.hpp	421
+N_SIZE2	pochoir.hpp	506
+Node_Info	pochoir_common.hpp	493
+Node_Info::Node_Info	pochoir_common.hpp	/^    Node_Info() { parent = left = right = NULL; }$/
+Node_Info::Node_Info	pochoir_common.hpp	/^    Node_Info(enum Meta_Op _op) {$/
+Node_Info::Node_Info	pochoir_common.hpp	/^    Node_Info(int _t0, int _t1, Grid_Info<N_RANK> /
+Node_Info::left	pochoir_common.hpp	495
+Node_Info::op	pochoir_common.hpp	496
+Node_Info::parent	pochoir_common.hpp	495
+Node_Info::region_	pochoir_common.hpp	494
+Node_Info::right	pochoir_common.hpp	495
+Node_Info::~Node_Info	pochoir_common.hpp	/^    ~Node_Info() {$/
+O	pochoir	3184
+PArray	PData.hs	62
+PArray	PGenData.hs	62
+PGuard	PData.hs	135
+PGuard	PGenData.hs	135
+PGuardFunc	PData.hs	125
+PGuardFunc	PGenData.hs	125
+PKernel	PData.hs	143
+PKernel	PGenData.hs	143
+PMode	PData.hs	54
+PMode	PGenData.hs	54
+PName	PData.hs	35
+PName	PGenData.hs	35
+PName	PGenMainParser.hs	295
+PName	PMainParser.hs	296
+POCHOIR_ARRAY_H	pochoir_array.hpp	26
+POCHOIR_COMMON_H	pochoir_common.hpp	27
+POCHOIR_KERNEL_HPP	pochoir_kernel.hpp	27
+POCHOIR_RANGE_H	pochoir_range.hpp	26
+POCHOIR_TILE	pochoir_common.hpp	94
+POCHOIR_WALK_H	pochoir_walk.hpp	26
+POCHOIR_WALK_RECURSIVE_HPP	pochoir_walk_recursive.hpp	27
+PP_FILE	Makefile	/^PP_FILE=PMain.hs PMainParser.hs PBasicParser.hs PD/
+PRange	PData.hs	99
+PRange	PGenData.hs	99
+PShape	PData.hs	88
+PShape	PGenData.hs	88
+PTileKernel	PData.hs	152
+PTileKernel	PGenData.hs	152
+Parsec	PGenMain.hs	/^import Text.ParserCombinators.Parsec (runParser)$/
+Parsec	PMain.hs	/^import Text.ParserCombinators.Parsec (runParser)$/
+Pochoir	pochoir.hpp	37
+Pochoir::D	pochoir.hpp	145
+Pochoir::I	pochoir.hpp	69
+Pochoir::N_SIZE1	pochoir.hpp	83
+Pochoir::N_SIZE1	pochoir.hpp	85
+Pochoir::N_SIZE1	pochoir.hpp	92
+Pochoir::N_SIZE1	pochoir.hpp	94
+Pochoir::N_SIZE1	pochoir.hpp	101
+Pochoir::N_SIZE1	pochoir.hpp	103
+Pochoir::N_SIZE1	pochoir.hpp	110
+Pochoir::N_SIZE1	pochoir.hpp	112
+Pochoir::N_SIZE2	pochoir.hpp	85
+Pochoir::N_SIZE2	pochoir.hpp	94
+Pochoir::N_SIZE2	pochoir.hpp	103
+Pochoir::N_SIZE2	pochoir.hpp	112
+Pochoir::Pochoir	pochoir.hpp	/^    Pochoir() {$/
+Pochoir::T	pochoir.hpp	139
+Pochoir::T_Array	pochoir.hpp	148
+Pochoir::arr_type_size_	pochoir.hpp	56
+Pochoir::lcm_unroll_	pochoir.hpp	58
+Pochoir::logic_grid_	pochoir.hpp	40
+Pochoir::num_arr_	pochoir.hpp	55
+Pochoir::opgs_	pochoir.hpp	63
+Pochoir::opks_	pochoir.hpp	64
+Pochoir::phys_grid_	pochoir.hpp	41
+Pochoir::pigs_	pochoir.hpp	61
+Pochoir::pits_	pochoir.hpp	62
+Pochoir::pmode_	pochoir.hpp	59
+Pochoir::ptigs_	pochoir.hpp	61
+Pochoir::ptits_	pochoir.hpp	62
+Pochoir::pxgs_	pochoir.hpp	61
+Pochoir::pxts_	pochoir.hpp	62
+Pochoir::regArrayFlag_	pochoir.hpp	45
+Pochoir::regLogicDomainFlag_	pochoir.hpp	45
+Pochoir::regPhysDomainFlag_	pochoir.hpp	45
+Pochoir::regShapeFlag_	pochoir.hpp	45
+Pochoir::registerBoundaryFn	pochoir.hpp	/^    void registerBoundaryFn(T_Array & arr, RET (*_/
+Pochoir::shape_	pochoir.hpp	53
+Pochoir::shape_size_	pochoir.hpp	54
+Pochoir::slope	pochoir.hpp	/^    int slope(int const _idx) { return slope_[_idx/
+Pochoir::slope_	pochoir.hpp	39
+Pochoir::sz_pigk_	pochoir.hpp	57
+Pochoir::sz_ptigk_	pochoir.hpp	57
+Pochoir::sz_pxgk_	pochoir.hpp	57
+Pochoir::time_shift_	pochoir.hpp	42
+Pochoir::timestep_	pochoir.hpp	44
+Pochoir::toggle_	pochoir.hpp	43
+Pochoir_1D	pochoir_common.hpp	733
+Pochoir_2D	pochoir_common.hpp	734
+Pochoir_3D	pochoir_common.hpp	735
+Pochoir_4D	pochoir_common.hpp	736
+Pochoir_5D	pochoir_common.hpp	737
+Pochoir_6D	pochoir_common.hpp	738
+Pochoir_7D	pochoir_common.hpp	739
+Pochoir_8D	pochoir_common.hpp	740
+Pochoir_Array	pochoir_array.hpp	89
+Pochoir_Array::BValue_1D	pochoir_array.hpp	103
+Pochoir_Array::BValue_2D	pochoir_array.hpp	104
+Pochoir_Array::BValue_3D	pochoir_array.hpp	105
+Pochoir_Array::BValue_4D	pochoir_array.hpp	106
+Pochoir_Array::BValue_5D	pochoir_array.hpp	107
+Pochoir_Array::BValue_6D	pochoir_array.hpp	108
+Pochoir_Array::BValue_7D	pochoir_array.hpp	109
+Pochoir_Array::BValue_8D	pochoir_array.hpp	110
+Pochoir_Array::N_SIZE1	pochoir_array.hpp	487
+Pochoir_Array::Pochoir_Array	pochoir_array.hpp	/^        explicit Pochoir_Array (int sz0) {$/
+Pochoir_Array::Pochoir_Array	pochoir_array.hpp	/^		explicit Pochoir_Array (int sz1, int sz0) {$/
+Pochoir_Array::Pochoir_Array	pochoir_array.hpp	/^		explicit Pochoir_Array (int sz2, int sz1, int sz/
+Pochoir_Array::Pochoir_Array	pochoir_array.hpp	/^		explicit Pochoir_Array (int sz3, int sz2, int sz/
+Pochoir_Array::Pochoir_Array	pochoir_array.hpp	/^		explicit Pochoir_Array (int sz4, int sz3, int sz/
+Pochoir_Array::Pochoir_Array	pochoir_array.hpp	/^		explicit Pochoir_Array (int sz5, int sz4, int sz/
+Pochoir_Array::Pochoir_Array	pochoir_array.hpp	/^		explicit Pochoir_Array (int sz6, int sz5, int sz/
+Pochoir_Array::Pochoir_Array	pochoir_array.hpp	/^		explicit Pochoir_Array (int sz7, int sz6, int sz/
+Pochoir_Array::Pochoir_Array	pochoir_array.hpp	/^		Pochoir_Array (Pochoir_Array<T, N_RANK> const & /
+Pochoir_Array::Pochoir_Array	pochoir_array.hpp	332
+Pochoir_Array::Register_Boundary	pochoir_array.hpp	/^        void Register_Boundary(BValue_1D _bv1) { b/
+Pochoir_Array::Register_Boundary	pochoir_array.hpp	/^        void Register_Boundary(BValue_2D _bv2) { b/
+Pochoir_Array::Register_Boundary	pochoir_array.hpp	/^        void Register_Boundary(BValue_3D _bv3) { b/
+Pochoir_Array::Register_Boundary	pochoir_array.hpp	/^        void Register_Boundary(BValue_4D _bv4) { b/
+Pochoir_Array::Register_Boundary	pochoir_array.hpp	/^        void Register_Boundary(BValue_5D _bv5) { b/
+Pochoir_Array::Register_Boundary	pochoir_array.hpp	/^        void Register_Boundary(BValue_6D _bv6) { b/
+Pochoir_Array::Register_Boundary	pochoir_array.hpp	/^        void Register_Boundary(BValue_7D _bv7) { b/
+Pochoir_Array::Register_Boundary	pochoir_array.hpp	/^        void Register_Boundary(BValue_8D _bv8) { b/
+Pochoir_Array::Register_Shape	pochoir_array.hpp	/^        void Register_Shape(Pochoir_Shape<N_RANK> /
+Pochoir_Array::Register_Shape	pochoir_array.hpp	/^        void Register_Shape(Pochoir_Shape<N_RANK> /
+Pochoir_Array::Register_Shape	pochoir_array.hpp	/^        void Register_Shape(Pochoir_Shape<N_RANK> /
+Pochoir_Array::T2	pochoir_array.hpp	1250
+Pochoir_Array::allocMemFlag_	pochoir_array.hpp	98
+Pochoir_Array::alloc_mem	pochoir_array.hpp	/^        void alloc_mem(void) {$/
+Pochoir_Array::boundary	pochoir_array.hpp	/^		inline T & boundary (int _idx1, int _idx0) {$/
+Pochoir_Array::boundary	pochoir_array.hpp	/^		inline T & boundary (int _idx2, int _idx1, int _/
+Pochoir_Array::boundary	pochoir_array.hpp	/^		inline T & boundary (int _idx3, int _idx2, int _/
+Pochoir_Array::boundary	pochoir_array.hpp	/^		inline T & boundary (int _idx4, int _idx3, int _/
+Pochoir_Array::boundary	pochoir_array.hpp	/^		inline T & boundary (int _idx5, int _idx4, int _/
+Pochoir_Array::boundary	pochoir_array.hpp	/^		inline T & boundary (int _idx6, int _idx5, int _/
+Pochoir_Array::boundary	pochoir_array.hpp	/^		inline T & boundary (int _idx7, int _idx6, int _/
+Pochoir_Array::boundary	pochoir_array.hpp	/^		inline T & boundary (int _idx8, int _idx7, int _/
+Pochoir_Array::bv1_	pochoir_array.hpp	112
+Pochoir_Array::bv2_	pochoir_array.hpp	113
+Pochoir_Array::bv3_	pochoir_array.hpp	114
+Pochoir_Array::bv4_	pochoir_array.hpp	115
+Pochoir_Array::bv5_	pochoir_array.hpp	116
+Pochoir_Array::bv6_	pochoir_array.hpp	117
+Pochoir_Array::bv7_	pochoir_array.hpp	118
+Pochoir_Array::bv8_	pochoir_array.hpp	119
+Pochoir_Array::bv_1D	pochoir_array.hpp	/^        BValue_1D bv_1D(void) { return bv1_; }$/
+Pochoir_Array::bv_2D	pochoir_array.hpp	/^        BValue_2D bv_2D(void) { return bv2_; }$/
+Pochoir_Array::bv_3D	pochoir_array.hpp	/^        BValue_3D bv_3D(void) { return bv3_; }$/
+Pochoir_Array::bv_4D	pochoir_array.hpp	/^        BValue_4D bv_4D(void) { return bv4_; }$/
+Pochoir_Array::bv_5D	pochoir_array.hpp	/^        BValue_5D bv_5D(void) { return bv5_; }$/
+Pochoir_Array::bv_6D	pochoir_array.hpp	/^        BValue_6D bv_6D(void) { return bv6_; }$/
+Pochoir_Array::bv_7D	pochoir_array.hpp	/^        BValue_7D bv_7D(void) { return bv7_; }$/
+Pochoir_Array::bv_8D	pochoir_array.hpp	/^        BValue_8D bv_8D(void) { return bv8_; }$/
+Pochoir_Array::check_boundary	pochoir_array.hpp	/^        inline bool check_boundary(size_info const/
+Pochoir_Array::check_shape	pochoir_array.hpp	/^        inline bool check_shape(int const (& l_shi/
+Pochoir_Array::data	pochoir_array.hpp	/^        inline T * data() { return data_; }$/
+Pochoir_Array::data_	pochoir_array.hpp	92
+Pochoir_Array::get	pochoir_array.hpp	/^		inline T get (int _idx1, int _idx0) {$/
+Pochoir_Array::get	pochoir_array.hpp	/^		inline T get (int _idx2, int _idx1, int _idx0) {/
+Pochoir_Array::get	pochoir_array.hpp	/^		inline T get (int _idx3, int _idx2, int _idx1, i/
+Pochoir_Array::get	pochoir_array.hpp	/^		inline T get (int _idx4, int _idx3, int _idx2, i/
+Pochoir_Array::get	pochoir_array.hpp	/^		inline T get (int _idx5, int _idx4, int _idx3, i/
+Pochoir_Array::get	pochoir_array.hpp	/^		inline T get (int _idx6, int _idx5, int _idx4, i/
+Pochoir_Array::get	pochoir_array.hpp	/^		inline T get (int _idx7, int _idx6, int _idx5, i/
+Pochoir_Array::get	pochoir_array.hpp	/^		inline T get (int _idx8, int _idx7, int _idx6, i/
+Pochoir_Array::interior	pochoir_array.hpp	/^		inline T & interior (int _idx1, int _idx0) {$/
+Pochoir_Array::interior	pochoir_array.hpp	/^		inline T & interior (int _idx2, int _idx1, int _/
+Pochoir_Array::interior	pochoir_array.hpp	/^		inline T & interior (int _idx3, int _idx2, int _/
+Pochoir_Array::interior	pochoir_array.hpp	/^		inline T & interior (int _idx4, int _idx3, int _/
+Pochoir_Array::interior	pochoir_array.hpp	/^		inline T & interior (int _idx5, int _idx4, int _/
+Pochoir_Array::interior	pochoir_array.hpp	/^		inline T & interior (int _idx6, int _idx5, int _/
+Pochoir_Array::interior	pochoir_array.hpp	/^		inline T & interior (int _idx7, int _idx6, int _/
+Pochoir_Array::interior	pochoir_array.hpp	/^		inline T & interior (int _idx8, int _idx7, int _/
+Pochoir_Array::l_null	pochoir_array.hpp	111
+Pochoir_Array::logic_end_	pochoir_array.hpp	95
+Pochoir_Array::logic_size	pochoir_array.hpp	/^		int logic_size(int _dim) const { return logic_si/
+Pochoir_Array::logic_size_	pochoir_array.hpp	94
+Pochoir_Array::logic_start_	pochoir_array.hpp	95
+Pochoir_Array::operator()	pochoir_array.hpp	/^		inline T & operator() (int _idx1, int _idx0) {$/
+Pochoir_Array::operator()	pochoir_array.hpp	/^		inline T & operator() (int _idx2, int _idx1, int/
+Pochoir_Array::operator()	pochoir_array.hpp	/^		inline T & operator() (int _idx3, int _idx2, int/
+Pochoir_Array::operator()	pochoir_array.hpp	/^		inline T & operator() (int _idx4, int _idx3, int/
+Pochoir_Array::operator()	pochoir_array.hpp	/^		inline T & operator() (int _idx5, int _idx4, int/
+Pochoir_Array::operator()	pochoir_array.hpp	/^		inline T & operator() (int _idx6, int _idx5, int/
+Pochoir_Array::operator()	pochoir_array.hpp	/^		inline T & operator() (int _idx7, int _idx6, int/
+Pochoir_Array::operator()	pochoir_array.hpp	/^		inline T & operator() (int _idx8, int _idx7, int/
+Pochoir_Array::operator=	pochoir_array.hpp	/^		Pochoir_Array<T, N_RANK> & operator= (Pochoir_Ar/
+Pochoir_Array::orig_value	pochoir_array.hpp	/^        inline T orig_value (int _timestep, size_i/
+Pochoir_Array::phys_size	pochoir_array.hpp	/^		int phys_size(int _dim) const { return phys_size/
+Pochoir_Array::phys_size_	pochoir_array.hpp	96
+Pochoir_Array::print_shape	pochoir_array.hpp	/^        inline void print_shape(void) {$/
+Pochoir_Array::set	pochoir_array.hpp	/^		inline T & set (int _idx1, int _idx0) {$/
+Pochoir_Array::set	pochoir_array.hpp	/^		inline T & set (int _idx2, int _idx1, int _idx0)/
+Pochoir_Array::set	pochoir_array.hpp	/^		inline T & set (int _idx3, int _idx2, int _idx1,/
+Pochoir_Array::set	pochoir_array.hpp	/^		inline T & set (int _idx4, int _idx3, int _idx2,/
+Pochoir_Array::set	pochoir_array.hpp	/^		inline T & set (int _idx5, int _idx4, int _idx3,/
+Pochoir_Array::set	pochoir_array.hpp	/^		inline T & set (int _idx6, int _idx5, int _idx4,/
+Pochoir_Array::set	pochoir_array.hpp	/^		inline T & set (int _idx7, int _idx6, int _idx5,/
+Pochoir_Array::set	pochoir_array.hpp	/^		inline T & set (int _idx8, int _idx7, int _idx6,/
+Pochoir_Array::set_slope	pochoir_array.hpp	/^        void set_slope(int _slope[N_RANK]) { $/
+Pochoir_Array::set_toggle	pochoir_array.hpp	/^        void set_toggle(int _toggle) { toggle_ = _/
+Pochoir_Array::shape_	pochoir_array.hpp	101
+Pochoir_Array::shape_size_	pochoir_array.hpp	102
+Pochoir_Array::size	pochoir_array.hpp	/^		int size(int _dim) const { return phys_size_[_di/
+Pochoir_Array::size_info	pochoir_array.hpp	93
+Pochoir_Array::slope	pochoir_array.hpp	/^		int slope(int _dim) const { return slope_[_dim];/
+Pochoir_Array::slope_	pochoir_array.hpp	100
+Pochoir_Array::stride	pochoir_array.hpp	/^		int stride (int _dim) const { return stride_[_di/
+Pochoir_Array::stride_	pochoir_array.hpp	97
+Pochoir_Array::toggle_	pochoir_array.hpp	100
+Pochoir_Array::total_size	pochoir_array.hpp	/^		int total_size() const { return total_size_; }$/
+Pochoir_Array::total_size_	pochoir_array.hpp	99
+Pochoir_Array::unRegister_Boundary	pochoir_array.hpp	/^        void unRegister_Boundary(void) { bv1_ = NU/
+Pochoir_Array::update_index	pochoir_array.hpp	/^		static inline bool update_index(int * index, boo/
+Pochoir_Array::view	pochoir_array.hpp	/^		inline Storage<T> * view() {$/
+Pochoir_Array::view_	pochoir_array.hpp	91
+Pochoir_Array::~Pochoir_Array	pochoir_array.hpp	/^		~Pochoir_Array() {$/
+Pochoir_Array_1D	pochoir_common.hpp	/^#define Pochoir_Array_1D(type) Pochoir_Array<type,/
+Pochoir_Array_2D	pochoir_common.hpp	/^#define Pochoir_Array_2D(type) Pochoir_Array<type,/
+Pochoir_Array_3D	pochoir_common.hpp	/^#define Pochoir_Array_3D(type) Pochoir_Array<type,/
+Pochoir_Array_4D	pochoir_common.hpp	/^#define Pochoir_Array_4D(type) Pochoir_Array<type,/
+Pochoir_Array_5D	pochoir_common.hpp	/^#define Pochoir_Array_5D(type) Pochoir_Array<type,/
+Pochoir_Array_6D	pochoir_common.hpp	/^#define Pochoir_Array_6D(type) Pochoir_Array<type,/
+Pochoir_Array_7D	pochoir_common.hpp	/^#define Pochoir_Array_7D(type) Pochoir_Array<type,/
+Pochoir_Array_8D	pochoir_common.hpp	/^#define Pochoir_Array_8D(type) Pochoir_Array<type,/
+Pochoir_Boundary_1D	pochoir_common.hpp	/^#define Pochoir_Boundary_1D(name, arr, t, i) \\$/
+Pochoir_Boundary_2D	pochoir_common.hpp	/^#define Pochoir_Boundary_2D(name, arr, t, i, j) \\$/
+Pochoir_Boundary_3D	pochoir_common.hpp	/^#define Pochoir_Boundary_3D(name, arr, t, i, j, k)/
+Pochoir_Boundary_4D	pochoir_common.hpp	/^#define Pochoir_Boundary_4D(name, arr, t, i, j, k,/
+Pochoir_Boundary_5D	pochoir_common.hpp	/^#define Pochoir_Boundary_5D(name, arr, t, i, j, k,/
+Pochoir_Boundary_6D	pochoir_common.hpp	/^#define Pochoir_Boundary_6D(name, arr, t, i, j, k,/
+Pochoir_Boundary_7D	pochoir_common.hpp	/^#define Pochoir_Boundary_7D(name, arr, t, i, j, k,/
+Pochoir_Boundary_8D	pochoir_common.hpp	/^#define Pochoir_Boundary_8D(name, arr, t, i, j, k,/
+Pochoir_Boundary_End	pochoir_common.hpp	798
+Pochoir_Combined_Obase_Kernel	pochoir_kernel.hpp	228
+Pochoir_Combined_Obase_Kernel::bkernel_	pochoir_kernel.hpp	235
+Pochoir_Combined_Obase_Kernel::cond_bkernel_	pochoir_kernel.hpp	236
+Pochoir_Combined_Obase_Kernel::cond_kernel_	pochoir_kernel.hpp	234
+Pochoir_Combined_Obase_Kernel::kernel_	pochoir_kernel.hpp	233
+Pochoir_Combined_Obase_Kernel::unroll_	pochoir_kernel.hpp	232
+Pochoir_Domain	pochoir_range.hpp	33
+Pochoir_Domain::Pochoir_Domain	pochoir_range.hpp	/^		Pochoir_Domain() : first_(0), last_(0), index_(0/
+Pochoir_Domain::Pochoir_Domain	pochoir_range.hpp	/^		Pochoir_Domain(Pochoir_Domain const & r) {$/
+Pochoir_Domain::Pochoir_Domain	pochoir_range.hpp	/^		Pochoir_Domain(int first, int last, int shift=0)/
+Pochoir_Domain::first	pochoir_range.hpp	/^		int first() const { $/
+Pochoir_Domain::first_	pochoir_range.hpp	35
+Pochoir_Domain::index_	pochoir_range.hpp	36
+Pochoir_Domain::isUnitStride	pochoir_range.hpp	/^		bool isUnitStride() const { $/
+Pochoir_Domain::last	pochoir_range.hpp	/^		int last() const {$/
+Pochoir_Domain::last_	pochoir_range.hpp	35
+Pochoir_Domain::operator()	pochoir_range.hpp	/^		inline int operator() (int _idx) const {$/
+Pochoir_Domain::operator+	pochoir_range.hpp	/^		inline Pochoir_Domain const operator+(int shift)/
+Pochoir_Domain::operator-	pochoir_range.hpp	/^		inline Pochoir_Domain const operator-(int shift)/
+Pochoir_Domain::shift	pochoir_range.hpp	/^		int shift() const {$/
+Pochoir_Domain::shift_	pochoir_range.hpp	36
+Pochoir_Domain::size	pochoir_range.hpp	/^		inline int size() const {$/
+Pochoir_Domain::stride	pochoir_range.hpp	/^		int stride() const { $/
+Pochoir_Guard	pochoir_kernel.hpp	124
+Pochoir_Guard::Get_Guard	pochoir_kernel.hpp	/^    T_Guard & Get_Guard (void) { return guard_; }$/
+Pochoir_Guard::Pochoir_Guard	pochoir_kernel.hpp	/^    Pochoir_Guard(void) { }$/
+Pochoir_Guard::Pochoir_Guard	pochoir_kernel.hpp	/^    Pochoir_Guard(T_Guard _guard) : guard_(_guard)/
+Pochoir_Guard::T_Guard	pochoir_kernel.hpp	125
+Pochoir_Guard::guard_	pochoir_kernel.hpp	126
+Pochoir_Guard::operator()	pochoir_kernel.hpp	/^    inline bool operator() (int t, IS ... is) cons/
+Pochoir_Guard_1D_Begin	pochoir_kernel.hpp	/^#define Pochoir_Guard_1D_Begin(name, t, i) \\$/
+Pochoir_Guard_1D_End	pochoir_kernel.hpp	/^#define Pochoir_Guard_1D_End(name) \\$/
+Pochoir_Guard_2D_Begin	pochoir_kernel.hpp	/^#define Pochoir_Guard_2D_Begin(name, t, i, j) \\$/
+Pochoir_Guard_2D_End	pochoir_kernel.hpp	/^#define Pochoir_Guard_2D_End(name) \\$/
+Pochoir_Guard_3D_Begin	pochoir_kernel.hpp	/^#define Pochoir_Guard_3D_Begin(name, t, i, j, k) \\/
+Pochoir_Guard_3D_End	pochoir_kernel.hpp	/^#define Pochoir_Guard_3D_End(name) \\$/
+Pochoir_Kernel	pochoir_kernel.hpp	35
+Pochoir_Kernel::Get_Kernel	pochoir_kernel.hpp	/^    T_Kernel & Get_Kernel(void) { return kernel_; /
+Pochoir_Kernel::Get_Shape	pochoir_kernel.hpp	/^    Pochoir_Shape<N_RANK> * Get_Shape() { return s/
+Pochoir_Kernel::Get_Shape_Size	pochoir_kernel.hpp	/^    int Get_Shape_Size() { return shape_size_; }$/
+Pochoir_Kernel::Pochoir_Kernel	pochoir_kernel.hpp	/^    Pochoir_Kernel(void) { }$/
+Pochoir_Kernel::Pochoir_Kernel	pochoir_kernel.hpp	/^    Pochoir_Kernel(T_Kernel _kernel, Pochoir_Shape/
+Pochoir_Kernel::T_Kernel	pochoir_kernel.hpp	36
+Pochoir_Kernel::kernel_	pochoir_kernel.hpp	37
+Pochoir_Kernel::operator()	pochoir_kernel.hpp	/^    inline void operator() (int t, IS ... is) cons/
+Pochoir_Kernel::shape_	pochoir_kernel.hpp	38
+Pochoir_Kernel::shape_size_	pochoir_kernel.hpp	39
+Pochoir_Kernel::slope_	pochoir_kernel.hpp	39
+Pochoir_Kernel::time_shift_	pochoir_kernel.hpp	39
+Pochoir_Kernel::toggle_	pochoir_kernel.hpp	39
+Pochoir_Kernel_1D_Begin	pochoir_kernel.hpp	/^#define Pochoir_Kernel_1D_Begin(name, t, i) \\$/
+Pochoir_Kernel_1D_End	pochoir_kernel.hpp	/^#define Pochoir_Kernel_1D_End(name, shape) \\$/
+Pochoir_Kernel_2D_Begin	pochoir_kernel.hpp	/^#define Pochoir_Kernel_2D_Begin(name, t, i, j) \\$/
+Pochoir_Kernel_2D_End	pochoir_kernel.hpp	/^#define Pochoir_Kernel_2D_End(name, shape) \\$/
+Pochoir_Kernel_3D_Begin	pochoir_kernel.hpp	/^#define Pochoir_Kernel_3D_Begin(name, t, i, j, k) /
+Pochoir_Kernel_3D_End	pochoir_kernel.hpp	/^#define Pochoir_Kernel_3D_End(name, shape) \\$/
+Pochoir_Mode	pochoir_common.hpp	86
+Pochoir_Mode::Pochoir_Null	pochoir_common.hpp	87
+Pochoir_Mode::Pochoir_Obase_Tile	pochoir_common.hpp	90
+Pochoir_Mode::Pochoir_Stagger	pochoir_common.hpp	88
+Pochoir_Mode::Pochoir_Tile	pochoir_common.hpp	89
+Pochoir_Obase_Kernel	pochoir_kernel.hpp	74
+Pochoir_Obase_Kernel::Get_Kernel	pochoir_kernel.hpp	/^    T_Kernel & Get_Kernel (void) { return kernel_;/
+Pochoir_Obase_Kernel::Get_Shape	pochoir_kernel.hpp	/^    Pochoir_Shape<N_RANK> * Get_Shape() { return s/
+Pochoir_Obase_Kernel::Get_Shape_Size	pochoir_kernel.hpp	/^    int Get_Shape_Size() { return shape_size_; }$/
+Pochoir_Obase_Kernel::Pochoir_Obase_Kernel	pochoir_kernel.hpp	/^    Pochoir_Obase_Kernel(void) { }$/
+Pochoir_Obase_Kernel::Pochoir_Obase_Kernel	pochoir_kernel.hpp	/^    Pochoir_Obase_Kernel(T_Kernel _kernel, Pochoir/
+Pochoir_Obase_Kernel::T_Kernel	pochoir_kernel.hpp	75
+Pochoir_Obase_Kernel::kernel_	pochoir_kernel.hpp	76
+Pochoir_Obase_Kernel::operator()	pochoir_kernel.hpp	/^    inline void operator() (int t0, int t1, Grid_I/
+Pochoir_Obase_Kernel::shape_	pochoir_kernel.hpp	77
+Pochoir_Obase_Kernel::shape_size_	pochoir_kernel.hpp	78
+Pochoir_Obase_Kernel::slope_	pochoir_kernel.hpp	78
+Pochoir_Obase_Kernel::time_shift_	pochoir_kernel.hpp	78
+Pochoir_Obase_Kernel::toggle_	pochoir_kernel.hpp	78
+Pochoir_Plan	pochoir_common.hpp	384
+Pochoir_Plan::Pochoir_Plan	pochoir_common.hpp	/^    Pochoir_Plan (int _sz_base_data, int _sz_sync_/
+Pochoir_Plan::Pochoir_Plan	pochoir_common.hpp	/^    Pochoir_Plan () {$/
+Pochoir_Plan::alloc_base_data	pochoir_common.hpp	/^    void alloc_base_data(int _sz_base_data) {$/
+Pochoir_Plan::alloc_sync_data	pochoir_common.hpp	/^    void alloc_sync_data(int _sz_sync_data) {$/
+Pochoir_Plan::base_data_	pochoir_common.hpp	385
+Pochoir_Plan::load_plan	pochoir_common.hpp	/^    Pochoir_Plan<N_RANK> & load_plan(const char * /
+Pochoir_Plan::store_plan	pochoir_common.hpp	/^    void store_plan(const char * base_file_name, c/
+Pochoir_Plan::sync_data_	pochoir_common.hpp	386
+Pochoir_Plan::sz_base_data_	pochoir_common.hpp	387
+Pochoir_Plan::sz_sync_data_	pochoir_common.hpp	387
+Pochoir_Plan::~Pochoir_Plan	pochoir_common.hpp	/^    ~Pochoir_Plan() {$/
+Pochoir_Run_Regional_Guard_Tile_Kernel	pochoir_kernel.hpp	339
+Pochoir_Run_Regional_Guard_Tile_Kernel::I	pochoir_kernel.hpp	351
+Pochoir_Run_Regional_Guard_Tile_Kernel::Pochoir_Run_Regional_Guard_Tile_Kernel	pochoir_kernel.hpp	/^    Pochoir_Run_Regional_Guard_Tile_Kernel(int _ti/
+Pochoir_Run_Regional_Guard_Tile_Kernel::operator()	pochoir_kernel.hpp	/^    inline void operator() (int t, IS ... is) cons/
+Pochoir_Run_Regional_Guard_Tile_Kernel::pg_	pochoir_kernel.hpp	341
+Pochoir_Run_Regional_Guard_Tile_Kernel::pt_	pochoir_kernel.hpp	342
+Pochoir_Run_Regional_Guard_Tile_Kernel::set_pointer	pochoir_kernel.hpp	/^    int set_pointer(int dim, I i) const { $/
+Pochoir_Run_Regional_Guard_Tile_Kernel::set_pointer	pochoir_kernel.hpp	/^    int set_pointer(int dim, I i, IS ... is) const/
+Pochoir_Run_Regional_Guard_Tile_Kernel::time_shift_	pochoir_kernel.hpp	340
+Pochoir_Run_Regional_Guard_Tile_Kernel::~Pochoir_Run_Regional_Guard_Tile_Kernel	pochoir_kernel.hpp	/^    ~Pochoir_Run_Regional_Guard_Tile_Kernel() { }$/
+Pochoir_Run_Regional_Stagger_Kernel	pochoir_kernel.hpp	278
+Pochoir_Run_Regional_Stagger_Kernel::Pochoir_Run_Regional_Stagger_Kernel	pochoir_kernel.hpp	/^    Pochoir_Run_Regional_Stagger_Kernel(Pochoir_St/
+Pochoir_Run_Regional_Stagger_Kernel::operator()	pochoir_kernel.hpp	/^    inline void operator() (int t, IS ... is) cons/
+Pochoir_Run_Regional_Stagger_Kernel::pk_	pochoir_kernel.hpp	279
+Pochoir_Run_Regional_Stagger_Kernel::set_pointer	pochoir_kernel.hpp	/^    void set_pointer(int t) { pk_.pointer_ = t % p/
+Pochoir_Run_Regional_Stagger_Kernel::shift_pointer	pochoir_kernel.hpp	/^    void shift_pointer(void) {$/
+Pochoir_Run_Regional_Stagger_Kernel::~Pochoir_Run_Regional_Stagger_Kernel	pochoir_kernel.hpp	/^    ~Pochoir_Run_Regional_Stagger_Kernel() {$/
+Pochoir_Run_Regional_Tile_Kernel	pochoir_kernel.hpp	304
+Pochoir_Run_Regional_Tile_Kernel::I	pochoir_kernel.hpp	315
+Pochoir_Run_Regional_Tile_Kernel::Pochoir_Run_Regional_Tile_Kernel	pochoir_kernel.hpp	/^    Pochoir_Run_Regional_Tile_Kernel(int _time_shi/
+Pochoir_Run_Regional_Tile_Kernel::operator()	pochoir_kernel.hpp	/^    inline void operator() (int t, IS ... is) cons/
+Pochoir_Run_Regional_Tile_Kernel::pt_	pochoir_kernel.hpp	306
+Pochoir_Run_Regional_Tile_Kernel::set_pointer	pochoir_kernel.hpp	/^    int set_pointer(int dim, I i) const { $/
+Pochoir_Run_Regional_Tile_Kernel::set_pointer	pochoir_kernel.hpp	/^    int set_pointer(int dim, I i, IS ... is) const/
+Pochoir_Run_Regional_Tile_Kernel::time_shift_	pochoir_kernel.hpp	305
+Pochoir_Run_Regional_Tile_Kernel::~Pochoir_Run_Regional_Tile_Kernel	pochoir_kernel.hpp	/^    ~Pochoir_Run_Regional_Tile_Kernel() { }$/
+Pochoir_Run_Stagger_Kernels	pochoir_kernel.hpp	241
+Pochoir_Run_Stagger_Kernels::Pochoir_Run_Stagger_Kernels	pochoir_kernel.hpp	/^    Pochoir_Run_Stagger_Kernels(int _sz, Pochoir_G/
+Pochoir_Run_Stagger_Kernels::operator()	pochoir_kernel.hpp	/^    inline void operator() (int t, IS ... is) cons/
+Pochoir_Run_Stagger_Kernels::pgs_	pochoir_kernel.hpp	243
+Pochoir_Run_Stagger_Kernels::pks_	pochoir_kernel.hpp	244
+Pochoir_Run_Stagger_Kernels::shift_pointer	pochoir_kernel.hpp	/^    void shift_pointer(void) {$/
+Pochoir_Run_Stagger_Kernels::sz_pgk_	pochoir_kernel.hpp	242
+Pochoir_Run_Stagger_Kernels::~Pochoir_Run_Stagger_Kernels	pochoir_kernel.hpp	/^    ~Pochoir_Run_Stagger_Kernels() {$/
+Pochoir_Shape	pochoir_common.hpp	131
+Pochoir_Shape::shift	pochoir_common.hpp	135
+Pochoir_Shape_1D	pochoir_common.hpp	751
+Pochoir_Shape_2D	pochoir_common.hpp	752
+Pochoir_Shape_3D	pochoir_common.hpp	753
+Pochoir_Shape_4D	pochoir_common.hpp	754
+Pochoir_Shape_5D	pochoir_common.hpp	755
+Pochoir_Shape_6D	pochoir_common.hpp	756
+Pochoir_Shape_7D	pochoir_common.hpp	757
+Pochoir_Shape_8D	pochoir_common.hpp	758
+Pochoir_Stagger_Kernel	pochoir_kernel.hpp	191
+Pochoir_Stagger_Kernel::kernel_	pochoir_kernel.hpp	199
+Pochoir_Stagger_Kernel::pointer_	pochoir_kernel.hpp	196
+Pochoir_Stagger_Kernel::unroll_	pochoir_kernel.hpp	196
+Pochoir_Tile_Kernel	pochoir_kernel.hpp	204
+Pochoir_Tile_Kernel::Get_Time_Shift	pochoir_kernel.hpp	/^    int Get_Time_Shift(void) { return time_shift_;/
+Pochoir_Tile_Kernel::Pochoir_Tile_Kernel	pochoir_kernel.hpp	/^    Pochoir_Tile_Kernel() {$/
+Pochoir_Tile_Kernel::Set_Time_Shift	pochoir_kernel.hpp	/^    void Set_Time_Shift(int _time_shift) { time_sh/
+Pochoir_Tile_Kernel::kernel_	pochoir_kernel.hpp	210
+Pochoir_Tile_Kernel::pointer_	pochoir_kernel.hpp	208
+Pochoir_Tile_Kernel::size_	pochoir_kernel.hpp	208
+Pochoir_Tile_Kernel::stride_	pochoir_kernel.hpp	208
+Pochoir_Tile_Kernel::time_shift_	pochoir_kernel.hpp	212
+Pochoir_Types	pochoir_common.hpp	139
+Pochoir_Types	pochoir_common.hpp	145
+Pochoir_Types	pochoir_common.hpp	151
+Pochoir_Types	pochoir_common.hpp	157
+Pochoir_Types::T_Guard	pochoir_common.hpp	142
+Pochoir_Types::T_Guard	pochoir_common.hpp	148
+Pochoir_Types::T_Guard	pochoir_common.hpp	154
+Pochoir_Types::T_Guard	pochoir_common.hpp	160
+Pochoir_Types::T_Kernel	pochoir_common.hpp	140
+Pochoir_Types::T_Kernel	pochoir_common.hpp	146
+Pochoir_Types::T_Kernel	pochoir_common.hpp	152
+Pochoir_Types::T_Kernel	pochoir_common.hpp	158
+Pochoir_Types::T_Obase_Kernel	pochoir_common.hpp	141
+Pochoir_Types::T_Obase_Kernel	pochoir_common.hpp	147
+Pochoir_Types::T_Obase_Kernel	pochoir_common.hpp	153
+Pochoir_Types::T_Obase_Kernel	pochoir_common.hpp	159
+Pure_Region_All	pochoir_kernel.hpp	377
+Pure_Region_All	pochoir_kernel.hpp	387
+Pure_Region_All	pochoir_kernel.hpp	426
+Pure_Region_All	pochoir_kernel.hpp	471
+Pure_Region_All::Pure_Region_All	pochoir_kernel.hpp	/^    Pure_Region_All(int _sz_pgk, Vector_Info< Poch/
+Pure_Region_All::Pure_Region_All	pochoir_kernel.hpp	/^    Pure_Region_All(int _sz_pgk, Vector_Info< Poch/
+Pure_Region_All::Pure_Region_All	pochoir_kernel.hpp	/^    Pure_Region_All(int _sz_pgk, Vector_Info< Poch/
+Pure_Region_All::Pure_Region_All	pochoir_kernel.hpp	/^    Pure_Region_All(int _sz_pgk, Vector_Info< Poch/
+Pure_Region_All::operator()	pochoir_kernel.hpp	/^    int operator() (int t0, int t1, Grid_Info<N_RA/
+Pure_Region_All::operator()	pochoir_kernel.hpp	/^    int operator() (int t0, int t1, Grid_Info<1> c/
+Pure_Region_All::operator()	pochoir_kernel.hpp	/^    int operator() (int t0, int t1, Grid_Info<2> c/
+Pure_Region_All::operator()	pochoir_kernel.hpp	/^    int operator() (int t0, int t1, Grid_Info<3> c/
+Pure_Region_All::pgs_	pochoir_kernel.hpp	379
+Pure_Region_All::pgs_	pochoir_kernel.hpp	389
+Pure_Region_All::pgs_	pochoir_kernel.hpp	428
+Pure_Region_All::pgs_	pochoir_kernel.hpp	473
+Pure_Region_All::phys_grid_	pochoir_kernel.hpp	380
+Pure_Region_All::phys_grid_	pochoir_kernel.hpp	390
+Pure_Region_All::phys_grid_	pochoir_kernel.hpp	429
+Pure_Region_All::phys_grid_	pochoir_kernel.hpp	474
+Pure_Region_All::set_phys_grid	pochoir_kernel.hpp	/^    void set_phys_grid(Grid_Info<N_RANK> & _grid) /
+Pure_Region_All::set_phys_grid	pochoir_kernel.hpp	/^    void set_phys_grid(Grid_Info<1> & _grid) { phy/
+Pure_Region_All::set_phys_grid	pochoir_kernel.hpp	/^    void set_phys_grid(Grid_Info<2> & _grid) { phy/
+Pure_Region_All::set_phys_grid	pochoir_kernel.hpp	/^    void set_phys_grid(Grid_Info<3> & _grid) { phy/
+Pure_Region_All::sz_pgk_	pochoir_kernel.hpp	378
+Pure_Region_All::sz_pgk_	pochoir_kernel.hpp	388
+Pure_Region_All::sz_pgk_	pochoir_kernel.hpp	427
+Pure_Region_All::sz_pgk_	pochoir_kernel.hpp	472
+Region_Info	pochoir_common.hpp	166
+Region_Info::Region_Info	pochoir_common.hpp	/^    Region_Info() {$/
+Region_Info::Region_Info	pochoir_common.hpp	/^    Region_Info(int _t0, int _t1, Grid_Info<N_RANK/
+Region_Info::grid	pochoir_common.hpp	168
+Region_Info::operator<<	pochoir_common.hpp	/^    friend std::ofstream & operator<<(std::ofstrea/
+Region_Info::operator<<	pochoir_common.hpp	/^    friend std::ostream & operator<<(std::ostream /
+Region_Info::pscanf	pochoir_common.hpp	/^    void pscanf(FILE * fs) {$/
+Region_Info::region_n	pochoir_common.hpp	169
+Region_Info::t0	pochoir_common.hpp	167
+Region_Info::t1	pochoir_common.hpp	167
+Register_Array	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Array(Pochoir_Array/
+Register_Array	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Array(Pochoir_Array/
+Register_Domain	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Domain(D const & d)/
+Register_Domain	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Domain(D const & d,/
+Register_Exclusive_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Exclusive_Tile_Kern/
+Register_Exclusive_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Exclusive_Tile_Kern/
+Register_Exclusive_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Exclusive_Tile_Kern/
+Register_Exclusive_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Exclusive_Tile_Kern/
+Register_Inclusive_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Inclusive_Tile_Kern/
+Register_Inclusive_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Inclusive_Tile_Kern/
+Register_Inclusive_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Inclusive_Tile_Kern/
+Register_Inclusive_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Inclusive_Tile_Kern/
+Register_Shape	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape/
+Register_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoi/
+Register_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoi/
+Register_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoi/
+Register_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoi/
+Register_Tile_Obase_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(/
+Register_Tile_Obase_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(/
+Register_Tiny_Inclusive_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Tiny_Inclusive_Tile/
+Register_Tiny_Inclusive_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Tiny_Inclusive_Tile/
+Register_Tiny_Inclusive_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Tiny_Inclusive_Tile/
+Register_Tiny_Inclusive_Tile_Kernels	pochoir.hpp	/^void Pochoir<N_RANK>::Register_Tiny_Inclusive_Tile/
+Run	pochoir.hpp	/^void Pochoir<N_RANK>::Run(int timestep) {$/
+Run	pochoir.hpp	/^void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _/
+Run_Obase	pochoir.hpp	/^void Pochoir<N_RANK>::Run_Obase(int timestep) {$/
+Run_Obase	pochoir.hpp	/^void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RAN/
+Run_Obase_Merge	pochoir.hpp	/^void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan/
+Run_Stagger	pochoir.hpp	/^void Pochoir<N_RANK>::Run_Stagger(Pochoir_Plan<N_R/
+STAT	pochoir_common.hpp	83
+SUPPORT_RANK	pochoir_common.hpp	74
+Spawn_Tree	pochoir_common.hpp	519
+Spawn_Tree::Spawn_Tree	pochoir_common.hpp	/^    Spawn_Tree() { $/
+Spawn_Tree::Spawn_Tree	pochoir_common.hpp	/^    Spawn_Tree(int _t0, int _t1, Grid_Info<N_RANK>/
+Spawn_Tree::add_empty_region_	pochoir_common.hpp	522
+Spawn_Tree::add_node	pochoir_common.hpp	/^    void add_node(Node_Info<N_RANK> * parent, Node/
+Spawn_Tree::add_node	pochoir_common.hpp	/^    void add_node(Node_Info<N_RANK> * parent, Node/
+Spawn_Tree::dfs_rm_sync	pochoir_common.hpp	/^    void dfs_rm_sync(Node_Info<N_RANK> * node) {$/
+Spawn_Tree::dfs_rm_tree	pochoir_common.hpp	/^    void dfs_rm_tree(Node_Info<N_RANK> * parent) {/
+Spawn_Tree::dfs_until_sync	pochoir_common.hpp	/^    void dfs_until_sync(Node_Info<N_RANK> * node, /
+Spawn_Tree::get_root	pochoir_common.hpp	/^    Node_Info<N_RANK> * get_root() {  return root_/
+Spawn_Tree::rm_node	pochoir_common.hpp	/^    void rm_node(Node_Info<N_RANK> * node) {$/
+Spawn_Tree::root_	pochoir_common.hpp	520
+Spawn_Tree::set_add_empty_region	pochoir_common.hpp	/^    void set_add_empty_region(bool _add_empty_regi/
+Spawn_Tree::size	pochoir_common.hpp	/^    int size() { return size_; }$/
+Spawn_Tree::size_	pochoir_common.hpp	521
+Spawn_Tree::~Spawn_Tree	pochoir_common.hpp	/^    ~Spawn_Tree() {$/
+Storage	pochoir_array.hpp	49
+Storage::Storage	pochoir_array.hpp	/^		inline Storage(int _sz) {$/
+Storage::data	pochoir_array.hpp	/^		T * data() { return storage_; }$/
+Storage::dec_ref	pochoir_array.hpp	/^		inline void dec_ref() { $/
+Storage::inc_ref	pochoir_array.hpp	/^		inline void inc_ref() { $/
+Storage::ref	pochoir_array.hpp	/^		inline int ref() { $/
+Storage::ref_	pochoir_array.hpp	52
+Storage::storage_	pochoir_array.hpp	51
+Storage::~Storage	pochoir_array.hpp	/^		inline ~Storage() {$/
+Store_Plan	pochoir.hpp	/^void Pochoir<N_RANK>::Store_Plan(const char * file/
+StrToInt	pochoir_common.hpp	/^static inline int StrToInt(const char * s)$/
+T	pochoir_array.hpp	88
+T	pochoir.hpp	654
+T2	pochoir_array.hpp	1256
+T_Kernel	pochoir.hpp	193
+T_Kernel	pochoir.hpp	211
+T_Kernel	pochoir.hpp	231
+T_Kernel	pochoir.hpp	253
+T_Kernel	pochoir.hpp	278
+T_Kernel	pochoir.hpp	296
+T_Kernel	pochoir.hpp	316
+T_Kernel	pochoir.hpp	338
+T_Kernel	pochoir.hpp	363
+T_Kernel	pochoir.hpp	381
+T_Kernel	pochoir.hpp	401
+T_Kernel	pochoir.hpp	423
+T_Kernel	pochoir.hpp	448
+T_Kernel	pochoir.hpp	466
+T_Kernel	pochoir.hpp	486
+T_Kernel	pochoir.hpp	508
+T_Kernel	pochoir.hpp	532
+T_Kernel	pochoir.hpp	555
+T_dim	pochoir_common.hpp	121
+T_index	pochoir_common.hpp	122
+USE_CILK_FOR	pochoir_common.hpp	79
+VECTOR_SIZE	pochoir_common.hpp	84
+Vector_Info	pochoir_common.hpp	281
+Vector_Info::Vector_Info	pochoir_common.hpp	/^    Vector_Info() {$/
+Vector_Info::Vector_Info	pochoir_common.hpp	/^    Vector_Info(int size) {$/
+Vector_Info::Vector_Info	pochoir_common.hpp	/^    Vector_Info(Vector_Info<T> const & rhs) {$/
+Vector_Info::add_element	pochoir_common.hpp	/^    void add_element(T ele) {$/
+Vector_Info::get_root	pochoir_common.hpp	/^    T * get_root() { return region_; }$/
+Vector_Info::operator<<	pochoir_common.hpp	/^    friend std::ofstream & operator<<(std::ofstrea/
+Vector_Info::operator<<	pochoir_common.hpp	/^    friend std::ostream & operator<<(std::ostream /
+Vector_Info::operator=	pochoir_common.hpp	/^    T & operator= (T & rhs) {$/
+Vector_Info::pointer_	pochoir_common.hpp	283
+Vector_Info::region_	pochoir_common.hpp	282
+Vector_Info::scan	pochoir_common.hpp	/^    void scan () {$/
+Vector_Info::size	pochoir_common.hpp	/^    int size() { return pointer_; }$/
+Vector_Info::size_	pochoir_common.hpp	283
+Vector_Info::~Vector_Info	pochoir_common.hpp	/^    ~Vector_Info() {$/
+Version	LICENSE	2
+WARRANTY	PBasicParser2.hs	13
+WARRANTY	PBasicParser.hs	13
+WARRANTY	PData.hs	13
+WARRANTY	PGenBasicParser2.hs	13
+WARRANTY	PGenBasicParser.hs	13
+WARRANTY	PGenData.hs	13
+WARRANTY	PGenMain.hs	13
+WARRANTY	PGenMainParser2.hs	13
+WARRANTY	PGenMainParser.hs	13
+WARRANTY	PGenParser2.hs	13
+WARRANTY	PGenShow.hs	13
+WARRANTY	PGenUtils.hs	13
+WARRANTY	PMain.hs	13
+WARRANTY	PMainParser2.hs	13
+WARRANTY	PMainParser.hs	13
+WARRANTY	PParser2.hs	13
+WARRANTY	PShow.hs	13
+WARRANTY	PUtils.hs	13
+X	PBasicParser.hi	624
+X	pochoir	3021
+YM	PUtils.hi	110
+Z	pochoir	3091
+_	PGenShow.hs	750
+_	PGenShow.hs	1171
+_	PShow.hs	750
+_	PShow.hs	1171
+adaptive_bicut	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::adaptive_bicut(int /
+adaptive_bicut_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::adaptive_bicut_p(in/
+adaptive_space_bicut	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::adaptive_space_bicu/
+adaptive_space_bicut_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::adaptive_space_bicu/
+adaptive_space_can_cut	pochoir_walk_recursive.hpp	/^#define adaptive_space_can_cut(_dim) (cut_lb ? (lb/
+adaptive_space_can_cut_p	pochoir_walk_recursive.hpp	/^#define adaptive_space_can_cut_p(_dim) (cut_lb ? (/
+b	PData.hs	267
+b	PGenData.hs	267
+b	PGenShow.hs	620
+b	PShow.hs	620
+base_case_kernel_boundary	pochoir_walk.hpp	/^inline void Algorithm<N_RANK>::base_case_kernel_bo/
+base_case_kernel_guard	pochoir_walk.hpp	/^inline void Algorithm<N_RANK>::base_case_kernel_gu/
+base_case_kernel_interior	pochoir_walk.hpp	/^inline void Algorithm<N_RANK>::base_case_kernel_in/
+cal_index	pochoir_array.hpp	/^inline int cal_index(int const * _idx, int const */
+cal_index	pochoir_array.hpp	/^inline int cal_index<0>(int const * _idx, int cons/
+checkFlag	pochoir.hpp	/^void Pochoir<N_RANK>::checkFlag(bool flag, char co/
+checkFlags	pochoir.hpp	/^void Pochoir<N_RANK>::checkFlags(void) {$/
+check_boundary1	pochoir_array.hpp	/^#define check_boundary1(_idx1, _idx0) \\$/
+check_boundary2	pochoir_array.hpp	/^#define check_boundary2(_idx2, _idx1, _idx0) \\$/
+check_boundary3	pochoir_array.hpp	/^#define check_boundary3(_idx3, _idx2, _idx1, _idx0/
+check_boundary4	pochoir_array.hpp	/^#define check_boundary4(_idx4, _idx3, _idx2, _idx1/
+check_boundary5	pochoir_array.hpp	/^#define check_boundary5(_idx5, _idx4, _idx3, _idx2/
+check_boundary6	pochoir_array.hpp	/^#define check_boundary6(_idx6, _idx5, _idx4, _idx3/
+check_boundary7	pochoir_array.hpp	/^#define check_boundary7(_idx7, _idx6, _idx5, _idx4/
+check_boundary8	pochoir_array.hpp	/^#define check_boundary8(_idx8, _idx7, _idx6, _idx5/
+cilk_for	pochoir_common.hpp	65
+cilk_spawn	pochoir_common.hpp	66
+cilk_sync	pochoir_common.hpp	67
+clean	Makefile	/^clean: $/
+cmpPhysDomainFromArray	pochoir.hpp	/^void Pochoir<N_RANK>::cmpPhysDomainFromArray(T_Arr/
+code	LICENSE	201
+count_boundary	pochoir_walk_recursive.hpp	3465
+count_internal	pochoir_walk_recursive.hpp	3466
+cut_space_ncores_boundary	pochoir_walk_loops.hpp	/^inline void Algorithm<N_RANK>::cut_space_ncores_bo/
+cut_time	pochoir_walk_loops.hpp	/^inline void Algorithm<N_RANK>::cut_time(algor_type/
+de	PGenShow.hs	36
+de	PShow.hs	36
+dest	svncp.sh	8
+duo_sim_obase_bicut	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::duo_sim_obase_bicut/
+duo_sim_obase_bicut_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::duo_sim_obase_bicut/
+duo_sim_obase_space_cut	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::duo_sim_obase_space/
+duo_sim_obase_space_cut_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::duo_sim_obase_space/
+emptyGuard	PData.hs	185
+emptyGuard	PGenData.hs	185
+emptyGuardFunc	PData.hs	182
+emptyGuardFunc	PGenData.hs	182
+emptyKernel	PData.hs	179
+emptyKernel	PGenData.hs	179
+emptyKernelFunc	PData.hs	176
+emptyKernelFunc	PGenData.hs	176
+emptyPArray	PData.hs	170
+emptyPArray	PGenData.hs	170
+emptyPType	PData.hs	167
+emptyPType	PGenData.hs	167
+emptyShape	PData.hs	173
+emptyShape	PGenData.hs	173
+emptyTileKernel	PData.hs	188
+emptyTileKernel	PGenData.hs	188
+enforcing	LICENSE	191
+freedom	LICENSE	22
+gcd	pochoir_common.hpp	/^static inline int gcd(int a, int b) {$/
+gen_plan_bicut_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::gen_plan_bicut_p(No/
+gen_plan_space_bicut_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::gen_plan_space_bicu/
+gen_plan_space_can_cut_p	pochoir_walk_recursive.hpp	/^#define gen_plan_space_can_cut_p(_dim) (cut_lb ? (/
+genkernels	Makefile	/^genkernels : ${GEN_FILE} $/
+getPhysDomainFromArray	pochoir.hpp	/^void Pochoir<N_RANK>::getPhysDomainFromArray(T_Arr/
+getToggleFromShape	PGenUtils.hs	181
+getToggleFromShape	PGenUtils.hs	182
+getToggleFromShape	PUtils.hs	181
+getToggleFromShape	PUtils.hs	182
+get_phys_grid	pochoir.hpp	/^Grid_Info<N_RANK> Pochoir<N_RANK>::get_phys_grid(v/
+home_cell_	pochoir_common.hpp	682
+however	LICENSE	231
+i	PBasicParser.o	1876
+icc	PGenMain.hs	112
+icc	PMain.hs	123
+inFiles	svncp.sh	3
+inRun	pochoir_common.hpp	681
+initial_cut	pochoir_walk_recursive.hpp	/^#define initial_cut(i) (lb[i] == phys_length_[i])$/
+is_basic_data_type	pochoir_common.hpp	/^bool is_basic_data_type() { return false; };$/
+is_basic_data_type	pochoir_common.hpp	/^template <> bool is_basic_data_type<int>() { retur/
+is_basic_data_type	pochoir_common.hpp	/^template <> bool is_basic_data_type<long>() { retu/
+is_basic_data_type	pochoir_common.hpp	/^template <> bool is_basic_data_type<float>() { ret/
+is_basic_data_type	pochoir_common.hpp	/^template <> bool is_basic_data_type<double>() { re/
+it	LICENSE	198
+it	LICENSE	370
+klein	pochoir_common.hpp	/^static inline void klein(int & new_i, int & new_j,/
+klein_region	pochoir_common.hpp	/^static inline void klein_region(Grid_Info<2> & gri/
+l3	PMainParser2.hi	4
+l_guardName	PGenUtils.hs	218
+l_guardName	PUtils.hs	218
+l_kernels	PGenMainParser.hs	138
+l_kernels	PMainParser.hs	139
+l_name	PData.hs	195
+l_name	PGenData.hs	195
+l_name	PGenMainParser.hs	298
+l_name	PMainParser.hs	299
+l_pGuard	PGenUtils.hs	221
+l_pGuard	PUtils.hs	221
+l_pKernel	PGenUtils.hs	215
+l_pKernel	PUtils.hs	215
+l_pTile	PGenUtils.hs	232
+l_pTile	PUtils.hs	232
+l_tile	PGenUtils.hs	235
+l_tile	PUtils.hs	235
+l_tileName	PGenUtils.hs	224
+l_tileName	PUtils.hs	224
+lcm	pochoir_common.hpp	/^static inline int lcm(int a, int b) {$/
+lexer	PBasicParser.hs	44
+lexer	PGenBasicParser.hs	44
+material	LICENSE	372
+material	LICENSE	/^    material by anyone who conveys the material (o/
+max	pochoir_common.hpp	/^#define max(a, b) ((a) > (b) ? (a) : (b))$/
+medium	LICENSE	198
+meta_grid_boundary	pochoir_walk.hpp	42
+meta_grid_boundary	pochoir_walk.hpp	48
+meta_grid_boundary	pochoir_walk.hpp	80
+meta_grid_boundary	pochoir_walk.hpp	110
+meta_grid_boundary	pochoir_walk.hpp	137
+meta_grid_boundary	pochoir_walk.hpp	162
+meta_grid_boundary	pochoir_walk.hpp	184
+meta_grid_boundary	pochoir_walk.hpp	205
+meta_grid_boundary	pochoir_walk.hpp	229
+meta_grid_boundary::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<8/
+meta_grid_boundary::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<7/
+meta_grid_boundary::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<6/
+meta_grid_boundary::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<5/
+meta_grid_boundary::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<4/
+meta_grid_boundary::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<3/
+meta_grid_boundary::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<2/
+meta_grid_boundary::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<1/
+meta_grid_interior	pochoir_walk.hpp	243
+meta_grid_interior	pochoir_walk.hpp	249
+meta_grid_interior	pochoir_walk.hpp	267
+meta_grid_interior	pochoir_walk.hpp	284
+meta_grid_interior	pochoir_walk.hpp	300
+meta_grid_interior	pochoir_walk.hpp	315
+meta_grid_interior	pochoir_walk.hpp	329
+meta_grid_interior	pochoir_walk.hpp	342
+meta_grid_interior	pochoir_walk.hpp	353
+meta_grid_interior::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<8/
+meta_grid_interior::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<7/
+meta_grid_interior::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<6/
+meta_grid_interior::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<5/
+meta_grid_interior::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<4/
+meta_grid_interior::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<3/
+meta_grid_interior::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<2/
+meta_grid_interior::single_step	pochoir_walk.hpp	/^	static inline void single_step(int t, Grid_Info<1/
+min	pochoir_common.hpp	/^#define min(a, b) ((a) < (b) ? (a) : (b))$/
+naive_cut_space_mp	pochoir_walk_loops.hpp	/^inline void Algorithm<N_RANK>::naive_cut_space_mp(/
+naive_cut_space_ncores	pochoir_walk_loops.hpp	/^inline void Algorithm<N_RANK>::naive_cut_space_nco/
+notice	LICENSE	199
+obase_adaptive	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::obase_adaptive(int /
+obase_bicut	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::obase_bicut(int t0,/
+obase_bicut_boundary_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::obase_bicut_boundar/
+obase_bicut_boundary_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::obase_bicut_boundar/
+obase_boundary_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::obase_boundary_p(in/
+obase_boundary_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::obase_boundary_p(in/
+obase_m	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::obase_m(int t0, int/
+operator<<	pochoir_array.hpp	/^std::ostream& operator<<(std::ostream& os, Pochoir/
+operator<<	pochoir_range.hpp	/^std::ostream& operator<<(std::ostream& os, Pochoir/
+operator<<	pochoir_range.hpp	/^std::ostream& operator<<(std::ostream& os, Pochoir/
+pCond	pochoir_common.hpp	/^#define pCond(b, x, y) (x&(-b)) | (y&-(!b))$/
+pParser	PGenMainParser.hs	44
+pStatement	PBasicParser.hs	986
+pStatement	PGenBasicParser.hs	986
+pStubStatement	PBasicParser.hs	975
+pStubStatement	PGenBasicParser.hs	975
+pToken1	PGenParser2.hs	38
+pToken1	PParser2.hs	38
+parserState	PGenUtils.hs	35
+parserState	PGenUtils.hs	39
+parserState	PGenUtils.hs	43
+parserState	PGenUtils.hs	47
+parserState	PGenUtils.hs	51
+parserState	PGenUtils.hs	55
+parserState	PGenUtils.hs	59
+parserState	PGenUtils.hs	66
+parserState	PGenUtils.hs	70
+parserState	PGenUtils.hs	75
+parserState	PGenUtils.hs	80
+parserState	PGenUtils.hs	99
+parserState	PGenUtils.hs	102
+parserState	PGenUtils.hs	107
+parserState	PGenUtils.hs	110
+parserState	PGenUtils.hs	115
+parserState	PGenUtils.hs	118
+parserState	PGenUtils.hs	123
+parserState	PGenUtils.hs	126
+parserState	PGenUtils.hs	131
+parserState	PGenUtils.hs	134
+parserState	PGenUtils.hs	139
+parserState	PGenUtils.hs	142
+parserState	PGenUtils.hs	147
+parserState	PGenUtils.hs	150
+parserState	PGenUtils.hs	155
+parserState	PGenUtils.hs	158
+parserState	PGenUtils.hs	163
+parserState	PGenUtils.hs	166
+parserState	PGenUtils.hs	171
+parserState	PGenUtils.hs	174
+parserState	PGenUtils.hs	179
+parserState	PUtils.hs	35
+parserState	PUtils.hs	39
+parserState	PUtils.hs	43
+parserState	PUtils.hs	47
+parserState	PUtils.hs	51
+parserState	PUtils.hs	55
+parserState	PUtils.hs	59
+parserState	PUtils.hs	66
+parserState	PUtils.hs	70
+parserState	PUtils.hs	75
+parserState	PUtils.hs	80
+parserState	PUtils.hs	99
+parserState	PUtils.hs	102
+parserState	PUtils.hs	107
+parserState	PUtils.hs	110
+parserState	PUtils.hs	115
+parserState	PUtils.hs	118
+parserState	PUtils.hs	123
+parserState	PUtils.hs	126
+parserState	PUtils.hs	131
+parserState	PUtils.hs	134
+parserState	PUtils.hs	139
+parserState	PUtils.hs	142
+parserState	PUtils.hs	147
+parserState	PUtils.hs	150
+parserState	PUtils.hs	155
+parserState	PUtils.hs	158
+parserState	PUtils.hs	163
+parserState	PUtils.hs	166
+parserState	PUtils.hs	171
+parserState	PUtils.hs	174
+parserState	PUtils.hs	179
+plan_bicut	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::plan_bicut(int t0, /
+plan_bicut_m	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::plan_bicut_m(int t0/
+plan_bicut_mp	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::plan_bicut_mp(int t/
+plan_bicut_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::plan_bicut_p(int t0/
+plan_space_bicut	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::plan_space_bicut(in/
+plan_space_bicut_m	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::plan_space_bicut_m(/
+plan_space_bicut_mp	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::plan_space_bicut_mp/
+plan_space_bicut_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::plan_space_bicut_p(/
+plan_space_can_cut	pochoir_walk_recursive.hpp	/^#define plan_space_can_cut(_dim) (cut_lb ? (lb >= /
+plan_space_can_cut_m	pochoir_walk_recursive.hpp	/^#define plan_space_can_cut_m(_dim) (cut_lb ? (lb >/
+plan_space_can_cut_mp	pochoir_walk_recursive.hpp	/^#define plan_space_can_cut_mp(_dim) (cut_lb ? ((l_/
+plan_space_can_cut_p	pochoir_walk_recursive.hpp	/^#define plan_space_can_cut_p(_dim) (cut_lb ? ((l_t/
+pmod	pochoir_common.hpp	/^#define pmod(a, b) ((a) - ((b) & -((a)>=(b))))$/
+pmod_lu	pochoir_common.hpp	/^#define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -/
+pochoir	Makefile	/^pochoir : ${PP_FILE} $/
+pop_queue	pochoir_walk_recursive.hpp	/^#define pop_queue(_dep) \\$/
+power	pochoir_walk.hpp	374
+power	pochoir_walk.hpp	379
+power::N_RANK	pochoir_walk.hpp	375
+power::power	pochoir_walk.hpp	375
+power::value	pochoir_walk.hpp	375
+power::value	pochoir_walk.hpp	375
+power::value	pochoir_walk.hpp	380
+prefix	svncp.sh	6
+print_grid	pochoir_walk.hpp	/^void Algorithm<N_RANK>::print_grid(FILE *fp, int t/
+print_index	pochoir_walk.hpp	/^void Algorithm<N_RANK>::print_index(int t, int con/
+print_region	pochoir_walk.hpp	/^void Algorithm<N_RANK>::print_region(int t, int co/
+print_sync	pochoir_walk.hpp	/^void Algorithm<N_RANK>::print_sync(FILE * fp)$/
+programs	LICENSE	20
+push_queue	pochoir_walk_recursive.hpp	/^#define push_queue(_dep, _level, _t0, _t1, _grid) /
+reg_tile_dim	pochoir.hpp	/^void Pochoir<N_RANK>::reg_tile_dim(Pochoir_Tile_Ke/
+reg_tile_dim	pochoir.hpp	/^void Pochoir<N_RANK>::reg_tile_dim(Pochoir_Tile_Ke/
+rest	svncp.sh	7
+select	pochoir_common.hpp	/^static inline bool select(bool b, bool x, bool y) /
+select	pochoir_common.hpp	/^static inline int select(bool b, int x, int y) {$/
+select	pochoir_common.hpp	/^static inline float select(bool b, float x, float /
+select	pochoir_common.hpp	/^static inline double select(bool b, double x, doub/
+set_opks	pochoir_walk.hpp	/^void Algorithm<N_RANK>::set_opks(int _sz_pgk, Vect/
+set_phys_grid	pochoir_walk.hpp	/^void Algorithm<N_RANK>::set_phys_grid(Grid_Info<N_/
+set_pts	pochoir_walk.hpp	/^void Algorithm<N_RANK>::set_pts(int _sz_pgk, Vecto/
+set_slope	pochoir_walk.hpp	/^void Algorithm<N_RANK>::set_slope(int const slope[/
+set_worker_count	pochoir_walk.hpp	/^static inline void set_worker_count(const char * n/
+shorter_duo_sim_obase_bicut	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::shorter_duo_sim_oba/
+shorter_duo_sim_obase_bicut_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::shorter_duo_sim_oba/
+shorter_duo_sim_obase_space_cut	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::shorter_duo_sim_oba/
+shorter_duo_sim_obase_space_cut_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::shorter_duo_sim_oba/
+sim_obase_bicut	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::sim_obase_bicut(int/
+sim_obase_bicut_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::sim_obase_bicut_p(i/
+sim_obase_space_cut	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::sim_obase_space_cut/
+sim_obase_space_cut_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::sim_obase_space_cut/
+size_info	pochoir_array.hpp	1258
+software	LICENSE	22
+tdiff	pochoir_common.hpp	/^static inline double tdiff (struct timeval *a, str/
+termDeclDim	PBasicParser.hs	1200
+termDeclDim	PGenBasicParser.hs	1200
+termStmt	PBasicParser.hs	1270
+termStmt	PGenBasicParser.hs	1270
+tion of	LICENSE	192
+top_queue	pochoir_walk_recursive.hpp	/^#define top_queue(_dep, _queue_elem) \\$/
+touch_boundary	pochoir_walk_recursive.hpp	/^inline bool Algorithm<N_RANK>::touch_boundary(int /
+transPArray	PGenMainParser.hs	/^    in  (l_name, PArray {aName = l_name, aType = l/
+transPArray	PMainParser.hs	/^    in  (l_name, PArray {aName = l_name, aType = l/
+transURange	PGenMainParser.hs	295
+transURange	PGenMainParser.hs	296
+transURange	PMainParser.hs	296
+transURange	PMainParser.hs	297
+u	pochoir	1993
+u	pochoir	1996
+u	pochoir	1999
+u	pochoir	2002
+u	pochoir	2005
+u	pochoir	2008
+u	pochoir	2011
+u	pochoir	2015
+u	pochoir	2019
+u	pochoir	2022
+u	pochoir	2026
+u	pochoir	2030
+u	pochoir	2033
+u	pochoir	2036
+u	pochoir	2040
+u	pochoir	2044
+u	pochoir	2047
+u	pochoir	2050
+u5H	pochoir	1962
+uHH	pochoir	2051
+useful	PBasicParser2.hs	12
+useful	PBasicParser.hs	12
+useful	PData.hs	12
+useful	PGenBasicParser2.hs	12
+useful	PGenBasicParser.hs	12
+useful	PGenData.hs	12
+useful	PGenMain.hs	12
+useful	PGenMainParser2.hs	12
+useful	PGenMainParser.hs	12
+useful	PGenParser2.hs	12
+useful	PGenShow.hs	12
+useful	PGenUtils.hs	12
+useful	PMain.hs	12
+useful	PMainParser2.hs	12
+useful	PMainParser.hs	12
+useful	PParser2.hs	12
+useful	PShow.hs	12
+useful	PUtils.hs	12
+version	LICENSE	374
+void	LICENSE	411
+walk_adaptive	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::walk_adaptive(int t/
+walk_bicut	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::walk_bicut(int t0, /
+walk_bicut_boundary_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::walk_bicut_boundary/
+walk_ncores_boundary_p	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::walk_ncores_boundar/
+walk_serial	pochoir_walk_recursive.hpp	/^inline void Algorithm<N_RANK>::walk_serial(int t0,/
+warranty	LICENSE	202
+whiteSpace	PBasicParser.hs	65
+whiteSpace	PGenBasicParser.hs	65
+within_boundary	pochoir_walk_recursive.hpp	/^inline bool Algorithm<N_RANK>::within_boundary(int/
+work	LICENSE	187
+work	LICENSE	190
+~	PShow.hi	10

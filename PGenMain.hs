@@ -55,9 +55,7 @@ main = do args <- getArgs
           rawSystem icc iccArgs
           whilst (showFile == False) $ do
              let outFiles = map (rename "_pochoir") inFiles 
-             let kernelFiles = map (rename "_kernel") inFiles
              removeFile $ intercalate " " outFiles
-             removeFile $ intercalate " " kernelFiles
 
 whilst :: Bool -> IO () -> IO ()
 whilst True action = action
@@ -72,31 +70,26 @@ ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) =
           putStrLn ("Pochoir environment variable not set:")
           putStrLn ("POCHOIR_LIB_PATH")
           exitFailure
-       -- let envPath = ["-I" ++ pochoirLibPath] ++ ["-I" ++ cilkHeaderPath]
        let envPath = ["-I" ++ pochoirLibPath]
        let iccPPFile = inDir ++ getPPFile inFile
-       let midFile = getMidFile inFile
-       let outFile = rename "_pochoir" inFile
-       let kernelFile = rename "_kernel_info" inFile
        let iccPPArgs = if debug == False
-             then iccPPFlags ++ envPath ++ [inFile] ++ [">", midFile]
-             else iccDebugPPFlags ++ envPath ++ [inFile] ++ [">", midFile]
+             then iccPPFlags ++ envPath ++ [inFile]
+             else iccDebugPPFlags ++ envPath ++ [inFile] 
        -- a pass of icc preprocessing
        putStrLn (icc ++ " " ++ intercalate " " iccPPArgs)
-       -- rawSystem icc iccPPArgs
-       let cmd = icc ++ " " ++ intercalate " " iccPPArgs
-       system cmd
+       rawSystem icc iccPPArgs
        -- a pass of pochoir compilation
        whilst (mode /= PDebug) $ do
+           let outFile = rename "_pochoir" inFile
            inh <- openFile iccPPFile ReadMode
            outh <- openFile outFile WriteMode
-           kernelh <- openFile kernelFile WriteMode
            putStrLn ("pochoir " ++ show mode ++ " " ++ iccPPFile)
-           pProcess mode inh outh kernelh
+           pProcess mode inh outh
            hClose inh
            hClose outh
-           hClose kernelh
        whilst (mode == PDebug) $ do
+           let midFile = getMidFile inFile
+           let outFile = rename "_pochoir" midFile
            putStrLn ("mv " ++ midFile ++ " " ++ outFile)
            renameFile midFile outFile
        ppopp (mode, debug, showFile, userArgs) files
@@ -116,24 +109,18 @@ getPPFile fname = name ++ ".i"
 
 pInitState = ParserState { pMode = PCaching, pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0 }
 
-icc = "g++"
+icc = "icpc"
 
--- compilation flags for icpc
--- iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
--- compilation flags for g++
-iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
+iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 
--- preprocessing flags for g++
-iccPPFlags = ["-E", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
--- preprocessing flags for icpc
--- iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
+iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
+
+-- iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
+iccDebugFlags = ["-DNDEBUG", "-O0", "-g3", "-std=c++0x"]
 
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x"]
--- debug flags for icpc
--- iccDebugPPFlags = ["-P", "-C", "-DNDEBUG", "-g3", "-std=c++0x"]
--- debug flags for g++
-iccDebugPPFlags = ["-E", "-DNDEBUG", "-g3", "-std=c++0x"]
+iccDebugPPFlags = ["-P", "-C", "-DNDEBUG", "-g3", "-std=c++0x"]
 
 parseArgs :: ([String], [String], PMode, Bool, Bool, [String]) -> [String] -> ([String], [String], PMode, Bool, Bool, [String])
 parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL 
@@ -299,14 +286,12 @@ printOptions =
        putStrLn ("-unroll-t-tile-pointer $filename : " ++ breakline ++
                "unroll the tiled kernels along time dimension, for conditional check on spatial dimension, we leave them in the inner-most kernel, and use -split-macro-pointer mode for optimizing the base case")
 
-pProcess :: PMode -> Handle -> Handle -> Handle -> IO ()
-pProcess mode inh outh kernelh = 
+pProcess :: PMode -> Handle -> Handle -> IO ()
+pProcess mode inh outh = 
     do ls <- hGetContents inh
        let pRevInitState = pInitState { pMode = mode }
        case runParser pParser pRevInitState "" $ stripWhite ls of
            Left err -> print err
-           Right (outContent, kernContent) -> 
-                do hPutStrLn outh outContent
-                   hPutStrLn kernelh kernContent
+           Right str -> hPutStrLn outh str
 
 
