@@ -301,7 +301,7 @@ void Pochoir<N_RANK>::checkFlag(bool flag, char const * str) {
     if (!flag) {
         printf("\nPochoir registration error:\n");
         printf("You forgot to register %s.\n", str);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -336,7 +336,7 @@ void Pochoir<N_RANK>::cmpPhysDomainFromArray(T_Array & arr) {
         if (arr.size(j) != phys_grid_.x1[j]) {
             printf("Pochoir array size mismatch error:\n");
             printf("Registered Pochoir arrays have different sizes!\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 }
@@ -345,7 +345,7 @@ template <int N_RANK> template <typename T>
 void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a) {
     if (!regShapeFlag_) {
         printf("Please register Shape before register Array!\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     if (num_arr_ == 0) {
@@ -374,7 +374,7 @@ template <int N_RANK> template <typename T, typename ... TS>
 void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a, Pochoir_Array<TS, N_RANK> ... as) {
     if (!regShapeFlag_) {
         printf("Please register Shape before register Array!\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     if (num_arr_ == 0) {
@@ -470,51 +470,6 @@ Grid_Info<N_RANK> Pochoir<N_RANK>::get_phys_grid(void) {
     return phys_grid_;
 }
 
-#if 0
-/* to remove */
-/* Run the kernel functions stored in an array of function pointers */
-template <int N_RANK>
-void Pochoir<N_RANK>::Run(int timestep) {
-    Algorithm<N_RANK> algor(slope_);
-    algor.set_phys_grid(phys_grid_);
-    algor.set_thres(arr_type_size_);
-    algor.set_unroll(lcm_unroll_);
-    if (pxts_ != NULL) {
-        algor.set_pts(sz_pxgk_, pxgs_, pxts_);
-    } else {
-        printf("Something is wrong in Run(Timestep)!\n");
-        exit(1);
-    }
-    timestep_ = timestep;
-    /* base_case_kernel() will mimic exact the behavior of serial nested loop!
-    */
-    checkFlags();
-    inRun = true;
-    algor.base_case_kernel_guard(0 + time_shift_, timestep + time_shift_, logic_grid_);
-    inRun = false;
-}
-
-/* obase for interior and ExecSpec for boundary */
-template <int N_RANK> 
-void Pochoir<N_RANK>::Run_Obase(int timestep) {
-//    int l_total_points = 1;
-    Algorithm<N_RANK> algor(slope_);
-    algor.set_phys_grid(phys_grid_);
-    algor.set_thres(arr_type_size_);
-    if (pmode_ == Pochoir_Obase_Tile) {
-        algor.set_opks(sz_pxgk_, opgs_.get_root(), opks_.get_root());
-    } else {
-        printf("Something is wrong in Run_Obase(Timestep)!\n");
-        exit(1);
-    }
-    algor.set_unroll(lcm_unroll_);
-    timestep_ = timestep;
-    checkFlags();
-    // cutting based on shorter bar
-    algor.adaptive_bicut_p(0 + time_shift_, timestep + time_shift_, logic_grid_);
-}
-#endif
-
 template <int N_RANK> 
 Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     /* we don't squeeze out the NONE_EXCLUSIVE_IFS in Gen_Plan, 
@@ -574,10 +529,15 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep) {
     algor.set_thres(arr_type_size_);
     /* set individual unroll factor from opgk_ */
     if (pmode_ == Pochoir_Obase_Tile) {
+        // set color_region
+        assert(sz_pigk_ > 0);
+        algor.set_pts(sz_pigk_, pigs_, pits_.get_root());
+        // set pure_region
+        assert(sz_pxgk_ > 0);
         algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
     } else {
         printf("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     algor.set_unroll(lcm_unroll_);
     timestep_ = timestep;
@@ -611,6 +571,18 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep) {
     }
     l_plan->sync_data_->scan();
     l_plan->sync_data_->add_element(END_SYNC);
+
+    const char * color_vector_fname = "color_vector_pochoir.dat";
+    Vector_Info<T_color> & l_color_vector = algor.get_color_vector();
+    std::ofstream os_color_vector(color_vector_fname);
+    if (os_color_vector.is_open()) {
+        os_color_vector << l_color_vector;
+    } else {
+        printf("os_color_vector is NOT open! exit!\n");
+        exit(EXIT_FAILURE);
+    }
+    os_color_vector.close();
+
     return (*l_plan);
 }
 
@@ -673,7 +645,7 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
         algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
     } else {
         printf("Something is wrong in Run_Obase(Plan)!\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     checkFlags();
 #if USE_CILK_FOR
@@ -730,7 +702,7 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
         algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
     } else {
         printf("Something is wrong in Run_Obase(Plan)!\n");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     checkFlags();
 #if USE_CILK_FOR

@@ -55,7 +55,7 @@ main = do args <- getArgs
           rawSystem icc iccArgs
           whilst (showFile == False) $ do
              let outFiles = map (rename "_pochoir") inFiles 
-             let kernelFiles = map (rename "_kernel") inFiles
+             let kernelFiles = map (rename "_kernel_info") inFiles
              removeFile $ intercalate " " outFiles
              removeFile $ intercalate " " kernelFiles
 
@@ -79,16 +79,19 @@ ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) =
        let outFile = rename "_pochoir" inFile
        let kernelFile = rename "_kernel_info" inFile
        let iccPPArgs = if debug == False
-             then iccPPFlags ++ envPath ++ [inFile] ++ [">", midFile]
-             else iccDebugPPFlags ++ envPath ++ [inFile] ++ [">", midFile]
+             -- then iccPPFlags ++ envPath ++ [inFile] ++ [">", midFile]
+             -- else iccDebugPPFlags ++ envPath ++ [inFile] ++ [">", midFile]
+             then iccPPFlags ++ envPath ++ [inFile]
+             else iccDebugPPFlags ++ envPath ++ [inFile]
        -- a pass of icc preprocessing
-       putStrLn (icc ++ " " ++ intercalate " " iccPPArgs)
        -- rawSystem icc iccPPArgs
        let cmd = icc ++ " " ++ intercalate " " iccPPArgs
+       putStrLn cmd
        system cmd
        -- a pass of pochoir compilation
        whilst (mode /= PDebug) $ do
-           inh <- openFile iccPPFile ReadMode
+           -- inh <- openFile iccPPFile ReadMode
+           inh <- openFile midFile ReadMode
            outh <- openFile outFile WriteMode
            kernelh <- openFile kernelFile WriteMode
            putStrLn ("pochoir " ++ show mode ++ " " ++ iccPPFile)
@@ -116,24 +119,25 @@ getPPFile fname = name ++ ".i"
 
 pInitState = ParserState { pMode = PCaching, pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0 }
 
-icc = "g++"
+-- icc = "g++"
+icc = "icpc"
 
 -- compilation flags for icpc
--- iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
+iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 -- compilation flags for g++
-iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
+-- iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
 
 -- preprocessing flags for g++
-iccPPFlags = ["-E", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
+-- iccPPFlags = ["-E", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
 -- preprocessing flags for icpc
--- iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
+iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x"]
 -- debug flags for icpc
--- iccDebugPPFlags = ["-P", "-C", "-DNDEBUG", "-g3", "-std=c++0x"]
+iccDebugPPFlags = ["-P", "-C", "-DNDEBUG", "-g3", "-std=c++0x"]
 -- debug flags for g++
-iccDebugPPFlags = ["-E", "-DNDEBUG", "-g3", "-std=c++0x"]
+-- iccDebugPPFlags = ["-E", "-DNDEBUG", "-g3", "-std=c++0x"]
 
 parseArgs :: ([String], [String], PMode, Bool, Bool, [String]) -> [String] -> ([String], [String], PMode, Bool, Bool, [String])
 parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL 

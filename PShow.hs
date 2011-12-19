@@ -1675,6 +1675,7 @@ pShowRawForHeader pL@(p:ps) =
         pShowRawForHeader ps 
  
 pShowPragma :: String
+-- pShowPragma = ""
 pShowPragma = breakline ++ "#pragma ivdep"
 -- pShowPragma = "#pragma ivdep" ++ breakline ++ "#pragma simd"
 

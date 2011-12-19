@@ -41,6 +41,7 @@ public:
         m_handle = dlopen(filename, RTLD_LAZY);
         if (!m_handle) {
             fprintf(stderr, "can't load library named %s\n", filename);
+            exit(EXIT_FAILURE);
         }
         dlerror();
     }
@@ -51,6 +52,7 @@ public:
         void* result = dlsym(m_handle, functionName);
         if ((error = dlerror()) != NULL) {
             fprintf(stderr, "can't find symbol named %s\n", functionName);
+            exit(EXIT_FAILURE);
         }
         return reinterpret_cast<T*>(result);
     }
@@ -67,6 +69,7 @@ std::function<T> dloader(void * handle, const char * func_name) {
 
     if ((error = dlerror()) != NULL) {
         fprintf(stderr, "can't find symbol named %s\n", func_name);
+        exit(EXIT_FAILURE);
     }
     return reinterpret_cast<T*>(result);
 };

@@ -378,8 +378,7 @@ struct Pure_Region_All {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<N_RANK> > & pgs_;
     Grid_Info<N_RANK> phys_grid_;
-    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs) : sz_pgk_(_sz_pgk), pgs_(_pgs) { assert(_sz_pgk == _pgs.size()); return; }
-    void set_phys_grid(Grid_Info<N_RANK> & _grid) { phys_grid_ = _grid; return; }
+    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Grid_Info<N_RANK> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs), phys_grid_(_grid) { assert(_sz_pgk == _pgs.size()); return; }
     int operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const { 
         /* return 0 to make g++ happy! */
         return 0; 
@@ -391,11 +390,7 @@ struct Pure_Region_All<1> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<1> > & pgs_;
     Grid_Info<1> phys_grid_;
-    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<1> > & _pgs) : sz_pgk_(_sz_pgk), pgs_(_pgs) { assert(_sz_pgk == _pgs.size()); return; }
-    void set_phys_grid(Grid_Info<1> & _grid) { 
-        phys_grid_ = _grid; 
-        return; 
-    }
+    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<1> > & _pgs, Grid_Info<1> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs), phys_grid_(_grid) { assert(_sz_pgk == _pgs.size()); return; }
     int operator() (int t0, int t1, Grid_Info<1> const & grid) const {
         const int start_i = pmod_lu(grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         Grid_Info<1> l_grid = grid;
@@ -433,8 +428,7 @@ struct Pure_Region_All<2> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<2> > & pgs_;
     Grid_Info<2> phys_grid_;
-    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<2> > & _pgs) : sz_pgk_(_sz_pgk), pgs_(_pgs) { assert(_sz_pgk == _pgs.size()); return; }
-    void set_phys_grid(Grid_Info<2> & _grid) { phys_grid_ = _grid; return; }
+    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<2> > & _pgs, Grid_Info<2> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs), phys_grid_(_grid) { assert(_sz_pgk == _pgs.size()); return; }
     int operator() (int t0, int t1, Grid_Info<2> const & grid) const {
         const int start_j = pmod_lu(grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         const int start_i = pmod_lu(grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
@@ -478,8 +472,7 @@ struct Pure_Region_All<3> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<3> > & pgs_;
     Grid_Info<3> phys_grid_;
-    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<3> > & _pgs) : sz_pgk_(_sz_pgk), pgs_(_pgs) { assert(_sz_pgk == _pgs.size()); return; }
-    void set_phys_grid(Grid_Info<3> & _grid) { phys_grid_ = _grid; return; }
+    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<3> > & _pgs, Grid_Info<3> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs), phys_grid_(_grid) { assert(_sz_pgk == _pgs.size()); return; }
     int operator() (int t0, int t1, Grid_Info<3> const & grid) const {
         const int start_k = pmod_lu(grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         const int start_j = pmod_lu(grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
@@ -532,17 +525,17 @@ struct Color_Region {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<N_RANK> > & pgs_;
     Grid_Info<N_RANK> phys_grid_;
-    Color_Region(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, int t0, int t1, Grid_Info<N_RANK> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs) { 
+    Color_Region(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Grid_Info<N_RANK> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs) { 
         assert(_sz_pgk == _pgs.size()); 
         for (int i = 0; i < N_RANK; ++i) {
             /* verify it's rectangular grid */
             assert (_grid.dx0[i] == 0 && _grid.dx1[i] == 0);
         }
-        phys_grid = _grid;
+        phys_grid_ = _grid;
         return; 
     }
-    int get_color() { return 0; }
-    int operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const { 
+    T_color get_color() { return 0; }
+    T_color operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) { 
         /* return 0 to make g++ happy! */
         return 0; 
     }
@@ -553,7 +546,7 @@ struct Color_Region<1> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<1> > & pgs_;
     Grid_Info<1> phys_grid_;
-    Color_Region(int _sz_pgk, Vector_Info< Pochoir_Guard<1> > & _pgs, int t0, int t1, Grid_Info<1> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs) { 
+    Color_Region(int _sz_pgk, Vector_Info< Pochoir_Guard<1> > & _pgs, Grid_Info<1> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs) { 
         assert(_sz_pgk == _pgs.size()); 
         for (int i = 0; i < 1; ++i) {
             /* verify it's rectangular grid */
@@ -566,25 +559,25 @@ struct Color_Region<1> {
         return; 
     }
 
-    int get_color(int t, int i) {
-        int l_color = 0;
+    T_color get_color(int t, int i) {
+        T_color l_color = 0;
         for (int pt = 0; pt < sz_pgk_; ++pt) {
             l_color <<= 1;
-            bool is_color = pgs_(t, i);
+            bool is_color = pgs_[pt](t, i);
             if (is_color)
                 l_color |= 1;
         }
         return l_color;
     }
 
-    int operator() (int t0, int t1, Grid_Info<1> const & grid) const {
+    T_color operator() (int t0, int t1, Grid_Info<1> const & grid) {
         Grid_Info<1> l_grid = grid;
-        const int start_i = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
-        int start_color = get_color(t0, start_i);
+        int start_i = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
+        T_color start_color = get_color(t0, start_i);
         for (int t = t0; t < t1; ++t) {
             for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
-                const int new_i = pmod_lu(i, phys_grid_.x0[0], phys_grid_.x1[0]);
-                int l_color = get_color(t, new_i);
+                int new_i = pmod_lu(i, phys_grid_.x0[0], phys_grid_.x1[0]);
+                T_color l_color = get_color(t, new_i);
                 if (l_color != start_color)
                     return CROSS_REGION;
             }
@@ -600,7 +593,7 @@ struct Color_Region<2> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<2> > & pgs_;
     Grid_Info<2> phys_grid_;
-    Color_Region(int _sz_pgk, Vector_Info< Pochoir_Guard<2> > & _pgs, int t0, int t1, Grid_Info<2> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs) { 
+    Color_Region(int _sz_pgk, Vector_Info< Pochoir_Guard<2> > & _pgs, Grid_Info<2> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs) { 
         assert(_sz_pgk == _pgs.size()); 
         for (int i = 0; i < 2; ++i) {
             /* verify it's rectangular grid */
@@ -613,28 +606,28 @@ struct Color_Region<2> {
         return; 
     }
 
-    int get_color(int t, int i, int j) {
-        int l_color = 0;
+    T_color get_color(int t, int i, int j) {
+        T_color l_color = 0;
         for (int pt = 0; pt < sz_pgk_; ++pt) {
             l_color <<= 1;
-            bool is_color = pgs_(t, i, j);
+            bool is_color = pgs_[pt](t, i, j);
             if (is_color)
                 l_color |= 1;
         }
         return l_color;
     }
 
-    int operator() (int t0, int t1, Grid_Info<2> const & grid) const {
+    T_color operator() (int t0, int t1, Grid_Info<2> const & grid) {
         Grid_Info<2> l_grid = grid;
-        const int start_i = pmod_lu(l_grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
-        const int start_j = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
-        int start_color = get_color(t0, start_i, start_j);
+        int start_i = pmod_lu(l_grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
+        int start_j = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
+        T_color start_color = get_color(t0, start_i, start_j);
         for (int t = t0; t < t1; ++t) {
             for (int i = l_grid.x0[1]; i < l_grid.x1[1]; ++i) {
-                const int new_i = pmod_lu(i, phys_grid_.x0[1], phys_grid_.x1[1]);
+                int new_i = pmod_lu(i, phys_grid_.x0[1], phys_grid_.x1[1]);
         for (int j = l_grid.x0[0]; j < l_grid.x1[0]; ++j) {
             const int new_j = pmod_lu(j, phys_grid_.x0[0], phys_grid_.x1[0]);
-                int l_color = get_color(t, new_i, new_j);
+                T_color l_color = get_color(t, new_i, new_j);
                 if (l_color != start_color)
                     return CROSS_REGION;
         }
@@ -652,7 +645,7 @@ struct Color_Region<3> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<3> > & pgs_;
     Grid_Info<3> phys_grid_;
-    Color_Region(int _sz_pgk, Vector_Info< Pochoir_Guard<3> > & _pgs, int t0, int t1, Grid_Info<3> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs) { 
+    Color_Region(int _sz_pgk, Vector_Info< Pochoir_Guard<3> > & _pgs, Grid_Info<3> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs) { 
         assert(_sz_pgk == _pgs.size()); 
         for (int i = 0; i < 3; ++i) {
             /* verify it's rectangular grid */
@@ -665,31 +658,31 @@ struct Color_Region<3> {
         return; 
     }
 
-    int get_color(int t, int i, int j, int k) {
-        int l_color = 0;
+    T_color get_color(int t, int i, int j, int k) {
+        T_color l_color = 0;
         for (int pt = 0; pt < sz_pgk_; ++pt) {
             l_color <<= 1;
-            bool is_color = pgs_(t, i, j, k);
+            bool is_color = pgs_[pt](t, i, j, k);
             if (is_color)
                 l_color |= 1;
         }
         return l_color;
     }
 
-    int operator() (int t0, int t1, Grid_Info<3> const & grid) const {
-        Grid_Info<2> l_grid = grid;
-        const int start_i = pmod_lu(l_grid.x0[2], phys_grid_.x0[2], phys_grid_.x1[2]);
-        const int start_j = pmod_lu(l_grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
-        const int start_k = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
-        int start_color = get_color(t0, start_i, start_j, start_k);
+    T_color operator() (int t0, int t1, Grid_Info<3> const & grid) {
+        Grid_Info<3> l_grid = grid;
+        int start_i = pmod_lu(l_grid.x0[2], phys_grid_.x0[2], phys_grid_.x1[2]);
+        int start_j = pmod_lu(l_grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
+        int start_k = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
+        T_color start_color = get_color(t0, start_i, start_j, start_k);
         for (int t = t0; t < t1; ++t) {
             for (int i = l_grid.x0[2]; i < l_grid.x1[2]; ++i) {
-                const int new_i = pmod_lu(i, phys_grid_.x0[2], phys_grid_.x1[2]);
+                int new_i = pmod_lu(i, phys_grid_.x0[2], phys_grid_.x1[2]);
         for (int j = l_grid.x0[1]; j < l_grid.x1[1]; ++j) {
             const int new_j = pmod_lu(j, phys_grid_.x0[1], phys_grid_.x1[1]);
             for (int k = l_grid.x0[0]; k < l_grid.x1[0]; ++k) {
-                const int new_k = pmod_lu(k, phys_grid_.x0[0], phys_grid_.x1[0]);
-                int l_color = get_color(t, new_i, new_j, new_k);
+                int new_k = pmod_lu(k, phys_grid_.x0[0], phys_grid_.x1[0]);
+                T_color l_color = get_color(t, new_i, new_j, new_k);
                 if (l_color != start_color)
                     return CROSS_REGION;
             }
@@ -703,6 +696,5 @@ struct Color_Region<3> {
         return start_color;
     }
 };
-
 
 #endif /* POCHOIR_KERNEL_HPP */

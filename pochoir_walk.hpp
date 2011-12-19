@@ -409,16 +409,17 @@ struct Algorithm {
         int phys_length_[N_RANK];
         int slope_[N_RANK];
         int ulb_boundary[N_RANK], uub_boundary[N_RANK], lub_boundary[N_RANK];
-        bool boundarySet, physGridSet, slopeSet, pksSet, opksSet, ptsSet;
-        int sz_pgk_;
+        bool boundarySet, physGridSet, slopeSet, opksSet, ptsSet;
+        int sz_pxgk_;
         int lcm_unroll_, time_shift_;
-        Vector_Info< Pochoir_Guard<N_RANK> > pgs_;
-        Pochoir_Stagger_Kernel<N_RANK> * pks_;
+        // Vector_Info< Pochoir_Guard<N_RANK> > pgs_;
         Pochoir_Combined_Obase_Kernel<N_RANK> * opks_;
-        Pochoir_Tile_Kernel<N_RANK> * pts_;
+        // Pochoir_Tile_Kernel<N_RANK> * pts_;
         Pure_Region_All<N_RANK> * pure_region_;
         int sz_base_data_, sz_sync_data_;
         Spawn_Tree<N_RANK> * tree_;
+        Color_Region<N_RANK> * color_region_;
+        Vector_Info<T_color> * color_vector_;
 	public:
 #if STAT
     /* sim_count_cut will be accessed outside Algorithm object */
@@ -442,11 +443,13 @@ struct Algorithm {
         Z = 10000;
         boundarySet = false;
         physGridSet = false;
-        pksSet = opksSet = ptsSet = false;
+        opksSet = ptsSet = false;
         slopeSet = true;
-        sz_pgk_ = sz_base_data_ = sz_sync_data_ = 0;
+        sz_base_data_ = sz_sync_data_ = 0;
         num_kernel_ = num_cond_kernel_ = num_bkernel_ = num_cond_bkernel_ = 0;
-        pks_ = NULL; opks_ = NULL; pts_ = NULL; 
+        // pks_ = NULL; pts_ = NULL;
+        sz_pxgk_ = 0; opks_ = NULL; 
+        pure_region_ = NULL; color_region_ = NULL; color_vector_ = NULL;
         /* ALGOR_QUEUE_SIZE = 3^N_RANK */
         // ALGOR_QUEUE_SIZE = power<N_RANK>::value;
 #define ALGOR_QUEUE_SIZE (power<N_RANK>::value)
@@ -509,11 +512,13 @@ struct Algorithm {
     void set_phys_grid(Grid_Info<N_RANK> const & grid);
     // void set_stride(int const stride[]);
     void set_slope(int const slope[]);
-    void set_opks(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Combined_Obase_Kernel<N_RANK> * _opks);
+    // void set_opks(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Combined_Obase_Kernel<N_RANK> * _opks);
     void set_pts(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Tile_Kernel<N_RANK> * _pts);
+    void set_opks(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Combined_Obase_Kernel<N_RANK> * _opks);
     void set_unroll(int _lcm_unroll) { lcm_unroll_ = _lcm_unroll; }
     void set_time_shift(int _time_shift) { time_shift_ = _time_shift; }
 
+    Vector_Info<T_color> & get_color_vector(void) { return (*color_vector_); }
     inline bool touch_boundary(int i, int lt, Grid_Info<N_RANK> & grid);
     inline bool within_boundary(int t0, int t1, Grid_Info<N_RANK> & grid);
     
@@ -582,13 +587,6 @@ struct Algorithm {
     inline void sim_obase_bicut_p(int t0, int t1, Grid_Info<N_RANK> const grid, F const & f, BF const & bf);
 
     template <typename F> 
-	inline void base_case_kernel_interior(int t0, int t1, Grid_Info<N_RANK> const grid, F const & f);
-    template <typename BF> 
-	inline void base_case_kernel_boundary(int t0, int t1, Grid_Info<N_RANK> const grid, BF const & bf);
-    template <typename G1, typename F1, typename G2, typename F2> 
-	inline void base_case_kernel_stagger(int t0, int t1, Grid_Info<N_RANK> const grid, G1 const & g1, F1 const & f1, G2 const & g2, F2 const & f2);
-    inline void base_case_kernel_guard(int t0, int t1, Grid_Info<N_RANK> const grid);
-    template <typename F> 
 	inline void walk_serial(int t0, int t1, Grid_Info<N_RANK> const grid, F const & f);
 
     /* all recursion-based algorithm */
@@ -650,9 +648,16 @@ void Algorithm<N_RANK>::set_phys_grid(Grid_Info<N_RANK> const & grid)
             lub_boundary[i] = phys_grid_.x0[i] + slope_[i];
         }
     }
-    if (pksSet || opksSet) {
+#if 0
+    if (opksSet) {
         pure_region_->set_phys_grid(phys_grid_);
     }
+    if (ptsSet && color_region_ == NULL) {
+        printf("<%s:%d> : set up color region and color vector!\n", __FUNCTION__, __LINE__);
+        color_region_ = new Color_Region<N_RANK>(sz_pgk_, pgs_, phys_grid_);
+        color_vector_ = new Vector_Info<T_color>();
+    }
+#endif
 }
 
 template <int N_RANK>
@@ -677,74 +682,31 @@ void Algorithm<N_RANK>::set_pts(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> 
      * the time of which is not counted into the total running time;
      * for pts_, we keep using raw pointer for performance
      */
-    sz_pgk_ = _sz_pgk; pgs_ = _pgs; pts_ = _pts; 
-    ptsSet = true;
-    pure_region_ = new Pure_Region_All<N_RANK>(_sz_pgk, _pgs);
-    if (physGridSet) {
-        pure_region_->set_phys_grid(phys_grid_);
+    assert(physGridSet);
+    // sz_pgk_ = _sz_pgk; pgs_ = _pgs; pts_ = _pts; 
+    // pure_region_ = new Pure_Region_All<N_RANK>(_sz_opgk, _opgs);
+    // pure_region_->set_phys_grid(phys_grid_);
+    if (color_region_ == NULL) {
+        color_region_ = new Color_Region<N_RANK>(_sz_pgk, _pgs, phys_grid_);
+        color_vector_ = new Vector_Info<T_color>();
     }
+    ptsSet = true;
     return;
 }
 
-template <int N_RANK> 
+template <int N_RANK>
 void Algorithm<N_RANK>::set_opks(int _sz_pgk, Vector_Info<Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Combined_Obase_Kernel<N_RANK> * _opks) {
     /* for pgs_, we use the container Vector_Info since it's called in Gen_Plan,
      * the time of which is not counted into the total running time;
      * for opks_, we keep using raw pointer for performance
      */
-    sz_pgk_ = _sz_pgk; pgs_ = _pgs; opks_ = _opks; 
-    opksSet = true;
-    pure_region_ = new Pure_Region_All<N_RANK>(_sz_pgk, _pgs);
-    if (physGridSet) {
-        pure_region_->set_phys_grid(phys_grid_);
+    assert(physGridSet);
+    sz_pxgk_ = _sz_pgk; opks_ = _opks;
+    if (pure_region_ == NULL) {
+        pure_region_ = new Pure_Region_All<N_RANK>(_sz_pgk, _pgs, phys_grid_);
     }
+    opksSet = true;
     return;
-}
-
-template <int N_RANK> template <typename F>
-inline void Algorithm<N_RANK>::base_case_kernel_interior(int t0, int t1, Grid_Info<N_RANK> const grid, F const & f) {
-	Grid_Info<N_RANK> l_grid = grid;
-	for (int t = t0; t < t1; ++t) {
-        /* execute one single time step */
-        meta_grid_interior<N_RANK>::single_step(t, l_grid, phys_grid_, f);
-
-        /* because the shape is trapezoid! */
-        for (int i = 0; i < N_RANK; ++i) {
-            l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-        }
-	}
-}
-
-template <int N_RANK> template <typename BF>
-inline void Algorithm<N_RANK>::base_case_kernel_boundary(int t0, int t1, Grid_Info<N_RANK> const grid, BF const & bf) {
-	Grid_Info<N_RANK> l_grid = grid;
-	for (int t = t0; t < t1; ++t) {
-        home_cell_[0] = t;
-        /* execute one single time step */
-        meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, bf);
-
-        /* because the shape is trapezoid! */
-        for (int i = 0; i < N_RANK; ++i) {
-            l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-        }
-	}
-}
-
-template <int N_RANK> 
-inline void Algorithm<N_RANK>::base_case_kernel_guard(int t0, int t1, Grid_Info<N_RANK> const grid) {
-    /* Each kernel update the entire region independently and entirely!!! */
-	Grid_Info<N_RANK> l_grid = grid;
-    Pochoir_Run_Stagger_Kernels<N_RANK> l_kernel(sz_pgk_, pgs_, pks_);
-    for (int t = t0; t < t1; ) {
-        home_cell_[0] = t;
-        meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
-        /* adjust the trapezoids */
-        for (int i = 0; i < N_RANK; ++i) {
-            l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
-        } 
-        ++t;
-        l_kernel.shift_pointer();
-    } /* end for 't' */
 }
 
 #if DEBUG_FACILITY 

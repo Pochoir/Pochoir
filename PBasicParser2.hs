@@ -81,8 +81,8 @@ ppStencil1 l_id l_state =
                             || l_mode == PUnrollTimeTilePointerOverlap
                             || l_mode == PUnrollTimeTileOptPointerOverlap
                          then do let l_overlapKernels =
-                                       pGetAllCondTileOverlapKernels l_mode l_stencil
-                                           (sRegTileKernel l_stencil)
+                                       pGetAllCondTileOverlapKernels l_mode 
+                                           l_stencil (sRegTileKernel l_stencil)
                                            (sRegInclusiveTileKernel l_stencil)
                                            (sRegTinyInclusiveTileKernel l_stencil)
                                  return (breakline ++ fst l_overlapKernels ++
@@ -104,9 +104,14 @@ ppStencil1 l_id l_state =
                                   ", " ++ (tName l_tile) ++ (tComment l_tile) ++
                                   "); /* UNKNOWN Stencil " ++ l_id ++ " */")
                Just l_stencil ->
-               -- convert "Register_Kernel(g, k, ... ks) " to "Register_Obase_Kernel(g, k, bk)"
+                          return (breakline ++ l_id ++ ".Register_Tile_Kernels(" ++ 
+                                  (gName l_guard) ++ (concat $ gComment l_guard) ++ 
+                                  ", " ++ (tName l_tile) ++ (tComment l_tile) ++
+                                  "); /* KNOWN Stencil " ++ l_id ++ " */")
+{-
                    do let l_regKernels = pShowRegTileKernel (pMode l_state) l_stencil (l_guard, l_tile)
                       return (l_regKernels)
+-}
     <|> do try $ pMember "Register_Exclusive_Tile_Kernels"
            (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
            semi

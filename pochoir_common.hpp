@@ -120,6 +120,10 @@ static inline double select(bool b, double x, double y) {
 
 typedef int T_dim;
 typedef int T_index;
+/* T_color could be of type int, long, ..., which could be able to
+ * perform bit-wise operations 
+ */
+typedef int T_color;
 
 template <int N_RANK>
 struct Grid_Info {
@@ -346,6 +350,41 @@ struct Vector_Info {
         }
         return;
     }
+    void add_unique_element(T ele) {
+#if DEBUG
+        std::cerr << "add_unique_element " << ele << std::endl;
+#endif
+        /* to make sure every element in this vector is unique */
+        for (int i = 0; i < pointer_; ++i) {
+            if (region_[i] == ele)
+                return;
+        }
+        if (pointer_ < size_) {
+            region_[pointer_] = ele;
+            ++pointer_;
+        } else {
+#if DEBUG
+            printf("realloc memory size = %d -> %d!\n", size_, 2*size_);
+#endif
+            T * l_region = new T[2 * size_];
+            if (l_region != NULL) {
+                for (int i = 0; i < size_; ++i) {
+                    l_region[i] = region_[i];
+                }
+                if (is_basic_data_type<T>()) {
+                    delete [] region_;
+                }
+                region_ = l_region;
+                region_[pointer_] = ele;
+                ++pointer_;
+                size_ = 2 * size_;
+            } else {
+                printf("realloc wrong!\n");
+                exit(1);
+            }
+        }
+        return;
+    }
     void scan () {
         for (int i = 1; i < pointer_; ++i) {
             region_[i] = region_[i] + region_[i-1];
@@ -355,13 +394,30 @@ struct Vector_Info {
     T & operator[] (int _idx) { return region_[_idx]; }
     int size() { return pointer_; }
     T & operator= (T & rhs) {
-        int l_rhs_size = rhs.size();
-        region_ = new T[l_rhs_size];
-        size_ = l_rhs_size;
-        for (int i = 0; i < l_rhs_size; ++i) {
-            region_[i] = rhs[i];
+        const int l_rhs_size = rhs.size();
+        if (l_rhs_size <= size_) {
+            for (int i = 0; i < l_rhs_size; ++i) {
+                region_[i] = rhs[i];
+            }
+            pointer_ = l_rhs_size;
+            return (*this);
         }
+        /* l_rhs_size > size_ */
+        T * l_region = new T[l_rhs_size];
+        if (l_region == NULL) {
+            printf("Run out of memory! Exit!\n");
+            exit(1);
+        }
+        for (int i = 0; i < l_rhs_size; ++i) {
+            l_region[i] = rhs[i];
+        }
+        if (is_basic_data_type<T>()) { 
+            delete [] region_; 
+        }
+        region_ = l_region;
+        size_ = l_rhs_size;
         pointer_ = l_rhs_size;
+        return (*this);
     }
 
     friend std::ofstream & operator<<(std::ofstream & fs, Vector_Info<T> const & v) {
