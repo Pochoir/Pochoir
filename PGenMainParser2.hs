@@ -24,17 +24,17 @@
  -}
 
 -- The Main Parser for a second pass --
-module PMainParser2 where
+module PGenMainParser2 where
 
 import Text.ParserCombinators.Parsec
 
 import Control.Monad
 
-import PBasicParser
-import PBasicParser2
-import PUtils
-import PData
-import PShow
+import PGenBasicParser
+import PGenBasicParser2
+import PGenUtils
+import PGenData
+import PGenShow
 -- import Text.Show
 import Data.List
 import qualified Data.Map as Map

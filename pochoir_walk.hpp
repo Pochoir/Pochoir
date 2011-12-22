@@ -391,6 +391,8 @@ struct Algorithm {
         int dx_recursive_[N_RANK];
         int dx_recursive_boundary_[N_RANK];
         int dt_recursive_;
+        int dx_homo_[N_RANK]; /* threshold for largest inhomogeneous region */
+        int dt_homo_;
         const int dt_recursive_boundary_;
         int Z;
         const int r_t; /* # of pieces cut in time dimension */
@@ -415,11 +417,11 @@ struct Algorithm {
         // Vector_Info< Pochoir_Guard<N_RANK> > pgs_;
         Pochoir_Combined_Obase_Kernel<N_RANK> * opks_;
         // Pochoir_Tile_Kernel<N_RANK> * pts_;
-        Pure_Region_All<N_RANK> * pure_region_;
+        // Pure_Region_All<N_RANK> * pure_region_;
         int sz_base_data_, sz_sync_data_;
         Spawn_Tree<N_RANK> * tree_;
         Color_Region<N_RANK> * color_region_;
-        Vector_Info<T_color> * color_vector_;
+        Vector_Info< Homogeneity > * homogeneity_vector_;
 	public:
 #if STAT
     /* sim_count_cut will be accessed outside Algorithm object */
@@ -435,11 +437,13 @@ struct Algorithm {
         for (int i = 0; i < N_RANK; ++i) {
             slope_[i] = _slope[i];
             dx_recursive_boundary_[i] = 1;
+            dx_homo_[i] = 8;
             // dx_recursive_boundary_[i] = _slope[i];
 //            dx_recursive_boundary_[i] = tune_dx_boundary;
             ulb_boundary[i] = uub_boundary[i] = lub_boundary[i] = 0;
             // dx_recursive_boundary_[i] = 10;
         }
+        dt_homo_ = (int) dx_homo_[0]/2;
         Z = 10000;
         boundarySet = false;
         physGridSet = false;
@@ -449,7 +453,8 @@ struct Algorithm {
         num_kernel_ = num_cond_kernel_ = num_bkernel_ = num_cond_bkernel_ = 0;
         // pks_ = NULL; pts_ = NULL;
         sz_pxgk_ = 0; opks_ = NULL; 
-        pure_region_ = NULL; color_region_ = NULL; color_vector_ = NULL;
+        // pure_region_ = NULL; 
+        color_region_ = NULL; homogeneity_vector_ = NULL;
         /* ALGOR_QUEUE_SIZE = 3^N_RANK */
         // ALGOR_QUEUE_SIZE = power<N_RANK>::value;
 #define ALGOR_QUEUE_SIZE (power<N_RANK>::value)
@@ -480,8 +485,15 @@ struct Algorithm {
 #if 1
         dt_recursive_ = 1;
         dx_recursive_[0] = 1;
-        for (int i = N_RANK-1; i >= 1; --i)
+        for (int i = N_RANK-1; i >= 1; --i) {
             dx_recursive_[i] = 1;
+            dx_homo_[i] = 8;
+        }
+        if (slopeSet) 
+            dt_homo_ = (int)dx_homo_[0]/(2 * slope_[0]);
+        else 
+            dt_homo_ = (int)dx_homo_[0]/2;
+
 #else
 #if 1
         dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((80 * sizeof(double))/arr_type_size)) : (int)floor(float((600 * sizeof(double))/arr_type_size));
@@ -518,7 +530,7 @@ struct Algorithm {
     void set_unroll(int _lcm_unroll) { lcm_unroll_ = _lcm_unroll; }
     void set_time_shift(int _time_shift) { time_shift_ = _time_shift; }
 
-    Vector_Info<T_color> & get_color_vector(void) { return (*color_vector_); }
+    Vector_Info< Homogeneity > & get_color_vector(void) { return (*homogeneity_vector_); }
     inline bool touch_boundary(int i, int lt, Grid_Info<N_RANK> & grid);
     inline bool within_boundary(int t0, int t1, Grid_Info<N_RANK> & grid);
     
@@ -655,7 +667,7 @@ void Algorithm<N_RANK>::set_phys_grid(Grid_Info<N_RANK> const & grid)
     if (ptsSet && color_region_ == NULL) {
         printf("<%s:%d> : set up color region and color vector!\n", __FUNCTION__, __LINE__);
         color_region_ = new Color_Region<N_RANK>(sz_pgk_, pgs_, phys_grid_);
-        color_vector_ = new Vector_Info<T_color>();
+        homogeneity_vector_ = new Vector_Info<T_color>();
     }
 #endif
 }
@@ -688,7 +700,7 @@ void Algorithm<N_RANK>::set_pts(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> 
     // pure_region_->set_phys_grid(phys_grid_);
     if (color_region_ == NULL) {
         color_region_ = new Color_Region<N_RANK>(_sz_pgk, _pgs, phys_grid_);
-        color_vector_ = new Vector_Info<T_color>();
+        homogeneity_vector_ = new Vector_Info< Homogeneity >();
     }
     ptsSet = true;
     return;
@@ -702,9 +714,11 @@ void Algorithm<N_RANK>::set_opks(int _sz_pgk, Vector_Info<Pochoir_Guard<N_RANK> 
      */
     assert(physGridSet);
     sz_pxgk_ = _sz_pgk; opks_ = _opks;
+#if 0
     if (pure_region_ == NULL) {
         pure_region_ = new Pure_Region_All<N_RANK>(_sz_pgk, _pgs, phys_grid_);
     }
+#endif
     opksSet = true;
     return;
 }

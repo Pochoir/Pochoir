@@ -1871,7 +1871,7 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, Grid_Info<N_RANK
  ************************************************************************************/
 // #define gen_plan_space_can_cut(_dim) (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim]))
 
-#define gen_plan_space_can_cut_p(_dim) (cut_lb ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim]))
+#define gen_plan_space_can_cut_p(_dim) (cut_lb ? (lb >= 2 * thres && tb > dx_homo_[_dim]) : (tb >= 2 * thres && lb > dx_homo_[_dim]))
 
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid)
@@ -2036,19 +2036,21 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
     bool sim_can_cut = false, call_boundary = false;
     Grid_Info<N_RANK> l_father_grid = grid, l_son_grid;
     int l_dt_stop, l_unroll;
-    int region_n = (*pure_region_)(t0, t1, l_father_grid);
-    T_color color_n = (*color_region_)(t0, t1, l_father_grid);
-    const bool cross_region = (region_n == CROSS_REGION);
+    // int region_n = (*pure_region_)(t0, t1, l_father_grid);
+    Homogeneity homo = (*color_region_)(t0, t1, l_father_grid);
+    // const bool cross_region = (region_n == CROSS_REGION);
+    const bool cross_region = !(homo.is_homogeneous());
     Node_Info<N_RANK> * l_internal = new Node_Info<N_RANK>(t0, t1, l_father_grid);
 
-    if (!cross_region) {
-        (*color_vector_).add_unique_element(color_n);
+    if (cross_region) {
+        (*tree_).add_node(parent, l_internal, IS_INTERNAL);
+    } else {
+        (*homogeneity_vector_).add_unique_element(homo);
+        int region_n = (*homogeneity_vector_).get_index(homo);
         (*tree_).add_node(parent, l_internal, IS_SPAWN, region_n);
         ++sz_base_data_;
         return;
-    } else {
-        (*tree_).add_node(parent, l_internal, IS_INTERNAL);
-    }
+    } 
 
     /* cross_region! */
     assert(cross_region);
@@ -2069,7 +2071,7 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
         return;
     } 
 
-    l_dt_stop = dt_recursive_boundary_;
+    l_dt_stop = dt_homo_;
 #if 0
     if (call_boundary) {
         l_unroll = lcm_unroll_;
@@ -2104,6 +2106,14 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
         return;
     } 
 
+    /* Add Inhomogeneous node into the tree */
+    (*homogeneity_vector_).add_unique_element(homo);
+    int region_n = (*homogeneity_vector_).get_index(homo);
+    Node_Info<N_RANK> * l_leaf = new Node_Info<N_RANK>(t0, t1, l_father_grid);
+    (*tree_).add_node(l_internal, l_leaf, IS_SPAWN, region_n);
+    ++sz_base_data_;
+    return;
+#if 0
     /* Serial Space Cut: on spatial dimension 'i' */
     if (cross_region) {
 #if DEBUG
@@ -2131,6 +2141,7 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
         }
     }
     return;
+#endif
 }
 
 /************************************************************************************

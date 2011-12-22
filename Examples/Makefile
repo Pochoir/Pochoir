@@ -11,7 +11,7 @@ POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I${CILK_H
 # POCHOIR_DEBUG_FLAGS = -O0 -g3 -debug -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
 ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
 # ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
-POCHOIR_LIB_FILES = "../pochoir.hpp ../pochoir_common.hpp ../pochoir_types.hpp ../pochoir_array.hpp ../pochoir_walk.hpp ../pochoir_walk_recursive.hpp ../pochoir_walk_loops.hpp ../pochoir_wrapper.hpp ../pochoir_range.hpp"
+POCHOIR_LIB_FILES = "../pochoir.hpp ../pochoir_common.hpp ../pochoir_dloader.hpp ../pochoir_array.hpp ../pochoir_walk.hpp ../pochoir_walk_recursive.hpp ../pochoir_walk_loops.hpp ../pochoir_kernel.hpp ../pochoir_range.hpp"
 
 # ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x
 example_1D : tb_example_1D.cpp

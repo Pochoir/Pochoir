@@ -31,11 +31,11 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
+#include <cstring>
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <functional>
-
 
 static inline double tdiff (struct timeval *a, struct timeval *b)
 {
@@ -62,9 +62,11 @@ static inline int lcm(int a, int b) {
 
 #define ARRAY_LENGTH(x) (int)(sizeof(x)/sizeof(x[0]))
 
+#if 0
 #define cilk_for for
 #define cilk_spawn 
 #define cilk_sync
+#endif
 
 /* due to the fact that bit trick is much slower than conditional instruction,
  * let's disable it for now!!!
@@ -124,6 +126,121 @@ typedef int T_index;
  * perform bit-wise operations 
  */
 typedef int T_color;
+
+struct Homogeneity {
+    T_color o_, a_;
+    int size_; /* # registered kernel in total */
+    Homogeneity() { o_ = 0; a_ = 0; size_ = 0; }
+    Homogeneity(T_color _o, T_color _a) : o_(_o), a_(_a), size_(0) { }
+    Homogeneity(T_color _o, T_color _a, int _size) : o_(_o), a_(_a), size_(_size) { }
+    Homogeneity(int _size) : size_(_size) {
+        /* set up a white clone with size '_size' */
+        o_ = 0; a_ = 0;
+        for (int i = 0; i < _size; ++i) {
+            o_ <<= 1; o_ |= 1;
+        }
+        return;
+    }
+    inline int size(void) { return size_; }
+    inline bool operator<= (Homogeneity const & h) {
+        /* define the partial order between Homogeneities */
+        return (a_ & h.a_ == a_ && ~o_ & ~h.o_ == ~o_);
+    }
+    inline Homogeneity & operator+ (Homogeneity const & h) {
+        /* to combine regions, or to get the maximum-norm kernel
+         * <= both this and h
+         */
+        T_color l_o = o_ | h.o_; T_color l_a = a_ & h.a_;
+
+        Homogeneity * l_h = new Homogeneity(l_o, l_a, size_);
+        return (*l_h);
+    }
+    inline bool operator== (Homogeneity const & h) {
+        return (size_ == h.size_ && o_ == h.o_ && a_ == h.a_);
+    }
+    inline Homogeneity & operator= (Homogeneity const & h) {
+        size_ = h.size_; o_ = h.o_; a_ = h.a_;
+        return (*this);
+    }
+    inline bool is_homogeneous(void) { return (o_ == a_); }
+    T_color norm(void) {
+        /* norm |h| = |(o, a)| = # 0 bits in o-a = Hamming weight |~(o-a)| 
+         * = # eliminated if's in an (o, a) clone
+         */
+        T_color v = ~(o_ ^ a_);
+        T_color c = 0;
+        int l_size = size_;
+        for (c = 0; l_size > 0 && v; v >>= 1, --l_size)
+            c += v & 1;
+        return c;
+    }
+    T_color reverse_bits(T_color v){
+#if 0
+        T_color r = v;
+        int s = size_ - 1; // extra shift needed at end
+
+        for (v >>= 1; v; v >>= 1) {
+            r <<= 1;
+            r |= v & 1;
+            s--;
+        }
+        r <<= s; // shift when v's highest bits are zero
+        return r;
+#else
+        T_color r = 0;
+        int s = size_;
+        for (v, r; v; v >>= 1, r <<= 1, --s) {
+            r |= (v & 1);
+        }
+        r <<= s;
+        return r;
+#endif
+    }
+    
+    friend std::ofstream & operator<<(std::ofstream & fs, Homogeneity const & h) {
+        fs << "(" ;
+        T_color l_mask = 0x1 << (h.size_ - 1);
+        T_color l_o = h.o_, l_a = h.a_;
+        for (int i = 0; i < h.size_; ++i, l_mask >>= 1) {
+            if (l_o & l_mask)
+                fs << "1";
+            else
+                fs << "0";
+        }
+        fs << ", ";
+        l_mask = 0x1 << (h.size_ - 1);
+        for (int i = 0; i < h.size_; ++i, l_mask >>= 1) {
+            if (l_a & l_mask)
+                fs << "1";
+            else
+                fs << "0";
+        }
+        fs << ")";
+        return fs;
+    }
+
+    friend std::ostream & operator<<(std::ostream & fs, Homogeneity const & h) {
+        fs << "(" ;
+        T_color l_mask = 0x1 << (h.size_ - 1);
+        T_color l_o = h.o_, l_a = h.a_;
+        for (int i = 0; i < h.size_; ++i, l_mask >>= 1) {
+            if (l_o & l_mask)
+                fs << "1";
+            else
+                fs << "0";
+        }
+        fs << ", ";
+        l_mask = 0x1 << (h.size_ - 1);
+        for (int i = 0; i < h.size_; ++i, l_mask >>= 1) {
+            if (l_a & l_mask)
+                fs << "1";
+            else
+                fs << "0";
+        }
+        fs << ")";
+        return fs;
+    }
+};
 
 template <int N_RANK>
 struct Grid_Info {
@@ -384,6 +501,13 @@ struct Vector_Info {
             }
         }
         return;
+    }
+    int get_index(T ele) {
+        for (int i = 0; i < pointer_; ++i) {
+            if (region_[i] == ele)
+                return i;
+        }
+        return -1;
     }
     void scan () {
         for (int i = 1; i < pointer_; ++i) {

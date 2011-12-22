@@ -24,7 +24,7 @@
  -}
 
 -- The Basic Parser for a second pass --
-module PBasicParser2 where
+module PGenBasicParser2 where
 
 import Text.ParserCombinators.Parsec
 import qualified Text.ParserCombinators.Parsec.Token as Token
@@ -36,10 +36,10 @@ import Data.Char
 import Data.List
 import qualified Data.Map as Map
 
-import PBasicParser
-import PShow
-import PUtils
-import PData
+import PGenBasicParser
+import PGenShow
+import PGenUtils
+import PGenData
 
 ppStencil1 :: String -> ParserState -> GenParser Char ParserState String
 ppStencil1 l_id l_state = 

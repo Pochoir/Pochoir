@@ -23,13 +23,14 @@
  --------------------------------------------------------------------------------
  -}
 
-module PData where
+module PGenData where
 
 import Text.ParserCombinators.Parsec
 import Control.Monad
 
 import Data.Char
 import Data.List
+import Data.Bits
 import qualified Data.Map as Map
 
 type PName = String
@@ -53,6 +54,12 @@ data PType = PType {
 } deriving Eq
 data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro | PAllCondTileCPointer | PAllCondTilePointer | PAllCondTileOptPointer | PUnrollTimeTileMacro | PUnrollTimeTileCPointer | PUnrollTimeTilePointer | PUnrollTimeTileOptPointer | PAllCondTileMacroOverlap | PAllCondTileCPointerOverlap | PAllCondTilePointerOverlap | PAllCondTileOptPointerOverlap | PUnrollTimeTileMacroOverlap | PUnrollTimeTileCPointerOverlap | PUnrollTimeTilePointerOverlap | PUnrollTimeTileOptPointerOverlap deriving Eq
 data TileOp = PNOP | PSERIAL | PEXCLUSIVE | PINCLUSIVE deriving (Eq, Show)
+
+data Homogeneity = Homogeneity {
+    size :: Int, -- width of the color vector
+    o :: Int, -- bit-wise or of the color vector
+    a :: Int  -- bit-wise and of the color vector
+} deriving Eq
 
 data PMacro = PMacro {
     mName :: PName,
@@ -307,6 +314,14 @@ instance Show PMode where
     show PUnrollTimeTileCPointerOverlap = "-unroll-t-tile-c-pointer-overlap"
     show PUnrollTimeTilePointerOverlap = "-unroll-t-tile-pointer-overlap"
     show PUnrollTimeTileOptPointerOverlap = "-unroll-t-tile-opt-pointer-overlap"
+
+instance Show Homogeneity where
+    show h = "<" ++ showBin (size h) (o h) ++ ", " ++ showBin (size h) (a h) ++ ">\n"
+
+showBin :: Int -> Int -> String
+showBin 0 a = ""
+showBin n a = showBinTerm n a ++ showBin (n-1) a
+    where showBinTerm n a = if testBit a n then "1" else "0"
 
 instance Show PType where
     show ptype = typeName ptype

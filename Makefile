@@ -5,4 +5,4 @@ pochoir : ${PP_FILE}
 genkernels : ${GEN_FILE} 
 	ghc -o genkernels -O --make PGenMain.hs
 clean: 
-	rm *.o *.hi pochoir 
+	rm -f *.o *.hi pochoir genkernels

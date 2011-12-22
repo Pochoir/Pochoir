@@ -22,15 +22,15 @@
  -
  --------------------------------------------------------------------------------
  -}
-module PShow where
+module PGenShow where
 
 import Text.ParserCombinators.Parsec
 import Control.Monad
 import qualified Data.Map as Map
 import Data.List
 
-import PData
-import PUtils
+import PGenData
+import PGenUtils
 
 simplifyDimExpr :: DimExpr -> DimExpr
 simplifyDimExpr de = 

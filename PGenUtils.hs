@@ -23,12 +23,13 @@
  --------------------------------------------------------------------------------
  -}
 
-module PUtils where
+module PGenUtils where
 
 import Text.ParserCombinators.Parsec
 import Control.Monad
 import Data.List
-import PData
+import Data.Bits
+import PGenData
 import qualified Data.Map as Map
 
 updatePTile :: PTile -> ParserState -> ParserState
@@ -693,3 +694,12 @@ checkValidPArray l_array l_state =
 fillToggleInPArray :: PArray -> Int -> PArray
 fillToggleInPArray l_pArray l_toggle = l_pArray { aToggle = l_toggle }
 
+-- convert a binary number (in string) into a decimal number
+pBinToDec :: String -> Int
+pBinToDec bValue = pBinToDecTerm 0 (length bValue) bValue
+    where pBinToDecTerm idx n bValue =
+            if (idx >= n) 
+               then 0
+               else if bValue !! idx == '1'
+                       then (shift 1 $ n - idx) + pBinToDecTerm (idx+1) n bValue
+                       else pBinToDecTerm (idx+1) n bValue

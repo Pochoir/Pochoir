@@ -131,7 +131,7 @@ class Pochoir {
     void Run(int timestep);
     void Run_Obase(int timestep);
     Pochoir_Plan<N_RANK> & Gen_Plan(int timepstep);
-    Pochoir_Plan<N_RANK> & Gen_Plan_Obase(int timepstep);
+    Pochoir_Plan<N_RANK> & Gen_Plan_Obase(int timepstep, const char * src_fname);
     Pochoir_Plan<N_RANK> & Load_Plan(const char * file_name);
     void Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & _plan);
     void Run(Pochoir_Plan<N_RANK> & _plan);
@@ -515,7 +515,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
 }
 
 template <int N_RANK> 
-Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep) {
+Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char * src_fname) {
     /* we don't squeeze out the NONE_EXCLUSIVE_IFS in Gen_Plan, 
      * but do in Gen_Plan_Obase
      */
@@ -528,13 +528,12 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep) {
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
     /* set individual unroll factor from opgk_ */
-    if (pmode_ == Pochoir_Obase_Tile) {
+    if (pmode_ == Pochoir_Tile) {
         // set color_region
         assert(sz_pigk_ > 0);
         algor.set_pts(sz_pigk_, pigs_, pits_.get_root());
-        // set pure_region
-        assert(sz_pxgk_ > 0);
-        algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
+        // assert(sz_pxgk_ > 0);
+        // algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
     } else {
         printf("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
         exit(EXIT_FAILURE);
@@ -572,8 +571,21 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep) {
     l_plan->sync_data_->scan();
     l_plan->sync_data_->add_element(END_SYNC);
 
-    const char * color_vector_fname = "color_vector_pochoir.dat";
-    Vector_Info<T_color> & l_color_vector = algor.get_color_vector();
+    // sprintf(color_vector_fname, "color_vector_%s", __FILE__);
+    // const char * color_vector_fname = "color_vector_pochoir.dat";
+    Vector_Info< Homogeneity > & l_color_vector = algor.get_color_vector();
+    Homogeneity * white_clone = NULL;
+
+    char color_vector_fname[100];
+    const int l_src_fname_len = strlen(src_fname);
+    strncpy(color_vector_fname, src_fname, l_src_fname_len-4);
+    strcat(color_vector_fname, "_color.dat");
+
+    if (l_color_vector.size() > 0)
+        white_clone = new Homogeneity(l_color_vector[0].size());
+    else
+        white_clone = new Homogeneity(0);
+    l_color_vector.add_unique_element(*white_clone);
     std::ofstream os_color_vector(color_vector_fname);
     if (os_color_vector.is_open()) {
         os_color_vector << l_color_vector;

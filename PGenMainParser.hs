@@ -23,17 +23,17 @@
  --------------------------------------------------------------------------------
  -}
 
-module PMainParser where
+module PGenMainParser where
 
 import Text.ParserCombinators.Parsec
 
 import Control.Monad
 
-import PBasicParser
-import PMainParser2
-import PUtils
-import PData
-import PShow
+import PGenBasicParser
+import PGenMainParser2
+import PGenUtils
+import PGenData
+import PGenShow
 -- import Text.Show
 import Data.List
 import qualified Data.Map as Map

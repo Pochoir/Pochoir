@@ -570,21 +570,22 @@ struct Color_Region<1> {
         return l_color;
     }
 
-    T_color operator() (int t0, int t1, Grid_Info<1> const & grid) {
+    Homogeneity & operator() (int t0, int t1, Grid_Info<1> const & grid) {
         Grid_Info<1> l_grid = grid;
         int start_i = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         T_color start_color = get_color(t0, start_i);
+        T_color l_o = start_color, l_a = start_color;
         for (int t = t0; t < t1; ++t) {
             for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
-                int new_i = pmod_lu(i, phys_grid_.x0[0], phys_grid_.x1[0]);
+                const int new_i = pmod_lu(i, phys_grid_.x0[0], phys_grid_.x1[0]);
                 T_color l_color = get_color(t, new_i);
-                if (l_color != start_color)
-                    return CROSS_REGION;
+                l_o |= l_color; l_a &= l_color;
             }
             /* Adjust trapezoid */
             l_grid.x0[0] += l_grid.dx0[0]; l_grid.x1[0] += l_grid.dx1[0];
         }
-        return start_color;
+        Homogeneity * l_h = new Homogeneity(l_o, l_a, sz_pgk_);
+        return (*l_h);
     }
 };
 
@@ -617,26 +618,27 @@ struct Color_Region<2> {
         return l_color;
     }
 
-    T_color operator() (int t0, int t1, Grid_Info<2> const & grid) {
+    Homogeneity & operator() (int t0, int t1, Grid_Info<2> const & grid) {
         Grid_Info<2> l_grid = grid;
         int start_i = pmod_lu(l_grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
         int start_j = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         T_color start_color = get_color(t0, start_i, start_j);
+        T_color l_o = start_color, l_a = start_color;
         for (int t = t0; t < t1; ++t) {
             for (int i = l_grid.x0[1]; i < l_grid.x1[1]; ++i) {
-                int new_i = pmod_lu(i, phys_grid_.x0[1], phys_grid_.x1[1]);
+                const int new_i = pmod_lu(i, phys_grid_.x0[1], phys_grid_.x1[1]);
         for (int j = l_grid.x0[0]; j < l_grid.x1[0]; ++j) {
             const int new_j = pmod_lu(j, phys_grid_.x0[0], phys_grid_.x1[0]);
                 T_color l_color = get_color(t, new_i, new_j);
-                if (l_color != start_color)
-                    return CROSS_REGION;
+                l_o |= l_color; l_a &= l_color;
         }
             }
             /* Adjust trapezoid */
             l_grid.x0[0] += l_grid.dx0[0]; l_grid.x1[0] += l_grid.dx1[0];
             l_grid.x0[1] += l_grid.dx0[1]; l_grid.x1[1] += l_grid.dx1[1];
         }
-        return start_color;
+        Homogeneity * l_h = new Homogeneity(l_o, l_a, sz_pgk_);
+        return (*l_h);
     }
 };
 
@@ -669,22 +671,22 @@ struct Color_Region<3> {
         return l_color;
     }
 
-    T_color operator() (int t0, int t1, Grid_Info<3> const & grid) {
+    Homogeneity & operator() (int t0, int t1, Grid_Info<3> const & grid) {
         Grid_Info<3> l_grid = grid;
         int start_i = pmod_lu(l_grid.x0[2], phys_grid_.x0[2], phys_grid_.x1[2]);
         int start_j = pmod_lu(l_grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
         int start_k = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         T_color start_color = get_color(t0, start_i, start_j, start_k);
+        T_color l_o = start_color, l_a = start_color;
         for (int t = t0; t < t1; ++t) {
             for (int i = l_grid.x0[2]; i < l_grid.x1[2]; ++i) {
-                int new_i = pmod_lu(i, phys_grid_.x0[2], phys_grid_.x1[2]);
+                const int new_i = pmod_lu(i, phys_grid_.x0[2], phys_grid_.x1[2]);
         for (int j = l_grid.x0[1]; j < l_grid.x1[1]; ++j) {
             const int new_j = pmod_lu(j, phys_grid_.x0[1], phys_grid_.x1[1]);
             for (int k = l_grid.x0[0]; k < l_grid.x1[0]; ++k) {
-                int new_k = pmod_lu(k, phys_grid_.x0[0], phys_grid_.x1[0]);
+                const int new_k = pmod_lu(k, phys_grid_.x0[0], phys_grid_.x1[0]);
                 T_color l_color = get_color(t, new_i, new_j, new_k);
-                if (l_color != start_color)
-                    return CROSS_REGION;
+                l_o |= l_color; l_a &= l_color;
             }
         }
             }
@@ -693,7 +695,8 @@ struct Color_Region<3> {
             l_grid.x0[1] += l_grid.dx0[1]; l_grid.x1[1] += l_grid.dx1[1];
             l_grid.x0[2] += l_grid.dx0[2]; l_grid.x1[2] += l_grid.dx1[2];
         }
-        return start_color;
+        Homogeneity * l_h = new Homogeneity(l_o, l_a, sz_pgk_);
+        return (*l_h);
     }
 };
 

@@ -23,7 +23,7 @@
  --------------------------------------------------------------------------------
  -}
 
-module PBasicParser where
+module PGenBasicParser where
 
 import Text.ParserCombinators.Parsec
 import qualified Text.ParserCombinators.Parsec.Token as Token
@@ -35,9 +35,9 @@ import Data.Char
 import Data.List
 import qualified Data.Map as Map
 
-import PShow
-import PUtils
-import PData
+import PGenShow
+import PGenUtils
+import PGenData
 
 {- all the token parsers -}
 lexer :: Token.TokenParser st 
