@@ -123,7 +123,6 @@ pParseTileKernel =
  <|> do l_kernelName <- try $ identifier
         l_state <- getState
         case Map.lookup l_kernelName $ pKernel l_state of
-             -- Nothing -> return emptyTileKernel
              Nothing -> return $ SK emptyKernel { kName = l_kernelName }
              Just l_kernel -> return $ SK l_kernel 
 
@@ -137,27 +136,15 @@ ppArray l_id l_state =
                Just l_array -> 
                     do updateState $ updateArrayBoundary l_id True 
                        return ""
-{-
-                       return (breakline ++ l_id ++ ".Register_Boundary(" ++ l_boundaryFn ++ "); /* KNOWN Register_Boundary */" ++ breakline)
- -}
     <|> do try $ pMember "Register_Shape"
            l_shape <- parens identifier
            semi
            case Map.lookup l_id $ pArray l_state of
                Nothing -> return ""
-{-
-                          return (l_id ++ ".Register_Shape(" ++ l_shape ++ "); /* UNKNOWN Register_Shape with " ++ l_id ++ "*/" ++ breakline)
- -}
                Just l_pArray ->
                    case Map.lookup l_shape $ pShape l_state of
                        Nothing -> return ""
-{-
-                                  return (l_id ++ ".Register_Shape(" ++ l_shape ++ "); /* UNKNOWN Register_Shape with " ++ l_shape ++ "*/" ++ breakline)
- -}
                        Just l_pShape -> return ""
-{-
-                       return (breakline ++ l_id ++ ".Register_Shape(" ++ l_shape ++ "); /* KNOWN */" ++ breakline)
- -}
 
 ppStencil :: String -> ParserState -> GenParser Char ParserState String
 ppStencil l_id l_state = 
@@ -166,12 +153,6 @@ ppStencil l_id l_state =
            semi
            case Map.lookup l_id $ pStencil l_state of 
                Nothing -> return ""
-{-
-                          return (breakline ++ l_id ++ ".Register_Array(" ++ 
-                                  intercalate ", " l_arrays ++ 
-                                  "); /* UNKNOWN Register_Array with" ++ 
-                                  l_id ++ "*/" ++ breakline)
- -}
                Just l_stencil -> 
                     do let l_pArrayStatus = map (flip checkValidPArray l_state) l_arrays
                        let l_validPArray = foldr (&&) True $ map fst l_pArrayStatus
@@ -180,62 +161,31 @@ ppStencil l_id l_state =
                                   let l_revPArrays = map (flip fillToggleInPArray (sToggle l_stencil)) l_pArrays
                                   updateStencilArray l_id l_revPArrays
                                   return ""
-{-
-                                  return (breakline ++ l_id ++ 
-                                          ".Register_Array(" ++ 
-                                          intercalate ", " l_arrays ++ 
-                                          "); /* KNOWN */" ++ breakline)
- -}
                           else return ""
-{-
-                               return (breakline ++ l_id ++ 
-                                       ".Register_Array(" ++ 
-                                       intercalate ", " l_arrays ++ 
-                                       "); /* UNKNOWN Pochoir Array */" ++ breakline)
- -}
     <|> do try $ pMember "Gen_Plan_Obase"
            l_tstep <- parens exprStmtDim
            semi
-           return ""
-{-
-           return (l_id ++ ".Gen_Plan_Obase(" ++ show l_tstep ++ "); /* KNOWN */" ++ breakline)
- -}
+           case Map.lookup l_id $ pStencil l_state of
+               Nothing -> return ""
+               Just l_stencil -> 
+                    do updateState $ updatePGenPlan (l_id, l_stencil)
+                       return ""
     <|> do l_run_func <- try $ pMember "Run_Obase" <|> pMember "Run_Obase_Merge"
            l_tstep <- parens exprStmtDim
            semi
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return ""
-{- 
-                          return (breakline ++ l_id ++ "." ++ l_run_func ++ 
-                                  "(" ++ show l_tstep ++ ");" ++
-                                  " /* UNKNOWN Stencil " ++ l_id ++ " */" ++ 
-                                  breakline)
- -}
                Just l_stencil -> 
                           do let l_arrayInUse = sArrayInUse l_stencil
                              let l_regBound = foldr (||) False $ map (getArrayRegBound l_state) l_arrayInUse 
                              updateState $ updateStencilBoundary l_id l_regBound 
                              return ""
-{-
-                             return (breakline ++ l_id ++ "." ++ l_run_func ++
-                                     "(" ++ show l_tstep ++ ");" ++ 
-                                     "/* KNOWN */" ++ breakline)
- -}
     <|> do try $ pMember "Register_Tile_Kernels"
            -- the returned l_guard and l_tile are of type PGuard, PTile, respectively
            (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
            semi
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return ""
-{- 
-                          return (breakline ++ l_id ++ 
-                                  ".Register_Tile_Kernels(" ++ 
-                                  (gName l_guard) ++ 
-                                  (concat $ gComment l_guard) ++ ", " ++ 
-                                  (tName l_tile) ++ (tComment l_tile) ++ 
-                                  "); /* UNKNOWN Stencil " ++ 
-                                  l_id ++ "*/" ++ breakline)
- -}
                Just l_stencil ->
                    do let l_sRegTileKernel = sRegTileKernel l_stencil
                       let l_tile_order = pTileOrder l_state
@@ -254,13 +204,7 @@ ppStencil l_id l_state =
                       -- until 'Run', because we know the Register_Array
                       -- only after Register_Kernel
                       return ""
-{-
-                      return (breakline ++ l_id ++ ".Register_Tile_Kernels(" ++
-                              (gName l_guard) ++ 
-                              (concat $ gComment l_guard) ++ ", " ++ 
-                              (tName l_tile') ++ (tComment l_tile')  ++ 
-                              "); /* KNOWN */" ++ breakline)
--}
+                      
 -- get all iterators from Kernel
 transKernel :: PMode -> PStencil -> PKernelFunc -> PKernelFunc
 transKernel l_mode l_stencil l_kernelFunc =

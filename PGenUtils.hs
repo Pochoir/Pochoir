@@ -73,6 +73,10 @@ updatePStencil [] parserState = parserState
 updatePStencil pL@(p:ps) parserState =
     parserState { pStencil = foldr pMapInsert (pStencil parserState) pL }
 
+updatePGenPlan :: (PName, PStencil) -> ParserState -> ParserState
+updatePGenPlan p parserState =
+    parserState { pGenPlan = pMapInsert p (pGenPlan parserState) }
+
 updatePRange :: [(PName, PRange)] -> ParserState -> ParserState
 updatePRange [] parserState = parserState
 updatePRange pL@(p:ps) parserState =

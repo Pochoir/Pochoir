@@ -213,7 +213,9 @@ data ParserState = ParserState {
     pGuardFunc :: Map.Map PName PGuardFunc,
     pGuard :: Map.Map PName PGuard,
     pTile :: Map.Map PName PTile,
-    pTileOrder :: Int
+    pTileOrder :: Int,
+    pGenPlan :: Map.Map PName PStencil -- this is a snapshot of each PStencil object
+                                       -- at the time of calling Gen_Plan_Obase(T)
 } deriving Show
 
 data Expr = VAR String String 
