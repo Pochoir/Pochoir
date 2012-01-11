@@ -616,6 +616,7 @@ int main(int argc, char * argv[]) {
             output_p_u("p_u", t, P, p_uv, Nx-1, Ny-1);
     Pochoir_Kernel_2D_End(k_output_u, shape_wave_2D_u)
 
+#if 0
     wave_2D.Register_Exclusive_Tile_Kernels(g_interior, k_interior);
     wave_2D.Register_Exclusive_Tile_Kernels(g_lower_x, k_lower_x);
     wave_2D.Register_Exclusive_Tile_Kernels(g_upper_x, k_upper_x);
@@ -625,14 +626,37 @@ int main(int argc, char * argv[]) {
     wave_2D.Register_Exclusive_Tile_Kernels(g_lower_x_upper_y, k_lower_x_upper_y);
     wave_2D.Register_Exclusive_Tile_Kernels(g_upper_x_lower_y, k_upper_x_lower_y);
     wave_2D.Register_Exclusive_Tile_Kernels(g_upper_x_upper_y, k_upper_x_upper_y);
-    wave_2D.Register_Inclusive_Tile_Kernels(g_f_g, k_f_g);
+    // Original location
+    // wave_2D.Register_Inclusive_Tile_Kernels(g_f_g, k_f_g);
     wave_2D.Register_Exclusive_Tile_Kernels(g_vx_interior, k_vx_interior);
     wave_2D.Register_Exclusive_Tile_Kernels(g_vx_lower_x, k_vx_lower_x);
     wave_2D.Register_Exclusive_Tile_Kernels(g_vx_upper_x, k_vx_upper_x);
     wave_2D.Register_Exclusive_Tile_Kernels(g_vy_interior, k_vy_interior);
     wave_2D.Register_Exclusive_Tile_Kernels(g_vy_lower_y, k_vy_lower_y);
     wave_2D.Register_Exclusive_Tile_Kernels(g_vy_upper_y, k_vy_upper_y);
-    wave_2D.Register_Tiny_Inclusive_Tile_Kernels(g_output_u, k_output_u);
+    wave_2D.Register_Inclusive_Tile_Kernels(g_f_g, k_f_g);
+    wave_2D.Register_Inclusive_Tile_Kernels(g_output_u, k_output_u);
+#else
+    wave_2D.Register_Exclusive_Tile_Kernels(g_interior, k_interior);
+    wave_2D.Register_Exclusive_Tile_Kernels(g_lower_x, k_lower_x);
+    wave_2D.Register_Exclusive_Tile_Kernels(g_upper_x, k_upper_x);
+    wave_2D.Register_Exclusive_Tile_Kernels(g_lower_y, k_lower_y);
+    wave_2D.Register_Exclusive_Tile_Kernels(g_upper_y, k_upper_y);
+    wave_2D.Register_Exclusive_Tile_Kernels(g_lower_x_lower_y, k_lower_x_lower_y);
+    wave_2D.Register_Exclusive_Tile_Kernels(g_lower_x_upper_y, k_lower_x_upper_y);
+    wave_2D.Register_Exclusive_Tile_Kernels(g_upper_x_lower_y, k_upper_x_lower_y);
+    wave_2D.Register_Exclusive_Tile_Kernels(g_upper_x_upper_y, k_upper_x_upper_y);
+    // Original location
+    wave_2D.Register_Inclusive_Tile_Kernels(g_f_g, k_f_g);
+    wave_2D.Register_Inclusive_Tile_Kernels(g_vx_interior, k_vx_interior);
+    wave_2D.Register_Inclusive_Tile_Kernels(g_vx_lower_x, k_vx_lower_x);
+    wave_2D.Register_Inclusive_Tile_Kernels(g_vx_upper_x, k_vx_upper_x);
+    wave_2D.Register_Inclusive_Tile_Kernels(g_vy_interior, k_vy_interior);
+    wave_2D.Register_Inclusive_Tile_Kernels(g_vy_lower_y, k_vy_lower_y);
+    wave_2D.Register_Inclusive_Tile_Kernels(g_vy_upper_y, k_vy_upper_y);
+    // wave_2D.Register_Inclusive_Tile_Kernels(g_f_g, k_f_g);
+    wave_2D.Register_Inclusive_Tile_Kernels(g_output_u, k_output_u);
+#endif
     wave_2D.Register_Array(p_uv);
     for (int i = 0; i < Nx - 1; ++i)
         for (int j = 0; j < Ny - 1; ++j) {

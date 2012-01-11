@@ -39,6 +39,10 @@ updatePTileOrder :: Int -> ParserState -> ParserState
 updatePTileOrder l_tile_order parserState =
     parserState { pTileOrder = l_tile_order }
 
+updatePColorNum :: Int -> ParserState -> ParserState
+updatePColorNum l_color_num parserState =
+    parserState { pColorNum = l_color_num }
+
 updatePKernelFunc :: PKernelFunc -> ParserState -> ParserState
 updatePKernelFunc l_kernelFunc parserState =
     parserState { pKernelFunc = Map.insert (kfName l_kernelFunc) l_kernelFunc $ pKernelFunc parserState }
@@ -239,10 +243,11 @@ getKernelsTile l_indices l_index l_tile (SK l_kernel) =
     let ll_indices = l_indices ++ [l_index]
         ll_kernel_func = kFunc l_kernel
         ll_indices' = if null ll_indices then [] else init ll_indices
+        ll_indices'' = if null ll_indices' then [0] else ll_indices'
         l_gfunc = gFunc $ tOrigGuard l_tile
         l_tile_op = tOp l_tile
         l_tile_order = tOrder l_tile
-        ll_kernel = l_kernel { kIndex = ll_indices', kFunc = ll_kernel_func { kfGuardFunc = l_gfunc, kfTileOp = l_tile_op, kfTileOrder = l_tile_order } }
+        ll_kernel = l_kernel { kIndex = ll_indices'', kFunc = ll_kernel_func { kfGuardFunc = l_gfunc, kfTileOp = l_tile_op, kfTileOrder = l_tile_order } }
     in  [ll_kernel]
 getKernelsTile l_indices l_index l_tile (LK l_tKs@(t:ts)) =
     let ll_indices = l_indices ++ [l_index]
@@ -450,7 +455,7 @@ pGetOverlapGuardName l_pGuard =
 
 pGetAllIGuardTiles :: Int -> [String] -> [(PGuard, PTile)] -> [PTile] -> [(PGuard, [PTile])]
 pGetAllIGuardTiles l_rank l_condStr [] l_tiles =
-    let l_pGuard = PGuard { gName = "__" ++ (intercalate "_" l_condStr) ++ "__", gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr, gOrder = 0 }
+    let l_pGuard = PGuard { gName = "__" ++ (intercalate "_" l_condStr) ++ "__", gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr, gOrder = 0, gTileOrder = 0 }
         l_tiles' = map (pSetTileOp PSERIAL) l_tiles
     in  [(l_pGuard, l_tiles')]
 pGetAllIGuardTiles l_rank l_condStr l_iGTs@(i:is) l_tiles =
@@ -697,13 +702,4 @@ rename :: String -> String -> String
 rename pSuffix fname = name ++ pSuffix ++ ".cpp"
     where (name, suffix) = break ('.' ==) fname
 
-substitute :: String -> String -> String -> String
-substitute src dest [] = []
-substitute src dest str = loopSearch str
-    where loopSearch [] = []
-          loopSearch str = let n = length src
-                               (prefix, rest) = splitAt n str
-                           in  if prefix == src
-                                  then dest ++ loopSearch rest
-                                  else head str : loopSearch (tail str)
 

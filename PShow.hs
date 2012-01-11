@@ -699,7 +699,7 @@ pShowAutoTileComments l_ts =
 pShowAllCondTileOverlapSerialKernel :: (PKernelFunc -> String) -> [PKernelFunc] -> String
 pShowAllCondTileOverlapSerialKernel _ [] = ""
 pShowAllCondTileOverlapSerialKernel l_showSingleKernel l_kL@(k:ks) =
-    breakline ++ l_showSingleKernel k ++
+    breakline ++ "{" ++ breakline ++ l_showSingleKernel k ++ breakline ++ "}" ++
     breakline ++ pShowAllCondTileOverlapSerialKernel l_showSingleKernel ks
 
 pShowAllCondTileOverlapInclusiveKernel :: (PKernelFunc -> String) -> TileOp -> [PKernelFunc] -> String
@@ -1638,7 +1638,7 @@ pShowMacroStmt l_bound l_kernel =
         l_undef_macro = pUndefMacroArrayInUse l_arrayInUse l_params
     in  breakline ++ l_def_macro ++
         breakline ++ (show . kfStmt) l_kernel ++
-        breakline ++ l_undef_macro
+        breakline ++ l_undef_macro 
 
 pShowCPointerStmt :: PKernelFunc -> String
 pShowCPointerStmt l_kernel = 
@@ -1737,7 +1737,7 @@ pShowPointerStmt global l_kernel =
     let oldStmts = kfStmt l_kernel
         l_iter = kfIter l_kernel
         obaseStmts = transStmts oldStmts $ transPointer global l_iter
-    in show obaseStmts
+    in  show obaseStmts
 
 pShowObaseStmt :: PKernelFunc -> String
 pShowObaseStmt l_kernel = 

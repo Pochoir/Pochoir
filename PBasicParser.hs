@@ -178,7 +178,7 @@ ppStencil l_id l_state =
            l_tstep <- parens exprStmtDim
            semi
            let l_ret = l_id ++ ".Gen_Plan(" ++ show l_tstep ++ "); /* known */" ++ breakline
-           return (l_ret, "")
+           return (l_ret, l_ret)
     -- Ad hoc implementation of Run_Unroll
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
@@ -208,9 +208,11 @@ ppStencil l_id l_state =
                           in  return (l_ret, "")
                Just l_stencil ->
                    do let l_sRegTileKernel = sRegTileKernel l_stencil
-                      let l_tile' = l_tile { tOrigGuard = l_guard }
+                      let l_tile_order = pTileOrder l_state
+                      let l_tile' = l_tile { tOrigGuard = l_guard { gTileOrder = l_tile_order }, tOrder = l_tile_order }
                       let l_rev_sRegTileKernel = l_sRegTileKernel ++ 
                                                  [(l_guard, l_tile')]
+                      updateState $ updatePTileOrder $ l_tile_order + 1
                       updateState $ updateTileOrigGuard (tName l_tile) l_guard
                       updateState $ updateStencilRegTileKernel l_id l_rev_sRegTileKernel
                       let l_pShapes = map kShape $ getTileKernels l_tile'

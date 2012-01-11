@@ -28,7 +28,7 @@ heat_1D_NP : tb_heat_1D_NP.cpp
 
 heat_NP : tb_heat_2D_NP.cpp
 #   Phase-II compilation
-	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} -split-caching tb_heat_2D_NP.cpp
+	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS}  tb_heat_2D_NP.cpp
 #	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} tb_heat_2D_NP.cpp
 #	${CC} -o tb_heat_2D_NP_pochoir ${OPT_FLAGS} -split-c-pointer tb_heat_2D_NP.cpp
 #	${ICC} -o heat_2D_NP ${ICC_DEBUG_FLAGS} tb_heat_2D_NP_pochoir.cpp
@@ -44,8 +44,8 @@ heat_NP_zero : tb_heat_2D_NP_zero.cpp
 
 heat_P : tb_heat_2D_P.cpp
 #   Phase-II compilation
-#	${CC} -o heat_2D_P ${OPT_FLAGS} -all-cond-tile-macro tb_heat_2D_P.cpp
-	${ICC} -o heat_2D_P_gdb ${ICC_DEBUG_FLAGS} tb_heat_2D_P_pochoir.cpp
+	${CC} -o heat_2D_P ${OPT_FLAGS} -all-cond-tile-pointer tb_heat_2D_P.cpp
+#	${ICC} -o heat_2D_P_gdb ${ICC_DEBUG_FLAGS} tb_heat_2D_P_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_2D_P_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_P.cpp
 
@@ -67,7 +67,7 @@ animwave_irregular : tb_animwave_irregular.cpp tb_animwave_irregular_pochoir.cpp
 
 diamond : tb_diamond.cpp # tb_diamond_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o diamond ${OPT_FLAGS} tb_diamond.cpp
+	${CC} -o diamond ${OPT_FLAGS} -unroll-t-tile-pointer tb_diamond.cpp
 #	${CC} -o diamond ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_diamond.cpp
 #	${ICC} -o diamond ${OPT_FLAGS} tb_diamond_pochoir.cpp
 #	${ICC} -o diamond_gdb ${ICC_DEBUG_FLAGS} tb_diamond_pochoir.cpp
@@ -118,12 +118,12 @@ tile_2D : tb_tile_2D.cpp # tb_tile_2D_pochoir.cpp
 
 tile_3D : tb_tile_3D.cpp # tb_tile_3D_pochoir.cpp 
 #   Phase-II compilation
-#	${CC} -o tile_3D ${OPT_FLAGS} -unroll-t-tile-pointer tb_tile_3D.cpp
+	${CC} -o tile_3D ${OPT_FLAGS} -unroll-t-tile-pointer tb_tile_3D.cpp
 #	${ICC} -o tile_3D_gdb ${ICC_DEBUG_FLAGS} tb_tile_3D_pochoir.cpp
 #	${CC} -o tile_3D ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_tile_3D.cpp
 #	${ICC} -o tile_3D ${OPT_FLAGS} tb_tile_3D_pochoir.cpp
 #	Phase-I compilation with debugging aid
-	${CC} -o tile_3D ${POCHOIR_DEBUG_FLAGS} tb_tile_3D.cpp 
+#	${CC} -o tile_3D ${POCHOIR_DEBUG_FLAGS} tb_tile_3D.cpp 
 #	${ICC} -o tile_3D ${OPT_FLAGS} tb_tile_3D.cpp 
 
 wave_2D : tb_wave_2D.cpp # tb_wave_2D_pochoir.cpp 

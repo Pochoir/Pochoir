@@ -136,7 +136,8 @@ data PGuard = PGuard {
     gName :: PName,
     gRank :: Int,
     gFunc :: PGuardFunc,
-    gOrder :: Int,
+    gOrder :: Int, -- the order in generated code (filled by Pochoir compiler)
+    gTileOrder :: Int, -- the registered order (specified by user)
     gComment :: [String]
 } deriving Show
 
@@ -182,7 +183,7 @@ emptyGuardFunc :: PGuardFunc
 emptyGuardFunc = PGuardFunc { gfName = "", gfParams = [], gfStmt = [], gfStmtSize = 0, gfIter = [], gfComment = cEmpty "Pochoir_Guard_Func" }
 
 emptyGuard :: PGuard
-emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc, gComment = [], gOrder = 0 }
+emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc, gComment = [], gOrder = 0, gTileOrder = 0 }
 
 emptyTileKernel :: PTileKernel
 emptyTileKernel = LK [] 
@@ -216,7 +217,8 @@ data ParserState = ParserState {
     pGuardFunc :: Map.Map PName PGuardFunc,
     pGuard :: Map.Map PName PGuard,
     pTile :: Map.Map PName PTile,
-    pTileOrder :: Int
+    pTileOrder :: Int,
+    pColorNum :: Int
 } deriving Show
 
 data Expr = VAR String String 

@@ -90,7 +90,7 @@ int main(int argc, char * argv[])
     b.Register_Shape(oned_3pt);
     b.Register_Boundary(periodic_1D);
 
-    Pochoir_Guard_1D(guard_interior, t, i)
+    Pochoir_Guard_1D_Begin(guard_interior, t, i)
         /* (T/2) / (N/2) = T / N */
         float _slope = float(T) / (N);
         if ((t <= T/2 && i > N/2 && float(t)/(i - N/2) < _slope) ||
@@ -100,11 +100,11 @@ int main(int argc, char * argv[])
             return false;
         else
             return true;
-    Pochoir_Guard_End
+    Pochoir_Guard_1D_End(guard_interior)
 
-    Pochoir_Guard_1D(guard_exterior, t, i)
+    Pochoir_Guard_1D_Begin(guard_exterior, t, i)
         return (!guard_interior(t, i));
-    Pochoir_Guard_End
+    Pochoir_Guard_1D_End(guard_exterior)
 
     Pochoir_Kernel_1D_Begin(interior_0, t, i)
         a(t, i) = 0.1 * a(t-1, i-1) + 0.15 * a(t-1, i) + 0.189 * a(t-1, i+1) + 0.8;
@@ -126,8 +126,10 @@ int main(int argc, char * argv[])
         a(t, i) = 0.2 * a(t-1, i-1) - 0.25 * a(t-1, i) - 0.289 * a(t-1, i+1) - 0.8;
     Pochoir_Kernel_1D_End(exterior_1, shape_exterior_1)
 
-    leap_frog.Register_Stagger_Kernels(guard_interior, interior_0, interior_1, interior_2);
-    leap_frog.Register_Stagger_Kernels(guard_exterior, exterior_0, exterior_1);
+    Pochoir_Kernel<1> tile_interior[3] = {interior_0, interior_1, interior_2};
+    Pochoir_Kernel<1> tile_exterior[2] = {exterior_0, exterior_1};
+    leap_frog.Register_Tile_Kernels(guard_interior, tile_interior);
+    leap_frog.Register_Tile_Kernels(guard_exterior, tile_exterior);
     leap_frog.Register_Array(a);
 
     /* initialization */
@@ -138,7 +140,7 @@ int main(int argc, char * argv[])
 
     Pochoir_Plan<1> & l_plan = leap_frog.Gen_Plan(T);
     sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat", N, T);
-    leap_frog.Store_Plan(l_plan, pochoir_plan_file_name);
+    leap_frog.Store_Plan(pochoir_plan_file_name, l_plan);
     Pochoir_Plan<1> & ll_plan = leap_frog.Load_Plan(pochoir_plan_file_name);
 
     for (int times = 0; times < TIMES; ++times) {

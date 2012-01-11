@@ -39,7 +39,7 @@ import Data.List
 import qualified Data.Map as Map
 
 -- first pass will be gathering the info
--- second pass will do the real transformation
+-- second pass will do the real transformation/code generation
 pParser :: GenParser Char ParserState String
 pParser = do tokens0 <- many $ pToken
              eof
@@ -82,12 +82,7 @@ pParsePochoirArray =
        l_delim <- pDelim 
        updateState $ updatePArray $ transPArray (l_type, l_rank) l_arrayDecl
        return ""
-{-
-       return (breakline ++ "Pochoir_Array <" ++ show l_type ++ 
-               ", " ++ show l_rank ++ "> " ++ 
-               pShowDynamicDecl l_arrayDecl pShowArrayDim ++ 
-               l_delim ++ "/* KNOWN */" ++ breakline)
--}
+
 pParsePochoirStencil :: GenParser Char ParserState String
 pParsePochoirStencil = 
     do reserved "Pochoir"
@@ -98,11 +93,7 @@ pParsePochoirStencil =
        let l_stencils = map pSecond l_rawStencils
        updateState $ updatePStencil $ transPStencil l_rank l_stencils
        return ""
-{-
-       return (breakline ++ "Pochoir <" ++ show l_rank ++ 
-               "> " ++ pShowDynamicDecl l_rawStencils (showString "") ++ 
-               l_delim ++ "/* KNOWN */" ++ breakline)
- -}
+
 pParsePochoirKernel :: GenParser Char ParserState String
 pParsePochoirKernel =
     do reserved "Pochoir_Kernel"
@@ -119,24 +110,11 @@ pParsePochoirKernel =
             Just l_pShape ->
                 case Map.lookup l_kernelFunc $ pKernelFunc l_state of
                      Nothing -> return ""
-{-
-                                return (breakline ++ "Pochoir_Kernel <" ++ 
-                                        show l_rank ++ "> " ++ l_name ++ 
-                                        "(" ++ l_shape ++ ", " ++ 
-                                        l_kernelFunc ++ 
-                                        "); /* UNKNOWN Kernel Func */ " ++ 
-                                        breakline)
- -}
                      Just l_pKernelFunc -> 
                           do let l_kernel = PKernel { kName = l_name, kRank = l_rank, kShape = l_pShape, kFunc = l_pKernelFunc { kfShape = l_pShape, kfName = l_name }, kIndex = [], kComment = "" }
                              updateState $ updatePKernel l_kernel
                              return ""
-{-
-                             return (breakline ++ "Pochoir_Kernel <" ++ 
-                                     show l_rank ++ "> " ++ l_name ++ "(" ++ 
-                                     l_kernelFunc ++ ", " ++
-                                     l_shape ++ "); /* KNOWN */" ++ breakline)
--}
+
 pParsePochoirTile :: GenParser Char ParserState String
 pParsePochoirTile =
     do reserved "Pochoir_Kernel"
@@ -150,16 +128,7 @@ pParsePochoirTile =
        let l_kernels = getTileKernels l_tile
        updateState $ updatePTile l_tile
        return ""
-{-
-       return (breakline ++ "Pochoir_Kernel <" ++ show l_rank ++ "> " ++ 
-               l_name ++ pShowArrayDims l_sizes ++ " = " ++ 
-               show l_tile_kernel ++ ";" ++ " /* KNOWN */" ++ breakline ++ 
-               "/* " ++ 
-               (intercalate "; " $ 
-                    zipWith (++) (map kName l_kernels) 
-                                 (map (show . kIndex) l_kernels)) ++
-               " */" ++ breakline)
- -}
+
 pParsePochoirGuard :: GenParser Char ParserState String
 pParsePochoirGuard =
     do reserved "Pochoir_Guard"
@@ -170,20 +139,11 @@ pParsePochoirGuard =
        l_state <- getState
        case Map.lookup l_guardFunc $ pGuardFunc l_state of
             Nothing -> return ""
-{-
-                       return (breakline ++ "Pochoir_Guard <" ++ show l_rank ++
-                               "> " ++ l_name ++ "(" ++ l_guardFunc ++ 
-                               "); /* UNKNOWN Guard Func */" ++ breakline)
- -}
             Just l_pGuardFunc -> 
                  do let l_guard = emptyGuard { gName = l_name, gRank = l_rank, gFunc = l_pGuardFunc { gfName = l_name } }
                     updateState $ updatePGuard l_guard
                     return ""
-{-
-                    return (breakline ++ "Pochoir_Guard <" ++ show l_rank ++
-                            "> " ++ l_name ++ "(" ++ l_guardFunc ++ 
-                            "); /* KNOWN */" ++ breakline)
--}
+
 pParsePochoirShapeInfo :: GenParser Char ParserState String
 pParsePochoirShapeInfo = 
     do reserved "Pochoir_Shape"
@@ -204,9 +164,6 @@ pParsePochoirShapeInfo =
                               shape = l_shapes, shapeComment = ""}
        updateState $ updatePShape l_pShape
        return ""
-{-
-       return (breakline ++ show l_pShape ++ breakline)
- -}
 
 pParsePochoirDomain :: GenParser Char ParserState String
 pParsePochoirDomain =
@@ -215,10 +172,7 @@ pParsePochoirDomain =
        semi
        updateState $ updatePRange $ transURange l_rangeDecl
        return ""
-{-
-       return (breakline ++ "Pochoir_Domain " ++ 
-               pShowDynamicDecl l_rangeDecl pShowArrayDim ++ ";\n")
--}
+
 pParsePochoirArrayMember :: GenParser Char ParserState String
 pParsePochoirArrayMember =
     do l_id <- try (pIdentifier)
@@ -235,13 +189,9 @@ pParseCPPComment :: GenParser Char ParserState String
 pParseCPPComment =
         do try (string "/*")
            str <- manyTill anyChar (try $ string "*/")
-           -- return ("/* comment */")
-           -- return ("/*" ++ str ++ "*/")
            return ""
     <|> do try (string "//")
            str <- manyTill anyChar (try $ eol)
-           -- return ("// comment\n")
-           -- return ("//" ++ str ++ "\n")
            return ""
 
 pParsePochoirAutoKernelFunc :: GenParser Char ParserState String
@@ -269,9 +219,6 @@ pParsePochoirAutoKernelFunc =
                                         kfTileOrder = 0, kfComment = "" }
        updateState $ updatePKernelFunc l_kernelFunc
        return ""
-{-
-       return (breakline ++ pShowAutoKernelFunc l_kernel_name l_kernelFunc ++ breakline) 
- -}
 
 pParsePochoirAutoGuardFunc :: GenParser Char ParserState String
 pParsePochoirAutoGuardFunc =
@@ -290,9 +237,6 @@ pParsePochoirAutoGuardFunc =
                                       gfIter = [], gfComment = "" }
        updateState $ updatePGuardFunc l_guardFunc
        return ""
-{-
-       return (breakline ++ pShowAutoGuardFunc l_guard_name l_guardFunc ++ breakline) 
- -}
 
 transPArray :: (PType, Int) -> [([PName], PName, [DimExpr])] -> [(PName, PArray)]
 transPArray (l_type, l_rank) [] = []

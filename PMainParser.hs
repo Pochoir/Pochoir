@@ -165,11 +165,10 @@ pParsePochoirTile =
        l_tile_kernel <- pParseTileKernel
        semi
        l_state <- getState
-       let l_tile_order = pTileOrder l_state
-       let l_tile = PTile { tName = l_name, tRank = l_rank, tSize = l_sizes, tKernel = l_tile_kernel, tComment = "", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = l_tile_order }
+       -- We should defer the order to register_tile_x functions
+       let l_tile = PTile { tName = l_name, tRank = l_rank, tSize = l_sizes, tKernel = l_tile_kernel, tComment = "", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = 0 }
        let l_kernels = getTileKernels l_tile
        updateState $ updatePTile l_tile
-       updateState $ updatePTileOrder $ l_tile_order + 1
        let l_ret = 
             breakline ++ "Pochoir_Kernel <" ++ show l_rank ++ "> " ++ 
             l_name ++ pShowArrayDims l_sizes ++ " = " ++ 

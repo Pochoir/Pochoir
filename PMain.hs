@@ -114,7 +114,7 @@ getPPFile :: String -> String
 getPPFile fname = name ++ ".i"
     where (name, suffix) = break ('.' ==) fname
 
-pInitState = ParserState { pMode = PCaching, pInFile = "", pInDir = "", pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0 }
+pInitState = ParserState { pMode = PCaching, pInFile = "", pInDir = "", pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0, pColorNum = 0 }
 
 -- icc = "g++"
 icc = "icpc"
