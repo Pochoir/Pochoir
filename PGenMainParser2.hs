@@ -37,53 +37,80 @@ import PGenData
 import PGenShow
 -- import Text.Show
 import Data.List
+import Data.Bits
 import qualified Data.Map as Map
 
-pToken1 :: GenParser Char ParserState String
-pToken1 = 
-        try pParsePochoirStencilMember1
---    <|> try pParsePochoirKernel1
-    <|> do ch <- anyChar
-           return [ch]
-    <?> "line"
+pCodeGen :: PMode -> [Homogeneity] -> PStencil -> (String, [(PGuard, [PTile])])
+pCodeGen l_mode l_color_vectors l_stencil = 
+    let -- we are assuming that all guards and kernels are of the same rank
+        l_reg_GTs = sRegTileKernel l_stencil
+        l_rank = if length l_reg_GTs > 0
+                    then gRank $ fst $ head l_reg_GTs
+                    else 0
+        l_guardTiles = pGetGuardTiles l_mode l_rank l_color_vectors l_reg_GTs
+        l_guards = map (pShowAutoGuardString " && ") l_guardTiles
+        l_guardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_guardTiles
+        l_tiles = map (pShowAutoTileString l_mode l_stencil) l_guardTiles
+        l_str_GTs = zipWith (++) l_guards l_tiles
+    in  (breakline ++ pShowHeader ++ 
+            breakline ++ pShowColorVectors l_color_vectors ++ 
+            breakline ++ concat l_str_GTs, 
+            l_guardTiles)
 
-pParsePochoirStencilMember1 :: GenParser Char ParserState String
-pParsePochoirStencilMember1 =
-    do l_id <- try (pIdentifier)
-       l_state <- getState
-       try $ ppStencil1 l_id l_state
+pShowColorVectors :: [Homogeneity] -> String 
+pShowColorVectors l_color_vectors = 
+    breakline ++ "/* " ++ 
+    breakline ++ show l_color_vectors ++ 
+    breakline ++ " */" ++ breakline
 
-pParsePochoirKernel1 :: GenParser Char ParserState String
-pParsePochoirKernel1 =
-    do reserved "Pochoir_Kernel"
-       l_rank <- angles pDeclStaticNum
-       l_name <- identifier
-       (l_shape, l_kernelFunc) <- parens pPochoirKernelParams
-       semi
-       l_state <- getState
-       case Map.lookup l_shape $ pShape l_state of
-            Nothing -> return (breakline ++ "Pochoir_Kernel <" ++ show l_rank ++ 
-                               "> " ++ l_name ++ "(" ++ l_shape ++ 
-                               "/* UNKNOWN shape */, " ++ l_kernelFunc ++ ");" ++ 
-                               breakline)
-            Just l_pShape ->
-                case Map.lookup l_kernelFunc $ pKernelFunc l_state of
-                     Nothing -> return (breakline ++ "Pochoir_Kernel <" ++
-                                        show l_rank ++ "> " ++ l_name ++ "(" ++
-                                        l_shape ++ ", " ++ l_kernelFunc ++
-                                        "/* UNKNOWN kernel func */);" ++ breakline)
-                     Just l_pKernelFunc ->
-                          do -- If everything is OK, we will generate a 
-                             -- Pochoir_Obase_Kernel object later on
-                             return (breakline ++ "Pochoir_Kernel <" ++
-                                     show l_rank ++ "> " ++ l_name ++ "(" ++
-                                     l_shape ++ ", " ++ l_kernelFunc ++
-                                     "); /* KNOWN Pochoir_Kernel */" ++ breakline)
-                             -- Found an ICC bug. with following return value,
-                             -- if compiled with -O0, it's correct,
-                             -- if compiled with -O1, it will have 'segmentation fault'
-                             -- if compiled with -O2/-O3, it will have wrong results
-                             -- return ("breakline ++ /* KNOWN Pochoir_Kernel */" ++
-                             --          breakline)
+pGetGuardTiles :: PMode -> Int -> [Homogeneity] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
+pGetGuardTiles _ _ [] _ = []
+pGetGuardTiles l_mode l_rank cL@(c:cs) l_reg_GTs =
+    let l_len = size c
+        l_gts = pGetGuardTilesTerm l_mode l_rank c l_reg_GTs  
+    in  [l_gts] ++ pGetGuardTiles l_mode l_rank cs l_reg_GTs
 
-   
+pGetGuardTilesTerm :: PMode -> Int -> Homogeneity -> [(PGuard, PTile)] -> (PGuard, [PTile])
+pGetGuardTilesTerm l_mode l_rank l_color l_reg_GTs =
+    let l_len = size l_color
+        l_guards = map fst l_reg_GTs
+        l_guards' = zipWith pFillGuardOrder [0..] l_guards
+        l_out_guard = foldr (pColorGuard l_rank l_color) emptyGuard l_guards'
+        l_tiles = map snd l_reg_GTs
+        l_tiles' = zipWith pFillTileOrder [0..] l_tiles
+        l_out_tiles = foldr (pColorTile l_rank l_color) [emptyTile] l_tiles'
+    in  (l_out_guard, l_out_tiles)
+
+pColorGuard :: Int -> Homogeneity -> PGuard -> PGuard -> PGuard
+pColorGuard l_rank l_color l_old_guard_l l_old_guard_r =
+    let l_idx = gOrder l_old_guard_l
+        l_condStr = 
+            if testBit (o l_color) l_idx && testBit (a l_color) l_idx
+               then [gName l_old_guard_l] ++ gComment l_old_guard_r 
+               else if (not $ testBit (o l_color) l_idx) && 
+                        (not $ testBit (a l_color) l_idx)
+                       then ["!" ++ gName l_old_guard_l] ++ gComment l_old_guard_r
+                       else gComment l_old_guard_r
+    in  PGuard { gName = pSys $ intercalate "_" l_condStr, gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr, gOrder = 0 }
+                            
+pColorTile :: Int -> Homogeneity -> PTile -> [PTile] -> [PTile]
+pColorTile l_rank l_color l_old_tile_l l_old_tiles_r =
+    let l_idx = tOrder l_old_tile_l
+        l_tiles = 
+            if testBit (o l_color) l_idx && testBit (a l_color) l_idx
+               then let l_new_tile_l = pSetTileOp PSERIAL l_old_tile_l
+                    in  [l_new_tile_l] ++ l_old_tiles_r
+               else if (testBit (o l_color) l_idx) &&
+                        (not $ testBit (a l_color) l_idx)
+                       then let l_new_tile_l = pSetTileOp PINCLUSIVE l_old_tile_l
+                            in  [l_new_tile_l] ++ l_old_tiles_r
+                       else l_old_tiles_r
+    in  l_tiles
+
+pShowHeader :: String
+pShowHeader = 
+    breakline ++ "#include <cstdio>" ++
+    breakline ++ "#include <cstdlib>" ++
+    breakline ++ "#include <cassert>" ++
+    breakline ++ "#include <functional>" ++
+    breakline ++ "#include <dlfcn.h>" ++ breakline 

@@ -61,11 +61,6 @@ data Homogeneity = Homogeneity {
     a :: Int  -- bit-wise and of the color vector
 } deriving Eq
 
-data PMacro = PMacro {
-    mName :: PName,
-    mValue :: PValue
-} deriving Show
-
 data PArray = PArray {
     aName :: PName,
     aType :: PType,
@@ -84,10 +79,7 @@ data PStencil = PStencil {
     sTimeShift :: Int,
     sArrayInUse :: [PArray],
     sShape :: PShape,
-    sRegStaggerKernel :: [(PGuard, [PKernel])],
-    sRegTileKernel :: [(PGuard, PTile)], -- exclusive_if's
-    sRegInclusiveTileKernel :: [(PGuard, PTile)], -- inclusive_if's
-    sRegTinyInclusiveTileKernel :: [(PGuard, PTile)], -- tiny_inclusive_if's
+    sRegTileKernel :: [(PGuard, PTile)], -- the original user registered (guard, tile) pair
     sRegBound :: Bool,
     sComment :: String
 } deriving Show
@@ -211,7 +203,7 @@ cEmpty l_name = "/* Empty " ++ l_name ++ " */"
 
 data ParserState = ParserState {
     pMode  :: PMode,
-    pMacro :: Map.Map PName PValue, 
+    pColorVectors :: [Homogeneity],
     pArray :: Map.Map PName PArray,
     pStencil :: Map.Map PName PStencil,
     pRange :: Map.Map PName PRange,

@@ -693,3 +693,17 @@ checkValidPArray l_array l_state =
 fillToggleInPArray :: PArray -> Int -> PArray
 fillToggleInPArray l_pArray l_toggle = l_pArray { aToggle = l_toggle }
 
+rename :: String -> String -> String
+rename pSuffix fname = name ++ pSuffix ++ ".cpp"
+    where (name, suffix) = break ('.' ==) fname
+
+substitute :: String -> String -> String -> String
+substitute src dest [] = []
+substitute src dest str = loopSearch str
+    where loopSearch [] = []
+          loopSearch str = let n = length src
+                               (prefix, rest) = splitAt n str
+                           in  if prefix == src
+                                  then dest ++ loopSearch rest
+                                  else head str : loopSearch (tail str)
+

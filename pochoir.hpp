@@ -131,7 +131,7 @@ class Pochoir {
     void Run(int timestep);
     void Run_Obase(int timestep);
     Pochoir_Plan<N_RANK> & Gen_Plan(int timepstep);
-    Pochoir_Plan<N_RANK> & Gen_Plan_Obase(int timepstep, const char * src_fname);
+    Pochoir_Plan<N_RANK> & Gen_Plan_Obase(int timepstep, const char * pochoir_mode, const char * color_vector_fname, const char * kernel_info_fname);
     Pochoir_Plan<N_RANK> & Load_Plan(const char * file_name);
     void Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & _plan);
     void Run(Pochoir_Plan<N_RANK> & _plan);
@@ -515,7 +515,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
 }
 
 template <int N_RANK> 
-Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char * src_fname) {
+Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char * pochoir_mode, const char * color_vector_fname, const char * kernel_info_fname) {
     /* we don't squeeze out the NONE_EXCLUSIVE_IFS in Gen_Plan, 
      * but do in Gen_Plan_Obase
      */
@@ -576,11 +576,6 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     Vector_Info< Homogeneity > & l_color_vector = algor.get_color_vector();
     Homogeneity * white_clone = NULL;
 
-    char color_vector_fname[100];
-    const int l_src_fname_len = strlen(src_fname);
-    strncpy(color_vector_fname, src_fname, l_src_fname_len-4);
-    strcat(color_vector_fname, "_color.dat");
-
     if (l_color_vector.size() > 0)
         white_clone = new Homogeneity(l_color_vector[0].size());
     else
@@ -594,6 +589,16 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
         exit(EXIT_FAILURE);
     }
     os_color_vector.close();
+
+    char cmd[200];
+    sprintf(cmd, "./genkernels %s %s %s\0", pochoir_mode, color_vector_fname, kernel_info_fname);
+    fprintf(stderr, "%s\n", cmd);
+    int ret = system(cmd);
+    if (ret == -1) {
+        fprintf(stderr, "system() call failed!\n");
+        exit(EXIT_FAILURE);
+    }
+    fprintf(stderr, "./genkernels exits!\n");
 
     return (*l_plan);
 }

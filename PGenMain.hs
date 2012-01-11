@@ -53,10 +53,11 @@ main = do args <- getArgs
              colorh <- openFile color_file ReadMode
              colorVectors <- pParseColorFile colorh
              hClose colorh
---             kernelh <- openFile kernel_file ReadMode
---             genKernel_file = substitute "kernel_info" "gen_kernel" kernel_file
---             genKernelh <- openFile genKernel_file WriteMode
---             pGenKernel mode colorVectors kernelh genKernelh
+             kernelh <- openFile kernel_file ReadMode
+             let genKernel_file = pSubstitute "kernel_info" "gen_kernel" kernel_file
+             genKernelh <- openFile genKernel_file WriteMode
+             pGenKernel mode colorVectors kernelh genKernelh
+             hClose genKernelh
           whilst (showFile == False) $ do
              removeFile color_file 
              removeFile kernel_file
@@ -65,21 +66,7 @@ whilst :: Bool -> IO () -> IO ()
 whilst True action = action
 whilst False action = return () 
 
-rename :: String -> String -> String
-rename pSuffix fname = name ++ pSuffix ++ ".cpp"
-    where (name, suffix) = break ('.' ==) fname
-
-substitute :: String -> String -> String -> String
-substitute src dest [] = []
-substitute src dest str = loopSearch str
-    where loopSearch [] = []
-          loopSearch str = let n = length src
-                               (prefix, rest) = splitAt n str
-                           in  if prefix == src
-                                  then dest ++ loopSearch rest
-                                  else head str : loopSearch (tail str)
-
-pInitState = ParserState { pMode = PDefault, pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0 }
+pInitState = ParserState { pMode = PDefault, pColorVectors = [], pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0 }
 
 icc = "icpc"
 
@@ -226,21 +213,21 @@ findFileBySuffix (a:as) suffix
 
 printUsage :: IO ()
 printUsage =
-    do putStrLn ("Usage: genkernels [kernel_info_file] [color_info_file]")
+    do putStrLn ("Usage: genkernels [OPTION] [KERNEL_INFO_FILE] [COLOR_INFO_FILE]")
        putStrLn ("Try `genkernels --help' for more options.")
 
 printOptions :: IO ()
 printOptions = 
-    do putStrLn ("Usage: genkernels [kernel_info_file] [color_info_file]")
+    do putStrLn ("Usage: genkernels [OPTION] [KERNEL_INFO_FILE] [COLOR_INFO_FILE]")
        putStrLn ("Run the genkernels with kernel_info and color_info.")
 
-pProcess :: PMode -> Handle -> Handle -> IO ()
-pProcess mode inh outh = 
-    do ls <- hGetContents inh
-       let pRevInitState = pInitState { pMode = mode }
+pGenKernel :: PMode -> [Homogeneity] -> Handle -> Handle -> IO ()           
+pGenKernel mode colorVectors kernelh genKernelh = 
+    do ls <- hGetContents kernelh
+       let pRevInitState = pInitState { pMode = mode, pColorVectors = colorVectors }
        case runParser pParser pRevInitState "" $ stripWhite ls of
            Left err -> print err
-           Right str -> hPutStrLn outh str
+           Right str -> hPutStrLn genKernelh str
 
 pParseColorFile :: Handle -> IO [Homogeneity]
 pParseColorFile colorh =
@@ -258,12 +245,9 @@ pParseColor = many $ parens pColor
 
 pColor :: Parser Homogeneity
 pColor = 
-    do orStr <- pBinValue 
+    do orStr <- many digit 
        comma
-       andStr <- pBinValue 
+       andStr <- many digit 
        let l_homo = Homogeneity { size = length orStr, o = pBinToDec orStr, a = pBinToDec andStr }
        return l_homo
-
-pBinValue :: Parser String
-pBinValue = many digit
 

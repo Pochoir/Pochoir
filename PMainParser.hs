@@ -55,35 +55,46 @@ pToken :: GenParser Char ParserState (String, String)
 pToken = 
         do l_ret <- try pParseCPPComment
            return (l_ret, "")
-    <|> do l_ret <- try pParseMacro
-           return (l_ret, "")
-    <|> try pParsePochoirArray
+    <|> do l_ret <- try pIncludeFile
+           return (l_ret, l_ret)
+    <|> do l_ret <- try pParsePochoirArray
+           return (l_ret, l_ret)
     <|> do l_ret <- try pParsePochoirStencil
-           return (l_ret, "")
+           return (l_ret, l_ret)
     <|> do l_ret <- try pParsePochoirShapeInfo
-           return (l_ret, "")
+           return (l_ret, l_ret)
     <|> do l_ret <- try pParsePochoirDomain
-           return (l_ret, "")
-    <|> try pParsePochoirTile
-    <|> try pParsePochoirKernel
-    <|> try pParsePochoirAutoKernelFunc
-    <|> try pParsePochoirGuard
-    <|> try pParsePochoirAutoGuardFunc
+           return (l_ret, l_ret)
+    <|> do l_ret <- try pParsePochoirTile
+           return (l_ret, l_ret)
+    <|> do try pParsePochoirKernel
+    <|> do l_ret <- try pParsePochoirAutoKernelFunc
+           return (l_ret, l_ret)
+    <|> do try pParsePochoirGuard
+    <|> do l_ret <- try pParsePochoirAutoGuardFunc
+           return (l_ret, l_ret)
     <|> do l_ret <- try pParsePochoirArrayMember
            return (l_ret, "")
-    <|> do l_ret <- try pParsePochoirStencilMember
-           return (l_ret, "")
+    <|> do try pParsePochoirStencilMember
     <|> do ch <- anyChar
            return ([ch], "")
     <?> "line"
 
-pParseMacro :: GenParser Char ParserState String
-pParseMacro = 
-    do reserved "#define"
-       l_name <- identifier
-       pMacroValue l_name
+pIncludeFile :: GenParser Char ParserState String
+pIncludeFile = 
+    do reserved "#include"
+       try (angles identifier >>= \l_name -> return (breakline ++ "#include <" ++ l_name ++ ">" ++ breakline)) 
+            <|> try (angles (identifier >>= \x -> symbol ".h" >> return (x ++ ".h")) >>= \l_name -> return (breakline ++ "#include <" ++ l_name ++ ">" ++ breakline)) 
+            <|> try (symbol "\"" >> identifier >>= \x -> symbol ".h" >> return (x ++ ".h") >>= \x -> symbol "\"" >> return x >>= \l_name -> return (breakline ++ "#include \"" ++ l_name ++ "\"" ++ breakline)) 
+            <|> try (symbol "\"" >> identifier >>= \x -> symbol "\"" >> return x >>= \l_name -> return (breakline ++ "#include \"" ++ l_name ++ "\"" ++ breakline))
 
-pParsePochoirArray :: GenParser Char ParserState (String, String)
+pHeaderFile :: GenParser Char ParserState String
+pHeaderFile =
+    do l_name <- identifier
+       symbol ".h"
+       return (l_name ++ ".h")
+
+pParsePochoirArray :: GenParser Char ParserState String
 pParsePochoirArray =
     do reserved "Pochoir_Array"
        (l_type, l_rank) <- angles $ try pDeclStatic
@@ -93,7 +104,7 @@ pParsePochoirArray =
        let l_ret = breakline ++ "/* Known*/ Pochoir_Array <" ++ 
                    show l_type ++ ", " ++ show l_rank ++ "> " ++ 
                    pShowDynamicDecl l_arrayDecl pShowArrayDim ++ l_delim
-       return (l_ret, l_ret)
+       return l_ret
 
 pParsePochoirStencil :: GenParser Char ParserState String
 pParsePochoirStencil = 
@@ -141,10 +152,10 @@ pParsePochoirKernel =
                                      show l_rank ++ "> " ++ l_name ++ 
                                      "(" ++ l_kernelFunc ++ ", " ++ 
                                      l_shape ++ 
-                                     "); /* Known!!! */" ++ breakline
+                                     "); /* KNOWN!!! */" ++ breakline
                              return (l_ret, l_ret)
 
-pParsePochoirTile :: GenParser Char ParserState (String, String)
+pParsePochoirTile :: GenParser Char ParserState String
 pParsePochoirTile =
     do reserved "Pochoir_Kernel"
        l_rank <- angles pDeclStaticNum
@@ -167,7 +178,7 @@ pParsePochoirTile =
                         zipWith (++) (map kName l_kernels) 
                                      (map (show . kIndex) l_kernels)) ++ 
             " */" ++ breakline
-       return (l_ret, l_ret)
+       return l_ret
 
 pParsePochoirGuard :: GenParser Char ParserState (String, String)
 pParsePochoirGuard =
@@ -227,7 +238,7 @@ pParsePochoirArrayMember =
        l_state <- getState
        try $ ppArray l_id l_state
 
-pParsePochoirStencilMember :: GenParser Char ParserState String
+pParsePochoirStencilMember :: GenParser Char ParserState (String, String)
 pParsePochoirStencilMember =
     do l_id <- try (pIdentifier)
        l_state <- getState
@@ -244,7 +255,7 @@ pParseCPPComment =
            -- return ("// comment\n")
            return ("//" ++ str ++ "\n")
 
-pParsePochoirAutoKernelFunc :: GenParser Char ParserState (String, String)
+pParsePochoirAutoKernelFunc :: GenParser Char ParserState String
 pParsePochoirAutoKernelFunc =
     do reserved "auto"
        l_kernel_name <- identifier
@@ -269,9 +280,9 @@ pParsePochoirAutoKernelFunc =
                                         kfTileOrder = 0, kfComment = "" }
        updateState $ updatePKernelFunc l_kernelFunc
        let l_ret = pShowAutoKernelFunc l_kernel_name l_kernelFunc
-       return (l_ret, l_ret)
+       return l_ret
 
-pParsePochoirAutoGuardFunc :: GenParser Char ParserState (String, String)
+pParsePochoirAutoGuardFunc :: GenParser Char ParserState String
 pParsePochoirAutoGuardFunc =
     do reserved "auto"
        l_guard_name <- identifier
@@ -288,18 +299,7 @@ pParsePochoirAutoGuardFunc =
                                       gfIter = [], gfComment = "" }
        updateState $ updatePGuardFunc l_guardFunc
        let l_ret = pShowAutoGuardFunc l_guard_name l_guardFunc
-       return (l_ret, l_ret)
-
-pMacroValue :: String -> GenParser Char ParserState String
-pMacroValue l_name = 
-                -- l_value <- liftM fromInteger $ try (natural)
-              do l_value <- try (natural) >>= return . fromInteger
-           -- Because Macro is usually just 1 line, we omit the state update 
-                 updateState $ updatePMacro (l_name, l_value)
-                 return ("#define " ++ l_name ++ " " ++ show (l_value) ++ "\n")
-          <|> do l_value <- manyTill anyChar $ try eol
-                 return ("#define " ++ l_name ++ " " ++ l_value ++ "\n")
-          <?> "Macro Definition"
+       return l_ret
 
 transPArray :: (PType, Int) -> [([PName], PName, [DimExpr])] -> [(PName, PArray)]
 transPArray (l_type, l_rank) [] = []

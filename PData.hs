@@ -204,6 +204,8 @@ cEmpty l_name = "/* Empty " ++ l_name ++ " */"
 
 data ParserState = ParserState {
     pMode  :: PMode,
+    pInFile :: String,
+    pInDir :: String,
     pMacro :: Map.Map PName PValue, 
     pArray :: Map.Map PName PArray,
     pStencil :: Map.Map PName PStencil,

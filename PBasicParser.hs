@@ -55,7 +55,7 @@ lexer = Token.makeTokenParser (javaStyle
                reservedNames = ["Pochoir_Array", "Pochoir", "Pochoir_Domain", 
                                 "Pochoir", "Pochoir_Kernel", "Pochoir_Guard", 
                                 "auto", "{", "};", "const", "volatile", "register", 
-                                "#define", "int", "float", "double", 
+                                "#define", "#include", "int", "float", "double", 
                                 "bool", "true", "false",
                                 "if", "else", "switch", "case", "break", "default",
                                 "while", "do", "for", "return", "continue"],
@@ -147,16 +147,17 @@ ppArray l_id l_state =
                        Nothing -> return (l_id ++ ".Register_Shape(" ++ l_shape ++ "); /* UNKNOWN Register_Shape with " ++ l_shape ++ "*/" ++ breakline)
                        Just l_pShape -> return ("/* Known */" ++ l_id ++ ".Register_Shape(" ++ l_shape ++ ");" ++ breakline)
 
-ppStencil :: String -> ParserState -> GenParser Char ParserState String
+ppStencil :: String -> ParserState -> GenParser Char ParserState (String, String)
 ppStencil l_id l_state = 
         do try $ pMember "Register_Array"
            l_arrays <- parens $ commaSep1 identifier
            semi
            case Map.lookup l_id $ pStencil l_state of 
-               Nothing -> return (l_id ++ ".Register_Array(" ++ 
-                                  intercalate ", " l_arrays ++ 
-                                  "); /* UNKNOWN Register_Array with" ++ 
-                                  l_id ++ "*/" ++ breakline)
+               Nothing -> let l_ret = l_id ++ ".Register_Array(" ++ 
+                                      intercalate ", " l_arrays ++ 
+                                      "); /* UNKNOWN Register_Array with" ++ 
+                                      l_id ++ "*/" ++ breakline
+                          in  return (l_ret, "")
                Just l_stencil -> 
                     do let l_pArrayStatus = map (flip checkValidPArray l_state) l_arrays
                        let l_validPArray = foldr (&&) True $ map fst l_pArrayStatus
@@ -164,73 +165,47 @@ ppStencil l_id l_state =
                           then do let l_pArrays = map snd l_pArrayStatus 
                                   let l_revPArrays = map (flip fillToggleInPArray (sToggle l_stencil)) l_pArrays
                                   updateStencilArray l_id l_revPArrays
-                                  return (l_id ++ ".Register_Array(" ++ 
-                                          intercalate ", " l_arrays ++ 
-                                          "); /* Known Register Array */" ++ breakline)
---                                          ");" ++ breakline)
-                          else return (l_id ++ ".Register_Array(" ++ 
-                                       intercalate ", " l_arrays ++ 
-                                       "); /* UNKNOWN Pochoir Array */" ++ breakline)
---                                     ");" ++ breakline)
+                                  let l_ret = l_id ++ ".Register_Array(" ++ 
+                                              intercalate ", " l_arrays ++ 
+                                              "); /* Known Register Array */" ++ breakline
+                                  return (l_ret, l_ret)
+                          else let l_ret = l_id ++ ".Register_Array(" ++ 
+                                           intercalate ", " l_arrays ++ 
+                                           "); /* UNKNOWN Pochoir Array */" ++ 
+                                           breakline
+                               in  return (l_ret, "")
     <|> do try $ pMember "Gen_Plan"
            l_tstep <- parens exprStmtDim
            semi
-           return (l_id ++ ".Gen_Plan(" ++ show l_tstep ++ "); /* known */" ++ breakline)
+           let l_ret = l_id ++ ".Gen_Plan(" ++ show l_tstep ++ "); /* known */" ++ breakline
+           return (l_ret, "")
     -- Ad hoc implementation of Run_Unroll
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
            semi
            case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (breakline ++ l_id ++ ".Run(" ++ show l_tstep ++ 
-                                  "); /* Run with UNKNOWN Stencil " ++ l_id ++ 
-                                  " */" ++ breakline)
+               Nothing -> let l_ret = breakline ++ l_id ++ ".Run(" ++ show l_tstep ++ 
+                                      "); /* Run with UNKNOWN Stencil " ++ l_id ++ 
+                                      " */" ++ breakline
+                          in  return (l_ret, "")
                Just l_stencil -> 
                           do let l_arrayInUse = sArrayInUse l_stencil
                              let l_regBound = foldr (||) False $ map (getArrayRegBound l_state) l_arrayInUse 
                              updateState $ updateStencilBoundary l_id l_regBound 
-                             return (breakline ++ l_id ++ ".Run(" ++ show l_tstep ++
-                                     ");" ++ breakline)
-    <|> do try $ pMember "Register_Stagger_Kernels"
-           (l_guard, l_kernels) <- parens pStencilRegisterStaggerKernelParams
-           semi
-           case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Register_Stagger_Kernels(" ++ 
-                                  (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                                  ", " ++ 
-                                  intercalate ", " (zipWith (++) (map kName l_kernels) 
-                                                   (map kComment l_kernels)) ++ 
-                                  "); /* UNKNOWN Stencil " ++ 
-                                  l_id ++ "*/" ++ breakline)
-               Just l_stencil ->
-                   do l_newState <- getState
-                      let l_revStencil = getPStencil l_id l_newState l_stencil
-                      let l_sRegStaggerKernel = sRegStaggerKernel l_stencil
-                      let l_rev_sRegStaggerKernel = l_sRegStaggerKernel ++ [(l_guard, l_kernels)]
-                      updateState $ updateStencilRegStaggerKernel l_id l_rev_sRegStaggerKernel
-                      let l_pShapes = map kShape l_kernels
-                      let l_merged_pShape = foldr mergePShapes (sShape l_revStencil) l_pShapes
-                      updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
-                      updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
-                      updateState $ updateStencilShape l_id l_merged_pShape
-                      -- We don't return anything in Register_Kernel 
-                      -- until 'Run', because we know the Register_Array
-                      -- only after Register_Kernel
-                      return (l_id ++ ".Register_Stagger_Kernels(" ++
-                              (gName l_guard) ++ (concat $ gComment l_guard) ++ ", " ++ 
-                              intercalate ", " (zipWith (++) (map kName l_kernels) 
-                                               (map kComment l_kernels)) ++ 
-                              ");" ++ breakline)
+                             let l_ret = breakline ++ l_id ++ ".Run(" ++ show l_tstep ++ ");" ++ breakline
+                             return (l_ret, "")
     <|> do try $ pMember "Register_Tile_Kernels"
            -- the returned l_guard and l_tile are of type PGuard, PTile, respectively
            (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
            semi
            case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Register_Tile_Kernels(" ++ 
-                                  (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                                  ", " ++ 
-                                  (tName l_tile) ++ (tComment l_tile) ++ 
-                                  "); /* UNKNOWN Stencil " ++ 
-                                  l_id ++ "*/" ++ breakline)
+               Nothing -> let l_ret = l_id ++ ".Register_Tile_Kernels(" ++ 
+                                      (gName l_guard) ++ (concat $ gComment l_guard) ++ 
+                                      ", " ++ 
+                                      (tName l_tile) ++ (tComment l_tile) ++ 
+                                      "); /* UNKNOWN Stencil " ++ 
+                                      l_id ++ "*/" ++ breakline
+                          in  return (l_ret, "")
                Just l_stencil ->
                    do let l_sRegTileKernel = sRegTileKernel l_stencil
                       let l_tile' = l_tile { tOrigGuard = l_guard }
@@ -246,94 +221,12 @@ ppStencil l_id l_state =
                       -- We don't return anything in Register_Kernel 
                       -- until 'Run', because we know the Register_Array
                       -- only after Register_Kernel
-                      return (l_id ++ ".Register_Tile_Kernels(" ++
-                              (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                              ", " ++ (tName l_tile') ++ (tComment l_tile')  ++ 
-                              ");" ++ breakline)
-    <|> do try $ pMember "Register_Exclusive_Tile_Kernels"
-           (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
-           semi
-           case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Register_Exclusive_Tile_Kernels(" ++ 
+                      let l_ret = l_id ++ ".Register_Tile_Kernels(" ++
                                   (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                                  ", " ++ (tName l_tile) ++ (tComment l_tile) ++ 
-                                  "); /* UNKNOWN Stencil " ++ 
-                                  l_id ++ "*/" ++ breakline)
-               Just l_stencil ->
-                   do let l_sRegTileKernel = sRegTileKernel l_stencil
-                      let l_tile' = l_tile { tOrigGuard = l_guard }
-                      let l_rev_sRegTileKernel = l_sRegTileKernel ++ 
-                                                 [(l_guard, l_tile')]
-                      updateState $ updateTileOrigGuard (tName l_tile) l_guard
-                      updateState $ updateStencilRegTileKernel l_id l_rev_sRegTileKernel
-                      let l_pShapes = map kShape $ getTileKernels l_tile'
-                      let l_merged_pShape = foldr mergePShapes (sShape l_stencil) l_pShapes
-                      updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
-                      updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
-                      updateState $ updateStencilShape l_id l_merged_pShape
-                      -- We don't return anything in Register_Kernel 
-                      -- until 'Run', because we know the Register_Array
-                      -- only after Register_Kernel
-                      return (l_id ++ ".Register_Exclusive_Tile_Kernels(" ++
-                              (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                              ", " ++ (tName l_tile') ++ (tComment l_tile')  ++ 
-                              ");" ++ breakline)
-    <|> do try $ pMember "Register_Inclusive_Tile_Kernels"
-           (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
-           semi
-           case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Register_Inclusive_Tile_Kernels(" ++ 
-                                  (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                                  ", " ++ (tName l_tile) ++ (tComment l_tile) ++ 
-                                  "); /* UNKNOWN Stencil " ++ 
-                                  l_id ++ "*/" ++ breakline)
-               Just l_stencil ->
-                   do let l_sRegInclusiveTileKernel = sRegInclusiveTileKernel l_stencil
-                      let l_tile' = l_tile { tOrigGuard = l_guard }
-                      let l_rev_sRegInclusiveTileKernel = l_sRegInclusiveTileKernel ++ 
-                                                          [(l_guard, l_tile')]
-                      updateState $ updateTileOrigGuard (tName l_tile) l_guard
-                      updateState $ updateStencilRegInclusiveTileKernel l_id l_rev_sRegInclusiveTileKernel
-                      let l_pShapes = map kShape $ getTileKernels l_tile'
-                      let l_merged_pShape = foldr mergePShapes (sShape l_stencil) l_pShapes
-                      updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
-                      updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
-                      updateState $ updateStencilShape l_id l_merged_pShape
-                      -- We don't return anything in Register_Kernel 
-                      -- until 'Run', because we know the Register_Array
-                      -- only after Register_Kernel
-                      return (l_id ++ ".Register_Inclusive_Tile_Kernels(" ++
-                              (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                              ", " ++ (tName l_tile') ++ (tComment l_tile')  ++ 
-                              ");" ++ breakline)
-    <|> do try $ pMember "Register_Tiny_Inclusive_Tile_Kernels"
-           (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
-           semi
-           case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Register_Tiny_Inclusive_Tile_Kernels(" ++ 
-                                  (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                                  ", " ++ (tName l_tile) ++ (tComment l_tile) ++ 
-                                  "); /* UNKNOWN Stencil " ++ 
-                                  l_id ++ "*/" ++ breakline)
-               Just l_stencil ->
-                   do let l_sRegTinyInclusiveTileKernel = sRegTinyInclusiveTileKernel l_stencil
-                      let l_tile' = l_tile { tOrigGuard = l_guard }
-                      let l_rev_sRegTinyInclusiveTileKernel = l_sRegTinyInclusiveTileKernel ++ [(l_guard, l_tile')]
-                      updateState $ updateTileOrigGuard (tName l_tile) l_guard
-                      updateState $ updateStencilRegTinyInclusiveTileKernel l_id l_rev_sRegTinyInclusiveTileKernel
-                      let l_pShapes = map kShape $ getTileKernels l_tile'
-                      let l_merged_pShape = foldr mergePShapes (sShape l_stencil) l_pShapes
-                      updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
-                      updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
-                      updateState $ updateStencilShape l_id l_merged_pShape
-                      -- We don't return anything in Register_Kernel 
-                      -- until 'Run', because we know the Register_Array
-                      -- only after Register_Kernel
-                      return (l_id ++ ".Register_Tiny_Inclusive_Tile_Kernels(" ++
-                              (gName l_guard) ++ (concat $ gComment l_guard) ++ 
-                              ", " ++ (tName l_tile') ++ (tComment l_tile')  ++ 
-                              ");" ++ breakline)
-    <|> do return (l_id)
+                                  ", " ++ (tName l_tile') ++ (tComment l_tile')  ++ 
+                                  ");" ++ breakline
+                      return (l_ret, l_ret)
+    <|> do return (l_id, "")
 
 -- get all iterators from Kernel
 transKernel :: PMode -> PStencil -> PKernelFunc -> PKernelFunc

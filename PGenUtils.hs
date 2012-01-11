@@ -59,10 +59,6 @@ updatePGuard l_guard parserState =
 updateObase :: PMode -> ParserState -> ParserState
 updateObase mode parserState = parserState { pMode = mode }
 
-updatePMacro :: (PName, PValue) -> ParserState -> ParserState
-updatePMacro (l_name, l_value) parserState =
-    parserState { pMacro = Map.insert l_name l_value (pMacro parserState) }
-
 updatePShape :: PShape -> ParserState -> ParserState
 updatePShape l_pShape parserState = 
     parserState { pShape = Map.insert (shapeName l_pShape) l_pShape (pShape parserState) }
@@ -115,35 +111,11 @@ updateTileOrigGuard l_id l_guard parserState =
                 else Nothing
     in  parserState { pTile = Map.updateWithKey f l_id $ pTile parserState }
 
-updateStencilRegStaggerKernel :: String -> [(PGuard, [PKernel])] -> ParserState -> ParserState
-updateStencilRegStaggerKernel l_id l_regStaggerKernel parserState =
-    let f k x =
-            if sName x == l_id
-                then Just $ x { sRegStaggerKernel = l_regStaggerKernel }
-                else Nothing
-    in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
-
 updateStencilRegTileKernel :: String -> [(PGuard, PTile)] -> ParserState -> ParserState
 updateStencilRegTileKernel l_id l_regTileKernel parserState =
     let f k x =
             if sName x == l_id
                 then Just $ x { sRegTileKernel = l_regTileKernel }
-                else Nothing
-    in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
-
-updateStencilRegInclusiveTileKernel :: String -> [(PGuard, PTile)] -> ParserState -> ParserState
-updateStencilRegInclusiveTileKernel l_id l_regInclusiveTileKernel parserState =
-    let f k x =
-            if sName x == l_id
-                then Just $ x { sRegInclusiveTileKernel = l_regInclusiveTileKernel }
-                else Nothing
-    in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
-
-updateStencilRegTinyInclusiveTileKernel :: String -> [(PGuard, PTile)] -> ParserState -> ParserState
-updateStencilRegTinyInclusiveTileKernel l_id l_regTinyInclusiveTileKernel parserState =
-    let f k x =
-            if sName x == l_id
-                then Just $ x { sRegTinyInclusiveTileKernel = l_regTinyInclusiveTileKernel }
                 else Nothing
     in  parserState { pStencil = Map.updateWithKey f l_id $ pStencil parserState }
 
@@ -182,7 +154,7 @@ updateArrayBoundary l_id l_regBound parserState =
 getToggleFromShape :: [[Int]] -> Int
 getToggleFromShape [] = 0
 getToggleFromShape l_shapes =
-    let l_t = map pHead l_shapes
+    let l_t = map head l_shapes
         l_t_max = maximum l_t
         l_t_min = minimum l_t
     in  (1 + l_t_max - l_t_min)
@@ -196,7 +168,7 @@ getSlopesFromShape l_height l_shapes =
 getTimeShiftFromShape :: [[Int]] -> Int
 getTimeShiftFromShape [] = 0
 getTimeShiftFromShape l_shapes =
-    let l_t = map pHead l_shapes
+    let l_t = map head l_shapes
     in  minimum l_t
 
 getXSFromShape :: [[Int]] -> [Int]
@@ -258,17 +230,17 @@ eqTileOpPKernelFunc :: PKernelFunc -> PKernelFunc -> Bool
 eqTileOpPKernelFunc a b = (kfTileOp a) == (kfTileOp b)
 
 eqTPKernel :: PKernel -> PKernel -> Bool
-eqTPKernel a b = (pHead $ kIndex a) == (pHead $ kIndex b)
+eqTPKernel a b = (head $ kIndex a) == (head $ kIndex b)
 
 eqTGroupPKernel :: [PKernel] -> [PKernel] -> Bool
 eqTGroupPKernel [] [] = True
-eqTGroupPKernel a b = (pHead . kIndex . pHead) a == (pHead . kIndex . pHead) b
+eqTGroupPKernel a b = (head . kIndex . head) a == (head . kIndex . head) b
 
 eqTPTile :: [Int] -> [Int] -> Bool
 eqTPTile [] [] = True
 eqTPTile [] b = False
 eqTPTile a [] = False
-eqTPTile a b = pHead a == pHead b
+eqTPTile a b = head a == head b
 
 eqTileIndex :: [Int] -> [Int] -> Bool
 eqTileIndex [] [] = True
@@ -340,11 +312,11 @@ pGroupPKernelByMergeTerm _ [] = []
 pGroupPKernelByMergeTerm _ [a] = a
 pGroupPKernelByMergeTerm b ll@(x:y:zs) = 
     -- firstly, let's merge only the following simplified case
-    if ((length . kIndex . last . last) x <= (length . kIndex . pHead . pHead) y 
+    if ((length . kIndex . last . last) x <= (length . kIndex . head . head) y 
         && length x <= length y)
         then let x' = pMergeForward b x y
              in  pGroupPKernelByMergeTerm b (x':zs)
-        else if ((length . kIndex . last . last) x > (length . kIndex . pHead . pHead) y
+        else if ((length . kIndex . last . last) x > (length . kIndex . head . head) y
                && length x > length y)
                 then let x' = pMergeBackward b x y []
                      in  pGroupPKernelByMergeTerm b (x':zs)
@@ -354,7 +326,7 @@ pMergeForward :: (PKernel -> PKernel -> Bool) -> [[PKernel]] -> [[PKernel]] -> [
 pMergeForward b [] y = y
 pMergeForward b x@(a:as) y = 
     let could_merge = foldr (||) False $ 
-                        map (b (last a)) (map pHead y)
+                        map (b (last a)) (map head y)
     in  if could_merge
            then pMergeForward b as $ pMergeForwardTerm b a y
            else a:(pMergeForward b as y)
@@ -362,8 +334,8 @@ pMergeForward b x@(a:as) y =
 pMergeForwardTerm :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]] -> [[PKernel]]
 pMergeForwardTerm b x [] = []
 pMergeForwardTerm b x yL@(y:ys) =
-    if b (last x) (pHead y)
-       then let x' = map (pFillKIndex $ (kIndex . pHead) y) x
+    if b (last x) (head y)
+       then let x' = map (pFillKIndex $ (kIndex . head) y) x
             in  (x' ++ y):(pMergeForwardTerm b x ys) 
        else y:(pMergeForwardTerm b x ys)
 
@@ -371,7 +343,7 @@ pMergeBackward :: (PKernel -> PKernel -> Bool) -> [[PKernel]] -> [[PKernel]] -> 
 pMergeBackward b x [] l = x ++ l
 pMergeBackward b x y@(a:as) l =
     let could_merge = foldr (||) False $
-                        map (flip b (pHead a)) (map last x)
+                        map (flip b (head a)) (map last x)
     in  if could_merge 
            then pMergeBackward b (pMergeBackwardTerm b x a) as l
            else pMergeBackward b x as $ l ++ [a]
@@ -379,7 +351,7 @@ pMergeBackward b x y@(a:as) l =
 pMergeBackwardTerm :: (PKernel -> PKernel -> Bool) -> [[PKernel]] -> [PKernel] -> [[PKernel]]
 pMergeBackwardTerm b [] y = []
 pMergeBackwardTerm b xL@(x:xs) y =
-    if b (last x) (pHead y)
+    if b (last x) (head y)
        then let y' = map (pFillKIndex $ (kIndex . last) x) y
             in  (x ++ y'):(pMergeBackwardTerm b xs y)
        else x:(pMergeBackwardTerm b xs y)
@@ -387,7 +359,7 @@ pMergeBackwardTerm b xL@(x:xs) y =
 pGroupPKernelBy :: (PKernel -> PKernel -> Bool) -> [PKernel] -> [[PKernel]]
 pGroupPKernelBy b [] = []
 pGroupPKernelBy b l = 
-    let n = (kfTileOrder . kFunc . pHead) l
+    let n = (kfTileOrder . kFunc . head) l
         l' = pSerializePKernel l n 0 []
     in  pGroupPKernelByTerm b l' []
         
@@ -426,8 +398,11 @@ pStripSuffixUnderScore l_str =
         then take (length l_str - 2) l_str
         else l_str
 
-pFillGuardOrder :: Int -> (PGuard, [PTile]) -> (PGuard, [PTile])
-pFillGuardOrder n (l_pGuard, l_pTiles) = (l_pGuard { gOrder = n }, l_pTiles)
+pFillGuardOrder :: Int -> PGuard -> PGuard
+pFillGuardOrder n l_guard = l_guard { gOrder = n }
+
+pFillTileOrder :: Int -> PTile -> PTile
+pFillTileOrder n l_tile = l_tile { tOrder = n }
 
 pFillPShapeName :: PName -> Int -> PShape -> PShape
 pFillPShapeName l_name n l_pShape = l_pShape { shapeName = "__POCHOIR_Shape_" ++ l_name ++ "_" ++ show n ++ "__" }
@@ -500,7 +475,7 @@ pGetInclusiveGuardTiles l_mode [] [] l_tiGTs =
     let l_tiGs = map fst l_tiGTs
         l_iTs = map (pSetTileOp PINCLUSIVE . snd) l_tiGTs
         l_tigStr = map gName l_tiGs
-        l_rank = if null l_tiGs then 0 else (gRank . pHead) l_tiGs
+        l_rank = if null l_tiGs then 0 else (gRank . head) l_tiGs
         l_pIG = emptyGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = l_rank, gComment = l_tigStr }
     in  [(l_pIG, l_iTs)]
 pGetInclusiveGuardTiles l_mode [] l_iGTs l_tiGTs =
@@ -511,8 +486,8 @@ pGetInclusiveGuardTiles l_mode [] l_iGTs l_tiGTs =
         l_rank = if null l_tiGs 
                     then if null l_iGTs 
                             then 0 
-                            else (gRank . pHead) l_iGs 
-                    else (gRank . pHead) l_tiGs
+                            else (gRank . head) l_iGs 
+                    else (gRank . head) l_tiGs
         l_pIG = emptyGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = l_rank, gComment = l_tigStr }
     in  [(l_pIG, l_iTs)]
 pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs =
@@ -524,8 +499,8 @@ pGetInclusiveGuardTiles l_mode l_xGTs l_iGTs l_tiGTs =
         l_rank = if null l_tiGs 
                     then if null l_iGTs 
                             then 0 
-                            else (gRank . pHead) l_iGs 
-                    else (gRank . pHead) l_tiGs
+                            else (gRank . head) l_iGs 
+                    else (gRank . head) l_tiGs
         l_pIG = emptyGuard { gName = "__" ++ (intercalate "_" l_tigStr) ++ "__", gRank = l_rank, gComment = l_tigStr }
     in  [(l_pIG, l_xTs ++ l_iTs)]
 
@@ -630,9 +605,6 @@ pIterArray (_, a, _, _) = a
 pIterDims (_, _, a, _) = a
 pIterRWMode (_, _, _, a) = a
 
-pHead :: [a] -> a
-pHead = head
-
 transInterior :: [PName] -> Expr -> Expr
 transInterior l_arrayInUse (PVAR q v dL) =
     if elem v l_arrayInUse == True then PVAR q (v ++ ".interior") dL
@@ -694,7 +666,7 @@ checkValidPArray l_array l_state =
 fillToggleInPArray :: PArray -> Int -> PArray
 fillToggleInPArray l_pArray l_toggle = l_pArray { aToggle = l_toggle }
 
--- convert a binary number (in string) into a decimal number
+-- convert a binary number (in String) into a decimal number (in Int)
 pBinToDec :: String -> Int
 pBinToDec bValue = pBinToDecTerm 0 (length bValue) bValue
     where pBinToDecTerm idx n bValue =
@@ -703,3 +675,9 @@ pBinToDec bValue = pBinToDecTerm 0 (length bValue) bValue
                else if bValue !! idx == '1'
                        then (shift 1 $ n - idx) + pBinToDecTerm (idx+1) n bValue
                        else pBinToDecTerm (idx+1) n bValue
+
+rename :: String -> String -> String
+rename pSuffix fname = name ++ pSuffix ++ ".cpp"
+    where (name, suffix) = break ('.' ==) fname
+
+                      

@@ -34,6 +34,7 @@ import Data.Char (isSpace)
 import qualified Data.Map as Map
 import Text.ParserCombinators.Parsec (runParser)
 
+import PUtils
 import PData
 import PMainParser
 
@@ -95,7 +96,7 @@ ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) =
            outh <- openFile outFile WriteMode
            kernelh <- openFile kernelFile WriteMode
            putStrLn ("pochoir " ++ show mode ++ " " ++ iccPPFile)
-           pProcess mode inh outh kernelh
+           pProcess mode (inFile, inDir) inh outh kernelh
            hClose inh
            hClose outh
            hClose kernelh
@@ -109,15 +110,11 @@ getMidFile a
     | isSuffixOf ".cpp" a || isSuffixOf ".cxx" a = take (length a - 4) a ++ ".i"
     | otherwise = a
 
-rename :: String -> String -> String
-rename pSuffix fname = name ++ pSuffix ++ ".cpp"
-    where (name, suffix) = break ('.' ==) fname
-
 getPPFile :: String -> String
 getPPFile fname = name ++ ".i"
     where (name, suffix) = break ('.' ==) fname
 
-pInitState = ParserState { pMode = PCaching, pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0 }
+pInitState = ParserState { pMode = PCaching, pInFile = "", pInDir = "", pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0 }
 
 -- icc = "g++"
 icc = "icpc"
@@ -303,10 +300,10 @@ printOptions =
        putStrLn ("-unroll-t-tile-pointer $filename : " ++ breakline ++
                "unroll the tiled kernels along time dimension, for conditional check on spatial dimension, we leave them in the inner-most kernel, and use -split-macro-pointer mode for optimizing the base case")
 
-pProcess :: PMode -> Handle -> Handle -> Handle -> IO ()
-pProcess mode inh outh kernelh = 
+pProcess :: PMode -> (String, String) -> Handle -> Handle -> Handle -> IO ()
+pProcess mode (inFile, inDir) inh outh kernelh = 
     do ls <- hGetContents inh
-       let pRevInitState = pInitState { pMode = mode }
+       let pRevInitState = pInitState { pMode = mode, pInFile = inFile, pInDir = inDir }
        case runParser pParser pRevInitState "" $ stripWhite ls of
            Left err -> print err
            Right (outContent, kernContent) -> 
