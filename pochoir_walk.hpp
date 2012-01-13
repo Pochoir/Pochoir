@@ -660,16 +660,6 @@ void Algorithm<N_RANK>::set_phys_grid(Grid_Info<N_RANK> const & grid)
             lub_boundary[i] = phys_grid_.x0[i] + slope_[i];
         }
     }
-#if 0
-    if (opksSet) {
-        pure_region_->set_phys_grid(phys_grid_);
-    }
-    if (ptsSet && color_region_ == NULL) {
-        printf("<%s:%d> : set up color region and color vector!\n", __FUNCTION__, __LINE__);
-        color_region_ = new Color_Region<N_RANK>(sz_pgk_, pgs_, phys_grid_);
-        homogeneity_vector_ = new Vector_Info<T_color>();
-    }
-#endif
 }
 
 template <int N_RANK>

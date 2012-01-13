@@ -66,7 +66,7 @@ whilst :: Bool -> IO () -> IO ()
 whilst True action = action
 whilst False action = return () 
 
-pInitState = ParserState { pMode = PDefault, pColorVectors = [], pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0 }
+pInitState = ParserState { pMode = PDefault, pColorVectors = [], pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0, pGenPlan = Map.empty, pGenPlanOrder = 0 }
 
 icc = "icpc"
 
@@ -221,7 +221,7 @@ printOptions =
     do putStrLn ("Usage: genkernels [OPTION] [KERNEL_INFO_FILE] [COLOR_INFO_FILE]")
        putStrLn ("Run the genkernels with kernel_info and color_info.")
 
-pGenKernel :: PMode -> [Homogeneity] -> Handle -> Handle -> IO ()           
+pGenKernel :: PMode -> [[Homogeneity]] -> Handle -> Handle -> IO ()           
 pGenKernel mode colorVectors kernelh genKernelh = 
     do ls <- hGetContents kernelh
        let pRevInitState = pInitState { pMode = mode, pColorVectors = colorVectors }
@@ -229,7 +229,7 @@ pGenKernel mode colorVectors kernelh genKernelh =
            Left err -> print err
            Right str -> hPutStrLn genKernelh str
 
-pParseColorFile :: Handle -> IO [Homogeneity]
+pParseColorFile :: Handle -> IO [[Homogeneity]]
 pParseColorFile colorh =
     do ls <- hGetContents colorh
        case parse pParseColor "" ls of
@@ -240,8 +240,8 @@ pParseColorFile colorh =
                 do putStrLn $ show colorVectors
                    return colorVectors
            
-pParseColor :: Parser [Homogeneity]
-pParseColor = many $ parens pColor
+pParseColor :: Parser [[Homogeneity]]
+pParseColor = many $ brackets $ many $ parens pColor
 
 pColor :: Parser Homogeneity
 pColor = 

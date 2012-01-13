@@ -45,11 +45,11 @@ pParser = do tokens0 <- many $ pToken
              eof
              -- starting a second pass!
              -- the type of tokens0 is [(String, String)]
-             setInput $ concat $ map fst tokens0
+             setInput $ concatMap fst tokens0
              tokens1 <- many pToken1
-             let static_pass = concat tokens1
-             let pochoir_info = concat $ map snd tokens0
-             return (static_pass, pochoir_info)
+             let out_info = concat tokens1
+             let pochoir_info = concatMap snd tokens0
+             return (out_info, pochoir_info)
 
 pToken :: GenParser Char ParserState (String, String)
 pToken = 
@@ -87,12 +87,6 @@ pIncludeFile =
             <|> try (angles (identifier >>= \x -> symbol ".h" >> return (x ++ ".h")) >>= \l_name -> return (breakline ++ "#include <" ++ l_name ++ ">" ++ breakline)) 
             <|> try (symbol "\"" >> identifier >>= \x -> symbol ".h" >> return (x ++ ".h") >>= \x -> symbol "\"" >> return x >>= \l_name -> return (breakline ++ "#include \"" ++ l_name ++ "\"" ++ breakline)) 
             <|> try (symbol "\"" >> identifier >>= \x -> symbol "\"" >> return x >>= \l_name -> return (breakline ++ "#include \"" ++ l_name ++ "\"" ++ breakline))
-
-pHeaderFile :: GenParser Char ParserState String
-pHeaderFile =
-    do l_name <- identifier
-       symbol ".h"
-       return (l_name ++ ".h")
 
 pParsePochoirArray :: GenParser Char ParserState String
 pParsePochoirArray =

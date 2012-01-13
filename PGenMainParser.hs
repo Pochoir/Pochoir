@@ -49,10 +49,10 @@ pParser = do tokens0 <- many $ pToken
              -- tokens1 <- many pToken1
              l_state <- getState
              let l_mode = pMode l_state
-             let l_stencil = Map.elems $ pStencil l_state
+             let l_stencil = Map.elems $ pGenPlan l_state
              let l_colorVectors = pColorVectors l_state
              -- let l_reg_GTs = sRegTileKernel l_stencil
-             let l_output = map (pCodeGen l_mode l_colorVectors) l_stencil
+             let l_output = map (pCodeGen l_mode) $ zip l_colorVectors l_stencil
              return $ concatMap fst l_output
 
 pToken :: GenParser Char ParserState String
@@ -124,7 +124,7 @@ pParsePochoirTile =
        reservedOp "="
        l_tile_kernel <- pParseTileKernel
        semi
-       let l_tile = PTile { tName = l_name, tRank = l_rank, tSize = l_sizes, tKernel = l_tile_kernel, tComment = "", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = 0 }
+       let l_tile = PTile { tName = l_name, tRank = l_rank, tSize = l_sizes, tKernel = l_tile_kernel, tComment = "", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
        let l_kernels = getTileKernels l_tile
        updateState $ updatePTile l_tile
        return ""

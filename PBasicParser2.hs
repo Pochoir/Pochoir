@@ -47,13 +47,11 @@ ppStencil1 l_id l_state =
         do try $ pMember "Gen_Plan"
            l_tstep <- parens exprStmtDim
            semi
-           let l_color_num = pColorNum l_state 
            let l_mode = pMode l_state
            let l_inFile = pInFile l_state
-           let l_color_dest_suffix = "_color_" ++ show l_color_num ++ ".dat"
+           let l_color_dest_suffix = "_color.dat"
            let l_color_fname = pSubstitute ".cpp" l_color_dest_suffix l_inFile
            let l_kernel_info_fname = rename "_kernel_info" l_inFile
-           pdateState $ updatePColorNum $ l_color_num + 1
            return (l_id ++ ".Gen_Plan_Obase(" ++ show l_tstep ++ ", \"" ++ show l_mode ++ "\", \"" ++ l_color_fname ++ "\", \"" ++ l_kernel_info_fname ++ "\"); /* KNOWN */" ++ breakline)
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim

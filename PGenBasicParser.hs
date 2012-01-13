@@ -165,10 +165,15 @@ ppStencil l_id l_state =
     <|> do try $ pMember "Gen_Plan_Obase"
            l_tstep <- parens exprStmtDim
            semi
+           -- TO FIX:
+           -- the gen_plan_order is the static order in program, 
+           -- rather than a dynamic order at run time. So it's just an ad hoc solution!
+           let l_gen_plan_order = pGenPlanOrder l_state
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return ""
                Just l_stencil -> 
-                    do updateState $ updatePGenPlan (l_id, l_stencil)
+                    do updateState $ updatePGenPlan (l_gen_plan_order, l_stencil)
+                       updateState $ updatePGenPlanOrder $ l_gen_plan_order + 1
                        return ""
     <|> do l_run_func <- try $ pMember "Run_Obase" <|> pMember "Run_Obase_Merge"
            l_tstep <- parens exprStmtDim
@@ -190,11 +195,11 @@ ppStencil l_id l_state =
                    do let l_sRegTileKernel = sRegTileKernel l_stencil
                       let l_tile_order = pTileOrder l_state
                       let l_tile' = l_tile { tOrigGuard = l_guard, tOrder = l_tile_order }
-                      let l_rev_sRegTileKernel = l_sRegTileKernel ++ 
+                      let l_sRegTileKernel' = l_sRegTileKernel ++ 
                                                  [(l_guard, l_tile')]
                       updateState $ updatePTileOrder $ l_tile_order + 1
                       updateState $ updateTileOrigGuard (tName l_tile) l_guard
-                      updateState $ updateStencilRegTileKernel l_id l_rev_sRegTileKernel
+                      updateState $ updateStencilRegTileKernel l_id l_sRegTileKernel'
                       let l_pShapes = map kShape $ getTileKernels l_tile'
                       let l_merged_pShape = foldr mergePShapes (sShape l_stencil) l_pShapes
                       updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
@@ -380,7 +385,8 @@ pShowRegTileKernel l_mode l_stencil (l_guard, l_tile) =
 pShowAutoTileString :: PMode -> PStencil -> (PGuard, [PTile]) -> String
 pShowAutoTileString l_mode l_stencil (l_guard, []) = pShowDefaultTileString l_mode l_stencil l_guard
 pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
-    let l_guardName = pGetOverlapGuardName l_guard
+    let l_color = "/* " ++ show (gColor l_guard) ++ " */" 
+        l_guardName = pGetOverlapGuardName l_guard
         l_order = gOrder l_guard
         l_comments = pShowAutoTileComments l_tiles
         -- getTileKernels also fills the guardFunc/tile_op/tile_order into PKernelFuncs
@@ -395,7 +401,7 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
         -- for each l_tile_index, there could be a list of kernel functions
         l_tile_indices = map (kIndex . head) l_kernels_by_tIndex
         l_tile_indices_by_t = map (map (kIndex . head)) l_kernels_by_tIndex_by_t
-        -- l_kernel_funcs : [[PKernelFunc]]
+        -- l_kernel_funcs :: [[PKernelFunc]]
         l_kernel_funcs = map (map kFunc) l_kernels_by_tIndex
         l_kernel_funcs_by_t = map (map (map kFunc)) l_kernels_by_tIndex_by_t
         l_stmts = concatMap kfStmt $ concat l_kernel_funcs
@@ -406,34 +412,42 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
         l_id = sName l_stencil
     in  case l_mode of
             PAllCondTileMacroOverlap ->
+                breakline ++ l_color ++
                 pSplitAllCondTileOverlapScope
                   ("Macro", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
                   (pShowMacroStmt False)
             PAllCondTileCPointerOverlap ->
+                breakline ++ l_color ++
                 pSplitAllCondTileOverlapScope
                   ("CPointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
                   pShowCPointerStmt
             PAllCondTilePointerOverlap ->
+                breakline ++ l_color ++
                 pSplitAllCondTileOverlapScope
                   ("Pointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
                   (pShowPointerStmt True)
             PAllCondTileOptPointerOverlap ->
+                breakline ++ l_color ++
                 pSplitAllCondTileOverlapScope
                   ("Opt_Pointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
                   pShowOptPointerStmt
             PUnrollTimeTileMacroOverlap ->
+                breakline ++ l_color ++
                 pSplitUnrollTimeTileOverlapScope 
                   ("Macro", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_by_t, l_rev_kernel_funcs_by_t, l_stencil, l_comments)
                   (pShowMacroStmt False)
             PUnrollTimeTileCPointerOverlap ->
+                breakline ++ l_color ++
                 pSplitUnrollTimeTileOverlapScope
                   ("CPointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_by_t, l_rev_kernel_funcs_by_t, l_stencil, l_comments)
                   pShowCPointerStmt
             PUnrollTimeTilePointerOverlap ->
+                breakline ++ l_color ++
                 pSplitUnrollTimeTileOverlapScope
                   ("Pointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_by_t, l_rev_kernel_funcs_by_t, l_stencil, l_comments)
                   (pShowPointerStmt True)
             PUnrollTimeTileOptPointerOverlap ->
+                breakline ++ l_color ++
                 pSplitUnrollTimeTileOverlapScope
                   ("Opt_Pointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_tile_indices_by_t, l_rev_kernel_funcs_by_t, l_stencil, l_comments)
                   pShowOptPointerStmt

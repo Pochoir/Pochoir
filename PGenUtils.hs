@@ -40,6 +40,10 @@ updatePTileOrder :: Int -> ParserState -> ParserState
 updatePTileOrder l_tile_order parserState =
     parserState { pTileOrder = l_tile_order }
 
+updatePGenPlanOrder :: Int -> ParserState -> ParserState
+updatePGenPlanOrder l_gen_plan_order parserState =
+    parserState { pGenPlanOrder = l_gen_plan_order }
+
 updatePKernelFunc :: PKernelFunc -> ParserState -> ParserState
 updatePKernelFunc l_kernelFunc parserState =
     parserState { pKernelFunc = Map.insert (kfName l_kernelFunc) l_kernelFunc $ pKernelFunc parserState }
@@ -73,7 +77,7 @@ updatePStencil [] parserState = parserState
 updatePStencil pL@(p:ps) parserState =
     parserState { pStencil = foldr pMapInsert (pStencil parserState) pL }
 
-updatePGenPlan :: (PName, PStencil) -> ParserState -> ParserState
+updatePGenPlan :: (Int, PStencil) -> ParserState -> ParserState
 updatePGenPlan p parserState =
     parserState { pGenPlan = pMapInsert p (pGenPlan parserState) }
 
@@ -205,7 +209,7 @@ getValidTile l_state l_tileName =
                                     Nothing -> emptyKernel
                                     Just l_kernel -> l_kernel
                 l_tileKernel = SK l_kernel
-            in  PTile { tName = l_tileName, tRank = kRank l_kernel, tSize = [1], tKernel = l_tileKernel, tComment = "", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = 0 }
+            in  PTile { tName = l_tileName, tRank = kRank l_kernel, tSize = [1], tKernel = l_tileKernel, tComment = "", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
         Just l_pTile -> l_pTile { tComment = cKnown "Tile" }
 
 getTileKernels :: PTile -> [PKernel]
@@ -430,7 +434,7 @@ pGetOverlapGuardName l_pGuard =
 
 pGetAllIGuardTiles :: Int -> [String] -> [(PGuard, PTile)] -> [PTile] -> [(PGuard, [PTile])]
 pGetAllIGuardTiles l_rank l_condStr [] l_tiles =
-    let l_pGuard = PGuard { gName = "__" ++ (intercalate "_" l_condStr) ++ "__", gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr, gOrder = 0 }
+    let l_pGuard = PGuard { gName = "__" ++ (intercalate "_" l_condStr) ++ "__", gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr, gOrder = 0, gColor = emptyColor }
         l_tiles' = map (pSetTileOp PSERIAL) l_tiles
     in  [(l_pGuard, l_tiles')]
 pGetAllIGuardTiles l_rank l_condStr l_iGTs@(i:is) l_tiles =

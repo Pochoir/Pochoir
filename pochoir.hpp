@@ -472,9 +472,6 @@ Grid_Info<N_RANK> Pochoir<N_RANK>::get_phys_grid(void) {
 
 template <int N_RANK> 
 Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
-    /* we don't squeeze out the NONE_EXCLUSIVE_IFS in Gen_Plan, 
-     * but do in Gen_Plan_Obase
-     */
     Pochoir_Plan<N_RANK> * l_plan = new Pochoir_Plan<N_RANK>();
     int l_sz_base_data, l_sz_sync_data;
     Spawn_Tree<N_RANK> * l_tree;
@@ -516,9 +513,6 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
 
 template <int N_RANK> 
 Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char * pochoir_mode, const char * color_vector_fname, const char * kernel_info_fname) {
-    /* we don't squeeze out the NONE_EXCLUSIVE_IFS in Gen_Plan, 
-     * but do in Gen_Plan_Obase
-     */
     Pochoir_Plan<N_RANK> * l_plan = new Pochoir_Plan<N_RANK>();
     int l_sz_base_data, l_sz_sync_data;
     Spawn_Tree<N_RANK> * l_tree;
@@ -532,8 +526,6 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
         // set color_region
         assert(sz_pigk_ > 0);
         algor.set_pts(sz_pigk_, pigs_, pits_.get_root());
-        // assert(sz_pxgk_ > 0);
-        // algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
     } else {
         printf("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
         exit(EXIT_FAILURE);
@@ -581,9 +573,10 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     else
         white_clone = new Homogeneity(0);
     l_color_vector.add_unique_element(*white_clone);
-    std::ofstream os_color_vector(color_vector_fname);
+    std::ofstream os_color_vector;
+    os_color_vector.open(color_vector_fname, ofstream::out | ofstream::app);
     if (os_color_vector.is_open()) {
-        os_color_vector << l_color_vector;
+        os_color_vector << "[" << l_color_vector << "]" << std::endl;
     } else {
         printf("os_color_vector is NOT open! exit!\n");
         exit(EXIT_FAILURE);
@@ -595,7 +588,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     fprintf(stderr, "%s\n", cmd);
     int ret = system(cmd);
     if (ret == -1) {
-        fprintf(stderr, "system() call failed!\n");
+        fprintf(stderr, "system() call to genkernels failed!\n");
         exit(EXIT_FAILURE);
     }
     fprintf(stderr, "./genkernels exits!\n");

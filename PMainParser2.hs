@@ -54,6 +54,7 @@ pParsePochoirStencilMember1 =
        l_state <- getState
        try $ ppStencil1 l_id l_state
 
+{-
 pParsePochoirKernel1 :: GenParser Char ParserState String
 pParsePochoirKernel1 =
     do reserved "Pochoir_Kernel"
@@ -87,4 +88,4 @@ pParsePochoirKernel1 =
                              -- return ("breakline ++ /* KNOWN Pochoir_Kernel */" ++
                              --          breakline)
 
-   
+ -} 

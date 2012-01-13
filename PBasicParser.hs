@@ -179,7 +179,6 @@ ppStencil l_id l_state =
            semi
            let l_ret = l_id ++ ".Gen_Plan(" ++ show l_tstep ++ "); /* known */" ++ breakline
            return (l_ret, l_ret)
-    -- Ad hoc implementation of Run_Unroll
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
            semi
@@ -193,7 +192,7 @@ ppStencil l_id l_state =
                              let l_regBound = foldr (||) False $ map (getArrayRegBound l_state) l_arrayInUse 
                              updateState $ updateStencilBoundary l_id l_regBound 
                              let l_ret = breakline ++ l_id ++ ".Run(" ++ show l_tstep ++ ");" ++ breakline
-                             return (l_ret, "")
+                             return (l_ret, l_ret)
     <|> do try $ pMember "Register_Tile_Kernels"
            -- the returned l_guard and l_tile are of type PGuard, PTile, respectively
            (l_guard, l_tile) <- parens pStencilRegisterTileKernelParams
@@ -604,8 +603,8 @@ pGetOverlapGuardTiles l_mode l_stencil l_xGTs l_iGTs l_tiGTs =
         l_iPGuardTiles' = zipWith pFillGuardOrder [l_len_xGTs..] l_iPGuardTiles
         l_xGuards = map (pShowAutoGuardString " && ") l_xPGuardTiles'
         l_iGuards = map (pShowAutoGuardString " || ") l_iPGuardTiles'
-        l_xGuardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_xPGuardTiles'
-        l_iGuardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_iPGuardTiles'
+        -- l_xGuardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_xPGuardTiles'
+        -- l_iGuardNames = map (pSubstitute "!" "_Not_" . gName . fst) l_iPGuardTiles'
         l_xTiles = map (pShowAutoTileString l_mode l_stencil) l_xPGuardTiles'
         l_iTiles = map (pShowAutoTileString l_mode l_stencil) l_iPGuardTiles'
         l_str_xGTs = zipWith (++) l_xGuards l_xTiles

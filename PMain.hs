@@ -306,6 +306,7 @@ pProcess mode (inFile, inDir) inh outh kernelh =
        let pRevInitState = pInitState { pMode = mode, pInFile = inFile, pInDir = inDir }
        case runParser pParser pRevInitState "" $ stripWhite ls of
            Left err -> print err
+           -- outh is *_pochoir.cpp; kernelh is *_kernel_info.cpp
            Right (outContent, kernContent) -> 
                 do hPutStrLn outh outContent
                    hPutStrLn kernelh kernContent

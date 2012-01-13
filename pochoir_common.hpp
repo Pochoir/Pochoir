@@ -134,7 +134,7 @@ struct Homogeneity {
     Homogeneity(T_color _o, T_color _a) : o_(_o), a_(_a), size_(0) { }
     Homogeneity(T_color _o, T_color _a, int _size) : o_(_o), a_(_a), size_(_size) { }
     Homogeneity(int _size) : size_(_size) {
-        /* set up a white clone with size '_size' */
+        /* set up a white color with size '_size' */
         o_ = 0; a_ = 0;
         for (int i = 0; i < _size; ++i) {
             o_ <<= 1; o_ |= 1;

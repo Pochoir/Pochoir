@@ -57,8 +57,8 @@ data TileOp = PNOP | PSERIAL | PEXCLUSIVE | PINCLUSIVE deriving (Eq, Show)
 
 data Homogeneity = Homogeneity {
     size :: Int, -- width of the color vector
-    o :: Int, -- bit-wise or of the color vector
-    a :: Int  -- bit-wise and of the color vector
+    o :: Int, -- bit-wise 'or' of the color vector
+    a :: Int  -- bit-wise 'and' of the color vector
 } deriving Eq
 
 data PArray = PArray {
@@ -136,6 +136,7 @@ data PGuard = PGuard {
     gRank :: Int,
     gFunc :: PGuardFunc,
     gOrder :: Int,
+    gColor :: Homogeneity,
     gComment :: [String]
 } deriving Show
 
@@ -159,6 +160,7 @@ data PTile = PTile {
     tOrigGuard :: PGuard, -- each tile has one and only one guard
     tOp :: TileOp, -- the OP is used in determining how to tile in automatically generated overlapped kernel
     tOrder :: Int, -- tile order
+    tColor :: Homogeneity,
     tComment :: String
 } deriving Show
 
@@ -181,13 +183,16 @@ emptyGuardFunc :: PGuardFunc
 emptyGuardFunc = PGuardFunc { gfName = "", gfParams = [], gfStmt = [], gfStmtSize = 0, gfIter = [], gfComment = cEmpty "Pochoir_Guard_Func" }
 
 emptyGuard :: PGuard
-emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc, gComment = [], gOrder = 0 }
+emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc, gComment = [], gOrder = 0, gColor = emptyColor }
+
+emptyColor :: Homogeneity
+emptyColor = Homogeneity { size = 0, o = 0, a = 0 }
 
 emptyTileKernel :: PTileKernel
 emptyTileKernel = LK [] 
 
 emptyTile :: PTile
-emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel, tComment = cEmpty "Pochoir_Tile", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = 0 }
+emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel, tComment = cEmpty "Pochoir_Tile", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
 
 -- prefix 'c' means "comment"
 cUnknown :: String -> String
@@ -203,7 +208,7 @@ cEmpty l_name = "/* Empty " ++ l_name ++ " */"
 
 data ParserState = ParserState {
     pMode  :: PMode,
-    pColorVectors :: [Homogeneity],
+    pColorVectors :: [[Homogeneity]],
     pArray :: Map.Map PName PArray,
     pStencil :: Map.Map PName PStencil,
     pRange :: Map.Map PName PRange,
@@ -214,8 +219,9 @@ data ParserState = ParserState {
     pGuard :: Map.Map PName PGuard,
     pTile :: Map.Map PName PTile,
     pTileOrder :: Int,
-    pGenPlan :: Map.Map PName PStencil -- this is a snapshot of each PStencil object
-                                       -- at the time of calling Gen_Plan_Obase(T)
+    pGenPlan :: Map.Map Int PStencil, -- this is a snapshot of each PStencil object
+                                      -- at the time of calling Gen_Plan_Obase(T)
+    pGenPlanOrder :: Int
 } deriving Show
 
 data Expr = VAR String String 
