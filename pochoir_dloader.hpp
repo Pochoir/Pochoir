@@ -38,10 +38,23 @@ class DynamicLoader
 public:
     DynamicLoader(const char * filename)
     {
-        m_handle = dlopen(filename, RTLD_LAZY);
-        if (!m_handle) {
-            fprintf(stderr, "can't load library named %s\n", filename);
+        char cmd[200];
+        char cpp_filename[100], so_filename[100];
+
+        sprintf(cpp_filename, "%s.cpp", filename);
+        sprintf(so_filename, "%s.so", filename);
+        sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x %s\0", so_filename, cpp_filename);
+
+        printf("%s\n", cmd);
+        int ret = system(cmd);
+        if (ret == -1) {
+            fprintf(stderr, "system() call failed!\n");
             exit(EXIT_FAILURE);
+        }
+
+        m_handle = dlopen(so_filename, RTLD_LAZY);
+        if (!m_handle) {
+            fprintf(stderr, "can't load library named %s\n", so_filename);
         }
         dlerror();
     }
