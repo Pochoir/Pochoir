@@ -28,6 +28,7 @@ module Main where
 import System
 import IO hiding (try) -- "try" is also defined in Parsec
 import Data.List
+import Data.Maybe
 import System.Directory 
 import System.Cmd (rawSystem)
 import Data.Char (isSpace)
@@ -44,19 +45,22 @@ main = do args <- getArgs
           whilst (null args || length args < 2) $ do
              printUsage
              exitFailure
-          let (color_file, kernel_file, mode, showFile, userArgs) 
-                = parseArgs ("", "", PDefault, True, []) args
+          let (colorNum, color_file, kernel_file, mode, showFile, userArgs) 
+                = parseArgs (2, "", "", PDefault, True, []) args
           whilst (mode == PHelp) $ do
              printOptions
              exitFailure
           whilst (mode /= PNoPP) $ do
+             putStrLn ("color_num = " ++ show colorNum ++ ", color_file = " ++ color_file ++
+                       ", kernel_file = " ++ kernel_file ++ ", mode = " ++ show mode)
              colorh <- openFile color_file ReadMode
              colorVectors <- pParseColorFile colorh
              hClose colorh
              kernelh <- openFile kernel_file ReadMode
-             let genKernel_file = pSubstitute "kernel_info" "gen_kernel" kernel_file
+             -- let genKernel_file = pSubstitute "kernel_info" "gen_kernel" kernel_file
+             let genKernel_file = pSubstitute "color.dat" "gen_kernel.cpp" color_file
              genKernelh <- openFile genKernel_file WriteMode
-             pGenKernel mode colorVectors kernelh genKernelh
+             pGenKernel mode colorVectors colorNum kernelh genKernelh
              hClose genKernelh
           whilst (showFile == False) $ do
              removeFile color_file 
@@ -66,7 +70,7 @@ whilst :: Bool -> IO () -> IO ()
 whilst True action = action
 whilst False action = return () 
 
-pInitState = ParserState { pMode = PDefault, pColorVectors = [], pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0, pGenPlan = Map.empty, pGenPlanOrder = 0 }
+pInitState = ParserState { pMode = PDefault, pColorVectors = [], pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0, pGenPlan = Map.empty, pGenPlanOrder = 0, pColorNum = 0 }
 
 icc = "icpc"
 
@@ -81,123 +85,129 @@ iccDebugFlags = ["-DNDEBUG", "-O0", "-g3", "-std=c++0x"]
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x"]
 iccDebugPPFlags = ["-P", "-C", "-DNDEBUG", "-g3", "-std=c++0x"]
 
-parseArgs :: (String, String, PMode, Bool, [String]) -> [String] -> (String, String, PMode, Bool, [String])
-parseArgs (color_file, kernel_file, mode, showFile, userArgs) aL 
+parseArgs :: (Int, String, String, PMode, Bool, [String]) -> [String] -> (Int, String, String, PMode, Bool, [String])
+parseArgs (colorNum, color_file, kernel_file, mode, showFile, userArgs) aL 
     | elem "--help" aL =
         let l_mode = PHelp
             aL' = delete "--help" aL
-        in  (color_file, kernel_file, l_mode, showFile, aL')
+        in  (colorNum, color_file, kernel_file, l_mode, showFile, aL')
     | elem "-h" aL =
         let l_mode = PHelp
             aL' = delete "-h" aL
-        in  (color_file, kernel_file, l_mode, showFile, aL')
+        in  (colorNum, color_file, kernel_file, l_mode, showFile, aL')
     | elem "-showFile" aL =
         let l_showFile = True
             aL' = delete "-showFile" aL
-        in  parseArgs (color_file, kernel_file, mode, l_showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, mode, l_showFile, aL') aL'
     | elem "-auto-optimize" aL =
         let l_mode = PDefault
             aL' = delete "-auto-optimize" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
 ------------------------------------------------------------------------------
 -- so far, the split-caching mode doesn't work for multiple-kernel case!!!! --
 ------------------------------------------------------------------------------
     | elem "-split-caching" aL =
         let l_mode = PCaching
             aL' = delete "-split-caching" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-all-cond-tile-macro-overlap" aL =
         let l_mode = PAllCondTileMacroOverlap
             aL' = delete "-all-cond-tile-macro-overlap" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-all-cond-tile-c-pointer-overlap" aL =
         let l_mode = PAllCondTileCPointerOverlap
             aL' = delete "-all-cond-tile-c-pointer-overlap" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-all-cond-tile-pointer-overlap" aL =
         let l_mode = PAllCondTilePointerOverlap
             aL' = delete "-all-cond-tile-pointer-overlap" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-all-cond-tile-opt-pointer-overlap" aL =
         let l_mode = PAllCondTileOptPointerOverlap
             aL' = delete "-all-cond-tile-opt-pointer-overlap" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-unroll-t-tile-macro-overlap" aL =
         let l_mode = PUnrollTimeTileMacroOverlap
             aL' = delete "-unroll-t-tile-macro-overlap" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-unroll-t-tile-c-pointer-overlap" aL =
         let l_mode = PUnrollTimeTileCPointerOverlap
             aL' = delete "-unroll-t-tile-c-pointer-overlap" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-unroll-t-tile-pointer-overlap" aL =
         let l_mode = PUnrollTimeTilePointerOverlap
             aL' = delete "-unroll-t-tile-pointer-overlap" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-unroll-t-tile-opt-pointer-overlap" aL =
         let l_mode = PUnrollTimeTileOptPointerOverlap
             aL' = delete "-unroll-t-tile-opt-pointer-overlap" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-all-cond-tile-macro" aL =
         let l_mode = PAllCondTileMacro
             aL' = delete "-all-cond-tile-macro" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-all-cond-tile-c-pointer" aL =
         let l_mode = PAllCondTileCPointer
             aL' = delete "-all-cond-tile-c-pointer" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-all-cond-tile-pointer" aL =
         let l_mode = PAllCondTilePointer
             aL' = delete "-all-cond-tile-pointer" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-all-cond-tile-opt-pointer" aL =
         let l_mode = PAllCondTileOptPointer
             aL' = delete "-all-cond-tile-opt-pointer" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-unroll-t-tile-macro" aL =
         let l_mode = PUnrollTimeTileMacro
             aL' = delete "-unroll-t-tile-macro" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-unroll-t-tile-c-pointer" aL =
         let l_mode = PUnrollTimeTileCPointer
             aL' = delete "-unroll-t-tile-c-pointer" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-unroll-t-tile-pointer" aL =
         let l_mode = PUnrollTimeTilePointer
             aL' = delete "-unroll-t-tile-pointer" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-unroll-t-tile-opt-pointer" aL =
         let l_mode = PUnrollTimeTileOptPointer
             aL' = delete "-unroll-t-tile-opt-pointer" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-unroll-multi-kernel" aL =
         let l_mode = PMUnroll
             aL' = delete "-unroll-multi-kernel" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-split-c-pointer" aL =
         let l_mode = PCPointer
             aL' = delete "-split-c-pointer" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-split-opt-pointer" aL =
         let l_mode = POptPointer
             aL' = delete "-split-opt-pointer" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-split-pointer" aL =
         let l_mode = PPointer
             aL' = delete "-split-pointer" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-split-macro-shadow" aL =
         let l_mode = PMacroShadow
             aL' = delete "-split-macro-shadow" aL
-        in  parseArgs (color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
+    | elem "-order" aL =
+        let l_idx = fromJust $ elemIndex "-order" aL
+            l_order = aL !! (l_idx + 1)
+            l_colorNum = fromIntegral $ read l_order
+            aL' = delete l_order $ delete "-order" aL 
+        in  parseArgs (l_colorNum, color_file, kernel_file, mode, showFile, aL') aL'
     | null aL == False =
         let (l_color_file, l_color_dir) = findFileBySuffix aL "color.dat" 
             (l_kernel_file, l_kernel_dir) = findFileBySuffix aL "kernel_info.cpp" 
             aL' = delete (l_color_dir ++ l_color_file) $ delete (l_kernel_dir ++ l_kernel_file) aL
-        in  (l_color_dir++l_color_file, l_kernel_dir++l_kernel_file, mode, showFile, aL')
+        in  (colorNum, l_color_dir++l_color_file, l_kernel_dir++l_kernel_file, mode, showFile, aL')
     | otherwise = 
         let l_mode = PNoPP
-        in  (color_file, kernel_file, l_mode, showFile, aL)
+        in  (colorNum, color_file, kernel_file, l_mode, showFile, aL)
 
 findFileBySuffix :: [String] -> String -> (String, String) 
 findFileBySuffix [] _ = ("", "")
@@ -221,15 +231,15 @@ printOptions =
     do putStrLn ("Usage: genkernels [OPTION] [KERNEL_INFO_FILE] [COLOR_INFO_FILE]")
        putStrLn ("Run the genkernels with kernel_info and color_info.")
 
-pGenKernel :: PMode -> [[Homogeneity]] -> Handle -> Handle -> IO ()           
-pGenKernel mode colorVectors kernelh genKernelh = 
+pGenKernel :: PMode -> [Homogeneity] -> Int -> Handle -> Handle -> IO ()           
+pGenKernel mode colorVectors colorNum kernelh genKernelh = 
     do ls <- hGetContents kernelh
-       let pRevInitState = pInitState { pMode = mode, pColorVectors = colorVectors }
+       let pRevInitState = pInitState { pMode = mode, pColorVectors = colorVectors, pColorNum = colorNum }
        case runParser pParser pRevInitState "" $ stripWhite ls of
            Left err -> print err
            Right str -> hPutStrLn genKernelh str
 
-pParseColorFile :: Handle -> IO [[Homogeneity]]
+pParseColorFile :: Handle -> IO [Homogeneity]
 pParseColorFile colorh =
     do ls <- hGetContents colorh
        case parse pParseColor "" ls of
@@ -240,8 +250,8 @@ pParseColorFile colorh =
                 do putStrLn $ show colorVectors
                    return colorVectors
            
-pParseColor :: Parser [[Homogeneity]]
-pParseColor = many $ brackets $ many $ parens pColor
+pParseColor :: Parser [Homogeneity]
+pParseColor = many $ parens pColor
 
 pColor :: Parser Homogeneity
 pColor = 

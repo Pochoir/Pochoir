@@ -131,7 +131,7 @@ class Pochoir {
     void Run(int timestep);
     void Run_Obase(int timestep);
     Pochoir_Plan<N_RANK> & Gen_Plan(int timepstep);
-    Pochoir_Plan<N_RANK> & Gen_Plan_Obase(int timepstep, const char * pochoir_mode, const char * color_vector_fname, const char * kernel_info_fname);
+    Pochoir_Plan<N_RANK> & Gen_Plan_Obase(int timepstep, int gen_plan_order, const char * pochoir_mode, const char * color_vector_fname, const char * kernel_info_fname);
     Pochoir_Plan<N_RANK> & Load_Plan(const char * file_name);
     void Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & _plan);
     void Run(Pochoir_Plan<N_RANK> & _plan);
@@ -512,7 +512,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
 }
 
 template <int N_RANK> 
-Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char * pochoir_mode, const char * color_vector_fname, const char * kernel_info_fname) {
+Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, int gen_plan_order, const char * pochoir_mode, const char * color_vector_fname, const char * kernel_info_fname) {
     Pochoir_Plan<N_RANK> * l_plan = new Pochoir_Plan<N_RANK>();
     int l_sz_base_data, l_sz_sync_data;
     Spawn_Tree<N_RANK> * l_tree;
@@ -574,9 +574,9 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
         white_clone = new Homogeneity(0);
     l_color_vector.add_unique_element(*white_clone);
     std::ofstream os_color_vector;
-    os_color_vector.open(color_vector_fname, ofstream::out | ofstream::app);
+    os_color_vector.open(color_vector_fname, ofstream::out | ofstream::trunc);
     if (os_color_vector.is_open()) {
-        os_color_vector << "[" << l_color_vector << "]" << std::endl;
+        os_color_vector << l_color_vector << std::endl;
     } else {
         printf("os_color_vector is NOT open! exit!\n");
         exit(EXIT_FAILURE);
@@ -584,7 +584,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     os_color_vector.close();
 
     char cmd[200];
-    sprintf(cmd, "./genkernels %s %s %s\0", pochoir_mode, color_vector_fname, kernel_info_fname);
+    sprintf(cmd, "./genkernels -order %d %s %s %s\0", gen_plan_order, pochoir_mode, color_vector_fname, kernel_info_fname);
     fprintf(stderr, "%s\n", cmd);
     int ret = system(cmd);
     if (ret == -1) {

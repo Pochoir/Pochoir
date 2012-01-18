@@ -162,7 +162,7 @@ ppStencil l_id l_state =
                                   updateStencilArray l_id l_revPArrays
                                   return ""
                           else return ""
-    <|> do try $ pMember "Gen_Plan_Obase"
+    <|> do try $ pMember "Gen_Plan"
            l_tstep <- parens exprStmtDim
            semi
            -- TO FIX:
@@ -175,7 +175,7 @@ ppStencil l_id l_state =
                     do updateState $ updatePGenPlan (l_gen_plan_order, l_stencil)
                        updateState $ updatePGenPlanOrder $ l_gen_plan_order + 1
                        return ""
-    <|> do l_run_func <- try $ pMember "Run_Obase" <|> pMember "Run_Obase_Merge"
+    <|> do l_run_func <- try $ pMember "Run" 
            l_tstep <- parens exprStmtDim
            semi
            case Map.lookup l_id $ pStencil l_state of

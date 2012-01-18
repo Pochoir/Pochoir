@@ -460,7 +460,7 @@ pGetExclusiveGuardTiles l_mode l_rank l_xGTs l_iGTs l_tiGTs =
     let l_condStr = if null l_tiGTs then map ((++) "!" . gName . fst) l_xGTs else map ((++) "!" . gName . fst) l_xGTs ++ map ((++) "!" . gName . fst) l_tiGTs 
         l_pGuardTiles = pGetAllIGuardTiles l_rank l_condStr l_iGTs []
         l_xLen = length l_xGTs
-    in  l_pGuardTiles ++ pGetExclusiveGuardTilesTerm l_mode l_rank 0 l_xLen l_xGTs l_iGTs l_tiGTs
+    in  l_pGuardTiles ++ pGetExclusiveGuardTilesTerm l_mode l_rank 0 (l_xLen-1) l_xGTs l_iGTs l_tiGTs
 
 pGetExclusiveGuardTilesTerm :: PMode -> Int -> Int -> Int -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, PTile)] -> [(PGuard, [PTile])]
 pGetExclusiveGuardTilesTerm l_mode l_rank l_xIdx l_xLen [] l_iGTs l_tiGTs = []
@@ -681,7 +681,7 @@ pBinToDec bValue = pBinToDecTerm 0 (length bValue) bValue
             if (idx >= n) 
                then 0
                else if bValue !! idx == '1'
-                       then (shift 1 $ n - idx) + pBinToDecTerm (idx+1) n bValue
+                       then (shift 1 $ n - 1 - idx) + pBinToDecTerm (idx+1) n bValue
                        else pBinToDecTerm (idx+1) n bValue
 
 rename :: String -> String -> String

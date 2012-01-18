@@ -208,7 +208,7 @@ cEmpty l_name = "/* Empty " ++ l_name ++ " */"
 
 data ParserState = ParserState {
     pMode  :: PMode,
-    pColorVectors :: [[Homogeneity]],
+    pColorVectors :: [Homogeneity],
     pArray :: Map.Map PName PArray,
     pStencil :: Map.Map PName PStencil,
     pRange :: Map.Map PName PRange,
@@ -221,7 +221,8 @@ data ParserState = ParserState {
     pTileOrder :: Int,
     pGenPlan :: Map.Map Int PStencil, -- this is a snapshot of each PStencil object
                                       -- at the time of calling Gen_Plan_Obase(T)
-    pGenPlanOrder :: Int
+    pGenPlanOrder :: Int,
+    pColorNum :: Int
 } deriving Show
 
 data Expr = VAR String String 
@@ -316,10 +317,10 @@ instance Show PMode where
     show PUnrollTimeTileOptPointerOverlap = "-unroll-t-tile-opt-pointer-overlap"
 
 instance Show Homogeneity where
-    show h = "<" ++ showBin (size h) (o h) ++ ", " ++ showBin (size h) (a h) ++ ">\n"
+    show h = "<" ++ showBin (size h - 1) (o h) ++ ", " ++ showBin (size h - 1) (a h) ++ ">\n"
 
 showBin :: Int -> Int -> String
-showBin 0 a = ""
+showBin (-1) a = ""
 showBin n a = showBinTerm n a ++ showBin (n-1) a
     where showBinTerm n a = if testBit a n then "1" else "0"
 
