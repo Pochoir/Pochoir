@@ -40,21 +40,78 @@ import Data.List
 import Data.Bits
 import qualified Data.Map as Map
 
-pCodeGen :: PMode -> [Homogeneity] -> PStencil -> (String, [(PGuard, [PTile])])
-pCodeGen l_mode l_color_vectors l_stencil = 
+pCodeGen :: PMode -> [Homogeneity] -> [PGuardFunc] -> PStencil -> (String, [(PGuard, [PTile])])
+pCodeGen l_mode l_color_vectors l_guardFuncs l_stencil = 
     let -- we are assuming that all guards and kernels are of the same rank
         l_reg_GTs = sRegTileKernel l_stencil
         l_rank = if length l_reg_GTs > 0
                     then gRank $ fst $ head l_reg_GTs
                     else 0
         l_guardTiles = pGetGuardTiles l_mode 0 l_rank l_color_vectors l_reg_GTs
-        l_guards = map (pShowAutoGuardString " && ") l_guardTiles
+        l_guards = map (pShowGlobalGuardString " && ") l_guardTiles
         l_tiles = map (pShowAutoTileString l_mode l_stencil) l_guardTiles
+        l_create_lambdas = pCreateLambdas l_mode l_rank l_stencil l_guardTiles
         l_str_GTs = zipWith (++) l_guards l_tiles
     in  (breakline ++ pShowHeader ++ 
+            breakline ++ "/* Original Codes */" ++
+            breakline ++ pShowGuardFuncList l_guardFuncs ++
+            breakline ++ "/* Generated Codes */" ++
             breakline ++ pShowColorVectors l_color_vectors ++ 
-            breakline ++ concat l_str_GTs
+            breakline ++ concat l_str_GTs ++
+            breakline ++ l_create_lambdas
             , l_guardTiles)
+
+pCreateLambdas :: PMode -> Int -> PStencil -> [(PGuard, [PTile])] -> String
+pCreateLambdas _ _ _ [] = ""
+pCreateLambdas l_mode l_rank l_stencil cL =
+    let l_arrayInUse = sArrayInUse l_stencil
+        l_arrayList = map aName l_arrayInUse
+        l_arrayInputList = map (mkInput . aName) l_arrayInUse
+        -- l_arrayRefList = pShowPochoirArrayRef l_rank l_arrayList
+        l_arrayInputRefList = pShowPochoirArrayRef l_rank l_arrayInputList
+    
+        l_header = "int create_lambda " ++ 
+                    mkParen (intercalate ", " l_arrayInputRefList) ++ "{" ++ breakline
+        l_checkers = pCreateLambdaTerm l_mode l_rank l_stencil l_arrayInputList cL
+        l_tail = "}\n"
+    in  l_header ++ l_checkers ++ l_tail
+
+pCreateLambdaTerm :: PMode -> Int -> PStencil -> [String] -> [(PGuard, [PTile])] -> String
+pCreateLambdaTerm _ _ _ _ [] = ""
+pCreateLambdaTerm l_mode l_rank l_stencil l_inputParams cL@((g, t):cs) =
+    let l_tag = getTagFromMode l_mode
+        l_regBound = sRegBound l_stencil
+        l_order = gOrder g
+        l_bdry_name = l_tag ++ "_boundary_kernel_" ++ show l_order
+        l_obase_name = l_tag ++ "_interior_kernel_" ++ show l_order
+        l_bdry_class = pSys l_bdry_name
+        l_obase_class = pSys l_obase_name
+        l_bdry_pointer = mkInput l_bdry_name
+        l_obase_pointer = mkInput l_obase_name
+        l_new_bdry_lambdaPointer = 
+            if l_regBound 
+               then "/* " ++ show l_regBound ++ " */" ++
+                    pNewLambda l_bdry_pointer l_bdry_class l_inputParams
+               else "/* " ++ show l_regBound ++ " */" 
+        l_new_obase_lambdaPointer = pNewLambda l_obase_pointer l_obase_class l_inputParams
+    in  breakline ++ l_new_bdry_lambdaPointer ++ 
+        breakline ++ l_new_obase_lambdaPointer ++ 
+        pCreateLambdaTerm l_mode l_rank l_stencil l_inputParams cs
+
+pNewLambda :: String -> String -> [String] -> String
+pNewLambda l_pointer l_class l_inputParams = 
+    l_pointer ++ " = new " ++ l_class ++ 
+    (mkParen $ intercalate ", " l_inputParams) ++ ";" ++
+    breakline ++ "if ( " ++ l_pointer ++ 
+    " != NULL ) {" ++ 
+    breakline ++ pTab ++ "return 0; " ++ breakline ++ 
+    "} else {" ++ 
+    breakline ++ pTab ++ "printf(\" Failure in create_lambda allocation!\\n\");" ++
+    breakline ++ pTab ++ "exit(EXIT_FAILURE);" ++ breakline ++ "}"
+
+pShowGuardFuncList :: [PGuardFunc] -> String
+pShowGuardFuncList [] = ""
+pShowGuardFuncList gL@(g:gs) = pShowGlobalGuardFunc (gfName g) g ++ pShowGuardFuncList gs
 
 pShowColorVectors :: [Homogeneity] -> String 
 pShowColorVectors l_color_vectors = 

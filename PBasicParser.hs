@@ -127,25 +127,34 @@ pParseTileKernel =
              Nothing -> return $ SK emptyKernel { kName = l_kernelName }
              Just l_kernel -> return $ SK l_kernel 
 
-ppArray :: String -> ParserState -> GenParser Char ParserState String
+ppArray :: String -> ParserState -> GenParser Char ParserState (String, String)
 ppArray l_id l_state =
         do try $ pMember "Register_Boundary"
            l_boundaryFn <- parens pIdentifier
            semi
            case Map.lookup l_id $ pArray l_state of
-               Nothing -> return (l_id ++ ".Register_Boundary(" ++ l_boundaryFn ++ "); /* UNKNOWN Register_Boundary with " ++ l_id ++ "*/" ++ breakline)
+               Nothing -> 
+                    do let l_ret = l_id ++ ".Register_Boundary(" ++ l_boundaryFn ++ "); /* UNKNOWN Register_Boundary with " ++ l_id ++ "*/" ++ breakline
+                       return (l_ret, "")
                Just l_array -> 
                     do updateState $ updateArrayBoundary l_id True 
-                       return (l_id ++ ".Register_Boundary(" ++ l_boundaryFn ++ "); /* Register_Boundary */" ++ breakline)
+                       let l_ret = l_id ++ ".Register_Boundary(" ++ l_boundaryFn ++ "); /* Register_Boundary */" ++ breakline
+                       return (l_ret, l_ret)
     <|> do try $ pMember "Register_Shape"
            l_shape <- parens identifier
            semi
            case Map.lookup l_id $ pArray l_state of
-               Nothing -> return (l_id ++ ".Register_Shape(" ++ l_shape ++ "); /* UNKNOWN Register_Shape with " ++ l_id ++ "*/" ++ breakline)
+               Nothing -> 
+                    do let l_ret = l_id ++ ".Register_Shape(" ++ l_shape ++ "); /* UNKNOWN Register_Shape with " ++ l_id ++ "*/" ++ breakline
+                       return (l_ret, "")
                Just l_pArray ->
                    case Map.lookup l_shape $ pShape l_state of
-                       Nothing -> return (l_id ++ ".Register_Shape(" ++ l_shape ++ "); /* UNKNOWN Register_Shape with " ++ l_shape ++ "*/" ++ breakline)
-                       Just l_pShape -> return ("/* Known */" ++ l_id ++ ".Register_Shape(" ++ l_shape ++ ");" ++ breakline)
+                       Nothing -> 
+                            do let l_ret = l_id ++ ".Register_Shape(" ++ l_shape ++ "); /* UNKNOWN Register_Shape with " ++ l_shape ++ "*/" ++ breakline
+                               return (l_ret, "")
+                       Just l_pShape -> 
+                            do let l_ret = "/* Known */" ++ breakline ++ l_id ++ ".Register_Shape(" ++ l_shape ++ ");" ++ breakline
+                               return (l_ret, l_ret)
 
 ppStencil :: String -> ParserState -> GenParser Char ParserState (String, String)
 ppStencil l_id l_state = 

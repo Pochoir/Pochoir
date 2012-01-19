@@ -204,6 +204,13 @@ pShowAutoGuardFunc l_name l_guardFunc =
         pShowKernelParams l_params ++ ") -> bool {" ++ breakline ++
         show (gfStmt l_guardFunc) ++ breakline ++ "};" ++ breakline
 
+pShowGlobalGuardFunc :: String -> PGuardFunc -> String
+pShowGlobalGuardFunc l_name l_guardFunc = 
+    let l_params = zipWith (++) (repeat "int ") (gfParams l_guardFunc)
+    in  "/* known Guard ! */ bool " ++ l_name ++ " (" ++ 
+        pShowKernelParams l_params ++ ") {" ++ breakline ++
+        show (gfStmt l_guardFunc) ++ breakline ++ "}\n" 
+
 pShowMacroKernel :: PName -> PKernelFunc -> String
 pShowMacroKernel l_macro l_kernel =
     let l_iters = kfIter l_kernel
@@ -686,6 +693,35 @@ pShowAutoGuardString l_op (l_pGuard, l_tiles@(t:ts)) =
         breakline ++ "Pochoir_Guard <" ++ show l_rank ++ "> " ++ l_gName ++ " ( " ++ 
         l_gfName ++ " ); \n"
 
+pShowGlobalGuardString :: String -> (PGuard, [PTile]) -> String
+pShowGlobalGuardString l_op (_, []) = ""
+pShowGlobalGuardString l_op (l_pGuard, l_tiles@(t:ts)) = 
+    let l_color = "/* " ++ show (gColor l_pGuard) ++ " */"
+        l_gfName = pGetOverlapGuardFuncName l_pGuard
+        l_gName = pGetOverlapGuardName l_pGuard
+        l_pShapes = map (kShape) $ concatMap getTileKernels l_tiles
+        l_mergedPShape = pSysShape $ foldr mergePShapes emptyShape l_pShapes
+        l_timeShift = shapeTimeShift l_mergedPShape
+        l_rank = gRank l_pGuard
+        l_decl_params = "int t, " ++ 
+                    (intercalate ", " $ take l_rank $ map ((++) "int i" . show) [0,1..])
+        l_invoke_params = 
+                    if l_timeShift /= 0
+                       then "t + " ++ show l_timeShift ++ ", " ++
+                            (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
+                       else "t, " ++ 
+                            (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
+        l_decl_params' = " ( " ++ l_decl_params ++ " ) "
+        l_invoke_params' = " ( " ++ l_invoke_params ++ " ) " 
+        l_content = intercalate l_op $ 
+                        map (flip (++) l_invoke_params' . pAddUnderScore) $ 
+                        gComment l_pGuard
+    in  breakline ++ l_color ++
+        breakline ++ "bool " ++ l_gfName ++ l_decl_params' ++ " {" ++
+        breakline ++ "return ( " ++ l_content ++ " );" ++ breakline ++ " }" ++
+        breakline ++ "Pochoir_Guard <" ++ show l_rank ++ "> " ++ l_gName ++ " ( " ++ 
+        l_gfName ++ " ); \n"
+
 pShowAutoTileComments :: [PTile] -> String
 pShowAutoTileComments [] = breakline ++ "/* directly return */"
 pShowAutoTileComments l_ts =
@@ -767,6 +803,10 @@ pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kL
         breakline ++ l_guard_tail ++
         pShowAllCondTileOverlapKernelLoops l_showSingleKernel ts ks
 
+pShowPochoirArrayRef :: Int -> [String] -> [String]
+pShowPochoirArrayRef l_rank aL = 
+    zipWith (++) (repeat ("Pochoir_Array <" ++ show l_rank ++ "> & ")) aL
+
 pShowAllCondTileOverlapKernels :: (PKernelFunc -> String) -> Bool -> PMode -> String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String
 pShowAllCondTileOverlapKernels _ _ _ _ _ _ _ [] = ""
 pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pShape l_tile_indices l_kfss@(k:ks) =
@@ -785,12 +825,38 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
         l_kernelFuncName = pSys l_name
         l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> l_phys_grid = " ++
                             sName l_stencil ++ ".get_phys_grid();"
+{----------------------------------------------------------------------------------------
+        - The header and tail definition for the auto lambda function
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++
                    " = [&] (int " ++ l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
                    " Grid_Info <" ++ show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel <" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++
                  shapeName l_pShape ++ " );"
+ ----------------------------------------------------------------------------------------}
+        -- The header and tail definition for the function object -----------------------
+        l_arrayList = map aName l_arrayInUse
+        l_arrayInputList = map (mkInput . aName) l_arrayInUse
+        l_arrayRefList = pShowPochoirArrayRef l_rank l_arrayList
+        l_arrayInputRefList = pShowPochoirArrayRef l_rank l_arrayInputList
+        l_lambdaPointer = mkInput l_name
+        l_header = "/* KNOWN! */" ++ breakline ++ 
+                   "class " ++ l_kernelFuncName ++ " {" ++ breakline ++ 
+                   "private: " ++ breakline ++
+                   (intercalate "; " l_arrayRefList) ++ ";" ++ breakline ++ 
+                   "public: " ++ breakline ++ 
+                   l_kernelFuncName ++ mkParen (intercalate ", " l_arrayInputRefList) ++
+                   " : " ++ 
+                   (intercalate ", " $ 
+                        zipWith (++) l_arrayList (map mkParen l_arrayInputList)) ++ " {}" ++
+                   breakline ++ "void operator() (int " ++ 
+                   l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
+                   " Grid_Info <" ++ show l_rank ++ "> const & grid) {"
+        l_tail = "}" ++ breakline ++ "};" ++ 
+                 breakline ++ "static " ++ l_kernelFuncName ++ " * " ++ l_lambdaPointer ++
+                 " = NULL;"
+        ---------------------------------------------------------------------------------
+
         l_spatial_loop_header = 
             case l_mode of
                 PAllCondTileMacroOverlap ->

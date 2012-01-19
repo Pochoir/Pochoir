@@ -43,6 +43,12 @@ breakline = "\n\t"
 stripWhite :: String -> String
 stripWhite l = dropWhile isSpace l
 
+externC :: String
+externC = "extern \"C\" "
+
+pTab :: String
+pTab = "\t"
+
 -- We use newtype just because we want to manually derive a Show instance of PShift
 newtype PShift = PShift Int deriving (Eq, Ord)
 data RegionT = Periodic | Nonperiodic | UnknownRegionT deriving Show

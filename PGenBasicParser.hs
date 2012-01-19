@@ -475,10 +475,16 @@ pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_order, l_unro
         runKernel = if regBound
                        then obaseKernelName ++ ", " ++ bdryKernelName
                        else obaseKernelName
+{------------------------------------------------------------------------------------------
+    -- old version
     in  (breakline ++ l_comments ++
          breakline ++ show l_pShape' ++ bdryKernel ++ breakline ++ obaseKernel ++
          breakline ++ l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++
          ", " ++ show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
+ ------------------------------------------------------------------------------------------}
+    -- new version
+    in  (breakline ++ l_comments ++
+         breakline ++ show l_pShape' ++ bdryKernel ++ breakline ++ obaseKernel ++ breakline)
 
 pSplitUnrollTimeTileOverlapScope :: (String, PMode, PName, PName, Int, Int, [[Int]], [[PKernelFunc]], [[[Int]]], [[[PKernelFunc]]], PStencil, String) -> (PKernelFunc -> String) -> String
 pSplitUnrollTimeTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_kfss, l_tile_indices_by_t, l_kfss_by_t, l_stencil, l_comments) l_showSingleKernel =

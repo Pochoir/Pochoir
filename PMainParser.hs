@@ -73,8 +73,7 @@ pToken =
     <|> do try pParsePochoirGuard
     <|> do l_ret <- try pParsePochoirAutoGuardFunc
            return (l_ret, l_ret)
-    <|> do l_ret <- try pParsePochoirArrayMember
-           return (l_ret, "")
+    <|> do try pParsePochoirArrayMember
     <|> do try pParsePochoirStencilMember
     <|> do ch <- anyChar
            return ([ch], "")
@@ -225,7 +224,7 @@ pParsePochoirDomain =
        return (breakline ++ "Pochoir_Domain " ++ 
                pShowDynamicDecl l_rangeDecl pShowArrayDim ++ ";\n")
 
-pParsePochoirArrayMember :: GenParser Char ParserState String
+pParsePochoirArrayMember :: GenParser Char ParserState (String, String)
 pParsePochoirArrayMember =
     do l_id <- try (pIdentifier)
        l_state <- getState

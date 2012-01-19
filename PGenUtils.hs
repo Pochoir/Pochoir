@@ -688,4 +688,25 @@ rename :: String -> String -> String
 rename pSuffix fname = name ++ pSuffix ++ ".cpp"
     where (name, suffix) = break ('.' ==) fname
 
-                      
+mkInput :: String -> String
+mkInput a = "_" ++ a
+
+mkOutput :: String -> String
+mkOutput a = a ++ "_"
+
+mkParen :: String -> String
+mkParen a = "(" ++ a ++ ")"
+
+getTagFromMode :: PMode -> String
+getTagFromMode l_mode = 
+    case l_mode of
+        PAllCondTileMacroOverlap -> "Macro"
+        PAllCondTileCPointerOverlap -> "CPointer"
+        PAllCondTilePointerOverlap -> "Pointer"
+        PAllCondTileOptPointerOverlap -> "Opt_Pointer"
+        PUnrollTimeTileMacroOverlap -> "Macro"
+        PUnrollTimeTileCPointerOverlap -> "CPointer"
+        PUnrollTimeTilePointerOverlap -> "Pointer"
+        PUnrollTimeTileOptPointerOverlap -> "Opt_Pointer"
+        otherwise -> "Unknown"
+
