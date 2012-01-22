@@ -782,7 +782,8 @@ pShowOverlapGuardTail :: [PKernelFunc] -> [[PKernelFunc]] -> String
 pShowOverlapGuardTail _ [] = "}"
 pShowOverlapGuardTail _ [[]] = "}"
 pShowOverlapGuardTail k ks = if (kfTileOrder . head) k == (kfTileOrder . head . head) ks
-                                then "} else"
+                                -- then "} else"
+                                then "}"
                                 else "}"
 
 pShowAllCondTileOverlapKernelLoops :: (PKernelFunc -> String) -> [[Int]] -> [[PKernelFunc]] -> String
@@ -854,7 +855,9 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
                    " Grid_Info <" ++ show l_rank ++ "> const & grid) {"
         l_tail = "}" ++ breakline ++ "};" ++ 
                  breakline ++ "static " ++ l_kernelFuncName ++ " * " ++ l_lambdaPointer ++
-                 " = NULL;"
+                 " = NULL;" ++ 
+                 breakline ++ "static Pochoir_Obase_Kernel <" ++ show l_rank ++
+                 "> * " ++ l_name ++ " = NULL;"
         ---------------------------------------------------------------------------------
 
         l_spatial_loop_header = 
@@ -922,7 +925,8 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
         breakline ++ l_spatial_loop_tail ++
         breakline ++ pAdjustTrape l_rank ++
         breakline ++ pShowTimeLoopTail ++
-        breakline ++ l_tail ++ breakline ++ l_undef_mod_lu ++ breakline
+        breakline ++ l_tail ++ 
+        breakline ++ l_undef_mod_lu ++ breakline 
 
 pShowUnrollTimeTileOverlapKernels :: (PKernelFunc -> String) -> Bool -> PMode -> String -> PStencil -> PShape -> [[[Int]]] -> [[[PKernelFunc]]] -> String
 pShowUnrollTimeTileOverlapKernels _ _ _ _ _ _ _ [] = ""

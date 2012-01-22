@@ -51,6 +51,8 @@ pCodeGen l_mode l_color_vectors l_guardFuncs l_stencil =
         l_guards = map (pShowGlobalGuardString " && ") l_guardTiles
         l_tiles = map (pShowAutoTileString l_mode l_stencil) l_guardTiles
         l_create_lambdas = pCreateLambdas l_mode l_rank l_stencil l_guardTiles
+        l_destroy_lambdas = pDestroyLambdas l_mode l_rank l_stencil l_guardTiles
+        l_reg_lambdas = pRegLambdas l_mode l_rank l_stencil l_guardTiles
         l_str_GTs = zipWith (++) l_guards l_tiles
     in  (breakline ++ pShowHeader ++ 
             breakline ++ "/* Original Codes */" ++
@@ -58,8 +60,30 @@ pCodeGen l_mode l_color_vectors l_guardFuncs l_stencil =
             breakline ++ "/* Generated Codes */" ++
             breakline ++ pShowColorVectors l_color_vectors ++ 
             breakline ++ concat l_str_GTs ++
-            breakline ++ l_create_lambdas
+            breakline ++ l_create_lambdas ++
+            breakline ++ l_destroy_lambdas ++
+            breakline ++ l_reg_lambdas
             , l_guardTiles)
+
+pRegLambdas :: PMode -> Int -> PStencil -> [(PGuard, [PTile])] -> String
+pRegLambdas _ _ _ [] = ""
+pRegLambdas l_mode l_rank l_stencil cL =
+    let l_pochoir_id = sName l_stencil
+        l_pochoir_ref = "Pochoir < " ++ show l_rank ++ " > & "
+        l_header = externC ++ "int Register_Lambdas " ++
+                   mkParen (l_pochoir_ref ++ l_pochoir_id) ++ " { " ++ breakline
+        l_content = concatMap (pRegLambdaTerm l_mode l_rank l_stencil) cL
+        l_tail = breakline ++ "return 0;" ++ breakline ++ "}"
+    in  l_header ++ l_content ++ l_tail
+
+pDestroyLambdas :: PMode -> Int -> PStencil -> [(PGuard, [PTile])] -> String
+pDestroyLambdas _ _ _ [] = ""
+pDestroyLambdas l_mode l_rank l_stencil cL =
+    let l_header = externC ++ "int Destroy_Lambdas " ++
+                   mkParen "void" ++ " { " ++ breakline
+        l_content = concatMap (pDestroyLambdaTerm l_mode l_rank l_stencil) cL
+        l_tail = breakline ++ "return 0;" ++ breakline ++ "}"
+    in  l_header ++ l_content ++ l_tail
 
 pCreateLambdas :: PMode -> Int -> PStencil -> [(PGuard, [PTile])] -> String
 pCreateLambdas _ _ _ [] = ""
@@ -70,44 +94,11 @@ pCreateLambdas l_mode l_rank l_stencil cL =
         -- l_arrayRefList = pShowPochoirArrayRef l_rank l_arrayList
         l_arrayInputRefList = pShowPochoirArrayRef l_rank l_arrayInputList
     
-        l_header = "int create_lambda " ++ 
+        l_header = externC ++ "int Create_Lambdas " ++ 
                     mkParen (intercalate ", " l_arrayInputRefList) ++ "{" ++ breakline
-        l_checkers = pCreateLambdaTerm l_mode l_rank l_stencil l_arrayInputList cL
+        l_content = concatMap (pCreateLambdaTerm l_mode l_rank l_stencil l_arrayInputList) cL
         l_tail = "}\n"
-    in  l_header ++ l_checkers ++ l_tail
-
-pCreateLambdaTerm :: PMode -> Int -> PStencil -> [String] -> [(PGuard, [PTile])] -> String
-pCreateLambdaTerm _ _ _ _ [] = ""
-pCreateLambdaTerm l_mode l_rank l_stencil l_inputParams cL@((g, t):cs) =
-    let l_tag = getTagFromMode l_mode
-        l_regBound = sRegBound l_stencil
-        l_order = gOrder g
-        l_bdry_name = l_tag ++ "_boundary_kernel_" ++ show l_order
-        l_obase_name = l_tag ++ "_interior_kernel_" ++ show l_order
-        l_bdry_class = pSys l_bdry_name
-        l_obase_class = pSys l_obase_name
-        l_bdry_pointer = mkInput l_bdry_name
-        l_obase_pointer = mkInput l_obase_name
-        l_new_bdry_lambdaPointer = 
-            if l_regBound 
-               then "/* " ++ show l_regBound ++ " */" ++
-                    pNewLambda l_bdry_pointer l_bdry_class l_inputParams
-               else "/* " ++ show l_regBound ++ " */" 
-        l_new_obase_lambdaPointer = pNewLambda l_obase_pointer l_obase_class l_inputParams
-    in  breakline ++ l_new_bdry_lambdaPointer ++ 
-        breakline ++ l_new_obase_lambdaPointer ++ 
-        pCreateLambdaTerm l_mode l_rank l_stencil l_inputParams cs
-
-pNewLambda :: String -> String -> [String] -> String
-pNewLambda l_pointer l_class l_inputParams = 
-    l_pointer ++ " = new " ++ l_class ++ 
-    (mkParen $ intercalate ", " l_inputParams) ++ ";" ++
-    breakline ++ "if ( " ++ l_pointer ++ 
-    " != NULL ) {" ++ 
-    breakline ++ pTab ++ "return 0; " ++ breakline ++ 
-    "} else {" ++ 
-    breakline ++ pTab ++ "printf(\" Failure in create_lambda allocation!\\n\");" ++
-    breakline ++ pTab ++ "exit(EXIT_FAILURE);" ++ breakline ++ "}"
+    in  l_header ++ l_content ++ l_tail
 
 pShowGuardFuncList :: [PGuardFunc] -> String
 pShowGuardFuncList [] = ""
@@ -128,12 +119,12 @@ pGetGuardTiles l_mode l_order l_rank cL@(c:cs) l_reg_GTs =
 pGetGuardTilesTerm :: PMode -> Int -> Int -> Homogeneity -> [(PGuard, PTile)] -> (PGuard, [PTile])
 pGetGuardTilesTerm l_mode l_order l_rank l_color l_reg_GTs =
     let l_guards = map fst l_reg_GTs
-        -- l_guards' = zipWith pFillGuardOrder [0..] l_guards
-        l_out_guard = foldr (pColorGuard l_rank l_color) emptyGuard l_guards
+        l_guards' = zipWith pFillGuardOrder [0..] l_guards
+        l_out_guard = foldr (pColorGuard l_rank l_color) emptyGuard l_guards'
         l_out_guard' = pFillGuardOrder l_order l_out_guard
         l_tiles = map snd l_reg_GTs
-        -- l_tiles' = zipWith pFillTileOrder [0..] l_tiles
-        l_out_tiles = foldr (pColorTile l_rank l_color) [] l_tiles
+        l_tiles' = zipWith pFillTileOrder [0..] l_tiles
+        l_out_tiles = foldr (pColorTile l_rank l_color) [] l_tiles'
         l_out_tiles' = map (pFillTileOrder l_order) l_out_tiles
     in  (l_out_guard', l_out_tiles')
 

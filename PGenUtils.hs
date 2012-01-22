@@ -697,6 +697,9 @@ mkOutput a = a ++ "_"
 mkParen :: String -> String
 mkParen a = "(" ++ a ++ ")"
 
+derefPointer :: String -> String
+derefPointer a = "*" ++ a
+
 getTagFromMode :: PMode -> String
 getTagFromMode l_mode = 
     case l_mode of

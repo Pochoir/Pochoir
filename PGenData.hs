@@ -44,7 +44,7 @@ stripWhite :: String -> String
 stripWhite l = dropWhile isSpace l
 
 externC :: String
-externC = "extern \"C\" "
+externC = "extern \"C\" " ++ breakline
 
 pTab :: String
 pTab = "\t"
