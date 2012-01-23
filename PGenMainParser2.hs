@@ -100,7 +100,7 @@ pCreateLambdas l_mode l_rank l_stencil cL =
                     mkParen (l_stencilInputRef ++ ", " ++ intercalate ", " l_arrayInputRefList) ++ 
                     "{" ++ breakline
         l_content = concatMap (pCreateLambdaTerm l_mode l_rank l_stencil l_inputList) cL
-        l_tail = "}\n"
+        l_tail = breakline ++ pTab ++ "return 0;" ++ breakline ++ "}\n"
     in  l_header ++ l_content ++ l_tail
 
 pShowGuardFuncList :: [PGuardFunc] -> String

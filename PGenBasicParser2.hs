@@ -120,9 +120,7 @@ pNewLambdaClosure l_pointer l_class l_inputParams =
     l_pointer ++ " = new " ++ l_class ++
     (mkParen $ intercalate ", " l_inputParams) ++ ";" ++
     breakline ++ "if ( " ++ l_pointer ++
-    " != NULL ) {" ++
-    breakline ++ pTab ++ "return 0; " ++ breakline ++
-    "} else {" ++
+    " == NULL ) {" ++
     breakline ++ pTab ++ "printf(\" Failure in create_lambda allocation!\\n\");" ++
     breakline ++ pTab ++ "exit(EXIT_FAILURE);" ++ breakline ++ "}"
 
