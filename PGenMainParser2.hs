@@ -169,6 +169,7 @@ pShowHeader =
     breakline ++ "#include <cstdio>" ++
     breakline ++ "#include <cstdlib>" ++
     breakline ++ "#include <cassert>" ++
+    breakline ++ "#include <new>" ++
     -- breakline ++ "#include <functional>" ++
     -- breakline ++ "#include <dlfcn.h>" ++ 
     breakline ++ "#include <pochoir.hpp>" ++
