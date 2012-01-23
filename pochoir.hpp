@@ -132,6 +132,10 @@ class Pochoir {
     void Run_Obase(int timestep);
     Pochoir_Plan<N_RANK> & Gen_Plan(int timepstep);
     Pochoir_Plan<N_RANK> & Gen_Plan_Obase(int timepstep, int gen_plan_order, const char * pochoir_mode, const char * color_vector_fname, const char * kernel_info_fname);
+    template <typename T>
+    int Init_Lambdas(const char * gen_kernel_fname, Pochoir_Array <T, N_RANK> & a);
+    template <typename T, typename ... TS>
+    int Init_Lambdas(const char * gen_kernel_fname, Pochoir_Array <T, N_RANK> & a, Pochoir_Array <TS, N_RANK> ... as);
     Pochoir_Plan<N_RANK> & Load_Plan(const char * file_name);
     void Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & _plan);
     void Run(Pochoir_Plan<N_RANK> & _plan);
@@ -594,6 +598,38 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, int gen_pla
     fprintf(stderr, "./genkernels exits!\n");
 
     return (*l_plan);
+}
+
+template <int N_RANK> template <typename T>
+int Pochoir<N_RANK>::Init_Lambdas(const char * gen_kernel_fname, Pochoir_Array<T, N_RANK> & a) {
+    DynamicLoader gen_kernel(gen_kernel_fname);
+
+    fprintf(stderr, "<%s> starts!\n", __FUNCTION__);
+    std::function < int (Pochoir_Array <T, N_RANK>) > create_lambdas = gen_kernel.load < int (Pochoir_Array <T, N_RANK>) > ("Create_Lambdas");
+    std::function < int (void) > destroy_lambdas = gen_kernel.load < int (void) > ("Destroy_Lambdas");
+    std::function < int (Pochoir < N_RANK >) > register_lambdas = gen_kernel.load < int (Pochoir< N_RANK >) > ("Register_Lambdas");
+
+    create_lambdas(a);
+    register_lambdas(*this);
+
+    fprintf(stderr, "<%s> ends!\n", __FUNCTION__);
+    return 0;
+}
+
+template <int N_RANK> template <typename T, typename ... TS>
+int Pochoir<N_RANK>::Init_Lambdas(const char * gen_kernel_fname, Pochoir_Array <T, N_RANK> & a, Pochoir_Array <TS, N_RANK> ... as) {
+    DynamicLoader gen_kernel(gen_kernel_fname);
+
+    fprintf(stderr, "<%s> starts!\n", __FUNCTION__);
+    std::function < int (Pochoir_Array <T, N_RANK>, Pochoir_Array<TS, N_RANK> ...) > create_lambdas = gen_kernel.load < int (Pochoir_Array <T, N_RANK>, Pochoir_Array<TS, N_RANK> ...) > ("Create_Lambdas");
+    std::function < int (void) > destroy_lambdas = gen_kernel.load < int (void) > ("Destroy_Lambdas");
+    std::function < int (Pochoir < N_RANK >) > register_lambdas = gen_kernel.load < int (Pochoir< N_RANK >) > ("Register_Lambdas");
+
+    create_lambdas(a, as ...);
+    register_lambdas(*this);
+
+    fprintf(stderr, "<%s> ends!\n", __FUNCTION__);
+    return 0;
 }
 
 template <int N_RANK>

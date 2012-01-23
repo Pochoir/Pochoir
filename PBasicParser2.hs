@@ -48,13 +48,24 @@ ppStencil1 l_id l_state =
            l_tstep <- parens exprStmtDim
            semi
            let l_mode = pMode l_state
-           let l_inFile = pInFile l_state
-           let l_color_num = pColorNum l_state
-           let l_color_dest_suffix = "_" ++ show l_color_num ++ "_color.dat"
-           let l_color_fname = pSubstitute ".cpp" l_color_dest_suffix l_inFile
-           let l_kernel_info_fname = rename "_kernel_info" l_inFile
-           updateState $ updatePColorNum $ l_color_num + 1
-           return (l_id ++ ".Gen_Plan_Obase(" ++ show l_tstep ++ ", " ++ show l_color_num ++ ", \"" ++ show l_mode ++ "\", \"" ++ l_color_fname ++ "\", \"" ++ l_kernel_info_fname ++ "\"); /* KNOWN */" ++ breakline)
+           case Map.lookup l_id $ pStencil l_state of
+               Nothing -> return (l_id ++ ".Gen_Plan(" ++ show l_tstep ++ "); /* Unknown stencil id" ++ breakline)
+               Just l_stencil ->
+                   do let l_inFile = pInFile l_state 
+                      let l_color_num = pColorNum l_state 
+                      let l_color_dest_suffix = "_" ++ show l_color_num ++ "_color.dat" 
+                      let l_color_fname = pSubstitute ".cpp" l_color_dest_suffix l_inFile 
+                      let l_kernel_info_fname = rename "_kernel_info" l_inFile 
+                      let l_gen_kernel_fname = mkLocal $ pSubstitute "_color.dat" "_gen_kernel.cpp" l_color_fname 
+                      let l_arrayInputList = map aName $ sArrayInUse l_stencil
+                      updateState $ updatePColorNum $ l_color_num + 1 
+                      return (l_id ++ ".Gen_Plan_Obase(" ++ show l_tstep ++ ", " ++ 
+                              show l_color_num ++ ", \"" ++ show l_mode ++ "\", \"" ++ 
+                              l_color_fname ++ "\", \"" ++ l_kernel_info_fname ++ 
+                              "\"); /* KNOWN */" ++ breakline ++
+                              l_id ++ ".Init_Lambdas(\"" ++ l_gen_kernel_fname ++ "\", " ++ 
+                              intercalate ", " l_arrayInputList ++ "); /* KNOWN */" ++ 
+                              breakline)
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
            semi

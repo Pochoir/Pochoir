@@ -804,9 +804,19 @@ pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kL
         breakline ++ l_guard_tail ++
         pShowAllCondTileOverlapKernelLoops l_showSingleKernel ts ks
 
-pShowPochoirArrayRef :: Int -> [String] -> [String]
-pShowPochoirArrayRef l_rank aL = 
-    zipWith (++) (repeat ("Pochoir_Array <" ++ show l_rank ++ "> & ")) aL
+
+pShowPochoirArrayRef :: (Int, PType, String) -> String
+pShowPochoirArrayRef (r, t, a) =
+    "Pochoir_Array <" ++ show t ++ ", " ++ show r ++ "> & " ++ a 
+
+{-
+pShowPochoirArrayRef :: PArray -> String
+pShowPochoirArrayRef l_pArray = 
+    let l_rank = aRank l_pArray
+        l_type = aType l_pArray
+        l_name = aName l_pArray
+    in  "Pochoir_Array <" ++ show l_type ++ ", " ++ show l_rank ++ "> & " ++ l_name
+-}
 
 pShowAllCondTileOverlapKernels :: (PKernelFunc -> String) -> Bool -> PMode -> String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String
 pShowAllCondTileOverlapKernels _ _ _ _ _ _ _ [] = ""
@@ -838,8 +848,8 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
         -- The header and tail definition for the function object -----------------------
         l_arrayList = map aName l_arrayInUse
         l_arrayInputList = map (mkInput . aName) l_arrayInUse
-        l_arrayRefList = pShowPochoirArrayRef l_rank l_arrayList
-        l_arrayInputRefList = pShowPochoirArrayRef l_rank l_arrayInputList
+        l_arrayRefList = map pShowPochoirArrayRef $ zip3 (map aRank l_arrayInUse) (map aType l_arrayInUse) l_arrayList
+        l_arrayInputRefList = map pShowPochoirArrayRef $ zip3 (map aRank l_arrayInUse) (map aType l_arrayInUse) l_arrayInputList
         l_lambdaPointer = mkInput l_name
         l_header = "/* KNOWN! */" ++ breakline ++ 
                    "class " ++ l_kernelFuncName ++ " {" ++ breakline ++ 

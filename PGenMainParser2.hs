@@ -91,9 +91,7 @@ pCreateLambdas l_mode l_rank l_stencil cL =
     let l_arrayInUse = sArrayInUse l_stencil
         l_arrayList = map aName l_arrayInUse
         l_arrayInputList = map (mkInput . aName) l_arrayInUse
-        -- l_arrayRefList = pShowPochoirArrayRef l_rank l_arrayList
-        l_arrayInputRefList = pShowPochoirArrayRef l_rank l_arrayInputList
-    
+        l_arrayInputRefList = map pShowPochoirArrayRef $ zip3 (map aRank l_arrayInUse) (map aType l_arrayInUse) (map aName l_arrayInUse)
         l_header = externC ++ "int Create_Lambdas " ++ 
                     mkParen (intercalate ", " l_arrayInputRefList) ++ "{" ++ breakline
         l_content = concatMap (pCreateLambdaTerm l_mode l_rank l_stencil l_arrayInputList) cL

@@ -416,7 +416,8 @@ struct Vector_Info {
         printf("init size = %d\n", size_);
 #endif
     }
-    Vector_Info(Vector_Info<T> const & rhs) {
+    // Vector_Info(Vector_Info<T> const & rhs) {
+    Vector_Info(Vector_Info<T> & rhs) {
         int l_rhs_size = rhs.size();
         region_ = new T[l_rhs_size];
         size_ = l_rhs_size;
