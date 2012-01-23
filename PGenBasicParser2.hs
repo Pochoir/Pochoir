@@ -98,8 +98,8 @@ pCreateLambdaTerm l_mode l_rank l_stencil l_inputParams (g, t) =
         l_bdry_kernel_pointer = l_bdry_name
         l_obase_kernel_pointer = l_obase_name
         l_kernel_class = "Pochoir_Obase_Kernel < " ++ show l_rank ++ " > "
-        l_bdry_kernel_inputs = [l_bdry_pointer] ++ [l_shape_name] 
-        l_obase_kernel_inputs = [l_obase_pointer] ++ [l_shape_name] 
+        l_bdry_kernel_inputs = [(mkParen . derefPointer) l_bdry_pointer] ++ [l_shape_name] 
+        l_obase_kernel_inputs = [(mkParen . derefPointer) l_obase_pointer] ++ [l_shape_name] 
         l_new_bdry_lambdaPointer =
             if l_regBound
                then pNewLambdaClosure l_bdry_pointer l_bdry_class l_inputParams

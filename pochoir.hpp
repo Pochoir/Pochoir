@@ -605,11 +605,11 @@ int Pochoir<N_RANK>::Init_Lambdas(const char * gen_kernel_fname, Pochoir_Array<T
     DynamicLoader gen_kernel(gen_kernel_fname);
 
     fprintf(stderr, "<%s> starts!\n", __FUNCTION__);
-    std::function < int (Pochoir_Array <T, N_RANK>) > create_lambdas = gen_kernel.load < int (Pochoir_Array <T, N_RANK>) > ("Create_Lambdas");
+    std::function < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &) > create_lambdas = gen_kernel.load < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &) > ("Create_Lambdas");
     std::function < int (void) > destroy_lambdas = gen_kernel.load < int (void) > ("Destroy_Lambdas");
-    std::function < int (Pochoir < N_RANK >) > register_lambdas = gen_kernel.load < int (Pochoir< N_RANK >) > ("Register_Lambdas");
+    std::function < int (Pochoir < N_RANK > &) > register_lambdas = gen_kernel.load < int (Pochoir< N_RANK > &) > ("Register_Lambdas");
 
-    create_lambdas(a);
+    create_lambdas(*this, a);
     register_lambdas(*this);
 
     fprintf(stderr, "<%s> ends!\n", __FUNCTION__);
@@ -621,11 +621,11 @@ int Pochoir<N_RANK>::Init_Lambdas(const char * gen_kernel_fname, Pochoir_Array <
     DynamicLoader gen_kernel(gen_kernel_fname);
 
     fprintf(stderr, "<%s> starts!\n", __FUNCTION__);
-    std::function < int (Pochoir_Array <T, N_RANK>, Pochoir_Array<TS, N_RANK> ...) > create_lambdas = gen_kernel.load < int (Pochoir_Array <T, N_RANK>, Pochoir_Array<TS, N_RANK> ...) > ("Create_Lambdas");
+    std::function < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &, Pochoir_Array<TS, N_RANK> ...) > create_lambdas = gen_kernel.load < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &, Pochoir_Array<TS, N_RANK> ...) > ("Create_Lambdas");
     std::function < int (void) > destroy_lambdas = gen_kernel.load < int (void) > ("Destroy_Lambdas");
-    std::function < int (Pochoir < N_RANK >) > register_lambdas = gen_kernel.load < int (Pochoir< N_RANK >) > ("Register_Lambdas");
+    std::function < int (Pochoir < N_RANK > &) > register_lambdas = gen_kernel.load < int (Pochoir< N_RANK > &) > ("Register_Lambdas");
 
-    create_lambdas(a, as ...);
+    create_lambdas(*this, a, as ...);
     register_lambdas(*this);
 
     fprintf(stderr, "<%s> ends!\n", __FUNCTION__);

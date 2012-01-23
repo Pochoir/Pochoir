@@ -700,6 +700,9 @@ mkParen a = "(" ++ a ++ ")"
 derefPointer :: String -> String
 derefPointer a = "*" ++ a
 
+mkStatic :: String -> String
+mkStatic a = "static " ++ a
+
 getTagFromMode :: PMode -> String
 getTagFromMode l_mode = 
     case l_mode of

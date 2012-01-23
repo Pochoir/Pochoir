@@ -43,7 +43,7 @@ public:
 
         sprintf(cpp_filename, "%s.cpp", filename);
         sprintf(so_filename, "%s.so", filename);
-        sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x %s\0", so_filename, cpp_filename);
+        sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 
         printf("%s\n", cmd);
         int ret = system(cmd);

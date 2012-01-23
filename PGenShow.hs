@@ -683,14 +683,16 @@ pShowAutoGuardString l_op (l_pGuard, l_tiles@(t:ts)) =
                             (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
         l_decl_params' = " ( " ++ l_decl_params ++ " ) "
         l_invoke_params' = " ( " ++ l_invoke_params ++ " ) " 
-        l_content = intercalate l_op $ 
-                        map (flip (++) l_invoke_params' . pAddUnderScore) $ 
-                        gComment l_pGuard
+        l_content = if null $ gComment l_pGuard
+                       then "true"
+                       else intercalate l_op $ 
+                                map (flip (++) l_invoke_params' . pAddUnderScore) $ 
+                                gComment l_pGuard
     in  breakline ++ l_color ++
         breakline ++ "auto " ++ l_gfName ++ " = [&] " ++ l_decl_params' ++ 
         " -> bool {" ++
         breakline ++ "return ( " ++ l_content ++ " );" ++ breakline ++ " };" ++
-        breakline ++ "Pochoir_Guard <" ++ show l_rank ++ "> " ++ l_gName ++ " ( " ++ 
+        breakline ++ mkStatic "Pochoir_Guard <" ++ show l_rank ++ "> " ++ l_gName ++ " ( " ++ 
         l_gfName ++ " ); \n"
 
 pShowGlobalGuardString :: String -> (PGuard, [PTile]) -> String
@@ -713,13 +715,15 @@ pShowGlobalGuardString l_op (l_pGuard, l_tiles@(t:ts)) =
                             (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
         l_decl_params' = " ( " ++ l_decl_params ++ " ) "
         l_invoke_params' = " ( " ++ l_invoke_params ++ " ) " 
-        l_content = intercalate l_op $ 
-                        map (flip (++) l_invoke_params' . pAddUnderScore) $ 
-                        gComment l_pGuard
+        l_content = if null $ gComment l_pGuard
+                       then "true"
+                       else intercalate l_op $ 
+                                map (flip (++) l_invoke_params' . pAddUnderScore) $ 
+                                gComment l_pGuard
     in  breakline ++ l_color ++
         breakline ++ "bool " ++ l_gfName ++ l_decl_params' ++ " {" ++
         breakline ++ "return ( " ++ l_content ++ " );" ++ breakline ++ " }" ++
-        breakline ++ "Pochoir_Guard <" ++ show l_rank ++ "> " ++ l_gName ++ " ( " ++ 
+        breakline ++ mkStatic "Pochoir_Guard <" ++ show l_rank ++ "> " ++ l_gName ++ " ( " ++ 
         l_gfName ++ " ); \n"
 
 pShowAutoTileComments :: [PTile] -> String
@@ -806,8 +810,12 @@ pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kL
 
 
 pShowPochoirArrayRef :: (Int, PType, String) -> String
-pShowPochoirArrayRef (r, t, a) =
-    "Pochoir_Array <" ++ show t ++ ", " ++ show r ++ "> & " ++ a 
+pShowPochoirArrayRef (l_rank, l_type, l_name) =
+    "Pochoir_Array <" ++ show l_type ++ ", " ++ show l_rank ++ "> & " ++ l_name 
+
+pShowStencilRef :: (Int, String) -> String
+pShowStencilRef (l_rank, l_name) =
+    "Pochoir <" ++ show l_rank ++ "> & " ++ l_name
 
 {-
 pShowPochoirArrayRef :: PArray -> String
@@ -850,14 +858,21 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
         l_arrayInputList = map (mkInput . aName) l_arrayInUse
         l_arrayRefList = map pShowPochoirArrayRef $ zip3 (map aRank l_arrayInUse) (map aType l_arrayInUse) l_arrayList
         l_arrayInputRefList = map pShowPochoirArrayRef $ zip3 (map aRank l_arrayInUse) (map aType l_arrayInUse) l_arrayInputList
+        l_stencilName = sName l_stencil
+        l_stencilInputName = (mkInput . sName) l_stencil
+        l_stencilRef = pShowStencilRef (sRank l_stencil, l_stencilName)
+        l_stencilInputRef = pShowStencilRef (sRank l_stencil, l_stencilInputName)
         l_lambdaPointer = mkInput l_name
         l_header = "/* KNOWN! */" ++ breakline ++ 
                    "class " ++ l_kernelFuncName ++ " {" ++ breakline ++ 
                    "private: " ++ breakline ++
+                   l_stencilRef ++ ";" ++ breakline ++
                    (intercalate "; " l_arrayRefList) ++ ";" ++ breakline ++ 
                    "public: " ++ breakline ++ 
-                   l_kernelFuncName ++ mkParen (intercalate ", " l_arrayInputRefList) ++
+                   l_kernelFuncName ++ mkParen (l_stencilInputRef ++ ", " ++ 
+                                                intercalate ", " l_arrayInputRefList) ++
                    " : " ++ 
+                   l_stencilName ++ mkParen l_stencilInputName ++ ", " ++
                    (intercalate ", " $ 
                         zipWith (++) l_arrayList (map mkParen l_arrayInputList)) ++ " {}" ++
                    breakline ++ "void operator() (int " ++ 

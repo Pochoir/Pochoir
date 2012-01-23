@@ -339,7 +339,7 @@ instance Show PShape where
                         l_shapes = shape l_pShape
                         l_toggle = shapeToggle l_pShape
                         l_slopes = shapeSlopes l_pShape
-                    in  breakline ++ "/* Known */ Pochoir_Shape <" ++ show l_rank ++ 
+                    in  breakline ++ "Pochoir_Shape <" ++ show l_rank ++ 
                         "> " ++ l_name ++ " [ ] = " ++ pShowShapes l_shapes ++ 
                         ";" ++ breakline ++ "/* toggle: " ++ show l_toggle ++ 
                         "; slopes: " ++ show l_slopes ++ " */" ++ breakline

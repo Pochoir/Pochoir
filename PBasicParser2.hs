@@ -56,7 +56,7 @@ ppStencil1 l_id l_state =
                       let l_color_dest_suffix = "_" ++ show l_color_num ++ "_color.dat" 
                       let l_color_fname = pSubstitute ".cpp" l_color_dest_suffix l_inFile 
                       let l_kernel_info_fname = rename "_kernel_info" l_inFile 
-                      let l_gen_kernel_fname = mkLocal $ pSubstitute "_color.dat" "_gen_kernel.cpp" l_color_fname 
+                      let l_gen_kernel_fname = mkLocal $ pSubstitute "_color.dat" "_gen_kernel" l_color_fname 
                       let l_arrayInputList = map aName $ sArrayInUse l_stencil
                       updateState $ updatePColorNum $ l_color_num + 1 
                       return (l_id ++ ".Gen_Plan_Obase(" ++ show l_tstep ++ ", " ++ 

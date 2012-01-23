@@ -484,7 +484,7 @@ pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_order, l_unro
  ------------------------------------------------------------------------------------------}
     -- new version
     in  (breakline ++ l_comments ++
-         breakline ++ show l_pShape' ++ bdryKernel ++ breakline ++ obaseKernel ++ breakline)
+         breakline ++ (mkStatic . show) l_pShape' ++ bdryKernel ++ breakline ++ obaseKernel ++ breakline)
 
 pSplitUnrollTimeTileOverlapScope :: (String, PMode, PName, PName, Int, Int, [[Int]], [[PKernelFunc]], [[[Int]]], [[[PKernelFunc]]], PStencil, String) -> (PKernelFunc -> String) -> String
 pSplitUnrollTimeTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_order, l_unroll, l_tile_indices, l_kfss, l_tile_indices_by_t, l_kfss_by_t, l_stencil, l_comments) l_showSingleKernel =

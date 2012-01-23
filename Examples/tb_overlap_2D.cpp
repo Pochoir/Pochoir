@@ -59,6 +59,9 @@ Pochoir_Boundary_1D(aperiodic_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
 
+#define N 20
+#define T 20
+
 int main(int argc, char * argv[])
 {
     const int BASE = 1024;
@@ -66,7 +69,7 @@ int main(int argc, char * argv[])
     struct timeval start, end;
     double min_tdiff = INF;
     /* the 1D spatial dimension has 'N' points */
-    int N = 0, T = 0;
+    // int N = 0, T = 0;
     double umin, umax;
     char pochoir_plan_file_name[100];
 
@@ -74,8 +77,8 @@ int main(int argc, char * argv[])
         printf("argc < 3, quit! \n");
         exit(1);
     }
-    N = StrToInt(argv[1]);
-    T = StrToInt(argv[2]);
+    // N = StrToInt(argv[1]);
+    // T = StrToInt(argv[2]);
     printf("N = %d, T = %d\n", N, T);
     Pochoir_Shape_1D oned_3pt[] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
     Pochoir_Shape_1D shape_exclusive_0[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};

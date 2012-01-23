@@ -48,7 +48,8 @@ pCodeGen l_mode l_color_vectors l_guardFuncs l_stencil =
                     then gRank $ fst $ head l_reg_GTs
                     else 0
         l_guardTiles = pGetGuardTiles l_mode 0 l_rank l_color_vectors l_reg_GTs
-        l_guards = map (pShowGlobalGuardString " && ") l_guardTiles
+        -- l_guards = map (pShowGlobalGuardString " && ") l_guardTiles
+        l_guards = map (pShowAutoGuardString " && ") l_guardTiles
         l_tiles = map (pShowAutoTileString l_mode l_stencil) l_guardTiles
         l_create_lambdas = pCreateLambdas l_mode l_rank l_stencil l_guardTiles
         l_destroy_lambdas = pDestroyLambdas l_mode l_rank l_stencil l_guardTiles
@@ -62,7 +63,8 @@ pCodeGen l_mode l_color_vectors l_guardFuncs l_stencil =
             breakline ++ concat l_str_GTs ++
             breakline ++ l_create_lambdas ++
             breakline ++ l_destroy_lambdas ++
-            breakline ++ l_reg_lambdas
+            breakline ++ l_reg_lambdas ++
+            breakline ++ pShowTail
             , l_guardTiles)
 
 pRegLambdas :: PMode -> Int -> PStencil -> [(PGuard, [PTile])] -> String
@@ -89,18 +91,26 @@ pCreateLambdas :: PMode -> Int -> PStencil -> [(PGuard, [PTile])] -> String
 pCreateLambdas _ _ _ [] = ""
 pCreateLambdas l_mode l_rank l_stencil cL =
     let l_arrayInUse = sArrayInUse l_stencil
-        l_arrayList = map aName l_arrayInUse
+        l_stencilInputName = (mkInput . sName) l_stencil
         l_arrayInputList = map (mkInput . aName) l_arrayInUse
-        l_arrayInputRefList = map pShowPochoirArrayRef $ zip3 (map aRank l_arrayInUse) (map aType l_arrayInUse) (map aName l_arrayInUse)
+        l_inputList = [l_stencilInputName] ++ l_arrayInputList
+        l_arrayInputRefList = map pShowPochoirArrayRef $ zip3 (map aRank l_arrayInUse) (map aType l_arrayInUse) l_arrayInputList
+        l_stencilInputRef = pShowStencilRef (sRank l_stencil, l_stencilInputName)
         l_header = externC ++ "int Create_Lambdas " ++ 
-                    mkParen (intercalate ", " l_arrayInputRefList) ++ "{" ++ breakline
-        l_content = concatMap (pCreateLambdaTerm l_mode l_rank l_stencil l_arrayInputList) cL
+                    mkParen (l_stencilInputRef ++ ", " ++ intercalate ", " l_arrayInputRefList) ++ 
+                    "{" ++ breakline
+        l_content = concatMap (pCreateLambdaTerm l_mode l_rank l_stencil l_inputList) cL
         l_tail = "}\n"
     in  l_header ++ l_content ++ l_tail
 
 pShowGuardFuncList :: [PGuardFunc] -> String
 pShowGuardFuncList [] = ""
-pShowGuardFuncList gL@(g:gs) = pShowGlobalGuardFunc (gfName g) g ++ pShowGuardFuncList gs
+-- pShowGuardFuncList gL@(g:gs) = pShowGlobalGuardFunc (gfName g) g ++ pShowGuardFuncList gs
+pShowGuardFuncList gL@(g:gs) = 
+    let l_gfName = gfName g
+    in  if isInfixOf "Default" l_gfName
+           then pShowGuardFuncList gs
+           else pShowAutoGuardFunc l_gfName g ++ pShowGuardFuncList gs
 
 pShowColorVectors :: [Homogeneity] -> String 
 pShowColorVectors l_color_vectors = 
@@ -159,6 +169,13 @@ pShowHeader =
     breakline ++ "#include <cstdio>" ++
     breakline ++ "#include <cstdlib>" ++
     breakline ++ "#include <cassert>" ++
-    breakline ++ "#include <functional>" ++
-    breakline ++ "#include <dlfcn.h>" ++ 
+    -- breakline ++ "#include <functional>" ++
+    -- breakline ++ "#include <dlfcn.h>" ++ 
+    breakline ++ "#include <pochoir.hpp>" ++
     breakline 
+
+pShowTail :: String
+pShowTail = 
+    breakline ++ "extern \"C\" {" ++ 
+    breakline ++ pTab ++ "void *__dso_handle = NULL;" ++
+    breakline ++ "}"
