@@ -704,7 +704,8 @@ derefPointer :: String -> String
 derefPointer a = "*" ++ a
 
 mkStatic :: String -> String
-mkStatic a = "static " ++ a
+-- mkStatic a = "static " ++ a
+mkStatic a = a
 
 zipInsert :: String -> String -> String -> String -> String
 zipInsert op delim a b = a ++ op ++ b ++ delim

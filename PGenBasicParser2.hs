@@ -78,9 +78,9 @@ pDestroyLambdaTerm l_mode l_rank l_stencil (g, t) =
         l_del_obase_lambdaPointer = pDelPointer pNew l_obase_pointer 
         l_del_bdry_kernelPointer =
             if l_regBound
-               then pDelPointer (not pNew) l_bdry_name
+               then pDelPointer pNew l_bdry_name
                else ""
-        l_del_obase_kernelPointer = pDelPointer (not pNew) l_obase_name
+        l_del_obase_kernelPointer = pDelPointer pNew l_obase_name
     in  breakline ++ l_del_bdry_lambdaPointer ++
         breakline ++ l_del_bdry_kernelPointer ++
         breakline ++ l_del_obase_lambdaPointer ++
@@ -110,9 +110,9 @@ pCreateLambdaTerm l_mode l_rank l_stencil l_inputParams (g, t) =
         l_new_obase_lambdaPointer = pNewLambdaClosure pNew l_obase_pointer l_obase_class l_inputParams
         l_new_bdry_kernelPointer =
             if l_regBound
-               then pNewLambdaClosure (not pNew) l_bdry_kernel_pointer l_kernel_class l_bdry_kernel_inputs
+               then pNewLambdaClosure pNew l_bdry_kernel_pointer l_kernel_class l_bdry_kernel_inputs
                else ""
-        l_new_obase_kernelPointer = pNewLambdaClosure (not pNew) l_obase_kernel_pointer l_kernel_class l_obase_kernel_inputs
+        l_new_obase_kernelPointer = pNewLambdaClosure pNew l_obase_kernel_pointer l_kernel_class l_obase_kernel_inputs
     in  breakline ++ l_new_bdry_lambdaPointer ++
         breakline ++ l_new_bdry_kernelPointer ++
         breakline ++ l_new_obase_lambdaPointer ++

@@ -893,9 +893,9 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
                    l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
                    " Grid_Info <" ++ show l_rank ++ "> const & grid) {"
         l_tail = "}" ++ breakline ++ "};" ++ 
-                 breakline ++ "static " ++ l_kernelFuncName ++ " * " ++ l_lambdaPointer ++
+                 breakline ++ mkStatic l_kernelFuncName ++ " * " ++ l_lambdaPointer ++
                  " = NULL;" ++ 
-                 breakline ++ "static Pochoir_Obase_Kernel <" ++ show l_rank ++
+                 breakline ++ mkStatic "Pochoir_Obase_Kernel <" ++ show l_rank ++
                  "> * " ++ l_name ++ " = NULL;"
         ---------------------------------------------------------------------------------
 
