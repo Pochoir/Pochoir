@@ -118,6 +118,7 @@ pCreateLambdaTerm l_mode l_rank l_stencil l_inputParams (g, t) =
 pNewLambdaClosure :: String -> String -> [String] -> String
 pNewLambdaClosure l_pointer l_class l_inputParams =
     l_pointer ++ " = new (std::nothrow)" ++ l_class ++
+    -- l_pointer ++ " = " ++ mkPointer l_class ++ "calloc(1, " ++ l_class ++ ")" ++
     (mkParen $ intercalate ", " l_inputParams) ++ ";" ++
     breakline ++ "if ( " ++ l_pointer ++
     " == NULL ) {" ++
@@ -128,5 +129,6 @@ pDelPointer :: String -> String
 pDelPointer l_pointer =
     breakline ++ "if " ++ mkParen (l_pointer ++ " != NULL") ++ " {" ++ 
     breakline ++ pTab ++ "delete " ++ l_pointer ++ ";" ++ 
+    -- breakline ++ pTab ++ "free " ++ mkParen l_pointer ++ ";" ++ 
     breakline ++ pTab ++ l_pointer ++ " = NULL;" ++
     breakline ++ "}"

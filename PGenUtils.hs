@@ -697,6 +697,9 @@ mkOutput a = a ++ "_"
 mkParen :: String -> String
 mkParen a = "(" ++ a ++ ")"
 
+mkPointer :: String -> String
+mkPointer a = mkParen $ a ++ " * "
+
 derefPointer :: String -> String
 derefPointer a = "*" ++ a
 
