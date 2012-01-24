@@ -706,6 +706,9 @@ derefPointer a = "*" ++ a
 mkStatic :: String -> String
 mkStatic a = "static " ++ a
 
+zipInsert :: String -> String -> String -> String -> String
+zipInsert op delim a b = a ++ op ++ b ++ delim
+
 getTagFromMode :: PMode -> String
 getTagFromMode l_mode = 
     case l_mode of

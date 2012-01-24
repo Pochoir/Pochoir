@@ -117,18 +117,28 @@ pCreateLambdaTerm l_mode l_rank l_stencil l_inputParams (g, t) =
 
 pNewLambdaClosure :: String -> String -> [String] -> String
 pNewLambdaClosure l_pointer l_class l_inputParams =
+    -- if using new/delete facility
+{-
     l_pointer ++ " = new (std::nothrow)" ++ l_class ++
-    -- l_pointer ++ " = " ++ mkPointer l_class ++ "calloc(1, " ++ l_class ++ ")" ++
     (mkParen $ intercalate ", " l_inputParams) ++ ";" ++
+-}
+    -- end using new/delete
+    -- if using calloc/free facility
+    breakline ++ l_pointer ++ " = " ++ mkPointer l_class ++ "calloc(1, " ++ 
+                                            "sizeof" ++ mkParen l_class ++ ");" ++
+    -- end using calloc/free
     breakline ++ "if ( " ++ l_pointer ++
     " == NULL ) {" ++
     breakline ++ pTab ++ "printf(\" Failure in create_lambda allocation!\\n\");" ++
-    breakline ++ pTab ++ "exit(EXIT_FAILURE);" ++ breakline ++ "}"
+    breakline ++ pTab ++ "exit(EXIT_FAILURE);" ++ breakline ++ "}" 
+    -- if using calloc/free
+    ++ breakline ++ l_pointer ++ "->Init" ++ (mkParen $ intercalate ", " l_inputParams) ++ ";"
+    -- end using calloc/free
 
 pDelPointer :: String -> String
 pDelPointer l_pointer =
     breakline ++ "if " ++ mkParen (l_pointer ++ " != NULL") ++ " {" ++ 
-    breakline ++ pTab ++ "delete " ++ l_pointer ++ ";" ++ 
-    -- breakline ++ pTab ++ "free " ++ mkParen l_pointer ++ ";" ++ 
+    -- breakline ++ pTab ++ "delete " ++ l_pointer ++ ";" ++ 
+    breakline ++ pTab ++ "free " ++ mkParen l_pointer ++ ";" ++ 
     breakline ++ pTab ++ l_pointer ++ " = NULL;" ++
     breakline ++ "}"
