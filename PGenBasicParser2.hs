@@ -121,11 +121,16 @@ pCreateLambdaTerm l_mode l_rank l_stencil l_inputParams (g, t) =
 pNewLambdaClosure :: Bool -> String -> String -> [String] -> String
 pNewLambdaClosure l_new l_pointer l_class l_inputParams =
     let l_init_content = if l_new
+        -- for new(), if the system runs out of memory, it will throw an exception,
+        -- and never will return NULL. So need NOT to check NULL pointer after new()
            then ""
-           else l_pointer ++ "->Init" ++ (mkParen $ intercalate ", " l_inputParams) ++ ";"
+           else breakline ++ "if ( " ++ l_pointer ++ " == NULL ) {" ++
+                breakline ++ pTab ++ "printf(\" Failure in create_lambda allocation!\\n\");" ++
+                breakline ++ pTab ++ "exit(EXIT_FAILURE);" ++ breakline ++ "}" ++ 
+                l_pointer ++ "->Init" ++ (mkParen $ intercalate ", " l_inputParams) ++ ";"
         l_alloc = if l_new
            -- using new/delete
-           then l_pointer ++ " = new (std::nothrow)" ++ l_class ++ 
+           then l_pointer ++ " = new " ++ l_class ++ 
                     (mkParen $ intercalate ", " l_inputParams) ++ ";" 
            -- using calloc/free
            else l_pointer ++ " = " ++ mkPointer l_class ++ "calloc(1, " ++ 
@@ -133,10 +138,6 @@ pNewLambdaClosure l_new l_pointer l_class l_inputParams =
     in  -- if using new/delete facility
         breakline ++ l_alloc ++
         -- end using calloc/free
-        breakline ++ "if ( " ++ l_pointer ++
-        " == NULL ) {" ++
-        breakline ++ pTab ++ "printf(\" Failure in create_lambda allocation!\\n\");" ++
-        breakline ++ pTab ++ "exit(EXIT_FAILURE);" ++ breakline ++ "}" ++ 
         breakline ++ l_init_content
 
 pDelPointer :: Bool -> String -> String
