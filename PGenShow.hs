@@ -875,14 +875,20 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
                    l_stencilName ++ mkParen l_stencilInputName ++ ", " ++
                    (intercalate ", " $ 
                         zipWith (++) l_arrayList (map mkParen l_arrayInputList)) ++ " {}" ++
+{-
                    breakline ++ "int Init" ++ mkParen (l_stencilInputRef ++ ", " ++ 
                                                 intercalate ", " l_arrayInputRefList) ++
+                   " : " ++ 
+                   l_stencilName ++ mkParen l_stencilInputName ++ ", " ++
+                   (intercalate ", " $ 
+                        zipWith (++) l_arrayList (map mkParen l_arrayInputList)) ++ 
                    " {" ++
                    breakline ++ l_stencilName ++ " = " ++ l_stencilInputName ++ ";" ++
                    breakline ++ (concat $ zipWith (zipInsert " = " $ ";" ++ breakline) 
                                     l_arrayList l_arrayInputList) ++
                    breakline ++ "return 0;" ++
                    breakline ++ "}" ++
+ -}
                    breakline ++ "void operator() (int " ++ 
                    l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
                    " Grid_Info <" ++ show l_rank ++ "> const & grid) {"

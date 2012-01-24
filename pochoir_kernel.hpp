@@ -34,12 +34,12 @@ using namespace std;
 template <int N_RANK>
 struct Pochoir_Kernel {
     typedef typename Pochoir_Types<N_RANK>::T_Kernel T_Kernel;
-    T_Kernel * kernel_;
+    T_Kernel kernel_;
     Pochoir_Shape<N_RANK> * shape_;
     int shape_size_, time_shift_, toggle_, slope_[N_RANK];
     Pochoir_Kernel(void) { }
     template <int N_SIZE>
-    Pochoir_Kernel(T_Kernel _kernel, Pochoir_Shape<N_RANK> (& _shape)[N_SIZE]) : kernel_(&_kernel) {
+    Pochoir_Kernel(T_Kernel _kernel, Pochoir_Shape<N_RANK> (& _shape)[N_SIZE]) : kernel_(_kernel) {
         int l_min_time_shift=0, l_max_time_shift=0, depth=0;
         for (int r = 0; r < N_RANK+1; ++r) {
             slope_[r] = 0;
@@ -64,9 +64,9 @@ struct Pochoir_Kernel {
     }
     Pochoir_Shape<N_RANK> * Get_Shape() { return shape_; }
     int Get_Shape_Size() { return shape_size_; }
-    T_Kernel & Get_Kernel(void) { return (*kernel_); }
+    T_Kernel & Get_Kernel(void) { return (kernel_); }
     template <typename ... IS>
-    inline void operator() (int t, IS ... is) const { (*kernel_)(t, is ...); }
+    inline void operator() (int t, IS ... is) const { (kernel_)(t, is ...); }
 };
 
 /* Pochoir_Obase_Kernel for Phase II */
@@ -79,7 +79,7 @@ struct Pochoir_Obase_Kernel {
     Pochoir_Obase_Kernel(void) { }
     template <int N_SIZE>
     int Init(T_Kernel _kernel, Pochoir_Shape<N_RANK> (& _shape)[N_SIZE]) {
-        kernel_ = &_kernel; 
+        kernel_ = &_kernel;
         int l_min_time_shift=0, l_max_time_shift=0, depth=0;
         for (int r = 0; r < N_RANK+1; ++r) {
             slope_[r] = 0;
@@ -160,12 +160,12 @@ struct Pochoir_Obase_Kernel {
 template <int N_RANK>
 struct Pochoir_Guard {
     typedef typename Pochoir_Types<N_RANK>::T_Guard T_Guard;
-    T_Guard * guard_;
+    T_Guard guard_;
     Pochoir_Guard(void) { }
-    Pochoir_Guard(T_Guard _guard) : guard_(&_guard) { }
+    Pochoir_Guard(T_Guard _guard) : guard_(_guard) { }
     template <typename ... IS>
-    inline bool operator() (int t, IS ... is) const { return (*guard_)(t, is ...); }
-    T_Guard & Get_Guard (void) { return (*guard_); }
+    inline bool operator() (int t, IS ... is) const { return (guard_)(t, is ...); }
+    T_Guard & Get_Guard (void) { return (guard_); }
 };
 
 #define Pochoir_Guard_3D_Begin(name, t, i, j, k) \

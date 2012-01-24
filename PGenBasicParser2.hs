@@ -41,6 +41,9 @@ import PGenShow
 import PGenUtils
 import PGenData
 
+pNew :: Bool
+pNew = True
+
 pRegLambdaTerm :: PMode -> Int -> PStencil -> (PGuard, [PTile]) -> String
 pRegLambdaTerm l_mode l_rank l_stencil (g, t) =
     let l_tag = getTagFromMode l_mode
@@ -70,14 +73,14 @@ pDestroyLambdaTerm l_mode l_rank l_stencil (g, t) =
         l_obase_pointer = mkInput l_obase_name
         l_del_bdry_lambdaPointer =
             if l_regBound
-               then pDelPointer l_bdry_pointer 
+               then pDelPointer pNew l_bdry_pointer 
                else ""
-        l_del_obase_lambdaPointer = pDelPointer l_obase_pointer 
+        l_del_obase_lambdaPointer = pDelPointer pNew l_obase_pointer 
         l_del_bdry_kernelPointer =
             if l_regBound
-               then pDelPointer l_bdry_name
+               then pDelPointer (not pNew) l_bdry_name
                else ""
-        l_del_obase_kernelPointer = pDelPointer l_obase_name
+        l_del_obase_kernelPointer = pDelPointer (not pNew) l_obase_name
     in  breakline ++ l_del_bdry_lambdaPointer ++
         breakline ++ l_del_bdry_kernelPointer ++
         breakline ++ l_del_obase_lambdaPointer ++
@@ -102,43 +105,46 @@ pCreateLambdaTerm l_mode l_rank l_stencil l_inputParams (g, t) =
         l_obase_kernel_inputs = [(mkParen . derefPointer) l_obase_pointer] ++ [l_shape_name] 
         l_new_bdry_lambdaPointer =
             if l_regBound
-               then pNewLambdaClosure l_bdry_pointer l_bdry_class l_inputParams
+               then pNewLambdaClosure pNew l_bdry_pointer l_bdry_class l_inputParams
                else ""
-        l_new_obase_lambdaPointer = pNewLambdaClosure l_obase_pointer l_obase_class l_inputParams
+        l_new_obase_lambdaPointer = pNewLambdaClosure pNew l_obase_pointer l_obase_class l_inputParams
         l_new_bdry_kernelPointer =
             if l_regBound
-               then pNewLambdaClosure l_bdry_kernel_pointer l_kernel_class l_bdry_kernel_inputs
+               then pNewLambdaClosure (not pNew) l_bdry_kernel_pointer l_kernel_class l_bdry_kernel_inputs
                else ""
-        l_new_obase_kernelPointer = pNewLambdaClosure l_obase_kernel_pointer l_kernel_class l_obase_kernel_inputs
+        l_new_obase_kernelPointer = pNewLambdaClosure (not pNew) l_obase_kernel_pointer l_kernel_class l_obase_kernel_inputs
     in  breakline ++ l_new_bdry_lambdaPointer ++
         breakline ++ l_new_bdry_kernelPointer ++
         breakline ++ l_new_obase_lambdaPointer ++
         breakline ++ l_new_obase_kernelPointer
 
-pNewLambdaClosure :: String -> String -> [String] -> String
-pNewLambdaClosure l_pointer l_class l_inputParams =
-    -- if using new/delete facility
-{-
-    l_pointer ++ " = new (std::nothrow)" ++ l_class ++
-    (mkParen $ intercalate ", " l_inputParams) ++ ";" ++
--}
-    -- end using new/delete
-    -- if using calloc/free facility
-    breakline ++ l_pointer ++ " = " ++ mkPointer l_class ++ "calloc(1, " ++ 
-                                            "sizeof" ++ mkParen l_class ++ ");" ++
-    -- end using calloc/free
-    breakline ++ "if ( " ++ l_pointer ++
-    " == NULL ) {" ++
-    breakline ++ pTab ++ "printf(\" Failure in create_lambda allocation!\\n\");" ++
-    breakline ++ pTab ++ "exit(EXIT_FAILURE);" ++ breakline ++ "}" 
-    -- if using calloc/free
-    ++ breakline ++ l_pointer ++ "->Init" ++ (mkParen $ intercalate ", " l_inputParams) ++ ";"
-    -- end using calloc/free
+pNewLambdaClosure :: Bool -> String -> String -> [String] -> String
+pNewLambdaClosure l_new l_pointer l_class l_inputParams =
+    let l_init_content = if l_new
+           then ""
+           else l_pointer ++ "->Init" ++ (mkParen $ intercalate ", " l_inputParams) ++ ";"
+        l_alloc = if l_new
+           -- using new/delete
+           then l_pointer ++ " = new (std::nothrow)" ++ l_class ++ 
+                    (mkParen $ intercalate ", " l_inputParams) ++ ";" 
+           -- using calloc/free
+           else l_pointer ++ " = " ++ mkPointer l_class ++ "calloc(1, " ++ 
+                                                "sizeof" ++ mkParen l_class ++ ");"
+    in  -- if using new/delete facility
+        breakline ++ l_alloc ++
+        -- end using calloc/free
+        breakline ++ "if ( " ++ l_pointer ++
+        " == NULL ) {" ++
+        breakline ++ pTab ++ "printf(\" Failure in create_lambda allocation!\\n\");" ++
+        breakline ++ pTab ++ "exit(EXIT_FAILURE);" ++ breakline ++ "}" ++ 
+        breakline ++ l_init_content
 
-pDelPointer :: String -> String
-pDelPointer l_pointer =
-    breakline ++ "if " ++ mkParen (l_pointer ++ " != NULL") ++ " {" ++ 
-    -- breakline ++ pTab ++ "delete " ++ l_pointer ++ ";" ++ 
-    breakline ++ pTab ++ "free " ++ mkParen l_pointer ++ ";" ++ 
-    breakline ++ pTab ++ l_pointer ++ " = NULL;" ++
-    breakline ++ "}"
+pDelPointer :: Bool -> String -> String
+pDelPointer l_new l_pointer =
+    let l_dealloc = if l_new 
+        then pTab ++ "delete " ++ l_pointer ++ ";"
+        else pTab ++ "free " ++ mkParen l_pointer ++ ";"
+    in  breakline ++ "if " ++ mkParen (l_pointer ++ " != NULL") ++ " {" ++ 
+        breakline ++ l_dealloc ++
+        breakline ++ pTab ++ l_pointer ++ " = NULL;" ++
+        breakline ++ "}"
