@@ -430,13 +430,12 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> * shape, int N_SIZE) 
     toggle_ = max(toggle_, depth + 1);
     for (int i = 0; i < N_SIZE; ++i) {
         for (int r = 0; r < N_RANK+1; ++r) {
-//            shape_[shape_size_ + i].shift[r] = (r > 0) ? shape[i].shift[r] : shape[i].shift[r] + time_shift_;
             shape_[shape_size_ + i].shift[r] = shape[i].shift[r];
         }
     }
     for (int i = 0; i < N_SIZE; ++i) {
-        for (int r = 0; r < N_RANK+1; ++r) {
-            slope_[N_RANK-r] = (r > 0) ? max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[N_RANK-r]/(l_max_time_shift - shape_[i].shift[0])))) : 0;
+        for (int r = 0; r < N_RANK; ++r) {
+            slope_[r] = max(slope_[r], abs((int)ceil((float)shape_[i].shift[r+1]/(l_max_time_shift - shape_[i].shift[0]))));
         }
     }
     shape_size_ += N_SIZE;
@@ -581,6 +580,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, int gen_pla
     }
     os_color_vector.close();
 
+#if 1
     char cmd[200];
     sprintf(cmd, "./genkernels -order %d %s %s %s\0", gen_plan_order, pochoir_mode, color_vector_fname, kernel_info_fname);
     fprintf(stderr, "%s\n", cmd);
@@ -590,7 +590,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, int gen_pla
         exit(EXIT_FAILURE);
     }
     fprintf(stderr, "./genkernels exits!\n");
-
+#endif
     return (*l_plan);
 }
 
@@ -754,9 +754,9 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
             int l_t0 = _plan.base_data_->region_[i].t0;
             int l_t1 = _plan.base_data_->region_[i].t1;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-            auto f = opks_[l_region_n].kernel_[0];
-            auto bf = opks_[l_region_n].bkernel_[0];
-            algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, f, bf);
+            auto f = opks_[l_region_n].kernel_;
+            auto bf = opks_[l_region_n].bkernel_;
+            algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
         }
         offset = _plan.sync_data_->region_[j];
     }
@@ -769,18 +769,18 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
             int l_t0 = _plan.base_data_->region_[i].t0;
             int l_t1 = _plan.base_data_->region_[i].t1;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-            auto f = opks_[l_region_n].kernel_[0];
-            auto bf = opks_[l_region_n].bkernel_[0];
-            cilk_spawn algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, f, bf);
+            auto f = opks_[l_region_n].kernel_;
+            auto bf = opks_[l_region_n].bkernel_;
+            cilk_spawn algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
         }
         int l_region_n = _plan.base_data_->region_[i].region_n;
         assert(l_region_n >= 0);
         int l_t0 = _plan.base_data_->region_[i].t0;
         int l_t1 = _plan.base_data_->region_[i].t1;
         Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-        auto f = opks_[l_region_n].kernel_[0];
-        auto bf = opks_[l_region_n].bkernel_[0];
-        algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, f, bf);
+        auto f = opks_[l_region_n].kernel_;
+        auto bf = opks_[l_region_n].bkernel_;
+        algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
         cilk_sync;
         offset = _plan.sync_data_->region_[j];
     }

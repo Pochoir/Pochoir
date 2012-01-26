@@ -183,7 +183,7 @@ struct Pochoir_Obase_Kernel : public Pochoir_Base_Kernel<N_RANK> {
     template <int N_SIZE>
     Pochoir_Obase_Kernel(F & _kernel, Pochoir_Shape<N_RANK> (& _shape)[N_SIZE]) : kernel_(_kernel) {
         int l_min_time_shift=0, l_max_time_shift=0, depth=0;
-        for (int r = 0; r < N_RANK+1; ++r) {
+        for (int r = 0; r < N_RANK; ++r) {
             slope_[r] = 0;
         }
         for (int i = 0; i < N_SIZE; ++i) {
@@ -195,6 +195,7 @@ struct Pochoir_Obase_Kernel : public Pochoir_Base_Kernel<N_RANK> {
         depth = l_max_time_shift - l_min_time_shift;
         time_shift_ = 0 - l_min_time_shift;
         toggle_ = depth + 1;
+#if 1
         shape_ = new Pochoir_Shape<N_RANK>[N_SIZE];
         for (int i = 0; i < N_SIZE; ++i) {
             for (int r = 0; r < N_RANK+1; ++r) {
@@ -202,8 +203,8 @@ struct Pochoir_Obase_Kernel : public Pochoir_Base_Kernel<N_RANK> {
             }
         }
         for (int i = 0; i < N_SIZE; ++i) {
-            for (int r = 0; r < N_RANK+1; ++r) {
-                slope_[N_RANK-r] = (r > 0) ? max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[N_RANK-r]/(l_max_time_shift - shape_[i].shift[0])))) : 0;
+            for (int r = 0; r < N_RANK; ++r) {
+                slope_[r] = max(slope_[r], abs((int)ceil((float)shape_[i].shift[r+1]/(l_max_time_shift - shape_[i].shift[0]))));
             }
         }
         shape_size_ = N_SIZE;
@@ -214,10 +215,11 @@ struct Pochoir_Obase_Kernel : public Pochoir_Base_Kernel<N_RANK> {
         }
         printf("\n");
 #endif
+#endif
     }
     Pochoir_Shape<N_RANK> * Get_Shape() { return shape_; }
     int Get_Shape_Size() { return shape_size_; }
-    F & Get_Kernel (void) { return kernel_; }
+    // F & Get_Kernel (void) { return kernel_; }
     void operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const {
         kernel_(t0, t1, grid);
     }

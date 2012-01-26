@@ -409,7 +409,7 @@ struct Algorithm {
         /* we can use toggled circular queue! */
         Grid_Info<N_RANK> phys_grid_;
         int phys_length_[N_RANK];
-        int slope_[N_RANK];
+        int slope_[N_RANK+1];
         int ulb_boundary[N_RANK], uub_boundary[N_RANK], lub_boundary[N_RANK];
         bool boundarySet, physGridSet, slopeSet, opksSet, ptsSet;
         int sz_pxgk_;

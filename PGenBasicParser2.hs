@@ -41,6 +41,7 @@ import PGenShow
 import PGenUtils
 import PGenData
 
+-- We don't compact pRegLambdaTerm because of the l_run_kernel
 pRegLambdaTerm :: PMode -> Int -> PStencil -> (PGuard, [PTile]) -> String
 pRegLambdaTerm l_mode l_rank l_stencil (g, t) =
     let l_tag = getTagFromMode l_mode
@@ -56,32 +57,26 @@ pRegLambdaTerm l_mode l_rank l_stencil (g, t) =
         l_pochoir_id = sName l_stencil
         l_guard_name = pGetOverlapGuardName g
         l_unroll = foldr max 0 $ map pTileLength t
-    in  l_pochoir_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guard_name ++
+    in  pTab ++ l_pochoir_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guard_name ++
         ", " ++ show l_unroll ++ ", " ++ l_run_kernel ++ ");" ++ breakline
 
-pDestroyLambdaTerm :: PMode -> Int -> PStencil -> (PGuard, [PTile]) -> String
-pDestroyLambdaTerm l_mode l_rank l_stencil (g, t) =
+pDestroyLambdaTerm :: PMode -> Int -> String -> PStencil -> (PGuard, [PTile]) -> String
+pDestroyLambdaTerm l_mode l_rank l_str l_stencil (g, t) =
     let l_tag = getTagFromMode l_mode
         l_regBound = sRegBound l_stencil
         l_order = gOrder g
-        l_bdry_name = l_tag ++ "_boundary_kernel_" ++ show l_order
-        l_obase_name = l_tag ++ "_interior_kernel_" ++ show l_order
-        l_bdry_pointer = mkInput l_bdry_name
-        l_obase_pointer = mkInput l_obase_name
-        l_del_bdry_lambdaPointer =
-            if l_regBound
-               then pDelPointer  l_bdry_pointer 
+        l_name = l_tag ++ "_" ++ l_str ++ "_kernel_" ++ show l_order
+        l_pointer = mkInput l_name
+        l_del_lambdaPointer =
+            if (l_regBound && l_str == "boundary") || (l_str == "interior")
+               then pDelPointer  l_pointer 
                else ""
-        l_del_obase_lambdaPointer = pDelPointer  l_obase_pointer 
-        l_del_bdry_kernelPointer =
-            if l_regBound
-               then pDelPointer  l_bdry_name
+        l_del_kernelPointer =
+            if (l_regBound && l_str == "boundary") || (l_str == "interior")
+               then pDelPointer  l_name
                else ""
-        l_del_obase_kernelPointer = pDelPointer  l_obase_name
-    in  breakline ++ l_del_bdry_lambdaPointer ++
-        breakline ++ l_del_bdry_kernelPointer ++
-        breakline ++ l_del_obase_lambdaPointer ++
-        breakline ++ l_del_obase_kernelPointer
+    in  breakline ++ l_del_lambdaPointer ++
+        breakline ++ l_del_kernelPointer 
 
 pCreateLambdaTerm :: PMode -> Int -> String -> PStencil -> [String] -> (PGuard, [PTile]) -> String
 pCreateLambdaTerm l_mode l_rank l_str l_stencil l_inputParams (g, t) =
@@ -107,10 +102,10 @@ pCreateLambdaTerm l_mode l_rank l_str l_stencil l_inputParams (g, t) =
                else "" 
         l_decl_local_obase = pDeclVar (mkPointer l_kernel_class) l_kernel_pointer "NULL"
         l_assign = pAssign l_name l_kernel_pointer
-    in  breakline ++ l_decl_local_obase ++
-        breakline ++ l_new_lambdaPointer ++
-        breakline ++ l_new_kernelPointer ++
-        breakline ++ l_assign
+    in  breakline ++ pTab ++ l_new_lambdaPointer ++
+        breakline ++ pTab ++ l_decl_local_obase ++
+        breakline ++ pTab ++ l_new_kernelPointer ++
+        breakline ++ pTab ++ l_assign ++ breakline
 
 {-
  - a version using C-style calloc()/free()
@@ -123,15 +118,14 @@ pNewPointer l_pointer l_class l_inputParams =
                 breakline ++ pTab ++ "printf(\" Failure in create_lambda allocation!\\n\");" ++
                 breakline ++ pTab ++ "exit(EXIT_FAILURE);" ++ breakline ++ "}" ++ 
                 l_pointer ++ "->Init" ++ (mkParen $ intercalate ", " l_inputParams) ++ ";"
-    in  breakline ++ l_alloc ++ 
-        breakline ++ l_init_content
+    in  l_alloc ++ breakline ++ l_init_content
  -}
  -- a version using C++ style new()/delete()
 pNewPointer :: String -> String -> [String] -> String
 pNewPointer l_pointer l_class l_inputParams =
     let l_alloc = l_pointer ++ " = new " ++ l_class ++ 
                   (mkParen $ intercalate ", " l_inputParams) ++ ";" 
-    in  breakline ++ l_alloc 
+    in  l_alloc 
 
 {-
  - a version using C-style calloc()/free()
@@ -140,10 +134,10 @@ pDelPointer l_pointer =
     let l_dealloc = 
             breakline ++ "if " ++ mkParen (l_pointer ++ " != NULL") ++ " {" ++
             breakline ++ pTab ++ "free " ++ mkParen l_pointer ++ ";" ++ breakline ++ "}"
-    in  breakline ++ l_dealloc 
+    in  l_dealloc 
  -}
  -- a version using C++ style new()/delete()
 pDelPointer :: String -> String
 pDelPointer l_pointer =
     let l_dealloc = pTab ++ "delete " ++ l_pointer ++ ";"
-    in  breakline ++ l_dealloc 
+    in  l_dealloc 

@@ -707,8 +707,8 @@ derefPointer :: String -> String
 derefPointer a = "*" ++ a
 
 mkStatic :: String -> String
--- mkStatic a = "static " ++ a
-mkStatic a = a
+mkStatic a = "static " ++ a
+-- mkStatic a = a
 
 pDeclVar :: String -> String -> String -> String
 pDeclVar l_type l_name l_init =

@@ -422,8 +422,8 @@ class Pochoir_Array {
             depth = l_max_time_shift - l_min_time_shift;
             toggle_ = depth + 1;
             for (int i = 0; i < shape_size; ++i) {
-                for (int r = 1; r < N_RANK+1; ++r) {
-                    slope_[N_RANK-r] = max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[r]/(l_max_time_shift - shape_[i].shift[0]))));
+                for (int r = 0; r < N_RANK; ++r) {
+                    slope_[r] = max(slope_[r], abs((int)ceil((float)shape_[i].shift[r+1]/(l_max_time_shift - shape_[i].shift[0]))));
                     /* array copy from input parameter shape 
                      * NOTE: this copy exclude the time dimension, 
                      * which is not needed in checking the shape !

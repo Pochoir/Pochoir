@@ -74,8 +74,8 @@ pRegLambdas l_mode l_rank l_stencil cL =
         l_pochoir_ref = "Pochoir < " ++ show l_rank ++ " > & "
         l_header = externC ++ "int Register_Lambdas " ++
                    mkParen (l_pochoir_ref ++ l_pochoir_id) ++ " { " ++ breakline
-        l_content = concatMap (pRegLambdaTerm l_mode l_rank l_stencil) cL
-        l_tail = breakline ++ "return 0;" ++ breakline ++ "}"
+        l_content = concatMap (pRegLambdaTerm l_mode l_rank l_stencil) cL 
+        l_tail = breakline ++ pTab ++ "return 0;" ++ breakline ++ "}"
     in  l_header ++ l_content ++ l_tail
 
 pDestroyLambdas :: PMode -> Int -> PStencil -> [(PGuard, [PTile])] -> String
@@ -83,8 +83,9 @@ pDestroyLambdas _ _ _ [] = ""
 pDestroyLambdas l_mode l_rank l_stencil cL =
     let l_header = externC ++ "int Destroy_Lambdas " ++
                    mkParen "void" ++ " { " ++ breakline
-        l_content = concatMap (pDestroyLambdaTerm l_mode l_rank l_stencil) cL
-        l_tail = breakline ++ "return 0;" ++ breakline ++ "}"
+        l_content = concatMap (pDestroyLambdaTerm l_mode l_rank "boundary" l_stencil) cL ++
+                    concatMap (pDestroyLambdaTerm l_mode l_rank "interior" l_stencil) cL 
+        l_tail = breakline ++ pTab ++ "return 0;" ++ breakline ++ "}"
     in  l_header ++ l_content ++ l_tail
 
 pCreateLambdas :: PMode -> Int -> PStencil -> [(PGuard, [PTile])] -> String
