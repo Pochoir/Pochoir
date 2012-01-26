@@ -86,8 +86,8 @@ class Pochoir {
     void Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2][N_SIZE3]);
 
     /* Register_Tile_Obase_Kernels are exclusive */
-    void Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & bk);
-    void Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk); 
+    void Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Base_Kernel<N_RANK> & k, Pochoir_Base_Kernel<N_RANK> & bk);
+    void Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Base_Kernel<N_RANK> & k, Pochoir_Base_Kernel<N_RANK> & cond_k, Pochoir_Base_Kernel<N_RANK> & bk, Pochoir_Base_Kernel<N_RANK> & cond_bk); 
     // get slope(s)
     int slope(int const _idx) { return slope_[_idx]; }
     Pochoir() {
@@ -251,19 +251,17 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
 }
 
 template <int N_RANK> 
-void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & bk) {
-    typedef Pochoir_Obase_Kernel<N_RANK> T_Kernel;
+void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Base_Kernel<N_RANK> & k, Pochoir_Base_Kernel<N_RANK> & bk) {
+    // typedef Pochoir_Base_Kernel<N_RANK> T_Kernel;
     pmode_ = Pochoir_Obase_Tile;
     Pochoir_Guard<N_RANK> * l_opg = new Pochoir_Guard<N_RANK>;
     *l_opg = g;
     opgs_.add_element(*l_opg);
     Pochoir_Combined_Obase_Kernel<N_RANK> * l_opk = new Pochoir_Combined_Obase_Kernel<N_RANK>;
     l_opk->unroll_ = unroll;
-    l_opk->kernel_ = new T_Kernel;
-    l_opk->kernel_[0] = k;
+    l_opk->kernel_ = &k;
     Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
-    l_opk->bkernel_ = new T_Kernel;
-    l_opk->bkernel_[0] = bk;
+    l_opk->bkernel_ = &bk;
     Register_Shape(bk.Get_Shape(), bk.Get_Shape_Size());
     l_opk->cond_kernel_ = NULL;
     l_opk->cond_bkernel_ = NULL;
@@ -274,25 +272,21 @@ void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int
 }
 
 template <int N_RANK> 
-void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Obase_Kernel<N_RANK> & k, Pochoir_Obase_Kernel<N_RANK> & cond_k, Pochoir_Obase_Kernel<N_RANK> & bk, Pochoir_Obase_Kernel<N_RANK> & cond_bk) {
-    typedef Pochoir_Obase_Kernel<N_RANK> T_Kernel;
+void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Base_Kernel<N_RANK> & k, Pochoir_Base_Kernel<N_RANK> & cond_k, Pochoir_Base_Kernel<N_RANK> & bk, Pochoir_Base_Kernel<N_RANK> & cond_bk) {
+    // typedef Pochoir_Base_Kernel<N_RANK> T_Kernel;
     pmode_ = Pochoir_Obase_Tile;
     Pochoir_Guard<N_RANK> * l_opg = new Pochoir_Guard<N_RANK>;
     *l_opg = g;
     opgs_.add_element(*l_opg);
     Pochoir_Combined_Obase_Kernel<N_RANK> * l_opk = new Pochoir_Combined_Obase_Kernel<N_RANK>;
     l_opk->unroll_ = unroll;
-    l_opk->kernel_ = new T_Kernel;
-    l_opk->kernel_[0] = k;
+    l_opk->kernel_ = &k;
     Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
-    l_opk->cond_kernel_ = new T_Kernel;
-    l_opk->cond_kernel_[0] = cond_k;
+    l_opk->cond_kernel_ = &cond_k;
     Register_Shape(cond_k.Get_Shape(), cond_k.Get_Shape_Size());
-    l_opk->bkernel_ = new T_Kernel;
-    l_opk->bkernel_[0] = bk;
+    l_opk->bkernel_ = &bk;
     Register_Shape(bk.Get_Shape(), bk.Get_Shape_Size());
-    l_opk->cond_bkernel_ = new T_Kernel;
-    l_opk->cond_bkernel_[0] = cond_bk;
+    l_opk->cond_bkernel_ = &cond_bk;
     Register_Shape(cond_bk.Get_Shape(), cond_bk.Get_Shape_Size());
     opks_.add_element(*l_opk);
     lcm_unroll_ = lcm(lcm_unroll_, unroll);
@@ -760,8 +754,8 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
             int l_t0 = _plan.base_data_->region_[i].t0;
             int l_t1 = _plan.base_data_->region_[i].t1;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-            typename Pochoir_Types<N_RANK>::T_Obase_Kernel & f = opks_[l_region_n].kernel_[0].Get_Kernel();
-            typename Pochoir_Types<N_RANK>::T_Obase_Kernel & bf = opks_[l_region_n].bkernel_[0].Get_Kernel();
+            auto f = opks_[l_region_n].kernel_[0];
+            auto bf = opks_[l_region_n].bkernel_[0];
             algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, f, bf);
         }
         offset = _plan.sync_data_->region_[j];
@@ -775,8 +769,8 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
             int l_t0 = _plan.base_data_->region_[i].t0;
             int l_t1 = _plan.base_data_->region_[i].t1;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-            typename Pochoir_Types<N_RANK>::T_Obase_Kernel & f = opks_[l_region_n].kernel_[0].Get_Kernel();
-            typename Pochoir_Types<N_RANK>::T_Obase_Kernel & bf = opks_[l_region_n].bkernel_[0].Get_Kernel();
+            auto f = opks_[l_region_n].kernel_[0];
+            auto bf = opks_[l_region_n].bkernel_[0];
             cilk_spawn algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, f, bf);
         }
         int l_region_n = _plan.base_data_->region_[i].region_n;
@@ -784,8 +778,8 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
         int l_t0 = _plan.base_data_->region_[i].t0;
         int l_t1 = _plan.base_data_->region_[i].t1;
         Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
-        typename Pochoir_Types<N_RANK>::T_Obase_Kernel & f = opks_[l_region_n].kernel_[0].Get_Kernel();
-        typename Pochoir_Types<N_RANK>::T_Obase_Kernel & bf = opks_[l_region_n].bkernel_[0].Get_Kernel();
+        auto f = opks_[l_region_n].kernel_[0];
+        auto bf = opks_[l_region_n].bkernel_[0];
         algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, f, bf);
         cilk_sync;
         offset = _plan.sync_data_->region_[j];

@@ -482,9 +482,11 @@ struct Algorithm {
         _num_bkernel_ = num_bkernel_; _num_cond_bkernel_ = num_cond_bkernel_;
     }
     inline void set_thres(int arr_type_size) {
-#if 1
+#if 0
+        /* following threshold for debugging only! */
         dt_recursive_ = 1;
         dx_recursive_[0] = 1;
+        dx_homo_[0] = 8;
         for (int i = N_RANK-1; i >= 1; --i) {
             dx_recursive_[i] = 1;
             dx_homo_[i] = 8;
@@ -496,10 +498,14 @@ struct Algorithm {
 
 #else
 #if 1
+        /* following threshold for performance run! */
         dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((80 * sizeof(double))/arr_type_size)) : (int)floor(float((600 * sizeof(double))/arr_type_size));
-//        dx_recursive_[0] = 30;
-        for (int i = N_RANK-1; i >= 1; --i)
+        dx_homo_[0] = 8;
+        for (int i = N_RANK-1; i >= 1; --i) {
             dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(80 * sizeof(double))/arr_type_size): 10;
+            dx_homo_[i] = 8;
+        }
+
         assert(slope_[0] != 0);
         dt_recursive_ = (N_RANK == 1) ? floor(dx_recursive_[0]/(2 * slope_[0]) - 100) : ((N_RANK == 2) ? floor(dx_recursive_[0]/(2 * slope_[0])-10) : 5);
 #else
@@ -559,10 +565,14 @@ struct Algorithm {
     /* meta functions to run the plan 
      * -- 'm' is the version with merged kernel
      */
-    inline void plan_space_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f);
-    inline void plan_space_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & bf);
-    inline void plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f);
-    inline void plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & bf);
+    template <typename F>
+    inline void plan_space_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f);
+    template <typename F, typename BF>
+    inline void plan_space_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f, BF const & bf);
+    template <typename F>
+    inline void plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f);
+    template <typename F, typename BF>
+    inline void plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f, BF const & bf);
     /* meta functions to run the plan */
     /*******************************************************************************/
     /* followings are the sim cut of both top and bottom bar */

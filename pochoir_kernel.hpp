@@ -67,9 +67,12 @@ struct Pochoir_Kernel {
     T_Kernel & Get_Kernel(void) { return (kernel_); }
     template <typename ... IS>
     inline void operator() (int t, IS ... is) const { (kernel_)(t, is ...); }
+    ~Pochoir_Kernel() { delete shape_; }
 };
 
 /* Pochoir_Obase_Kernel for Phase II */
+#if 0
+/* an old version */
 template <int N_RANK>
 struct Pochoir_Obase_Kernel {
     typedef typename Pochoir_Types<N_RANK>::T_Obase_Kernel T_Kernel;
@@ -155,7 +158,73 @@ struct Pochoir_Obase_Kernel {
     inline void operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const {
         (*kernel_)(t0, t1, grid);
     }
+    ~Pochoir_Obase_Kernel() { delete shape_; }
 };
+#else
+/* define an abstract base class to act as a generic class pointer
+ * to Pochoir_Obase_Kernel<F, N_RANK>
+ */
+template <int N_RANK>
+struct Pochoir_Base_Kernel {
+    // typedef std::function<void (int, int, const Grid_Info<N_RANK> &)> T_Kernel;
+    // virtual T_Kernel & Get_Kernel (void) = 0;
+    virtual Pochoir_Shape<N_RANK> * Get_Shape() = 0;
+    virtual void operator()(int t0, int t1, Grid_Info<N_RANK> const & grid) const = 0;
+    virtual int Get_Shape_Size() = 0;
+};
+
+/* latest version */
+template <typename F, int N_RANK>
+struct Pochoir_Obase_Kernel : public Pochoir_Base_Kernel<N_RANK> {
+    F & kernel_;
+    Pochoir_Shape<N_RANK> * shape_;
+    int shape_size_, time_shift_, toggle_, slope_[N_RANK];
+    Pochoir_Obase_Kernel(void) { }
+    template <int N_SIZE>
+    Pochoir_Obase_Kernel(F & _kernel, Pochoir_Shape<N_RANK> (& _shape)[N_SIZE]) : kernel_(_kernel) {
+        int l_min_time_shift=0, l_max_time_shift=0, depth=0;
+        for (int r = 0; r < N_RANK+1; ++r) {
+            slope_[r] = 0;
+        }
+        for (int i = 0; i < N_SIZE; ++i) {
+            if (_shape[i].shift[0] < l_min_time_shift)
+                l_min_time_shift = _shape[i].shift[0];
+            if (_shape[i].shift[0] > l_max_time_shift)
+                l_max_time_shift = _shape[i].shift[0];
+        }
+        depth = l_max_time_shift - l_min_time_shift;
+        time_shift_ = 0 - l_min_time_shift;
+        toggle_ = depth + 1;
+        shape_ = new Pochoir_Shape<N_RANK>[N_SIZE];
+        for (int i = 0; i < N_SIZE; ++i) {
+            for (int r = 0; r < N_RANK+1; ++r) {
+                shape_[i].shift[r] = _shape[i].shift[r];
+            }
+        }
+        for (int i = 0; i < N_SIZE; ++i) {
+            for (int r = 0; r < N_RANK+1; ++r) {
+                slope_[N_RANK-r] = (r > 0) ? max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[N_RANK-r]/(l_max_time_shift - shape_[i].shift[0])))) : 0;
+            }
+        }
+        shape_size_ = N_SIZE;
+#if DEBUG
+        printf("time_shift_ = %d, toggle = %d\n", time_shift_, toggle_);
+        for (int r = 0; r < N_RANK; ++r) {
+            printf("slope[%d] = %d, ", r, slope_[r]);
+        }
+        printf("\n");
+#endif
+    }
+    Pochoir_Shape<N_RANK> * Get_Shape() { return shape_; }
+    int Get_Shape_Size() { return shape_size_; }
+    F & Get_Kernel (void) { return kernel_; }
+    void operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const {
+        kernel_(t0, t1, grid);
+    }
+    ~Pochoir_Obase_Kernel() { delete shape_; }
+};
+
+#endif
 
 template <int N_RANK>
 struct Pochoir_Guard {
@@ -267,11 +336,10 @@ struct Pochoir_Combined_Obase_Kernel {
      * by Pochoir compiler
      */
     int unroll_;
-    Pochoir_Obase_Kernel<N_RANK> * kernel_;
-    Pochoir_Obase_Kernel<N_RANK> * cond_kernel_;
-    Pochoir_Obase_Kernel<N_RANK> * bkernel_;
-    Pochoir_Obase_Kernel<N_RANK> * cond_bkernel_;
-    /* Each Pochoir_Guard_Kernel can hold one and only one guard function */
+    Pochoir_Base_Kernel<N_RANK> * kernel_;
+    Pochoir_Base_Kernel<N_RANK> * cond_kernel_;
+    Pochoir_Base_Kernel<N_RANK> * bkernel_;
+    Pochoir_Base_Kernel<N_RANK> * cond_bkernel_;
 };      
 
 template <int N_RANK>

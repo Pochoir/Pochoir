@@ -41,9 +41,6 @@ import PGenShow
 import PGenUtils
 import PGenData
 
-pNew :: Bool
-pNew = True
-
 pRegLambdaTerm :: PMode -> Int -> PStencil -> (PGuard, [PTile]) -> String
 pRegLambdaTerm l_mode l_rank l_stencil (g, t) =
     let l_tag = getTagFromMode l_mode
@@ -73,79 +70,80 @@ pDestroyLambdaTerm l_mode l_rank l_stencil (g, t) =
         l_obase_pointer = mkInput l_obase_name
         l_del_bdry_lambdaPointer =
             if l_regBound
-               then pDelPointer pNew l_bdry_pointer 
+               then pDelPointer  l_bdry_pointer 
                else ""
-        l_del_obase_lambdaPointer = pDelPointer pNew l_obase_pointer 
+        l_del_obase_lambdaPointer = pDelPointer  l_obase_pointer 
         l_del_bdry_kernelPointer =
             if l_regBound
-               then pDelPointer pNew l_bdry_name
+               then pDelPointer  l_bdry_name
                else ""
-        l_del_obase_kernelPointer = pDelPointer pNew l_obase_name
+        l_del_obase_kernelPointer = pDelPointer  l_obase_name
     in  breakline ++ l_del_bdry_lambdaPointer ++
         breakline ++ l_del_bdry_kernelPointer ++
         breakline ++ l_del_obase_lambdaPointer ++
         breakline ++ l_del_obase_kernelPointer
 
-pCreateLambdaTerm :: PMode -> Int -> PStencil -> [String] -> (PGuard, [PTile]) -> String
-pCreateLambdaTerm l_mode l_rank l_stencil l_inputParams (g, t) =
+pCreateLambdaTerm :: PMode -> Int -> String -> PStencil -> [String] -> (PGuard, [PTile]) -> String
+pCreateLambdaTerm l_mode l_rank l_str l_stencil l_inputParams (g, t) =
     let l_tag = getTagFromMode l_mode
         l_regBound = sRegBound l_stencil
         l_order = gOrder g
         l_shape_name = "__POCHOIR_Shape__" ++ show l_order ++ "__"
-        l_bdry_name = l_tag ++ "_boundary_kernel_" ++ show l_order
-        l_obase_name = l_tag ++ "_interior_kernel_" ++ show l_order
-        l_bdry_class = pSys l_bdry_name
-        l_obase_class = pSys l_obase_name
-        l_bdry_pointer = mkInput l_bdry_name
-        l_obase_pointer = mkInput l_obase_name
-        l_bdry_kernel_pointer = l_bdry_name
-        l_obase_kernel_pointer = l_obase_name
-        l_kernel_class = "Pochoir_Obase_Kernel < " ++ show l_rank ++ " > "
-        l_bdry_kernel_inputs = [(mkParen . derefPointer) l_bdry_pointer] ++ [l_shape_name] 
-        l_obase_kernel_inputs = [(mkParen . derefPointer) l_obase_pointer] ++ [l_shape_name] 
-        l_new_bdry_lambdaPointer =
-            if l_regBound
-               then pNewLambdaClosure pNew l_bdry_pointer l_bdry_class l_inputParams
-               else ""
-        l_new_obase_lambdaPointer = pNewLambdaClosure pNew l_obase_pointer l_obase_class l_inputParams
-        l_new_bdry_kernelPointer =
-            if l_regBound
-               then pNewLambdaClosure pNew l_bdry_kernel_pointer l_kernel_class l_bdry_kernel_inputs
-               else ""
-        l_new_obase_kernelPointer = pNewLambdaClosure pNew l_obase_kernel_pointer l_kernel_class l_obase_kernel_inputs
-    in  breakline ++ l_new_bdry_lambdaPointer ++
-        breakline ++ l_new_bdry_kernelPointer ++
-        breakline ++ l_new_obase_lambdaPointer ++
-        breakline ++ l_new_obase_kernelPointer
+        l_name = l_tag ++ "_" ++ l_str ++ "_kernel_" ++ show l_order
+        l_class = pSys l_name
+        l_pointer = mkInput l_name
+        l_kernel_pointer = mkLocal l_name
+        l_kernel_class = "Pochoir_Obase_Kernel < " ++ 
+                         "decltype" ++ (mkParen $ derefPointer l_pointer) ++
+                         ", " ++ show l_rank ++ " > "
+        l_kernel_inputs = [(mkParen . derefPointer) l_pointer] ++ [l_shape_name] 
+        l_new_lambdaPointer =
+            if (l_regBound && l_str == "boundary") || (l_str == "interior")
+               then pNewPointer  l_pointer l_class l_inputParams
+               else "" 
+        l_new_kernelPointer =
+            if (l_regBound && l_str == "boundary") || (l_str == "interior")
+               then pNewPointer  l_kernel_pointer l_kernel_class l_kernel_inputs
+               else "" 
+        l_decl_local_obase = pDeclVar (mkPointer l_kernel_class) l_kernel_pointer "NULL"
+        l_assign = pAssign l_name l_kernel_pointer
+    in  breakline ++ l_decl_local_obase ++
+        breakline ++ l_new_lambdaPointer ++
+        breakline ++ l_new_kernelPointer ++
+        breakline ++ l_assign
 
-pNewLambdaClosure :: Bool -> String -> String -> [String] -> String
-pNewLambdaClosure l_new l_pointer l_class l_inputParams =
-    let l_init_content = if l_new
-        -- for new(), if the system runs out of memory, it will throw an exception,
-        -- and never will return NULL. So need NOT to check NULL pointer after new()
-           then ""
-           else breakline ++ "if ( " ++ l_pointer ++ " == NULL ) {" ++
+{-
+ - a version using C-style calloc()/free()
+pNewPointer :: String -> String -> [String] -> String
+pNewPointer l_pointer l_class l_inputParams =
+    let l_alloc = l_pointer ++ " = " ++ mkPointer l_class ++ "calloc(1, " ++ 
+                  "sizeof" ++ mkParen l_class ++ ");"
+        l_init_content = 
+                breakline ++ "if ( " ++ l_pointer ++ " == NULL ) {" ++
                 breakline ++ pTab ++ "printf(\" Failure in create_lambda allocation!\\n\");" ++
                 breakline ++ pTab ++ "exit(EXIT_FAILURE);" ++ breakline ++ "}" ++ 
                 l_pointer ++ "->Init" ++ (mkParen $ intercalate ", " l_inputParams) ++ ";"
-        l_alloc = if l_new
-           -- using new/delete
-           then l_pointer ++ " = new " ++ l_class ++ 
-                    (mkParen $ intercalate ", " l_inputParams) ++ ";" 
-           -- using calloc/free
-           else l_pointer ++ " = " ++ mkPointer l_class ++ "calloc(1, " ++ 
-                                                "sizeof" ++ mkParen l_class ++ ");"
-    in  -- if using new/delete facility
-        breakline ++ l_alloc ++
-        -- end using calloc/free
+    in  breakline ++ l_alloc ++ 
         breakline ++ l_init_content
+ -}
+ -- a version using C++ style new()/delete()
+pNewPointer :: String -> String -> [String] -> String
+pNewPointer l_pointer l_class l_inputParams =
+    let l_alloc = l_pointer ++ " = new " ++ l_class ++ 
+                  (mkParen $ intercalate ", " l_inputParams) ++ ";" 
+    in  breakline ++ l_alloc 
 
-pDelPointer :: Bool -> String -> String
-pDelPointer l_new l_pointer =
-    let l_dealloc = if l_new 
-        then pTab ++ "delete " ++ l_pointer ++ ";"
-        else pTab ++ "free " ++ mkParen l_pointer ++ ";"
-    in  breakline ++ "if " ++ mkParen (l_pointer ++ " != NULL") ++ " {" ++ 
-        breakline ++ l_dealloc ++
-        breakline ++ pTab ++ l_pointer ++ " = NULL;" ++
-        breakline ++ "}"
+{-
+ - a version using C-style calloc()/free()
+pDelPointer :: String -> String
+pDelPointer l_pointer =
+    let l_dealloc = 
+            breakline ++ "if " ++ mkParen (l_pointer ++ " != NULL") ++ " {" ++
+            breakline ++ pTab ++ "free " ++ mkParen l_pointer ++ ";" ++ breakline ++ "}"
+    in  breakline ++ l_dealloc 
+ -}
+ -- a version using C++ style new()/delete()
+pDelPointer :: String -> String
+pDelPointer l_pointer =
+    let l_dealloc = pTab ++ "delete " ++ l_pointer ++ ";"
+    in  breakline ++ l_dealloc 

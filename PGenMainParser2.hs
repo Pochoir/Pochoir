@@ -99,7 +99,9 @@ pCreateLambdas l_mode l_rank l_stencil cL =
         l_header = externC ++ "int Create_Lambdas " ++ 
                     mkParen (l_stencilInputRef ++ ", " ++ intercalate ", " l_arrayInputRefList) ++ 
                     "{" ++ breakline
-        l_content = concatMap (pCreateLambdaTerm l_mode l_rank l_stencil l_inputList) cL
+        l_content = 
+            concatMap (pCreateLambdaTerm l_mode l_rank "boundary" l_stencil l_inputList) cL ++ 
+            concatMap (pCreateLambdaTerm l_mode l_rank "interior" l_stencil l_inputList) cL
         l_tail = breakline ++ pTab ++ "return 0;" ++ breakline ++ "}\n"
     in  l_header ++ l_content ++ l_tail
 

@@ -895,7 +895,7 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
         l_tail = "}" ++ breakline ++ "};" ++ 
                  breakline ++ mkStatic l_kernelFuncName ++ " * " ++ l_lambdaPointer ++
                  " = NULL;" ++ 
-                 breakline ++ mkStatic "Pochoir_Obase_Kernel <" ++ show l_rank ++
+                 breakline ++ mkStatic "Pochoir_Base_Kernel <" ++ show l_rank ++
                  "> * " ++ l_name ++ " = NULL;"
         ---------------------------------------------------------------------------------
 

@@ -694,11 +694,14 @@ mkInput a = "_" ++ a
 mkOutput :: String -> String
 mkOutput a = a ++ "_"
 
+mkLocal :: String -> String
+mkLocal a = "l_" ++ a
+
 mkParen :: String -> String
 mkParen a = "(" ++ a ++ ")"
 
 mkPointer :: String -> String
-mkPointer a = mkParen $ a ++ " * "
+mkPointer a = a ++ " * "
 
 derefPointer :: String -> String
 derefPointer a = "*" ++ a
@@ -706,6 +709,16 @@ derefPointer a = "*" ++ a
 mkStatic :: String -> String
 -- mkStatic a = "static " ++ a
 mkStatic a = a
+
+pDeclVar :: String -> String -> String -> String
+pDeclVar l_type l_name l_init =
+    if null l_init 
+       then l_type ++ l_name ++ ";"
+       else l_type ++ l_name ++ " = " ++ l_init ++ ";"
+
+pAssign :: String -> String -> String
+pAssign l_name l_value =
+    l_name ++ " = " ++ l_value ++ ";"
 
 zipInsert :: String -> String -> String -> String -> String
 zipInsert op delim a b = a ++ op ++ b ++ delim

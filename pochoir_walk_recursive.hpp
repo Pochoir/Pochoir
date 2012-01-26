@@ -2637,8 +2637,8 @@ inline void Algorithm<N_RANK>::plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> co
 // #define plan_space_can_cut_mp(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb + l_padding > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim])) : ((l_touch_boundary) ? (lb == phys_length_[_dim] ? (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim])) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
 #define plan_space_can_cut_mp(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim])) : ((l_touch_boundary) ? (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
 
-template <int N_RANK> 
-inline void Algorithm<N_RANK>::plan_space_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f)
+template <int N_RANK> template <typename F> 
+inline void Algorithm<N_RANK>::plan_space_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -2777,8 +2777,8 @@ inline void Algorithm<N_RANK>::plan_space_bicut_m(int t0, int t1, Grid_Info<N_RA
     } /* end for (curr_dep < N_RANK+1) */
 }
 
-template <int N_RANK> 
-inline void Algorithm<N_RANK>::plan_space_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & bf)
+template <int N_RANK> template <typename F, typename BF> 
+inline void Algorithm<N_RANK>::plan_space_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f, BF const & bf)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -2938,8 +2938,8 @@ inline void Algorithm<N_RANK>::plan_space_bicut_mp(int t0, int t1, Grid_Info<N_R
 }
 
 /* This is the version for interior region cut! */
-template <int N_RANK> 
-inline void Algorithm<N_RANK>::plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f)
+template <int N_RANK> template <typename F> 
+inline void Algorithm<N_RANK>::plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false;
@@ -2988,8 +2988,8 @@ inline void Algorithm<N_RANK>::plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> co
 }
 
 /* This is the version for boundary region cut! */
-template <int N_RANK> 
-inline void Algorithm<N_RANK>::plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & f, typename Pochoir_Types<N_RANK>::T_Obase_Kernel const & bf)
+template <int N_RANK> template <typename F, typename BF> 
+inline void Algorithm<N_RANK>::plan_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f, BF const & bf)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;

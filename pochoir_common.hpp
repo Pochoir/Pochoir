@@ -434,9 +434,13 @@ struct Vector_Info {
 #if DEBUG
         t = is_basic_data_type<int>();
 #endif
+#if 0
         if (is_basic_data_type<T>()) {
             delete [] region_;
         }
+#else
+        delete [] region_;
+#endif
     } 
     void add_element(T ele) {
 #if DEBUG
@@ -454,9 +458,13 @@ struct Vector_Info {
                 for (int i = 0; i < size_; ++i) {
                     l_region[i] = region_[i];
                 }
+#if 0
                 if (is_basic_data_type<T>()) {
                     delete [] region_;
                 }
+#else
+                delete [] region_;
+#endif
                 region_ = l_region;
                 region_[pointer_] = ele;
                 ++pointer_;
@@ -638,6 +646,7 @@ struct Pochoir_Plan {
                 l_region.pscanf(is_base_data);
                 base_data_->add_element(l_region);
             }
+            sz_base_data_ = base_data_->size();
         } else {
             printf("is_base_data is NOT open! exit!\n");
             exit(1);
@@ -657,6 +666,7 @@ struct Pochoir_Plan {
                 fscanf(is_sync_data, "%d\n", &l_sync);
                 sync_data_->add_element(l_sync);
             }
+            sz_sync_data_ = sync_data_->size();
         } else {
             printf("is_sync_data is NOT open! exit!\n");
             exit(1);
