@@ -52,20 +52,11 @@ ppStencil1 l_id l_state =
                Nothing -> return (l_id ++ ".Gen_Plan(" ++ show l_tstep ++ "); /* Unknown stencil id" ++ breakline)
                Just l_stencil ->
                    do let l_inFile = pInFile l_state 
-                      let l_color_num = pColorNum l_state 
-                      let l_color_dest_suffix = "_" ++ show l_color_num ++ "_color.dat" 
-                      let l_color_fname = pSubstitute ".cpp" l_color_dest_suffix l_inFile 
-                      let l_kernel_info_fname = rename "_kernel_info" l_inFile 
-                      let l_gen_kernel_fname = mkLocal $ pSubstitute "_color.dat" "_gen_kernel" l_color_fname 
-                      let l_arrayInputList = map aName $ sArrayInUse l_stencil
-                      updateState $ updatePColorNum $ l_color_num + 1 
-                      return (l_id ++ ".Gen_Plan_Obase(" ++ show l_tstep ++ ", " ++ 
-                              show l_color_num ++ ", \"" ++ show l_mode ++ "\", \"" ++ 
-                              l_color_fname ++ "\", \"" ++ l_kernel_info_fname ++ 
-                              "\"); /* KNOWN */" ++ breakline ++
-                              l_id ++ ".Init_Lambdas(\"" ++ l_gen_kernel_fname ++ "\", " ++ 
-                              intercalate ", " l_arrayInputList ++ "); /* KNOWN */" ++ 
-                              breakline)
+                      let l_fname = pSubstitute ".cpp" "" l_inFile
+                      return (l_id ++ ".Gen_Plan_Obase(" ++ show l_tstep ++ 
+                              ", " ++ (mkQuote . show) l_mode ++ 
+                              ", " ++ mkQuote l_fname ++
+                              "); /* KNOWN */" ++ breakline)
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
            semi
@@ -73,22 +64,31 @@ ppStencil1 l_id l_state =
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ ");")
                Just l_stencil -> 
-                      if l_mode == PMUnroll 
-                           || l_mode == PAllCondTileMacro 
-                           || l_mode == PAllCondTileCPointer 
-                           || l_mode == PAllCondTilePointer
-                           || l_mode == PAllCondTileOptPointer
-                           || l_mode == PAllCondTileMacroOverlap
-                           || l_mode == PAllCondTileCPointerOverlap
-                           || l_mode == PAllCondTilePointerOverlap
-                           || l_mode == PAllCondTileOptPointerOverlap
-                         then return (breakline ++ l_id ++ 
-                                      ".Run_Obase_Merge(" ++ 
-                                      show l_tstep ++ 
-                                      "); /* Run with Stencil " ++ l_id ++ 
-                                      " */" ++ breakline)
-                         else return (breakline ++ l_id ++ ".Run_Obase(" ++
-                                    show l_tstep ++ "); /* Run with Stencil " ++
-                                    l_id ++ " */" ++ breakline)
+                   let l_inFile = pInFile l_state
+                       l_fname = mkQuote $ pSubstitute ".cpp" "" l_inFile
+                       l_arrayInputList = map aName $ sArrayInUse l_stencil
+                       l_lambda_params = l_fname ++ ", " ++ 
+                                         intercalate ", " l_arrayInputList
+                   in  if l_mode == PMUnroll 
+                            || l_mode == PAllCondTileMacro 
+                            || l_mode == PAllCondTileCPointer 
+                            || l_mode == PAllCondTilePointer
+                            || l_mode == PAllCondTileOptPointer
+                            || l_mode == PAllCondTileMacroOverlap
+                            || l_mode == PAllCondTileCPointerOverlap
+                            || l_mode == PAllCondTilePointerOverlap
+                            || l_mode == PAllCondTileOptPointerOverlap
+                          then do return (breakline ++ l_id ++ 
+                                         ".Run_Obase_Merge(" ++ 
+                                         show l_tstep ++ ", " ++
+                                         l_lambda_params ++
+                                         "); /* Run with Stencil " ++ l_id ++ " */" ++ 
+                                         breakline)
+                          else do return (breakline ++ l_id ++ 
+                                          ".Run_Obase(" ++
+                                          show l_tstep ++ ", " ++ 
+                                          l_lambda_params ++ 
+                                          "); /* Run with Stencil " ++ l_id ++ " */" ++ 
+                                          breakline)
     <|> do return (l_id)
 

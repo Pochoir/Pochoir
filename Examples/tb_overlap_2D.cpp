@@ -71,7 +71,7 @@ int main(int argc, char * argv[])
     /* the 1D spatial dimension has 'N' points */
     // int N = 0, T = 0;
     double umin, umax;
-    char pochoir_plan_file_name[100];
+    char pochoir_plan_fname[100];
 
     if (argc < 3) {
         printf("argc < 3, quit! \n");
@@ -182,9 +182,9 @@ int main(int argc, char * argv[])
     }
 
     Pochoir_Plan<1> & l_plan = overlap.Gen_Plan(T);
-    sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat", N, T);
-    overlap.Store_Plan(pochoir_plan_file_name, l_plan);
-    Pochoir_Plan<1> & ll_plan = overlap.Load_Plan(pochoir_plan_file_name);
+    sprintf(pochoir_plan_fname, "pochoir_%d_%d.dat", N, T);
+    overlap.Store_Plan(pochoir_plan_fname, l_plan);
+    Pochoir_Plan<1> & ll_plan = overlap.Load_Plan(pochoir_plan_fname);
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         overlap.Run(ll_plan);

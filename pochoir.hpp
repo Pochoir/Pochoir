@@ -58,6 +58,8 @@ class Pochoir {
         int arr_type_size_;
         int sz_pxgk_, sz_pigk_;
         int lcm_unroll_;
+        int color_num_;
+        double pochoir_time_;
         Pochoir_Mode pmode_;
         /* assuming that the number of distinct sub-regions is less than 10 */
         /* We put the pxgs_ here just to make the Gen_Plan compatible
@@ -104,6 +106,8 @@ class Pochoir {
         sz_pxgk_ = sz_pigk_ = 0;
         lcm_unroll_ = 1;
         pmode_ = Pochoir_Null;
+        color_num_ = 0;
+        pochoir_time_ = INF;
     }
 
     /* currently, we just compute the slope[] out of the shape[] */
@@ -131,16 +135,15 @@ class Pochoir {
     void Run(int timestep);
     void Run_Obase(int timestep);
     Pochoir_Plan<N_RANK> & Gen_Plan(int timepstep);
-    Pochoir_Plan<N_RANK> & Gen_Plan_Obase(int timepstep, int gen_plan_order, const char * pochoir_mode, const char * color_vector_fname, const char * kernel_info_fname);
-    template <typename T>
-    int Init_Lambdas(const char * gen_kernel_fname, Pochoir_Array <T, N_RANK> & a);
-    template <typename T, typename ... TS>
-    int Init_Lambdas(const char * gen_kernel_fname, Pochoir_Array <T, N_RANK> & a, Pochoir_Array <TS, N_RANK> ... as);
+    Pochoir_Plan<N_RANK> & Gen_Plan_Obase(int timepstep, const char * pochoir_mode, const char * fname);
     Pochoir_Plan<N_RANK> & Load_Plan(const char * file_name);
     void Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & _plan);
     void Run(Pochoir_Plan<N_RANK> & _plan);
     void Run_Obase(Pochoir_Plan<N_RANK> & _plan);
-    void Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan);
+    template <typename T>
+    void Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan, const char * fname, Pochoir_Array <T, N_RANK> & a);
+    template <typename T, typename ... TS>
+    void Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan, const char * fname, Pochoir_Array <T, N_RANK> & a, Pochoir_Array <TS, N_RANK> ... as);
 };
 
 template <int N_RANK> template <typename I>
@@ -505,11 +508,14 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     }
     l_plan->sync_data_->scan();
     l_plan->sync_data_->add_element(END_SYNC);
+    l_plan->set_color_num(color_num_);
+    ++color_num_;
     return (*l_plan);
 }
 
 template <int N_RANK> 
-Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, int gen_plan_order, const char * pochoir_mode, const char * color_vector_fname, const char * kernel_info_fname) {
+// Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, int gen_plan_order, const char * pochoir_mode, const char * color_vector_fname, const char * kernel_info_fname) {
+Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char * pochoir_mode, const char * fname) {
     Pochoir_Plan<N_RANK> * l_plan = new Pochoir_Plan<N_RANK>();
     int l_sz_base_data, l_sz_sync_data;
     Spawn_Tree<N_RANK> * l_tree;
@@ -559,9 +565,12 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, int gen_pla
     }
     l_plan->sync_data_->scan();
     l_plan->sync_data_->add_element(END_SYNC);
+    l_plan->set_color_num(color_num_);
 
-    // sprintf(color_vector_fname, "color_vector_%s", __FILE__);
-    // const char * color_vector_fname = "color_vector_pochoir.dat";
+    char color_vector_fname[100], kernel_info_fname[100];
+    sprintf(color_vector_fname, "%s_%d_color.dat\0", fname, color_num_);
+    sprintf(kernel_info_fname, "%s_kernel_info.cpp\0", fname);
+
     Vector_Info< Homogeneity > & l_color_vector = algor.get_color_vector();
     Homogeneity * white_clone = NULL;
 
@@ -580,9 +589,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, int gen_pla
     }
     os_color_vector.close();
 
-#if 1
     char cmd[200];
-    sprintf(cmd, "./genkernels -order %d %s %s %s\0", gen_plan_order, pochoir_mode, color_vector_fname, kernel_info_fname);
+    sprintf(cmd, "./genkernels -order %d %s %s %s\0", color_num_, pochoir_mode, color_vector_fname, kernel_info_fname);
     fprintf(stderr, "%s\n", cmd);
     int ret = system(cmd);
     if (ret == -1) {
@@ -590,40 +598,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, int gen_pla
         exit(EXIT_FAILURE);
     }
     fprintf(stderr, "./genkernels exits!\n");
-#endif
+    ++color_num_;
     return (*l_plan);
-}
-
-template <int N_RANK> template <typename T>
-int Pochoir<N_RANK>::Init_Lambdas(const char * gen_kernel_fname, Pochoir_Array<T, N_RANK> & a) {
-    DynamicLoader gen_kernel(gen_kernel_fname);
-
-    fprintf(stderr, "<%s> starts!\n", __FUNCTION__);
-    std::function < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &) > create_lambdas = gen_kernel.load < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &) > ("Create_Lambdas");
-    std::function < int (void) > destroy_lambdas = gen_kernel.load < int (void) > ("Destroy_Lambdas");
-    std::function < int (Pochoir < N_RANK > &) > register_lambdas = gen_kernel.load < int (Pochoir< N_RANK > &) > ("Register_Lambdas");
-
-    create_lambdas(*this, a);
-    register_lambdas(*this);
-
-    fprintf(stderr, "<%s> ends!\n", __FUNCTION__);
-    return 0;
-}
-
-template <int N_RANK> template <typename T, typename ... TS>
-int Pochoir<N_RANK>::Init_Lambdas(const char * gen_kernel_fname, Pochoir_Array <T, N_RANK> & a, Pochoir_Array <TS, N_RANK> ... as) {
-    DynamicLoader gen_kernel(gen_kernel_fname);
-
-    fprintf(stderr, "<%s> starts!\n", __FUNCTION__);
-    std::function < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &, Pochoir_Array<TS, N_RANK> ...) > create_lambdas = gen_kernel.load < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &, Pochoir_Array<TS, N_RANK> ...) > ("Create_Lambdas");
-    std::function < int (void) > destroy_lambdas = gen_kernel.load < int (void) > ("Destroy_Lambdas");
-    std::function < int (Pochoir < N_RANK > &) > register_lambdas = gen_kernel.load < int (Pochoir< N_RANK > &) > ("Register_Lambdas");
-
-    create_lambdas(*this, a, as ...);
-    register_lambdas(*this);
-
-    fprintf(stderr, "<%s> ends!\n", __FUNCTION__);
-    return 0;
 }
 
 template <int N_RANK>
@@ -731,8 +707,25 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
     return;
 }
 
-template <int N_RANK>
-void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
+template <int N_RANK> template <typename T>
+void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan, const char * fname, Pochoir_Array<T, N_RANK> & a) {
+    /* Dynamically compile and load the JITted kernels */
+    fprintf(stderr, "<DLoader> starts loading!\n");
+    /***************************************************************************************/
+    char gen_kernel_fname[100];
+    sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname, _plan.get_color_num());
+    fprintf(stderr, "gen_kernel_fname = %s\n", gen_kernel_fname);
+    DynamicLoader gen_kernel(gen_kernel_fname);
+    std::function < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &) > create_lambdas = gen_kernel.load < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &) > ("Create_Lambdas");
+    std::function < int (void) > destroy_lambdas = gen_kernel.load < int (void) > ("Destroy_Lambdas");
+    std::function < int (Pochoir < N_RANK > &) > register_lambdas = gen_kernel.load < int (Pochoir< N_RANK > &) > ("Register_Lambdas");
+
+    create_lambdas(*this, a);
+    register_lambdas(*this);
+    /***************************************************************************************/
+    fprintf(stderr, "<DLoader> ends loading!\n");
+    /* end dynamic loader */
+
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
@@ -745,6 +738,8 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
         exit(EXIT_FAILURE);
     }
     checkFlags();
+    struct timeval l_start, l_end;
+    gettimeofday(&l_start, 0);
 #if USE_CILK_FOR
     int offset = 0;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
@@ -784,6 +779,101 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
         cilk_sync;
         offset = _plan.sync_data_->region_[j];
     }
+#endif
+    gettimeofday(&l_end, 0);
+    pochoir_time_ = min (pochoir_time_, (1.0e3 * tdiff(&l_end, &l_start)));
+    fprintf(stderr, "Pochoir time = %.6f ms\n", pochoir_time_);
+#if DEBUG
+    int l_num_kernel = 0, l_num_cond_kernel = 0, l_num_bkernel = 0, l_num_cond_bkernel = 0;
+    algor.read_stat_kernel(l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
+    printf("kernel = %d, cond_kernel = %d, bkernel = %d, cond_bkernel = %d\n",
+            l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
+#endif
+    fprintf(stderr, "<DLoader> starts Deloading!\n");
+    /***************************************************************************************/
+    destroy_lambdas();
+    gen_kernel.close();
+    /***************************************************************************************/
+    fprintf(stderr, "<DLoader> ends Deloading!\n");
+    return;
+}
+
+template <int N_RANK> template <typename T, typename ... TS>
+void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan, const char * fname, Pochoir_Array<T, N_RANK> & a, Pochoir_Array <TS, N_RANK> ... as) {
+    /* Dynamically compile and load the JITted kernels */
+    fprintf(stderr, "<DLoader> starts loading!\n");
+    /***************************************************************************************/
+    char gen_kernel_fname[100];
+    sprintf(gen_kernel_fname, "./%s_%d", fname, _plan.get_color_num());
+    fprintf(stderr, "gen_kernel_fname = %s\n", gen_kernel_fname);
+    DynamicLoader gen_kernel(gen_kernel_fname);
+
+    std::function < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &, Pochoir_Array<TS, N_RANK> ...) > create_lambdas = gen_kernel.load < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &, Pochoir_Array<TS, N_RANK> ...) > ("Create_Lambdas");
+    std::function < int (void) > destroy_lambdas = gen_kernel.load < int (void) > ("Destroy_Lambdas");
+    std::function < int (Pochoir < N_RANK > &) > register_lambdas = gen_kernel.load < int (Pochoir< N_RANK > &) > ("Register_Lambdas");
+
+    create_lambdas(*this, a, as ...);
+    register_lambdas(*this);
+    /***************************************************************************************/
+    fprintf(stderr, "<DLoader> ends loading!\n");
+    /* end dynamic loader */
+
+    Algorithm<N_RANK> algor(slope_);
+    algor.set_phys_grid(phys_grid_);
+    algor.set_thres(arr_type_size_);
+    algor.set_unroll(lcm_unroll_);
+    algor.set_time_shift(time_shift_);
+    if (pmode_ == Pochoir_Obase_Tile) {
+        algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
+    } else {
+        printf("Something is wrong in Run_Obase(Plan)!\n");
+        exit(EXIT_FAILURE);
+    }
+    checkFlags();
+    struct timeval l_start, l_end;
+    gettimeofday(&l_start, 0);
+#if USE_CILK_FOR
+    int offset = 0;
+    for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
+        cilk_for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
+            int l_region_n = _plan.base_data_->region_[i].region_n;
+            assert(l_region_n >= 0);
+            int l_t0 = _plan.base_data_->region_[i].t0;
+            int l_t1 = _plan.base_data_->region_[i].t1;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            auto f = opks_[l_region_n].kernel_;
+            auto bf = opks_[l_region_n].bkernel_;
+            algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
+        }
+        offset = _plan.sync_data_->region_[j];
+    }
+#else
+    int offset = 0, i;
+    for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
+        for (i = offset; i < _plan.sync_data_->region_[j]-1; ++i) {
+            int l_region_n = _plan.base_data_->region_[i].region_n;
+            assert(l_region_n >= 0);
+            int l_t0 = _plan.base_data_->region_[i].t0;
+            int l_t1 = _plan.base_data_->region_[i].t1;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            auto f = opks_[l_region_n].kernel_;
+            auto bf = opks_[l_region_n].bkernel_;
+            cilk_spawn algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
+        }
+        int l_region_n = _plan.base_data_->region_[i].region_n;
+        assert(l_region_n >= 0);
+        int l_t0 = _plan.base_data_->region_[i].t0;
+        int l_t1 = _plan.base_data_->region_[i].t1;
+        Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+        auto f = opks_[l_region_n].kernel_;
+        auto bf = opks_[l_region_n].bkernel_;
+        algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
+        cilk_sync;
+        offset = _plan.sync_data_->region_[j];
+    }
+    gettimeofday(&l_end, 0);
+    pochoir_time_ = min (pochoir_time_, (1.0e3 * tdiff(&l_end, &l_start)));
+    fprintf(stderr, "Pochoir time = %.6f ms\n", pochoir_time_);
 
 #endif
 #if DEBUG
@@ -792,6 +882,12 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
     printf("kernel = %d, cond_kernel = %d, bkernel = %d, cond_bkernel = %d\n",
             l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
 #endif
+    fprintf(stderr, "<DLoader> starts Deloading!\n");
+    /***************************************************************************************/
+    destroy_lambdas();
+    gen_kernel.close();
+    /***************************************************************************************/
+    fprintf(stderr, "<DLoader> ends Deloading!\n");
     return;
 }
 #endif

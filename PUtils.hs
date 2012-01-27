@@ -702,6 +702,8 @@ rename :: String -> String -> String
 rename pSuffix fname = name ++ pSuffix ++ ".cpp"
     where (name, suffix) = break ('.' ==) fname
 
-mkLocal :: String -> String 
-mkLocal a = "./" ++ a
+mkLocalFile :: String -> String 
+mkLocalFile a = "./" ++ a
 
+mkQuote :: String -> String
+mkQuote a = "\"" ++ a ++ "\""

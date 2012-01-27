@@ -70,6 +70,7 @@ public:
         return reinterpret_cast<T*>(result);
     }
 
+    void close(void) { dlclose(m_handle); }
 private:
     void * m_handle;
     char * error;

@@ -574,12 +574,15 @@ struct Pochoir_Plan {
     Vector_Info< Region_Info<N_RANK> > * base_data_;
     Vector_Info<int> * sync_data_;
     int sz_base_data_, sz_sync_data_;
+    int color_num_;
     Pochoir_Plan (int _sz_base_data, int _sz_sync_data) : sz_base_data_(_sz_base_data), sz_sync_data_(_sz_sync_data) {
         base_data_ = new Vector_Info< Region_Info<N_RANK> >(_sz_base_data);
         sync_data_ = new Vector_Info<int>(_sz_sync_data);
+        color_num_ = -1;
     }
     Pochoir_Plan () {
         sz_base_data_ = sz_sync_data_ = 0;
+        color_num_ = -1;
         base_data_ = NULL;
         sync_data_ = NULL;
     }
@@ -592,8 +595,11 @@ struct Pochoir_Plan {
         // sync_data_ = new Vector_Info<int>(_sz_sync_data);
         sync_data_ = new Vector_Info<int>;
     }
+    void set_color_num(int _color_num) { color_num_ = _color_num; }
+    int get_color_num(void) { return color_num_; }
     ~Pochoir_Plan() {
         sz_base_data_ = sz_sync_data_ = 0;
+        color_num_ = -1;
         delete base_data_;
         delete sync_data_;
     }
@@ -605,6 +611,7 @@ struct Pochoir_Plan {
 #if DEBUG
             printf("os_base_data is open!\n");
 #endif
+            os_base_data << "color_num = " << color_num_ << std::endl;
             os_base_data << (*base_data_);
         } else {
             printf("os_base_data is NOT open! exit!\n");
@@ -614,6 +621,7 @@ struct Pochoir_Plan {
 #if DEBUG
             printf("os_sync_data is open!\n");
 #endif
+            os_sync_data << "color_num = " << color_num_ << std::endl;
             os_sync_data << (*sync_data_);
         } else {
             printf("os_sync_data is NOT open! exit!\n");
@@ -636,11 +644,15 @@ struct Pochoir_Plan {
         alloc_sync_data(10);
 
         FILE * is_base_data = fopen(base_file_name, "r");
+        int l_color_from_base_file = -1, l_color_from_sync_file = -1;
 
         if (is_base_data != NULL) {
 #if DEBUG
             printf("is_base_data is open!\n");
 #endif
+            if (!feof(is_base_data)) {
+                fscanf(is_base_data, "color_num = %d\n", &l_color_from_base_file);
+            }
             while (!feof(is_base_data)) {
                 Region_Info<N_RANK> l_region;
                 l_region.pscanf(is_base_data);
@@ -661,6 +673,9 @@ struct Pochoir_Plan {
 #if DEBUG
             printf("is_sync_data is open!\n");
 #endif
+            if (!feof(is_sync_data)) {
+                fscanf(is_sync_data, "color_num = %d\n", &l_color_from_sync_file);
+            }
             while (!feof(is_sync_data)) {
                 int l_sync;
                 fscanf(is_sync_data, "%d\n", &l_sync);
@@ -676,6 +691,15 @@ struct Pochoir_Plan {
         std::cerr << "sync_data : \n" << (*sync_data_) << std::endl;
 #endif
 
+        if (l_color_from_base_file != l_color_from_sync_file) {
+            fprintf(stderr, "color from base <%d>, color from sync <%d>\n", 
+                    l_color_from_base_file, l_color_from_sync_file);
+            exit(EXIT_FAILURE);
+        } else {
+            fprintf(stderr, "color from base = color from sync = %d\n", 
+                    l_color_from_base_file);
+            color_num_ = l_color_from_base_file;
+        }
         return (*this);
     }
 };
