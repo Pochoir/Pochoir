@@ -380,7 +380,6 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a, Pochoir_Array
 
     if (num_arr_ == 0) {
         arr_type_size_ = sizeof(T);
-        // arr_type_size_ = sizeof(double);
 #if DEBUG
         printf("<%s:%d> arr_type_size = %d\n", __FILE__, __LINE__, arr_type_size_);
 #endif
@@ -514,7 +513,6 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
 }
 
 template <int N_RANK> 
-// Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, int gen_plan_order, const char * pochoir_mode, const char * color_vector_fname, const char * kernel_info_fname) {
 Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char * pochoir_mode, const char * fname) {
     Pochoir_Plan<N_RANK> * l_plan = new Pochoir_Plan<N_RANK>();
     int l_sz_base_data, l_sz_sync_data;
@@ -782,7 +780,7 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan, const char *
 #endif
     gettimeofday(&l_end, 0);
     pochoir_time_ = min (pochoir_time_, (1.0e3 * tdiff(&l_end, &l_start)));
-    fprintf(stderr, "Pochoir time = %.6f ms\n", pochoir_time_);
+    fprintf(stderr, "Pochoir time = %.6f milliseconds\n", pochoir_time_);
 #if DEBUG
     int l_num_kernel = 0, l_num_cond_kernel = 0, l_num_bkernel = 0, l_num_cond_bkernel = 0;
     algor.read_stat_kernel(l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
@@ -873,7 +871,7 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan, const char *
     }
     gettimeofday(&l_end, 0);
     pochoir_time_ = min (pochoir_time_, (1.0e3 * tdiff(&l_end, &l_start)));
-    fprintf(stderr, "Pochoir time = %.6f ms\n", pochoir_time_);
+    fprintf(stderr, "Pochoir time = %.6f milliseconds\n", pochoir_time_);
 
 #endif
 #if DEBUG

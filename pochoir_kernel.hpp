@@ -71,96 +71,6 @@ struct Pochoir_Kernel {
 };
 
 /* Pochoir_Obase_Kernel for Phase II */
-#if 0
-/* an old version */
-template <int N_RANK>
-struct Pochoir_Obase_Kernel {
-    typedef typename Pochoir_Types<N_RANK>::T_Obase_Kernel T_Kernel;
-    T_Kernel * kernel_;
-    Pochoir_Shape<N_RANK> * shape_;
-    int shape_size_, time_shift_, toggle_, slope_[N_RANK];
-    Pochoir_Obase_Kernel(void) { }
-    template <int N_SIZE>
-    int Init(T_Kernel _kernel, Pochoir_Shape<N_RANK> (& _shape)[N_SIZE]) {
-        kernel_ = &_kernel;
-        int l_min_time_shift=0, l_max_time_shift=0, depth=0;
-        for (int r = 0; r < N_RANK+1; ++r) {
-            slope_[r] = 0;
-        }
-        for (int i = 0; i < N_SIZE; ++i) {
-            if (_shape[i].shift[0] < l_min_time_shift)
-                l_min_time_shift = _shape[i].shift[0];
-            if (_shape[i].shift[0] > l_max_time_shift)
-                l_max_time_shift = _shape[i].shift[0];
-        }
-        depth = l_max_time_shift - l_min_time_shift;
-        time_shift_ = 0 - l_min_time_shift;
-        toggle_ = depth + 1;
-        shape_ = new Pochoir_Shape<N_RANK>[N_SIZE];
-        for (int i = 0; i < N_SIZE; ++i) {
-            for (int r = 0; r < N_RANK+1; ++r) {
-                shape_[i].shift[r] = _shape[i].shift[r];
-            }
-        }
-        for (int i = 0; i < N_SIZE; ++i) {
-            for (int r = 0; r < N_RANK+1; ++r) {
-                slope_[N_RANK-r] = (r > 0) ? max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[N_RANK-r]/(l_max_time_shift - shape_[i].shift[0])))) : 0;
-            }
-        }
-        shape_size_ = N_SIZE;
-#if DEBUG
-        printf("time_shift_ = %d, toggle = %d\n", time_shift_, toggle_);
-        for (int r = 0; r < N_RANK; ++r) {
-            printf("slope[%d] = %d, ", r, slope_[r]);
-        }
-        printf("\n");
-#endif
-        return 0;
-    }
-    template <int N_SIZE>
-    Pochoir_Obase_Kernel(T_Kernel _kernel, Pochoir_Shape<N_RANK> (& _shape)[N_SIZE]) : kernel_(&_kernel) {
-        int l_min_time_shift=0, l_max_time_shift=0, depth=0;
-        for (int r = 0; r < N_RANK+1; ++r) {
-            slope_[r] = 0;
-        }
-        for (int i = 0; i < N_SIZE; ++i) {
-            if (_shape[i].shift[0] < l_min_time_shift)
-                l_min_time_shift = _shape[i].shift[0];
-            if (_shape[i].shift[0] > l_max_time_shift)
-                l_max_time_shift = _shape[i].shift[0];
-        }
-        depth = l_max_time_shift - l_min_time_shift;
-        time_shift_ = 0 - l_min_time_shift;
-        toggle_ = depth + 1;
-        shape_ = new Pochoir_Shape<N_RANK>[N_SIZE];
-        for (int i = 0; i < N_SIZE; ++i) {
-            for (int r = 0; r < N_RANK+1; ++r) {
-                shape_[i].shift[r] = _shape[i].shift[r];
-            }
-        }
-        for (int i = 0; i < N_SIZE; ++i) {
-            for (int r = 0; r < N_RANK+1; ++r) {
-                slope_[N_RANK-r] = (r > 0) ? max(slope_[N_RANK-r], abs((int)ceil((float)shape_[i].shift[N_RANK-r]/(l_max_time_shift - shape_[i].shift[0])))) : 0;
-            }
-        }
-        shape_size_ = N_SIZE;
-#if DEBUG
-        printf("time_shift_ = %d, toggle = %d\n", time_shift_, toggle_);
-        for (int r = 0; r < N_RANK; ++r) {
-            printf("slope[%d] = %d, ", r, slope_[r]);
-        }
-        printf("\n");
-#endif
-    }
-    Pochoir_Shape<N_RANK> * Get_Shape() { return shape_; }
-    int Get_Shape_Size() { return shape_size_; }
-    T_Kernel & Get_Kernel (void) { return (*kernel_); }
-    inline void operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const {
-        (*kernel_)(t0, t1, grid);
-    }
-    ~Pochoir_Obase_Kernel() { delete shape_; }
-};
-#else
 /* define an abstract base class to act as a generic class pointer
  * to Pochoir_Obase_Kernel<F, N_RANK>
  */
@@ -225,8 +135,6 @@ struct Pochoir_Obase_Kernel : public Pochoir_Base_Kernel<N_RANK> {
     }
     ~Pochoir_Obase_Kernel() { delete shape_; }
 };
-
-#endif
 
 template <int N_RANK>
 struct Pochoir_Guard {
@@ -660,8 +568,7 @@ struct Color_Region<1> {
             assert (_grid.dx0[i] == 0 && _grid.dx1[i] == 0);
         }
         phys_grid_ = _grid;
-        /* We will generate the color_map_ only when needed, and
-         * on-the-fly
+        /* We will generate the color_map_ on demand and on-the-fly
          */
         return; 
     }

@@ -612,11 +612,20 @@ pShowSingleMacroKernel l_bound l_t (l_kernel:l_kernels) =
         breakline ++ pAdjustTrape l_rank ++ breakline ++ pAdjustT l_t l_kernels ++ 
         pShowSingleMacroKernel l_bound l_t l_kernels 
 
+{-
+    - This is the version that deduct time_shift_ from guard function call
 pShowUnrollTGuardHead :: String -> Int -> Int -> Int -> String
 pShowUnrollTGuardHead l_t l_resid l_unroll l_timeShift =
     let l_modOp = " % "
         l_divisor = show l_unroll
         l_dividend = " ( " ++ l_t ++ " + " ++ show l_timeShift ++ " ) "
+    in  "if (" ++ l_dividend ++ l_modOp ++ l_divisor ++ " == " ++ show l_resid ++ ") {"
+ -}
+pShowUnrollTGuardHead :: String -> Int -> Int -> Int -> String
+pShowUnrollTGuardHead l_t l_resid l_unroll l_timeShift =
+    let l_modOp = " % "
+        l_divisor = show l_unroll
+        l_dividend = " ( " ++ l_t ++ " ) "
     in  "if (" ++ l_dividend ++ l_modOp ++ l_divisor ++ " == " ++ show l_resid ++ ") {"
 
 {------------------------------------------------------------------------------------
@@ -675,11 +684,16 @@ pShowAutoGuardString l_op (l_pGuard, l_tiles@(t:ts)) =
         l_rank = gRank l_pGuard
         l_decl_params = "int t, " ++ 
                     (intercalate ", " $ take l_rank $ map ((++) "int i" . show) [0,1..])
+{-
+        -- This is the version that deduct time_shift_ from guard function calls
         l_invoke_params = 
                     if l_timeShift /= 0
                        then "t + " ++ show l_timeShift ++ ", " ++
                             (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
                        else "t, " ++ 
+                            (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
+ -}
+        l_invoke_params = "t, " ++ 
                             (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
         l_decl_params' = " ( " ++ l_decl_params ++ " ) "
         l_invoke_params' = " ( " ++ l_invoke_params ++ " ) " 
@@ -707,11 +721,16 @@ pShowGlobalGuardString l_op (l_pGuard, l_tiles@(t:ts)) =
         l_rank = gRank l_pGuard
         l_decl_params = "int t, " ++ 
                     (intercalate ", " $ take l_rank $ map ((++) "int i" . show) [0,1..])
+{-
+        -- This is the version that deduct time_shift_ from guard function calls
         l_invoke_params = 
                     if l_timeShift /= 0
                        then "t + " ++ show l_timeShift ++ ", " ++
                             (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
                        else "t, " ++ 
+                            (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
+ -}
+        l_invoke_params = "t, " ++ 
                             (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
         l_decl_params' = " ( " ++ l_decl_params ++ " ) "
         l_invoke_params' = " ( " ++ l_invoke_params ++ " ) " 
@@ -752,9 +771,13 @@ pShowAllCondTileOverlapInclusiveKernel l_showSingleKernel l_tile_op l_kfs@(k:ks)
         l_arrayInUse = unionArrayIter l_iter
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l_kfs)
         l_timeShift = shapeTimeShift l_pShape
+{-
+        -- This is the version that deduct time_shift_ from guard function call
         l_t_dim = if l_timeShift /= 0
                      then l_t ++ " + " ++ show l_timeShift
                      else l_t
+ -}
+        l_t_dim = l_t        
         g = ("__" ++ (gfName $ kfGuardFunc k) ++ "__") ++ " ( " ++
             l_t_dim ++ ", " ++ intercalate ", " l_spatial_params ++ " ) "
         l_tail = if (l_tile_op == PEXCLUSIVE && length ks > 0)
