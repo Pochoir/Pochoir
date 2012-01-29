@@ -145,7 +145,7 @@ struct Homogeneity {
     inline int size(void) { return size_; }
     inline bool operator<= (Homogeneity const & h) {
         /* define the partial order between Homogeneities */
-        return (a_ & h.a_ == a_ && ~o_ & ~h.o_ == ~o_);
+        return ((a_ & h.a_) == a_ && (~o_ & ~h.o_) == ~o_);
     }
     inline Homogeneity & operator+ (Homogeneity const & h) {
         /* to combine regions, or to get the maximum-norm kernel
@@ -525,7 +525,7 @@ struct Vector_Info {
             }
             if (l_max_idx != i) {
                 /* exchange the elements 'i' and 'l_max_idx' */
-                T_measurre tmp = measure_[i];
+                T_measure tmp = measure_[i];
                 measure_[i] = measure_[l_max_idx];
                 measure_[l_max_idx] = tmp;
                 T r_tmp = region_[i];
@@ -715,16 +715,18 @@ struct Vector_Info {
         }
         return -1;
     }
-    int get_MinMax (T ele) {
-        T l_orig = ele;
+    int get_MinMax (T & ele) {
+        T & l_orig = ele;
         /* l_subsume is initialized to white_clone */
-        T l_subsume = T(ele.size());
+        T l_subsume(ele.size());
         /* l_idx is initialized to the idx of white_clone */
-        int l_idx = get_idx(l_subsume);
+        int l_idx = get_index(l_subsume);
         for (int i = 0; i < pointer_; ++i) {
-            T const & l_region = region_[i];
-            if (l_region <= ele && l_subsume <= l_region)
+            T & l_region = region_[i];
+            if (l_region <= l_orig && l_subsume <= l_region) {
                 l_idx = i;
+                l_subsume = l_region;
+            }
         }
         return l_idx;
     }
@@ -737,7 +739,10 @@ struct Vector_Info {
     T & operator[] (int _idx) { return region_[_idx]; }
     int size() { return pointer_; }
     int set_size(int _size) { 
-        pointer_ = _size;
+        /* So, don't Over-size the vector */
+        if (_size < pointer_) {
+            pointer_ = _size;
+        }
         return pointer_;
     }
     T & operator= (T & rhs) {
@@ -758,9 +763,13 @@ struct Vector_Info {
         for (int i = 0; i < l_rhs_size; ++i) {
             l_region[i] = rhs[i];
         }
+#if 0
         if (is_basic_data_type<T>()) { 
             delete [] region_; 
         }
+#else
+        delete [] region_;
+#endif
         region_ = l_region;
         size_ = l_rhs_size;
         pointer_ = l_rhs_size;
@@ -800,12 +809,14 @@ struct Pochoir_Plan {
         base_data_ = NULL;
         sync_data_ = NULL;
     }
-    void change_region_n(Vector_Info< Homogeneity > const & color_vectors) {
-        int l_size = base_data_->size();
+    void change_region_n(Vector_Info< Homogeneity > & color_vectors) {
+        int const l_size = base_data_->size();
         for (int i = 0; i < l_size; ++i) {
-            Region_Info<N_RANK> & l_region = base_data_[i];
-            Homogeneity<N_RANK> const & l_homo = l_region.color_;
-            l_region.region_n_ = color_vectors.get_MinMax(l_homo);
+            Region_Info<N_RANK> & l_region = (*base_data_)[i];
+            Homogeneity & l_homo = l_region.color_;
+            int l_idx = color_vectors.get_MinMax(l_homo);
+            l_region.region_n_ = l_idx;
+            l_region.color_ = color_vectors[l_idx];
         }
     }
     void alloc_base_data(int _sz_base_data) {
