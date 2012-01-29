@@ -58,7 +58,7 @@ class Pochoir {
         int arr_type_size_;
         int sz_pxgk_, sz_pigk_;
         int lcm_unroll_;
-        int color_num_;
+        int order_num_;
         double pochoir_time_;
         Pochoir_Mode pmode_;
         /* assuming that the number of distinct sub-regions is less than 10 */
@@ -106,7 +106,7 @@ class Pochoir {
         sz_pxgk_ = sz_pigk_ = 0;
         lcm_unroll_ = 1;
         pmode_ = Pochoir_Null;
-        color_num_ = 0;
+        order_num_ = 0;
         pochoir_time_ = INF;
     }
 
@@ -507,8 +507,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     }
     l_plan->sync_data_->scan();
     l_plan->sync_data_->add_element(END_SYNC);
-    l_plan->set_color_num(color_num_);
-    ++color_num_;
+    l_plan->set_order_num(order_num_);
+    ++order_num_;
     return (*l_plan);
 }
 
@@ -538,7 +538,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     l_tree->set_add_empty_region(false);
     l_root = l_tree->get_root();
     algor.set_tree(l_tree);
-    algor.gen_plan_bicut_p(l_root, 0 + time_shift_, timestep + time_shift_, logic_grid_);
+    algor.gen_plan_bicut_p(l_root, 0 + time_shift_, timestep + time_shift_, logic_grid_, 0);
     l_sz_base_data = algor.get_sz_base_data();
     l_sz_sync_data = max(1, algor.get_sz_sync_data());
     l_plan->alloc_base_data(l_sz_base_data);
@@ -563,10 +563,10 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     }
     l_plan->sync_data_->scan();
     l_plan->sync_data_->add_element(END_SYNC);
-    l_plan->set_color_num(color_num_);
+    l_plan->set_order_num(order_num_);
 
     char color_vector_fname[100], kernel_info_fname[100];
-    sprintf(color_vector_fname, "%s_%d_color.dat\0", fname, color_num_);
+    sprintf(color_vector_fname, "%s_%d_color.dat\0", fname, order_num_);
     sprintf(kernel_info_fname, "%s_kernel_info.cpp\0", fname);
 
     Vector_Info< Homogeneity > & l_color_vector = algor.get_color_vector();
@@ -576,7 +576,12 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
         white_clone = new Homogeneity(l_color_vector[0].size());
     else
         white_clone = new Homogeneity(0);
-    l_color_vector.add_unique_element(*white_clone);
+    /* sort the color vector according to the member 'measure_' */
+    l_color_vector.sort();
+    l_color_vector.set_size(5);
+    /* make the 'rec_level' of white_clone to be 0, so it won't be eliminated out */
+    l_color_vector.add_unique_element(*white_clone, 0);
+    l_plan->change_region_n(l_color_vector);
     std::ofstream os_color_vector;
     os_color_vector.open(color_vector_fname, ofstream::out | ofstream::trunc);
     if (os_color_vector.is_open()) {
@@ -588,7 +593,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     os_color_vector.close();
 
     char cmd[200];
-    sprintf(cmd, "./genkernels -order %d %s %s %s\0", color_num_, pochoir_mode, color_vector_fname, kernel_info_fname);
+    sprintf(cmd, "./genkernels -order %d %s %s %s\0", order_num_, pochoir_mode, color_vector_fname, kernel_info_fname);
     fprintf(stderr, "%s\n", cmd);
     int ret = system(cmd);
     if (ret == -1) {
@@ -596,7 +601,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
         exit(EXIT_FAILURE);
     }
     fprintf(stderr, "./genkernels exits!\n");
-    ++color_num_;
+    ++order_num_;
     return (*l_plan);
 }
 
@@ -629,10 +634,10 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
     int offset = 0;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
-            int l_region_n = _plan.base_data_->region_[i].region_n;
-            int l_t0 = _plan.base_data_->region_[i].t0;
-            int l_t1 = _plan.base_data_->region_[i].t1;
-            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            int l_region_n = _plan.base_data_->region_[i].region_n_;
+            int l_t0 = _plan.base_data_->region_[i].t0_;
+            int l_t1 = _plan.base_data_->region_[i].t1_;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
             for (int t = l_t0; t < l_t1; ++t) {
                 for (int i = 0; i < sz_pigk_; ++i) {
                     Pochoir_Run_Regional_Guard_Tile_Kernel<N_RANK> l_kernel(time_shift_, pigs_[i], pits_[i]);
@@ -666,11 +671,11 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
     int offset = 0;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         cilk_for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
-            int l_region_n = _plan.base_data_->region_[i].region_n;
+            int l_region_n = _plan.base_data_->region_[i].region_n_;
             assert(l_region_n >= 0);
-            int l_t0 = _plan.base_data_->region_[i].t0;
-            int l_t1 = _plan.base_data_->region_[i].t1;
-            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            int l_t0 = _plan.base_data_->region_[i].t0_;
+            int l_t1 = _plan.base_data_->region_[i].t1_;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
             algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
         }
         offset = _plan.sync_data_->region_[j];
@@ -679,18 +684,18 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
     int offset = 0, i;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (i = offset; i < _plan.sync_data_->region_[j]-1; ++i) {
-            int l_region_n = _plan.base_data_->region_[i].region_n;
+            int l_region_n = _plan.base_data_->region_[i].region_n_;
             assert(l_region_n >= 0);
-            int l_t0 = _plan.base_data_->region_[i].t0;
-            int l_t1 = _plan.base_data_->region_[i].t1;
-            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            int l_t0 = _plan.base_data_->region_[i].t0_;
+            int l_t1 = _plan.base_data_->region_[i].t1_;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
             cilk_spawn algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
         }
-        int l_region_n = _plan.base_data_->region_[i].region_n;
+        int l_region_n = _plan.base_data_->region_[i].region_n_;
         assert(l_region_n >= 0);
-        int l_t0 = _plan.base_data_->region_[i].t0;
-        int l_t1 = _plan.base_data_->region_[i].t1;
-        Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+        int l_t0 = _plan.base_data_->region_[i].t0_;
+        int l_t1 = _plan.base_data_->region_[i].t1_;
+        Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
         algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
         cilk_sync;
         offset = _plan.sync_data_->region_[j];
@@ -711,7 +716,7 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan, const char *
     fprintf(stderr, "<DLoader> starts loading!\n");
     /***************************************************************************************/
     char gen_kernel_fname[100];
-    sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname, _plan.get_color_num());
+    sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname, _plan.get_order_num());
     fprintf(stderr, "gen_kernel_fname = %s\n", gen_kernel_fname);
     DynamicLoader gen_kernel(gen_kernel_fname);
     std::function < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &) > create_lambdas = gen_kernel.load < int (Pochoir<N_RANK> &, Pochoir_Array <T, N_RANK> &) > ("Create_Lambdas");
@@ -742,11 +747,11 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan, const char *
     int offset = 0;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         cilk_for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
-            int l_region_n = _plan.base_data_->region_[i].region_n;
+            int l_region_n = _plan.base_data_->region_[i].region_n_;
             assert(l_region_n >= 0);
-            int l_t0 = _plan.base_data_->region_[i].t0;
-            int l_t1 = _plan.base_data_->region_[i].t1;
-            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            int l_t0 = _plan.base_data_->region_[i].t0_;
+            int l_t1 = _plan.base_data_->region_[i].t1_;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
             auto f = opks_[l_region_n].kernel_;
             auto bf = opks_[l_region_n].bkernel_;
             algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
@@ -757,20 +762,20 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan, const char *
     int offset = 0, i;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (i = offset; i < _plan.sync_data_->region_[j]-1; ++i) {
-            int l_region_n = _plan.base_data_->region_[i].region_n;
+            int l_region_n = _plan.base_data_->region_[i].region_n_;
             assert(l_region_n >= 0);
-            int l_t0 = _plan.base_data_->region_[i].t0;
-            int l_t1 = _plan.base_data_->region_[i].t1;
-            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            int l_t0 = _plan.base_data_->region_[i].t0_;
+            int l_t1 = _plan.base_data_->region_[i].t1_;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
             auto f = opks_[l_region_n].kernel_;
             auto bf = opks_[l_region_n].bkernel_;
             cilk_spawn algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
         }
-        int l_region_n = _plan.base_data_->region_[i].region_n;
+        int l_region_n = _plan.base_data_->region_[i].region_n_;
         assert(l_region_n >= 0);
-        int l_t0 = _plan.base_data_->region_[i].t0;
-        int l_t1 = _plan.base_data_->region_[i].t1;
-        Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+        int l_t0 = _plan.base_data_->region_[i].t0_;
+        int l_t1 = _plan.base_data_->region_[i].t1_;
+        Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
         auto f = opks_[l_region_n].kernel_;
         auto bf = opks_[l_region_n].bkernel_;
         algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
@@ -802,7 +807,7 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan, const char *
     fprintf(stderr, "<DLoader> starts loading!\n");
     /***************************************************************************************/
     char gen_kernel_fname[100];
-    sprintf(gen_kernel_fname, "./%s_%d", fname, _plan.get_color_num());
+    sprintf(gen_kernel_fname, "./%s_%d", fname, _plan.get_order_num());
     fprintf(stderr, "gen_kernel_fname = %s\n", gen_kernel_fname);
     DynamicLoader gen_kernel(gen_kernel_fname);
 
@@ -834,11 +839,11 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan, const char *
     int offset = 0;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         cilk_for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
-            int l_region_n = _plan.base_data_->region_[i].region_n;
+            int l_region_n = _plan.base_data_->region_[i].region_n_;
             assert(l_region_n >= 0);
-            int l_t0 = _plan.base_data_->region_[i].t0;
-            int l_t1 = _plan.base_data_->region_[i].t1;
-            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            int l_t0 = _plan.base_data_->region_[i].t0_;
+            int l_t1 = _plan.base_data_->region_[i].t1_;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
             auto f = opks_[l_region_n].kernel_;
             auto bf = opks_[l_region_n].bkernel_;
             algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
@@ -849,20 +854,20 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan, const char *
     int offset = 0, i;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (i = offset; i < _plan.sync_data_->region_[j]-1; ++i) {
-            int l_region_n = _plan.base_data_->region_[i].region_n;
+            int l_region_n = _plan.base_data_->region_[i].region_n_;
             assert(l_region_n >= 0);
-            int l_t0 = _plan.base_data_->region_[i].t0;
-            int l_t1 = _plan.base_data_->region_[i].t1;
-            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+            int l_t0 = _plan.base_data_->region_[i].t0_;
+            int l_t1 = _plan.base_data_->region_[i].t1_;
+            Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
             auto f = opks_[l_region_n].kernel_;
             auto bf = opks_[l_region_n].bkernel_;
             cilk_spawn algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
         }
-        int l_region_n = _plan.base_data_->region_[i].region_n;
+        int l_region_n = _plan.base_data_->region_[i].region_n_;
         assert(l_region_n >= 0);
-        int l_t0 = _plan.base_data_->region_[i].t0;
-        int l_t1 = _plan.base_data_->region_[i].t1;
-        Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid;
+        int l_t0 = _plan.base_data_->region_[i].t0_;
+        int l_t1 = _plan.base_data_->region_[i].t1_;
+        Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
         auto f = opks_[l_region_n].kernel_;
         auto bf = opks_[l_region_n].bkernel_;
         algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));

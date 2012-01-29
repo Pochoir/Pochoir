@@ -1874,7 +1874,7 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, Grid_Info<N_RANK
 #define gen_plan_space_can_cut_p(_dim) (cut_lb ? (lb >= 2 * thres && tb > dx_homo_[_dim]) : (tb >= 2 * thres && lb > dx_homo_[_dim]))
 
 template <int N_RANK> 
-inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid)
+inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -1900,14 +1900,14 @@ inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent
                     queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
                     /* assert all the sub-grid has done N_RANK spatial cuts */
                     assert(l_son->level == -1);
-                    gen_plan_bicut_p(parent, l_son->t0, l_son->t1, l_son->grid);
+                    gen_plan_bicut_p(parent, l_son->t0, l_son->t1, l_son->grid, rec_level+1);
                 } /* end cilk_for */
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
                 queue_len_[curr_dep_pointer] = 0;
 #else
                 /* use cilk_spawn to spawn all the sub-grid */
                 pop_queue(curr_dep_pointer);
-                gen_plan_bicut_p(parent, l_father->t0, l_father->t1, l_father->grid);
+                gen_plan_bicut_p(parent, l_father->t0, l_father->t1, l_father->grid, rec_level+1);
 #endif
             } else {
                 /* performing a space cut on dimension 'level' */
@@ -2030,7 +2030,7 @@ inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent
 }
 
 template <int N_RANK> 
-inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid)
+inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;
@@ -2040,14 +2040,14 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
     Homogeneity homo = (*color_region_)(t0, t1, l_father_grid);
     // const bool cross_region = (region_n == CROSS_REGION);
     const bool cross_region = !(homo.is_homogeneous());
-    Node_Info<N_RANK> * l_internal = new Node_Info<N_RANK>(t0, t1, l_father_grid);
+    Node_Info<N_RANK> * l_internal = new Node_Info<N_RANK>(t0, t1, l_father_grid, homo);
 
     if (cross_region) {
         (*tree_).add_node(parent, l_internal, IS_INTERNAL);
     } else {
-        (*homogeneity_vector_).add_unique_element(homo);
+        (*homogeneity_vector_).add_unique_element(homo, rec_level);
         int region_n = (*homogeneity_vector_).get_index(homo);
-        (*tree_).add_node(parent, l_internal, IS_SPAWN, region_n);
+        (*tree_).add_node(parent, l_internal, IS_SPAWN, homo, region_n);
         ++sz_base_data_;
         return;
     } 
@@ -2067,7 +2067,7 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
     }
 
     if (sim_can_cut) {
-        gen_plan_space_bicut_p(l_internal, t0, t1, l_father_grid);
+        gen_plan_space_bicut_p(l_internal, t0, t1, l_father_grid, rec_level);
         return;
     } 
 
@@ -2090,7 +2090,7 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
          */
         halflt -= (halflt > l_unroll ? (halflt % l_unroll) : 0);
         l_son_grid = l_father_grid;
-        gen_plan_bicut_p(l_internal, t0, t0+halflt, l_son_grid);
+        gen_plan_bicut_p(l_internal, t0, t0+halflt, l_son_grid, rec_level+1);
 
         Node_Info<N_RANK> * l_node = new Node_Info<N_RANK>(IS_SYNC);
         (*tree_).add_node(l_internal, l_node, IS_SYNC);
@@ -2102,46 +2102,17 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
             l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
             l_son_grid.dx1[i] = l_father_grid.dx1[i];
         }
-        gen_plan_bicut_p(l_internal, t0+halflt, t1, l_son_grid);
+        gen_plan_bicut_p(l_internal, t0+halflt, t1, l_son_grid, rec_level+1);
         return;
     } 
 
     /* Add Inhomogeneous node into the tree */
-    (*homogeneity_vector_).add_unique_element(homo);
+    (*homogeneity_vector_).add_unique_element(homo, rec_level);
     int region_n = (*homogeneity_vector_).get_index(homo);
-    Node_Info<N_RANK> * l_leaf = new Node_Info<N_RANK>(t0, t1, l_father_grid);
-    (*tree_).add_node(l_internal, l_leaf, IS_SPAWN, region_n);
+    Node_Info<N_RANK> * l_leaf = new Node_Info<N_RANK>(t0, t1, l_father_grid, homo);
+    (*tree_).add_node(l_internal, l_leaf, IS_SPAWN, homo, region_n);
     ++sz_base_data_;
     return;
-#if 0
-    /* Serial Space Cut: on spatial dimension 'i' */
-    if (cross_region) {
-#if DEBUG
-        printf("Serial Space Cut called !!!\n");
-//        print_grid(stderr, t0, t1, l_father_grid);
-#endif
-        /* keep cutting until every point is in a pure sub-region */
-        assert(t1 - t0 == 1);
-        for (int i = 0; i < N_RANK; ++i) {
-            const int len_i = l_father_grid.x1[i] - l_father_grid.x0[i];
-            if (len_i > 1) {
-                int mid_i = l_father_grid.x0[i] + len_i / 2;
-                l_son_grid = l_father_grid;
-                // l_son_grid.x0[i] = l_father_grid.x0[i];
-                l_son_grid.x1[i] = mid_i;
-                gen_plan_bicut_p(l_internal, t0, t1, l_son_grid);
-                Node_Info<N_RANK> * l_node = new Node_Info<N_RANK>(IS_SYNC);
-                (*tree_).add_node(l_internal, l_node, IS_SYNC);
-                ++sz_sync_data_;
-                l_son_grid.x0[i] = mid_i;
-                l_son_grid.x1[i] = l_father_grid.x1[i];
-                gen_plan_bicut_p(l_internal, t0, t1, l_son_grid);
-                return;
-            }
-        }
-    }
-    return;
-#endif
 }
 
 /************************************************************************************

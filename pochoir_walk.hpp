@@ -551,8 +551,8 @@ struct Algorithm {
 
     /*******************************************************************************/
     /* meta functions to generate the execute plan */
-    inline void gen_plan_space_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid);
-    inline void gen_plan_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid);
+    inline void gen_plan_space_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level);
+    inline void gen_plan_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level);
     /* meta functions to generate the execute plan */
     /*******************************************************************************/
     /* meta functions to run the plan */
