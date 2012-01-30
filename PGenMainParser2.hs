@@ -135,7 +135,10 @@ pGetGuardTilesTerm l_mode l_order l_rank l_color l_reg_GTs =
         l_out_guard' = pFillGuardOrder l_order l_out_guard
         l_tiles = map snd l_reg_GTs
         l_tiles' = zipWith pFillTileOrder [0..] l_tiles
-        l_out_tiles = foldr (pColorTile l_rank l_color) [] l_tiles'
+        l_null_tile = if null l_tiles' 
+                         then emptyTile
+                         else pSetTileOp PNULL $ head l_tiles'
+        l_out_tiles = foldr (pColorTile l_rank l_color) [l_null_tile] l_tiles'
         l_out_tiles' = map (pFillTileOrder l_order) l_out_tiles
     in  (l_out_guard', l_out_tiles')
 
@@ -151,6 +154,28 @@ pColorGuard l_rank l_color l_old_guard_l l_old_guard_r =
                        else gComment l_old_guard_r
     in  PGuard { gName = pSys $ intercalate "_" l_condStr, gRank = l_rank, gFunc = emptyGuardFunc, gComment = l_condStr, gOrder = 0, gColor = l_color }
                             
+{-
+pColorTile :: Int -> Homogeneity -> PTile -> [PTile] -> [PTile]
+pColorTile l_rank l_color l_old_tile_l l_old_tiles_r =
+    let l_idx = size l_color - 1 - tOrder l_old_tile_l
+        l_tiles = 
+            if testBit (o l_color) l_idx && testBit (a l_color) l_idx
+               then let l_new_tile_l = pSetTileOp PSERIAL l_old_tile_l
+                        l_new_tile_l' = l_new_tile_l { tColor = l_color }
+                    in  [l_new_tile_l'] ++ l_old_tiles_r
+               else if (testBit (o l_color) l_idx) &&
+                        (not $ testBit (a l_color) l_idx)
+                       then let l_new_tile_l = pSetTileOp PINCLUSIVE l_old_tile_l
+                                l_new_tile_l' = l_new_tile_l { tColor = l_color }
+                            in  [l_new_tile_l'] ++ l_old_tiles_r
+                       else if (not $ testBit (o l_color) l_idx) &&
+                               (not $ testBit (a l_color) l_idx)
+                            then let l_new_tile_l = pSetTileOp PNULL l_old_tile_l
+                                     l_new_tile_l' = l_new_tile_l { tColor = l_color }
+                                 in  [l_new_tile_l'] ++ l_old_tiles_r
+                            else l_old_tiles_r
+    in  l_tiles
+ -}
 pColorTile :: Int -> Homogeneity -> PTile -> [PTile] -> [PTile]
 pColorTile l_rank l_color l_old_tile_l l_old_tiles_r =
     let l_idx = size l_color - 1 - tOrder l_old_tile_l

@@ -59,7 +59,7 @@ data PType = PType {
     typeName :: String
 } deriving Eq
 data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro | PAllCondTileCPointer | PAllCondTilePointer | PAllCondTileOptPointer | PUnrollTimeTileMacro | PUnrollTimeTileCPointer | PUnrollTimeTilePointer | PUnrollTimeTileOptPointer | PAllCondTileMacroOverlap | PAllCondTileCPointerOverlap | PAllCondTilePointerOverlap | PAllCondTileOptPointerOverlap | PUnrollTimeTileMacroOverlap | PUnrollTimeTileCPointerOverlap | PUnrollTimeTilePointerOverlap | PUnrollTimeTileOptPointerOverlap deriving Eq
-data TileOp = PNOP | PSERIAL | PEXCLUSIVE | PINCLUSIVE deriving (Eq, Show)
+data TileOp = PNULL | PSERIAL | PEXCLUSIVE | PINCLUSIVE deriving (Eq, Show)
 
 data Homogeneity = Homogeneity {
     size :: Int, -- width of the color vector
@@ -180,7 +180,7 @@ emptyShape :: PShape
 emptyShape = PShape { shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = [], shapeComment = cEmpty "Pochoir_Shape" }
 
 emptyKernelFunc :: PKernelFunc
-emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfStmtSize = 0, kfIter = [], kfShape = emptyShape, kfTileOp = PNOP, kfGuardFunc = emptyGuardFunc, kfTileOrder = 0, kfComment = cEmpty "Pochoir_Kernel_Func" }
+emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfStmtSize = 0, kfIter = [], kfShape = emptyShape, kfTileOp = PNULL, kfGuardFunc = emptyGuardFunc, kfTileOrder = 0, kfComment = cEmpty "Pochoir_Kernel_Func" }
 
 emptyKernel :: PKernel
 emptyKernel = PKernel { kName = "", kRank = 0, kFunc = emptyKernelFunc, kShape = emptyShape, kIndex = [], kComment = cEmpty "Pochoir_Kernel" }
@@ -198,7 +198,7 @@ emptyTileKernel :: PTileKernel
 emptyTileKernel = LK [] 
 
 emptyTile :: PTile
-emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel, tComment = cEmpty "Pochoir_Tile", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
+emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel, tComment = cEmpty "Pochoir_Tile", tOp = PNULL, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
 
 -- prefix 'c' means "comment"
 cUnknown :: String -> String

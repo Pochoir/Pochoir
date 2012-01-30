@@ -134,7 +134,7 @@ pParsePochoirTile =
        reservedOp "="
        l_tile_kernel <- pParseTileKernel
        semi
-       let l_tile = PTile { tName = l_name, tRank = l_rank, tSize = l_sizes, tKernel = l_tile_kernel, tComment = "", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
+       let l_tile = PTile { tName = l_name, tRank = l_rank, tSize = l_sizes, tKernel = l_tile_kernel, tComment = "", tOp = PNULL, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
        let l_kernels = getTileKernels l_tile
        updateState $ updatePTile l_tile
        return ""
@@ -225,7 +225,7 @@ pParsePochoirAutoKernelFunc =
                                         kfStmt = exprStmts, 
                                         kfStmtSize = length exprStmts,
                                         kfIter = [], kfShape = emptyShape, 
-                                        kfTileOp = PNOP, kfGuardFunc = emptyGuardFunc,
+                                        kfTileOp = PNULL, kfGuardFunc = emptyGuardFunc,
                                         kfTileOrder = 0, kfComment = "" }
        updateState $ updatePKernelFunc l_kernelFunc
        return ""

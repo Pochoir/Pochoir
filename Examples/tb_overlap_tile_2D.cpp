@@ -35,7 +35,7 @@
 #include <pochoir.hpp>
 
 // using namespace std;
-#define APP_DEBUG 1
+#define APP_DEBUG 0
 #define TIMES 1
 #define TOLERANCE (1e-6)
 
@@ -60,8 +60,8 @@ Pochoir_Boundary_1D(aperiodic_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
 
-#define N 2 
-#define T 2
+#define N 555 
+#define T 555
 
 int main(int argc, char * argv[])
 {

@@ -209,7 +209,7 @@ getValidTile l_state l_tileName =
                                     Nothing -> emptyKernel
                                     Just l_kernel -> l_kernel
                 l_tileKernel = SK l_kernel
-            in  PTile { tName = l_tileName, tRank = kRank l_kernel, tSize = [1], tKernel = l_tileKernel, tComment = "", tOp = PNOP, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
+            in  PTile { tName = l_tileName, tRank = kRank l_kernel, tSize = [1], tKernel = l_tileKernel, tComment = "", tOp = PNULL, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
         Just l_pTile -> l_pTile { tComment = cKnown "Tile" }
 
 getTileKernels :: PTile -> [PKernel]
@@ -281,7 +281,7 @@ pSerializePKernel :: [PKernel] -> Int -> Int -> [PKernel] -> [PKernel]
 pSerializePKernel [] n counter l = l
 pSerializePKernel kL@(k:ks) n counter l =
     let l_kf = kFunc k
-        l_tOrder = kfTileOrder $ kFunc k
+        l_tOrder = (kfTileOrder . kFunc) k
         n' = if l_tOrder == n
                     then n
                     else l_tOrder
@@ -736,3 +736,10 @@ getTagFromMode l_mode =
         PUnrollTimeTileOptPointerOverlap -> "Opt_Pointer"
         otherwise -> "Unknown"
 
+foldTileOp :: TileOp -> TileOp -> TileOp
+foldTileOp PNULL PNULL = PNULL
+foldTileOp _ _ = PSERIAL
+
+pIsTileOpNull :: TileOp -> Bool
+pIsTileOpNull PNULL = True
+pIsTileOpNull _ = False

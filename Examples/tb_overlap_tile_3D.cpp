@@ -62,6 +62,9 @@ Pochoir_Boundary_2D(aperiodic_2D, arr, t, i, j)
     return 0;
 Pochoir_Boundary_End
 
+#define N 555
+#define T 555
+
 int main(int argc, char * argv[])
 {
     const int BASE = 1024798;
@@ -69,7 +72,7 @@ int main(int argc, char * argv[])
     struct timeval start, end;
     double min_tdiff = INF;
     /* the 1D spatial dimension has 'N' points */
-    int N = 0, T = 0;
+    // int N = 0, T = 0;
     double umin, umax;
     char pochoir_plan_file_name[100];
 
@@ -77,8 +80,8 @@ int main(int argc, char * argv[])
         printf("argc < 3, quit! \n");
         exit(1);
     }
-    N = StrToInt(argv[1]);
-    T = StrToInt(argv[2]);
+    // N = StrToInt(argv[1]);
+    // T = StrToInt(argv[2]);
     printf("N = %d, T = %d\n", N, T);
     Pochoir_Shape_2D twod_5pt[] = {{0, 0, 0}, {-1, 0, -1}, {-1, 0, 1}, {-1, 1, 0}, {-1, -1, 0}, {-1, 0, 0}};
     Pochoir_Shape_2D shape_0_0[] = {{0, 0, 0}, {-1, 0, -1}, {-1, 0, 1}, {-1, 1, 0}, {-1, -1, 0}, {-1, 0, 0}};
@@ -438,12 +441,12 @@ int main(int argc, char * argv[])
 
     /* end Pochoir_Kernel functions */
 
-    leap_frog.Register_Exclusive_Tile_Kernels(g_exclusive_0, tile_3D_checkerboard_0);
-    leap_frog.Register_Exclusive_Tile_Kernels(g_exclusive_1, tile_2D_checkerboard_1);
-    leap_frog.Register_Inclusive_Tile_Kernels(g_inclusive_0, tile_1D_checkerboard_2);
-    leap_frog.Register_Inclusive_Tile_Kernels(g_inclusive_1, tile_3D_checkerboard_3);
-    leap_frog.Register_Tiny_Inclusive_Tile_Kernels(g_tiny_inclusive_0, tile_2D_checkerboard_4);
-    leap_frog.Register_Tiny_Inclusive_Tile_Kernels(g_tiny_inclusive_1, tile_1D_checkerboard_5);
+    leap_frog.Register_Tile_Kernels(g_exclusive_0, tile_3D_checkerboard_0);
+    leap_frog.Register_Tile_Kernels(g_exclusive_1, tile_2D_checkerboard_1);
+    leap_frog.Register_Tile_Kernels(g_inclusive_0, tile_1D_checkerboard_2);
+    leap_frog.Register_Tile_Kernels(g_inclusive_1, tile_3D_checkerboard_3);
+    leap_frog.Register_Tile_Kernels(g_tiny_inclusive_0, tile_2D_checkerboard_4);
+    leap_frog.Register_Tile_Kernels(g_tiny_inclusive_1, tile_1D_checkerboard_5);
     leap_frog.Register_Array(a);
 
     /* initialization */
@@ -477,57 +480,57 @@ int main(int argc, char * argv[])
         for (int t = 1; t < T + 1; ++t) {
             cilk_for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-            if (g_exclusive_0(t-1, i, j)) {
-                if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 0) {
+            if (g_exclusive_0(t, i, j)) {
+                if ((t) % 2 == 0 && i % 2 == 0 && j % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_0_0> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.1 * b(t-1, i-1, j) + 0.15 * b(t-1, i, j) + 0.15 * b(t-1, i+1, j)
                       - 0.1 * b(t-1, i, j-1) - 0.15 * b(t-1, i, j) - 0.15 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 1) {
+                } else if ((t) % 2 == 0 && i % 2 == 0 && j % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_0_1> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.2 * b(t-1, i-1, j) + 0.25 * b(t-1, i, j) + 0.25 * b(t-1, i+1, j)
                       - 0.2 * b(t-1, i, j-1) - 0.25 * b(t-1, i, j) - 0.25 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 0 && i % 2 == 1 && j % 2 == 0) {
+                } else if ((t) % 2 == 0 && i % 2 == 1 && j % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_0_2> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.3 * b(t-1, i-1, j) + 0.35 * b(t-1, i, j) + 0.35 * b(t-1, i+1, j)
                       - 0.3 * b(t-1, i, j-1) - 0.35 * b(t-1, i, j) - 0.35 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 0 && i % 2 == 1 && j % 2 == 1) {
+                } else if ((t) % 2 == 0 && i % 2 == 1 && j % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_0_3> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.4 * b(t-1, i-1, j) + 0.45 * b(t-1, i, j) + 0.45 * b(t-1, i+1, j)
                       - 0.4 * b(t-1, i, j-1) - 0.45 * b(t-1, i, j) - 0.45 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1 && i % 2 == 0 && j % 2 == 0) {
+                } else if ((t) % 2 == 1 && i % 2 == 0 && j % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_0_4> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.5 * b(t-1, i-1, j) + 0.55 * b(t-1, i, j) + 0.55 * b(t-1, i+1, j)
                       - 0.5 * b(t-1, i, j-1) - 0.55 * b(t-1, i, j) - 0.55 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1 && i % 2 == 0 && j % 2 == 1) {
+                } else if ((t) % 2 == 1 && i % 2 == 0 && j % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_0_5> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.6 * b(t-1, i-1, j) + 0.65 * b(t-1, i, j) + 0.65 * b(t-1, i+1, j)
                       - 0.6 * b(t-1, i, j-1) - 0.65 * b(t-1, i, j) - 0.65 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1 && i % 2 == 1 && j % 2 == 0) {
+                } else if ((t) % 2 == 1 && i % 2 == 1 && j % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_0_6> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.7 * b(t-1, i-1, j) + 0.75 * b(t-1, i, j) + 0.75 * b(t-1, i+1, j)
                       - 0.7 * b(t-1, i, j-1) - 0.75 * b(t-1, i, j) - 0.75 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1 && i % 2 == 1 && j % 2 == 1) {
+                } else if ((t) % 2 == 1 && i % 2 == 1 && j % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_0_7> : b(%d, %d, %d)\n", t, i, j);
 #endif
@@ -535,29 +538,29 @@ int main(int argc, char * argv[])
                         0.8 * b(t-1, i-1, j) + 0.85 * b(t-1, i, j) + 0.85 * b(t-1, i+1, j)
                       - 0.8 * b(t-1, i, j-1) - 0.85 * b(t-1, i, j) - 0.85 * b(t-1, i, j+1);
                 }
-            } else if (g_exclusive_1(t-1, i, j)) {
-                if ((t-1) % 2 == 0 && i % 2 == 0) {
+            } else if (g_exclusive_1(t, i, j)) {
+                if ((t) % 2 == 0 && i % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_1_0> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.11 * b(t-1, i-1, j) + 0.151 * b(t-1, i, j) + 0.151 * b(t-1, i+1, j)
                       - 0.11 * b(t-1, i, j-1) - 0.151 * b(t-1, i, j) - 0.151 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 0 && i % 2 == 1) {
+                } else if ((t) % 2 == 0 && i % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_1_1> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.21 * b(t-1, i-1, j) + 0.251 * b(t-1, i, j) + 0.251 * b(t-1, i+1, j)
                       - 0.21 * b(t-1, i, j-1) - 0.251 * b(t-1, i, j) - 0.251 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1 && i % 2 == 0) {
+                } else if ((t) % 2 == 1 && i % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_1_2> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.31 * b(t-1, i-1, j) + 0.351 * b(t-1, i, j) + 0.351 * b(t-1, i+1, j)
                       - 0.31 * b(t-1, i, j-1) - 0.351 * b(t-1, i, j) - 0.351 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1 && i % 2 == 1) {
+                } else if ((t) % 2 == 1 && i % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_1_3> : b(%d, %d, %d)\n", t, i, j);
 #endif
@@ -566,15 +569,15 @@ int main(int argc, char * argv[])
                       - 0.41 * b(t-1, i, j-1) - 0.451 * b(t-1, i, j) - 0.451 * b(t-1, i, j+1);
                 }
             }
-            if (g_inclusive_0(t-1, i, j)) {
-                if ((t-1) % 2 == 0) {
+            if (g_inclusive_0(t, i, j)) {
+                if ((t) % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_2_0> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.12 * b(t-1, i-1, j) + 0.152 * b(t-1, i, j) + 0.152 * b(t-1, i+1, j)
                       - 0.12 * b(t-1, i, j-1) - 0.152 * b(t-1, i, j) - 0.152 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1) {
+                } else if ((t) % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_2_1> : b(%d, %d, %d)\n", t, i, j);
 #endif
@@ -583,57 +586,57 @@ int main(int argc, char * argv[])
                       - 0.22 * b(t-1, i, j-1) - 0.252 * b(t-1, i, j) - 0.252 * b(t-1, i, j+1);
                 }
             }
-            if (g_inclusive_1(t-1, i, j)) {
-                if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 0) {
+            if (g_inclusive_1(t, i, j)) {
+                if ((t) % 2 == 0 && i % 2 == 0 && j % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_3_0> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.13 * b(t-1, i-1, j) + 0.153 * b(t-1, i, j) + 0.153 * b(t-1, i+1, j)
                       - 0.13 * b(t-1, i, j-1) - 0.153 * b(t-1, i, j) - 0.153 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 1) {
+                } else if ((t) % 2 == 0 && i % 2 == 0 && j % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_3_1> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.23 * b(t-1, i-1, j) + 0.253 * b(t-1, i, j) + 0.253 * b(t-1, i+1, j)
                       - 0.23 * b(t-1, i, j-1) - 0.253 * b(t-1, i, j) - 0.253 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 0 && i % 2 == 1 && j % 2 == 0) {
+                } else if ((t) % 2 == 0 && i % 2 == 1 && j % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_3_2> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.33 * b(t-1, i-1, j) + 0.353 * b(t-1, i, j) + 0.353 * b(t-1, i+1, j)
                       - 0.33 * b(t-1, i, j-1) - 0.353 * b(t-1, i, j) - 0.353 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 0 && i % 2 == 1 && j % 2 == 1) {
+                } else if ((t) % 2 == 0 && i % 2 == 1 && j % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_3_3> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.43 * b(t-1, i-1, j) + 0.453 * b(t-1, i, j) + 0.453 * b(t-1, i+1, j)
                       - 0.43 * b(t-1, i, j-1) - 0.453 * b(t-1, i, j) - 0.453 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1 && i % 2 == 0 && j % 2 == 0) {
+                } else if ((t) % 2 == 1 && i % 2 == 0 && j % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_3_4> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.53 * b(t-1, i-1, j) + 0.553 * b(t-1, i, j) + 0.553 * b(t-1, i+1, j)
                       - 0.53 * b(t-1, i, j-1) - 0.553 * b(t-1, i, j) - 0.553 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1 && i % 2 == 0 && j % 2 == 1) {
+                } else if ((t) % 2 == 1 && i % 2 == 0 && j % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_3_5> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.63 * b(t-1, i-1, j) + 0.653 * b(t-1, i, j) + 0.653 * b(t-1, i+1, j)
                       - 0.63 * b(t-1, i, j-1) - 0.653 * b(t-1, i, j) - 0.653 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1 && i % 2 == 1 && j % 2 == 0) {
+                } else if ((t) % 2 == 1 && i % 2 == 1 && j % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_3_6> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.73 * b(t-1, i-1, j) + 0.753 * b(t-1, i, j) + 0.753 * b(t-1, i+1, j)
                       - 0.73 * b(t-1, i, j-1) - 0.753 * b(t-1, i, j) - 0.753 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1 && i % 2 == 1 && j % 2 == 1) {
+                } else if ((t) % 2 == 1 && i % 2 == 1 && j % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_3_7> : b(%d, %d, %d)\n", t, i, j);
 #endif
@@ -642,29 +645,29 @@ int main(int argc, char * argv[])
                       - 0.83 * b(t-1, i, j-1) - 0.853 * b(t-1, i, j) - 0.853 * b(t-1, i, j+1);
                 }
             }
-            if (g_tiny_inclusive_0(t-1, i, j)) {
-                if ((t-1) % 2 == 0 && i % 2 == 0) {
+            if (g_tiny_inclusive_0(t, i, j)) {
+                if ((t) % 2 == 0 && i % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_4_0> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.14 * b(t-1, i-1, j) + 0.154 * b(t-1, i, j) + 0.154 * b(t-1, i+1, j)
                       - 0.14 * b(t-1, i, j-1) - 0.154 * b(t-1, i, j) - 0.154 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 0 && i % 2 == 1) {
+                } else if ((t) % 2 == 0 && i % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_4_1> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.24 * b(t-1, i-1, j) + 0.254 * b(t-1, i, j) + 0.254 * b(t-1, i+1, j)
                       - 0.24 * b(t-1, i, j-1) - 0.254 * b(t-1, i, j) - 0.254 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1 && i % 2 == 0) {
+                } else if ((t) % 2 == 1 && i % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_4_2> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.34 * b(t-1, i-1, j) + 0.354 * b(t-1, i, j) + 0.354 * b(t-1, i+1, j)
                       - 0.34 * b(t-1, i, j-1) - 0.354 * b(t-1, i, j) - 0.354 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1 && i % 2 == 1) {
+                } else if ((t) % 2 == 1 && i % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_4_3> : b(%d, %d, %d)\n", t, i, j);
 #endif
@@ -673,15 +676,15 @@ int main(int argc, char * argv[])
                       - 0.44 * b(t-1, i, j-1) - 0.454 * b(t-1, i, j) - 0.454 * b(t-1, i, j+1);
                 }
             }
-            if (g_tiny_inclusive_1(t-1, i, j)) {
-                if ((t-1) % 2 == 0) {
+            if (g_tiny_inclusive_1(t, i, j)) {
+                if ((t) % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_5_0> : b(%d, %d, %d)\n", t, i, j);
 #endif
                     b(t, i, j) =
                         0.15 * b(t-1, i-1, j) + 0.155 * b(t-1, i, j) + 0.155 * b(t-1, i+1, j)
                       - 0.15 * b(t-1, i, j-1) - 0.155 * b(t-1, i, j) - 0.155 * b(t-1, i, j+1);
-                } else if ((t-1) % 2 == 1) {
+                } else if ((t) % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_5_1> : b(%d, %d, %d)\n", t, i, j);
 #endif
