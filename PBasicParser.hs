@@ -93,6 +93,13 @@ pIdentifier = do l_start <- letter <|> char '_'
                  l_body <- many (alphaNum <|> char '_' <?> "Wrong Identifier")
                  return (l_start : l_body)
 
+pFileName :: GenParser Char ParserState String
+pFileName = pIdentifier 
+        <|> do char '\"' 
+               l_strs <- sepBy stringLiteral (char '.')
+               char '\"'
+               return (mkQuote $ concat l_strs)
+
 pDelim :: GenParser Char ParserState String
 pDelim = do try comma
             return ", "

@@ -53,9 +53,21 @@ ppStencil1 l_id l_state =
                Just l_stencil ->
                    do let l_inFile = pInFile l_state 
                       let l_fname = pSubstitute ".cpp" "" l_inFile
+                      let l_arrayInUse = map aName $ sArrayInUse l_stencil
                       return (l_id ++ ".Gen_Plan_Obase(" ++ show l_tstep ++ 
                               ", " ++ (mkQuote . show) l_mode ++ 
                               ", " ++ mkQuote l_fname ++
+                              ", " ++ (intercalate ", " l_arrayInUse) ++
+                              "); /* KNOWN */" ++ breakline)
+    <|> do try $ pMember "Load_Plan"
+           l_fname <- parens pFileName
+           semi
+           case Map.lookup l_id $ pStencil l_state of
+               Nothing -> return (l_id ++ ".Load_Plan(" ++ l_fname ++ ");")
+               Just l_stencil ->
+                   do let l_arrayInUse = map aName $ sArrayInUse l_stencil
+                      return (l_id ++ ".Load_Plan_Obase(" ++ l_fname ++
+                              ", " ++ (intercalate ", " l_arrayInUse) ++
                               "); /* KNOWN */" ++ breakline)
     <|> do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
@@ -64,12 +76,7 @@ ppStencil1 l_id l_state =
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ ");")
                Just l_stencil -> 
-                   let l_inFile = pInFile l_state
-                       l_fname = mkQuote $ pSubstitute ".cpp" "" l_inFile
-                       l_arrayInputList = map aName $ sArrayInUse l_stencil
-                       l_lambda_params = l_fname ++ ", " ++ 
-                                         intercalate ", " l_arrayInputList
-                   in  if l_mode == PMUnroll 
+                   if l_mode == PMUnroll 
                             || l_mode == PAllCondTileMacro 
                             || l_mode == PAllCondTileCPointer 
                             || l_mode == PAllCondTilePointer
@@ -80,14 +87,12 @@ ppStencil1 l_id l_state =
                             || l_mode == PAllCondTileOptPointerOverlap
                           then do return (breakline ++ l_id ++ 
                                          ".Run_Obase_Merge(" ++ 
-                                         show l_tstep ++ ", " ++
-                                         l_lambda_params ++
+                                         show l_tstep ++
                                          "); /* Run with Stencil " ++ l_id ++ " */" ++ 
                                          breakline)
                           else do return (breakline ++ l_id ++ 
                                           ".Run_Obase(" ++
-                                          show l_tstep ++ ", " ++ 
-                                          l_lambda_params ++ 
+                                          show l_tstep ++  
                                           "); /* Run with Stencil " ++ l_id ++ " */" ++ 
                                           breakline)
     <|> do return (l_id)

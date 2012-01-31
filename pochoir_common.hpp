@@ -36,6 +36,8 @@
 #include <iostream>
 #include <fstream>
 #include <functional>
+#include "pochoir_errmsg.hpp"
+#include "pochoir_dloader.hpp"
 
 static inline double tdiff (struct timeval *a, struct timeval *b)
 {
@@ -84,6 +86,7 @@ static inline int lcm(int a, int b) {
 #define BICUT 1
 #define STAT 0
 #define VECTOR_SIZE 10
+#define FNAME_LENGTH 200
 
 enum Pochoir_Mode {
     Pochoir_Null,
@@ -262,8 +265,7 @@ struct Homogeneity {
         // fscanf(_fs, ", ");
         assert(ch == ',');
         if (ch != ',') {
-            fprintf(stderr, "<%s:%d> delim ',' is missing!\n", __FUNCTION__, __LINE__);
-            exit(EXIT_FAILURE);
+            ERROR("delimitation ',' is missing!");
         }
         fscanf(_fs, " ");
         do {
@@ -281,9 +283,7 @@ struct Homogeneity {
             o_ = l_o; a_ = l_a;
             size_ = l_o_sz;
         } else {
-            fprintf(stderr, "<%s:%d> o_sz (%d) != a_sz (%d)\n", __FUNCTION__, __LINE__,
-                    l_o_sz, l_a_sz);
-            exit(EXIT_FAILURE);
+            ERROR_2("o_sz (%d) != a_sz (%d)", l_o_sz, l_a_sz);
         }
     }
 };
@@ -567,8 +567,7 @@ struct Vector_Info {
                 ++pointer_;
                 size_ = 2 * size_;
             } else {
-                printf("realloc wrong!\n");
-                exit(1);
+                ERROR("realloc wrong!");
             }
         }
         return;
@@ -605,8 +604,7 @@ struct Vector_Info {
                 ++pointer_;
                 size_ = 2 * size_;
             } else {
-                printf("realloc wrong!\n");
-                exit(1);
+                ERROR("realloc wrong!");
             }
         }
         return;
@@ -651,8 +649,7 @@ struct Vector_Info {
                 ++pointer_;
                 size_ = 2 * size_;
             } else {
-                printf("realloc wrong!\n");
-                exit(1);
+                ERROR("realloc wrong!");
             }
         }
         return;
@@ -702,8 +699,7 @@ struct Vector_Info {
                 ++pointer_;
                 size_ = 2 * size_;
             } else {
-                printf("realloc wrong!\n");
-                exit(1);
+                ERROR("realloc wrong!");
             }
         }
         return;
@@ -715,7 +711,7 @@ struct Vector_Info {
         }
         return -1;
     }
-    int get_MinMax (T & ele) {
+    int get_largest_lb (T & ele) {
         T & l_orig = ele;
         /* l_subsume is initialized to white_clone */
         T l_subsume(ele.size());
@@ -757,8 +753,7 @@ struct Vector_Info {
         /* l_rhs_size > size_ */
         T * l_region = new T[l_rhs_size];
         if (l_region == NULL) {
-            printf("Run out of memory! Exit!\n");
-            exit(1);
+            ERROR("Run out of memory!");
         }
         for (int i = 0; i < l_rhs_size; ++i) {
             l_region[i] = rhs[i];
@@ -798,23 +793,37 @@ struct Pochoir_Plan {
     Vector_Info<int> * sync_data_;
     int sz_base_data_, sz_sync_data_;
     int order_num_;
+    char * fname_;
+    DynamicLoader * dloader_;
     Pochoir_Plan (int _sz_base_data, int _sz_sync_data) : sz_base_data_(_sz_base_data), sz_sync_data_(_sz_sync_data) {
         base_data_ = new Vector_Info< Region_Info<N_RANK> >(_sz_base_data);
         sync_data_ = new Vector_Info<int>(_sz_sync_data);
         order_num_ = -1;
+        fname_ = NULL; 
+        dloader_ = NULL;
     }
     Pochoir_Plan () {
         sz_base_data_ = sz_sync_data_ = 0;
         order_num_ = -1;
+        fname_ = NULL; 
+        dloader_ = NULL;
         base_data_ = NULL;
         sync_data_ = NULL;
+    }
+    ~Pochoir_Plan() {
+        sz_base_data_ = sz_sync_data_ = 0;
+        order_num_ = -1;
+        delete base_data_;
+        delete sync_data_;
+        delete dloader_;
+        delete [] fname_;
     }
     void change_region_n(Vector_Info< Homogeneity > & color_vectors) {
         int const l_size = base_data_->size();
         for (int i = 0; i < l_size; ++i) {
             Region_Info<N_RANK> & l_region = (*base_data_)[i];
             Homogeneity & l_homo = l_region.color_;
-            int l_idx = color_vectors.get_MinMax(l_homo);
+            int l_idx = color_vectors.get_largest_lb(l_homo);
             l_region.region_n_ = l_idx;
             l_region.color_ = color_vectors[l_idx];
         }
@@ -830,11 +839,68 @@ struct Pochoir_Plan {
     }
     void set_order_num(int _order_num) { order_num_ = _order_num; }
     int get_order_num(void) { return order_num_; }
-    ~Pochoir_Plan() {
-        sz_base_data_ = sz_sync_data_ = 0;
-        order_num_ = -1;
-        delete base_data_;
-        delete sync_data_;
+    void set_fname(const char * _fname) {
+        fname_ = new char[strlen(_fname)];
+        strcpy(fname_, _fname);
+    }
+    char * get_fname(void) {
+        return fname_;
+    }
+    template <typename T_Pochoir, typename T_Array>
+    int load_kernels(T_Pochoir & _pochoir, T_Array & _a) {
+        if (dloader_ != NULL) {
+            WARNING("dloader != NULL!");
+            return 0;
+        }
+        fprintf(stderr, "<DLoader> starts loading!\n");
+        /***************************************************************************************/
+        char gen_kernel_fname [strlen(fname_) + 20];
+        sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname_, order_num_);
+        fprintf(stderr, "gen_kernel_fname = %s\n", gen_kernel_fname);
+        dloader_ = new DynamicLoader(gen_kernel_fname);
+        std::function < int (T_Pochoir &, T_Array &) > create_lambdas = dloader_->load < int (T_Pochoir &, T_Array &) > ("Create_Lambdas");
+        std::function < int (T_Pochoir &) > register_lambdas = dloader_->load < int (T_Pochoir &) > ("Register_Lambdas");
+
+        create_lambdas(_pochoir, _a);
+        register_lambdas(_pochoir);
+        /***************************************************************************************/
+        fprintf(stderr, "<DLoader> ends loading!\n");
+        return 0;
+    }
+    template <typename T_Pochoir, typename T_Array, typename ... T_ArrayS>
+    int load_kernels(T_Pochoir & _pochoir, T_Array & _a, T_ArrayS ... _as) {
+        if (dloader_ != NULL) {
+            WARNING("dloader != NULL!");
+            return 0;
+        }
+        fprintf(stderr, "<DLoader> starts loading!\n");
+        /***************************************************************************************/
+        char gen_kernel_fname [strlen(fname_) + 20];
+        sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname_, order_num_);
+        fprintf(stderr, "gen_kernel_fname = %s\n", gen_kernel_fname);
+        dloader_ = new DynamicLoader(gen_kernel_fname);
+        std::function < int (T_Pochoir &, T_Array &, T_ArrayS ...) > create_lambdas = dloader_->load < int (T_Pochoir &, T_Array &, T_ArrayS ...) > ("Create_Lambdas");
+        std::function < int (T_Pochoir &) > register_lambdas = dloader_->load < int (T_Pochoir &) > ("Register_Lambdas");
+
+        create_lambdas(_pochoir, _a, _as ...);
+        register_lambdas(_pochoir);
+        /***************************************************************************************/
+        fprintf(stderr, "<DLoader> ends loading!\n");
+        return 0;
+    }
+    int unload_kernels(void) {
+        fprintf(stderr, "<DLoader> starts Deloading!\n");
+        /***************************************************************************************/
+        if (dloader_ == NULL) {
+            WARNING("dloader == NULL");
+            return 0;
+        }
+        std::function < int (void) > destroy_lambdas = dloader_->load < int (void) > ("Destroy_Lambdas");
+        destroy_lambdas();
+        dloader_->close();
+        /***************************************************************************************/
+        fprintf(stderr, "<DLoader> ends Deloading!\n");
+        return 0;
     }
     void store_plan(const char * base_file_name, const char * sync_file_name) {
         /* extract data and store plan */
@@ -845,6 +911,7 @@ struct Pochoir_Plan {
             printf("os_base_data is open!\n");
 #endif
             os_base_data << "order_num = " << order_num_ << std::endl;
+            os_base_data << "fname = " << fname_ << std::endl;
             os_base_data << (*base_data_);
         } else {
             printf("os_base_data is NOT open! exit!\n");
@@ -855,6 +922,7 @@ struct Pochoir_Plan {
             printf("os_sync_data is open!\n");
 #endif
             os_sync_data << "order_num = " << order_num_ << std::endl;
+            os_sync_data << "fname = " << fname_ << std::endl;
             os_sync_data << (*sync_data_);
         } else {
             printf("os_sync_data is NOT open! exit!\n");
@@ -878,6 +946,7 @@ struct Pochoir_Plan {
 
         FILE * is_base_data = fopen(base_file_name, "r");
         int l_order_from_base_file = -1, l_order_from_sync_file = -1;
+        char l_base_fname[FNAME_LENGTH], l_sync_fname[FNAME_LENGTH];
 
         if (is_base_data != NULL) {
 #if DEBUG
@@ -885,6 +954,9 @@ struct Pochoir_Plan {
 #endif
             if (!feof(is_base_data)) {
                 fscanf(is_base_data, "order_num = %d\n", &l_order_from_base_file);
+            }
+            if (!feof(is_base_data)) {
+                fscanf(is_base_data, "fname = %s\n", l_base_fname);
             }
             while (!feof(is_base_data)) {
                 Region_Info<N_RANK> l_region;
@@ -909,6 +981,9 @@ struct Pochoir_Plan {
             if (!feof(is_sync_data)) {
                 fscanf(is_sync_data, "order_num = %d\n", &l_order_from_sync_file);
             }
+            if (!feof(is_sync_data)) {
+                fscanf(is_sync_data, "fname = %s\n", l_sync_fname);
+            }
             while (!feof(is_sync_data)) {
                 int l_sync;
                 fscanf(is_sync_data, "%d\n", &l_sync);
@@ -925,13 +1000,18 @@ struct Pochoir_Plan {
 #endif
 
         if (l_order_from_base_file != l_order_from_sync_file) {
-            fprintf(stderr, "order from base <%d>, order from sync <%d>\n", 
-                    l_order_from_base_file, l_order_from_sync_file);
-            exit(EXIT_FAILURE);
+            ERROR_2("order from base <%d>, order from sync <%d>", l_order_from_base_file, l_order_from_sync_file);
         } else {
             fprintf(stderr, "order from base = order from sync = %d\n", 
                     l_order_from_base_file);
             order_num_ = l_order_from_base_file;
+        }
+        if (strcmp(l_base_fname, l_sync_fname) != 0) {
+            ERROR_2("base_fname <%s>, sync_fname <%s>", l_base_fname, l_sync_fname);
+        } else {
+            fprintf(stderr, "base_fname = sync_fname = %s\n", l_base_fname);
+            fname_ = new char[strlen(l_base_fname)];
+            strcpy(fname_, l_base_fname);
         }
         return (*this);
     }

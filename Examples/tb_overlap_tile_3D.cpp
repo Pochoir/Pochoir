@@ -462,16 +462,18 @@ int main(int argc, char * argv[])
 
     Pochoir_Plan<2> & l_plan = leap_frog.Gen_Plan(T);
     sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat\0", N, T);
-    leap_frog.Store_Plan(pochoir_plan_file_name, l_plan);
-    Pochoir_Plan<2> & ll_plan = leap_frog.Load_Plan(pochoir_plan_file_name);
+    // Pochoir_Plan<2> & ll_plan = leap_frog.Load_Plan(pochoir_plan_file_name);
     min_tdiff = INF;
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        leap_frog.Run(ll_plan);
+        leap_frog.Run(l_plan);
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
     printf("Pochoir time = %.6f ms\n", min_tdiff);
+    leap_frog.Store_Plan(pochoir_plan_file_name, l_plan);
+    leap_frog.Destroy_Plan(l_plan);
+    // leap_frog.Destroy_Plan(ll_plan);
 
     min_tdiff = INF;
     /* cilk_for */
