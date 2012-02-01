@@ -27,6 +27,7 @@
 #define EXPR_STENCIL_HPP
 
 #include "pochoir_common.hpp"
+#include "pochoir_walk_recursive.hpp"
 #include "pochoir_array.hpp"
 /* assuming there won't be more than 10 Pochoir_Array in one Pochoir object! */
 #define ARRAY_SIZE 10
@@ -203,8 +204,8 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
     time_shift_ = 0 - l_min_time_shift;
     toggle_ = depth + 1;
     for (int i = 0; i < N_SIZE; ++i) {
-        for (int r = 1; r < N_RANK+1; ++r) {
-            slope_[N_RANK-r] = max(slope_[N_RANK-r], abs((int)ceil((float)shape[i].shift[r]/(l_max_time_shift - shape[i].shift[0]))));
+        for (int r = 0; r < N_RANK; ++r) {
+            slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
         }
     }
 #if DEBUG 

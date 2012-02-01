@@ -48,7 +48,11 @@ void check_result(int t, int j, int i, double a, double b)
 
 }
 
-Pochoir_Boundary_2D(heat_bv_2D, arr, t, i, j)
+Pochoir_Boundary_2D(aperiodic_2D, arr, t, i, j)
+    return 0;
+Pochoir_Boundary_End
+
+Pochoir_Boundary_2D(periodic_2D, arr, t, i, j)
     const int arr_size_1 = arr.size(1);
     const int arr_size_0 = arr.size(0);
 
@@ -81,11 +85,11 @@ int main(int argc, char * argv[])
     Pochoir_Shape_2D heat_shape_2D[] = {{0, 0, 0}, {-1, 1, 0}, {-1, 0, 0}, {-1, -1, 0}, {-1, 0, -1}, {-1, 0, 1}};
     Pochoir<N_RANK> heat_2D(heat_shape_2D);
 	Pochoir_Array<double, N_RANK> a(N_SIZE, N_SIZE), b(N_SIZE, N_SIZE);
-    a.Register_Boundary(heat_bv_2D);
+    a.Register_Boundary(periodic_2D);
     heat_2D.Register_Array(a);
 
     b.Register_Shape(heat_shape_2D);
-    b.Register_Boundary(heat_bv_2D);
+    b.Register_Boundary(periodic_2D);
 
     /* Now we can only access the Pochoir_Array after Register_Array,
      * or Register_Shape with the array, because we rely on the shape
@@ -114,16 +118,16 @@ int main(int argc, char * argv[])
 	gettimeofday(&start, 0);
     for (int times = 0; times < TIMES; ++times) {
 	for (int t = 0; t < T_SIZE; ++t) {
-    cilk_for (int i = 0; i <= N_SIZE-1; ++i) {
-	for (int j = 0; j <= N_SIZE-1; ++j) {
+    cilk_for (int i = 0; i < N_SIZE; ++i) {
+	for (int j = 0; j < N_SIZE; ++j) {
         b(t+1, i, j) = 0.125 * (b(t, i+1, j) - 2.0 * b(t, i, j) + b(t, i-1, j)) + 0.125 * (b(t, i, j+1) - 2.0 * b(t, i, j) + b(t, i, j-1)) + b(t, i, j); } } }
     }
 	gettimeofday(&end, 0);
 	std::cout << "Naive Loop: consumed time :" << 1.0e3 * tdiff(&end, &start)/TIMES << "ms" << std::endl;
 
 	t = T_SIZE;
-	for (int i = 0; i <= N_SIZE-1; ++i) {
-	for (int j = 0; j <= N_SIZE-1; ++j) {
+	for (int i = 0; i < N_SIZE; ++i) {
+	for (int j = 0; j < N_SIZE; ++j) {
 		check_result(t, i, j, a.interior(t, i, j), b.interior(t, i, j));
 	} } 
 

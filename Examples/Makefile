@@ -1,7 +1,7 @@
 #!/bin/bash
 CC = ./pochoir
 ICC = icpc
-OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x
+OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x
 ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h  
 heat_1D_NP : tb_heat_1D_NP.cpp
@@ -39,7 +39,7 @@ cilk_for_2D : tb_cilk_for_2D.cpp
 heat_P : tb_heat_2D_P.cpp
 #   Phase-II compilation
 	${CC} -o heat_2D_P ${OPT_FLAGS} tb_heat_2D_P.cpp
-	${ICC} -o heat_2D_P_gdb ${ICC_DEBUG_FLAGS} tb_heat_2D_P_pochoir.cpp
+#	${ICC} -o heat_2D_P_gdb ${ICC_DEBUG_FLAGS} tb_heat_2D_P_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_2D_P_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_P.cpp
 
