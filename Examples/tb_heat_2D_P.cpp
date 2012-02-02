@@ -85,11 +85,11 @@ int main(int argc, char * argv[])
     Pochoir_Shape_2D heat_shape_2D[] = {{0, 0, 0}, {-1, 1, 0}, {-1, 0, 0}, {-1, -1, 0}, {-1, 0, -1}, {-1, 0, 1}};
     Pochoir<N_RANK> heat_2D(heat_shape_2D);
 	Pochoir_Array<double, N_RANK> a(N_SIZE, N_SIZE), b(N_SIZE, N_SIZE);
-    a.Register_Boundary(periodic_2D);
+    a.Register_Boundary(aperiodic_2D);
     heat_2D.Register_Array(a);
 
     b.Register_Shape(heat_shape_2D);
-    b.Register_Boundary(periodic_2D);
+    b.Register_Boundary(aperiodic_2D);
 
     /* Now we can only access the Pochoir_Array after Register_Array,
      * or Register_Shape with the array, because we rely on the shape
