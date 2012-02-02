@@ -115,9 +115,9 @@ int main(int argc, char * argv[])
     Pochoir_Array_2D(double) a(N, N);
     Pochoir_Array_2D(double) b(N, N);
     Pochoir_2D leap_frog;
-    a.Register_Boundary(aperiodic_2D);
+    a.Register_Boundary(periodic_2D);
     b.Register_Shape(twod_5pt);
-    b.Register_Boundary(aperiodic_2D);
+    b.Register_Boundary(periodic_2D);
 
     /* begin Pochoir_Guard functions */
     Pochoir_Guard_2D_Begin(g_exclusive_0, t, i, j)
