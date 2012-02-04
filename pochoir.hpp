@@ -305,9 +305,7 @@ void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int
 template <int N_RANK>
 void Pochoir<N_RANK>::checkFlag(bool flag, char const * str) {
     if (!flag) {
-        printf("\nPochoir registration error:\n");
-        printf("You forgot to register %s.\n", str);
-        exit(EXIT_FAILURE);
+        ERROR_ARGS("\nPochoir registration error:\n" "You forgot to register %s.\n", str);
     }
 }
 
@@ -340,9 +338,8 @@ void Pochoir<N_RANK>::cmpPhysDomainFromArray(T_Array & arr) {
     /* check the consistency of all engaged Pochoir_Array */
     for (int j = 0; j < N_RANK; ++j) {
         if (arr.size(j) != phys_grid_.x1[j]) {
-            printf("Pochoir array size mismatch error:\n");
-            printf("Registered Pochoir arrays have different sizes!\n");
-            exit(EXIT_FAILURE);
+            ERROR("Pochoir array size mismatch error:\n" 
+                    "Registered Pochoir arrays have different sizes!\n");
         }
     }
 }
@@ -350,16 +347,13 @@ void Pochoir<N_RANK>::cmpPhysDomainFromArray(T_Array & arr) {
 template <int N_RANK> template <typename T>
 void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a) {
     if (!regShapeFlag_) {
-        printf("Please register Shape before register Array!\n");
-        exit(EXIT_FAILURE);
+        ERROR("Please register Shape before register Array!\n");
     }
 
     if (num_arr_ == 0) {
         arr_type_size_ = sizeof(T);
         // arr_type_size_ = sizeof(double);
-#if DEBUG
-        printf("<%s:%d> arr_type_size = %d\n", __FILE__, __LINE__, arr_type_size_);
-#endif
+        LOG_ARGS(0, "arr_type_size = %d\n", arr_type_size_);
         ++num_arr_;
     } 
     if (!regPhysDomainFlag_) {
@@ -379,15 +373,12 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a) {
 template <int N_RANK> template <typename T, typename ... TS>
 void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a, Pochoir_Array<TS, N_RANK> ... as) {
     if (!regShapeFlag_) {
-        printf("Please register Shape before register Array!\n");
-        exit(EXIT_FAILURE);
+        ERROR("Please register Shape before register Array!\n");
     }
 
     if (num_arr_ == 0) {
         arr_type_size_ = sizeof(T);
-#if DEBUG
-        printf("<%s:%d> arr_type_size = %d\n", __FILE__, __LINE__, arr_type_size_);
-#endif
+        LOG_ARGS(0, "arr_type_size = %d\n", arr_type_size_);
         ++num_arr_;
     } 
     if (!regPhysDomainFlag_) {
@@ -446,13 +437,11 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> * shape, int N_SIZE) 
         }
     }
     shape_size_ += N_SIZE;
-#if 1 
-    printf("<%s> toggle = %d\n", __FUNCTION__, toggle_);
+    LOG_ARGS(0, "toggle = %d\n", toggle_);
     for (int r = 0; r < N_RANK; ++r) {
-        printf("<%s> slope[%d] = %d, ", __FUNCTION__, r, slope_[r]);
+        LOG_ARGS(0, "slope[%d] = %d, ", r, slope_[r]);
     }
-    printf("\n");
-#endif
+    LOG(0, "\n");
 }
 
 template <int N_RANK> template <typename D>
@@ -493,10 +482,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     l_plan->alloc_base_data(l_sz_base_data);
     l_plan->alloc_sync_data(l_sz_sync_data);
     int l_tree_size_begin = l_tree->size();
-#if DEBUG
-    printf("sz_base_data = %d, sz_sync_data = %d\n", l_sz_base_data, l_sz_sync_data);
-    printf("tree size = %d\n", l_tree_size_begin);
-#endif
+    LOG_ARGS(0, "sz_base_data = %d, sz_sync_data = %d\n", l_sz_base_data, l_sz_sync_data);
+    LOG_ARGS(0, "tree size = %d\n", l_tree_size_begin);
     /* after remove all nodes, the only remaining node will be the 'root' */
     while (l_tree_size_begin > 1) {
         l_tree->dfs_until_sync(l_root->left, (*(l_plan->base_data_)));
@@ -506,9 +493,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
         }
         l_tree->dfs_rm_sync(l_root->left);
         l_tree_size_begin = l_tree->size();
-#if DEBUG
-        printf("tree size = %d\n", l_tree_size_begin);
-#endif
+        LOG_ARGS(0, "tree size = %d\n", l_tree_size_begin);
     }
     l_plan->sync_data_->scan();
     l_plan->sync_data_->add_element(END_SYNC);
@@ -536,8 +521,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
         assert(sz_pigk_ > 0);
         algor.set_pts(sz_pigk_, pigs_, pits_.get_root());
     } else {
-        printf("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
-        exit(EXIT_FAILURE);
+        ERROR("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
     }
     algor.set_unroll(lcm_unroll_);
     timestep_ = timestep;
@@ -552,10 +536,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     l_plan->alloc_base_data(l_sz_base_data);
     l_plan->alloc_sync_data(l_sz_sync_data);
     int l_tree_size_begin = l_tree->size();
-#if DEBUG
-    printf("sz_base_data = %d, sz_sync_data = %d\n", l_sz_base_data, l_sz_sync_data);
-    printf("tree size = %d\n", l_tree_size_begin);
-#endif
+    LOG_ARGS(0, "sz_base_data = %d, sz_sync_data = %d\n", l_sz_base_data, l_sz_sync_data);
+    LOG_ARGS(0, "tree size = %d\n", l_tree_size_begin);
     /* after remove all nodes, the only remaining node will be the 'root' */
     while (l_tree_size_begin > 1) {
         l_tree->dfs_until_sync(l_root->left, (*(l_plan->base_data_)));
@@ -565,9 +547,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
         }
         l_tree->dfs_rm_sync(l_root->left);
         l_tree_size_begin = l_tree->size();
-#if DEBUG
-        printf("tree size = %d\n", l_tree_size_begin);
-#endif
+        LOG_ARGS(0, "tree size = %d\n", l_tree_size_begin);
     }
     l_plan->sync_data_->scan();
     l_plan->sync_data_->add_element(END_SYNC);
@@ -596,34 +576,32 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     if (os_color_vector.is_open()) {
         os_color_vector << l_color_vector << std::endl;
     } else {
-        printf("os_color_vector is NOT open! exit!\n");
-        exit(EXIT_FAILURE);
+        ERROR("os_color_vector is NOT open! exit!\n");
     }
     os_color_vector.close();
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    fprintf(stderr, "Pochoir_Plan generation time : %.6f milliseconds\n", l_min_tdiff);
+    LOG_ARGS(INF, "Pochoir_Plan generation time : %.6f milliseconds\n", l_min_tdiff);
 
     l_min_tdiff = INF;
     gettimeofday(&l_start, 0);
     char cmd[200];
     sprintf(cmd, "./genkernels -order %d %s %s %s\0", order_num_, pochoir_mode, color_vector_fname, kernel_info_fname);
-    fprintf(stderr, "%s\n", cmd);
+    LOG_ARGS(INF, "%s\n", cmd);
     int ret = system(cmd);
     if (ret == -1) {
-        fprintf(stderr, "system() call to genkernels failed!\n");
-        exit(EXIT_FAILURE);
+        ERROR("system() call to genkernels failed!\n");
     }
-    fprintf(stderr, "./genkernels exits!\n");
+    LOG(INF, "./genkernels exits!\n");
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    fprintf(stderr, "Kernel Generation (genkernels) time : %.6f milliseconds\n", l_min_tdiff);
+    LOG_ARGS(INF, "Kernel Generation (genkernels) time : %.6f milliseconds\n", l_min_tdiff);
 
     l_min_tdiff = INF;
     gettimeofday(&l_start, 0);
     char gen_kernel_fname [strlen(fname) + 20];
     sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname, order_num_);
-    fprintf(stderr, "gen_kernel_fname = %s\n", gen_kernel_fname);
+    LOG_ARGS(0, "gen_kernel_fname = %s\n", gen_kernel_fname);
     char cpp_filename[strlen(gen_kernel_fname) + 10], so_filename[strlen(gen_kernel_fname) + 10];
     sprintf(cpp_filename, "%s.cpp", gen_kernel_fname);
     sprintf(so_filename, "%s.so", gen_kernel_fname);
@@ -633,21 +611,21 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #endif
 
-    printf("%s\n", cmd);
+    LOG_ARGS(INF, "%s\n", cmd);
     ret = system(cmd);
     if (ret == -1) {
         ERROR("system() call failed!");
     }
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    fprintf(stderr, "Kernel Compilation (icpc) time : %.6f milliseconds\n", l_min_tdiff);
+    LOG_ARGS(INF, "Kernel Compilation (icpc) time : %.6f milliseconds\n", l_min_tdiff);
 
     l_min_tdiff = INF;
     gettimeofday(&l_start, 0);
     l_plan->load_kernels(*this, a); 
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    fprintf(stderr, "Dynamic loading time : %.6f milliseconds\n", l_min_tdiff);
+    LOG_ARGS(INF, "Dynamic loading time : %.6f milliseconds\n", l_min_tdiff);
 
     ++order_num_;
     return (*l_plan);
@@ -672,8 +650,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
         assert(sz_pigk_ > 0);
         algor.set_pts(sz_pigk_, pigs_, pits_.get_root());
     } else {
-        printf("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
-        exit(EXIT_FAILURE);
+        ERROR("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
     }
     algor.set_unroll(lcm_unroll_);
     timestep_ = timestep;
@@ -688,10 +665,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     l_plan->alloc_base_data(l_sz_base_data);
     l_plan->alloc_sync_data(l_sz_sync_data);
     int l_tree_size_begin = l_tree->size();
-#if DEBUG
-    printf("sz_base_data = %d, sz_sync_data = %d\n", l_sz_base_data, l_sz_sync_data);
-    printf("tree size = %d\n", l_tree_size_begin);
-#endif
+    LOG_ARGS(0, "sz_base_data = %d, sz_sync_data = %d\n", l_sz_base_data, l_sz_sync_data);
+    LOG_ARGS(0, "tree size = %d\n", l_tree_size_begin);
     /* after remove all nodes, the only remaining node will be the 'root' */
     while (l_tree_size_begin > 1) {
         l_tree->dfs_until_sync(l_root->left, (*(l_plan->base_data_)));
@@ -701,9 +676,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
         }
         l_tree->dfs_rm_sync(l_root->left);
         l_tree_size_begin = l_tree->size();
-#if DEBUG
-        printf("tree size = %d\n", l_tree_size_begin);
-#endif
+        LOG_ARGS(0, "tree size = %d\n", l_tree_size_begin);
     }
     l_plan->sync_data_->scan();
     l_plan->sync_data_->add_element(END_SYNC);
@@ -732,59 +705,57 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     if (os_color_vector.is_open()) {
         os_color_vector << l_color_vector << std::endl;
     } else {
-        printf("os_color_vector is NOT open! exit!\n");
-        exit(EXIT_FAILURE);
+        ERROR("os_color_vector is NOT open! exit!\n");
     }
     os_color_vector.close();
 
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    fprintf(stderr, "Pochoir_Plan generation time : %.6f milliseconds\n", l_min_tdiff);
+    LOG_ARGS(INF, "Pochoir_Plan generation time : %.6f milliseconds\n", l_min_tdiff);
 
     l_min_tdiff = INF;
     gettimeofday(&l_start, 0);
     char cmd[200];
     sprintf(cmd, "./genkernels -order %d %s %s %s\0", order_num_, pochoir_mode, color_vector_fname, kernel_info_fname);
-    fprintf(stderr, "%s\n", cmd);
+    LOG_ARGS(INF, "%s\n", cmd);
     int ret = system(cmd);
     if (ret == -1) {
-        fprintf(stderr, "system() call to genkernels failed!\n");
-        exit(EXIT_FAILURE);
+        ERROR("system() call to genkernels failed!\n");
     }
-    fprintf(stderr, "./genkernels exits!\n");
+    LOG_ARGS(INF, "./genkernels exits!\n");
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    fprintf(stderr, "Kernel Generation (genkernels) time : %.6f milliseconds\n", l_min_tdiff);
+    LOG_ARGS(INF, "Kernel Generation (genkernels) time : %.6f milliseconds\n", l_min_tdiff);
 
     l_min_tdiff = INF;
     gettimeofday(&l_start, 0);
     char gen_kernel_fname [strlen(fname) + 20];
     sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname, order_num_);
-    fprintf(stderr, "gen_kernel_fname = %s\n", gen_kernel_fname);
+    LOG_ARGS(0, "gen_kernel_fname = %s\n", gen_kernel_fname);
     char cpp_filename[strlen(gen_kernel_fname) + 10], so_filename[strlen(gen_kernel_fname) + 10];
     sprintf(cpp_filename, "%s.cpp", gen_kernel_fname);
     sprintf(so_filename, "%s.so", gen_kernel_fname);
-#if DEBUG 
+#if DEBUG
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #else
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #endif
 
-    printf("%s\n", cmd);
+    LOG_ARGS(INF, "%s\n", cmd);
     ret = system(cmd);
     if (ret == -1) {
         ERROR("system() call failed!");
     }
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    fprintf(stderr, "Kernel Compilation (icpc) time : %.6f milliseconds\n", l_min_tdiff);
+    LOG_ARGS(INF, "Kernel Compilation (icpc) time : %.6f milliseconds\n", l_min_tdiff);
 
     l_min_tdiff = INF;
     gettimeofday(&l_start, 0);
     l_plan->load_kernels(*this, a, as ...); 
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    fprintf(stderr, "Dynamic loading time : %.6f milliseconds\n", l_min_tdiff);
+    LOG_ARGS(INF, "Dynamic loading time : %.6f milliseconds\n", l_min_tdiff);
 
     ++order_num_;
     return (*l_plan);
@@ -848,7 +819,7 @@ void Pochoir<N_RANK>::Destroy_Plan(Pochoir_Plan<N_RANK> & _plan) {
     delete (&_plan);
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    fprintf(stderr, "Dynamic Unloading time : %.6f milliseconds\n", l_min_tdiff);
+    LOG_ARGS(INF, "Dynamic Unloading time : %.6f milliseconds\n", l_min_tdiff);
     return;
 }
 
@@ -889,8 +860,7 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
     if (pmode_ == Pochoir_Obase_Tile) {
         algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
     } else {
-        printf("Something is wrong in Run_Obase(Plan)!\n");
-        exit(EXIT_FAILURE);
+        ERROR("Something is wrong in Run_Obase(Plan)!\n");
     }
     checkFlags();
 #if USE_CILK_FOR
@@ -930,7 +900,7 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
 #if DEBUG
     int l_num_kernel = 0, l_num_cond_kernel = 0, l_num_bkernel = 0, l_num_cond_bkernel = 0;
     algor.read_stat_kernel(l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
-    printf("kernel = %d, cond_kernel = %d, bkernel = %d, cond_bkernel = %d\n",
+    LOG_ARGS(0, "kernel = %d, cond_kernel = %d, bkernel = %d, cond_bkernel = %d\n",
             l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
 #endif
     return;
@@ -946,8 +916,7 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
     if (pmode_ == Pochoir_Obase_Tile) {
         algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
     } else {
-        printf("Something is wrong in Run_Obase(Plan)!\n");
-        exit(EXIT_FAILURE);
+        ERROR("Something is wrong in Run_Obase(Plan)!\n");
     }
     checkFlags();
     struct timeval l_start, l_end;
@@ -994,11 +963,11 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
 #endif
     gettimeofday(&l_end, 0);
     pochoir_time_ = min (pochoir_time_, (1.0e3 * tdiff(&l_end, &l_start)));
-    fprintf(stderr, "Pochoir time = %.6f milliseconds\n", pochoir_time_);
+    LOG_ARGS(INF, "Pochoir time = %.6f milliseconds\n", pochoir_time_);
 #if DEBUG
     int l_num_kernel = 0, l_num_cond_kernel = 0, l_num_bkernel = 0, l_num_cond_bkernel = 0;
     algor.read_stat_kernel(l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
-    printf("kernel = %d, cond_kernel = %d, bkernel = %d, cond_bkernel = %d\n",
+    LOG_ARGS(0, "kernel = %d, cond_kernel = %d, bkernel = %d, cond_bkernel = %d\n",
             l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
 #endif
     return;

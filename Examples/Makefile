@@ -4,7 +4,8 @@ ICC = icpc
 # ICC = g++
 # it seems that '-ipo' '-O1' optimization flag will cause unexpected 
 # segmentation fault sometimes.
-OPT_FLAGS = -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH}
+# OPT_FLAGS = -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH}
+OPT_FLAGS = -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH}
 # OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
 # OPT_FLAGS = -O3 -DNDEBUG -std=c++0x -I${POCHOIR_LIB_PATH}
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h

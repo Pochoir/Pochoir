@@ -74,7 +74,7 @@ static inline int lcm(int a, int b) {
  * let's disable it for now!!!
  */
 #define BIT_TRICK 0
-#define INF 100000000
+// #define INF 100000000
 #define SUPPORT_RANK 9
 #define DEBUG_FACILITY 1
 // #define DEBUG 0
@@ -283,7 +283,7 @@ struct Homogeneity {
             o_ = l_o; a_ = l_a;
             size_ = l_o_sz;
         } else {
-            ERROR_2("o_sz (%d) != a_sz (%d)", l_o_sz, l_a_sz);
+            ERROR_ARGS("o_sz (%d) != a_sz (%d)", l_o_sz, l_a_sz);
         }
     }
 };
@@ -1000,14 +1000,14 @@ struct Pochoir_Plan {
 #endif
 
         if (l_order_from_base_file != l_order_from_sync_file) {
-            ERROR_2("order from base <%d>, order from sync <%d>", l_order_from_base_file, l_order_from_sync_file);
+            ERROR_ARGS("order from base <%d>, order from sync <%d>", l_order_from_base_file, l_order_from_sync_file);
         } else {
             fprintf(stderr, "order from base = order from sync = %d\n", 
                     l_order_from_base_file);
             order_num_ = l_order_from_base_file;
         }
         if (strcmp(l_base_fname, l_sync_fname) != 0) {
-            ERROR_2("base_fname <%s>, sync_fname <%s>", l_base_fname, l_sync_fname);
+            ERROR_ARGS("base_fname <%s>, sync_fname <%s>", l_base_fname, l_sync_fname);
         } else {
             fprintf(stderr, "base_fname = sync_fname = %s\n", l_base_fname);
             fname_ = new char[strlen(l_base_fname)];

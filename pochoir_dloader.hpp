@@ -45,7 +45,7 @@ public:
         m_handle = dlopen(so_filename, RTLD_LAZY);
         if (!m_handle) {
             dlerror();
-            ERROR_1("can't load library named %s", so_filename);
+            ERROR_ARGS("can't load library named %s", so_filename);
         }
     }
 
@@ -54,8 +54,7 @@ public:
     {
         void* result = dlsym(m_handle, functionName);
         if ((error = dlerror()) != NULL) {
-            fprintf(stderr, "can't find symbol named %s\n", functionName);
-            exit(EXIT_FAILURE);
+            ERROR_ARGS("can't find symbol named %s\n", functionName);
         }
         return reinterpret_cast<T*>(result);
     }

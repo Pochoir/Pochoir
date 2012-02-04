@@ -1226,7 +1226,7 @@ class Pochoir_Array {
 #endif
 };
 
-#if 0
+#if 1
 template<typename T2, int N2>
 std::ostream& operator<<(std::ostream& os, Pochoir_Array<T2, N2> const & x) { 
 	typedef int size_info[N2];

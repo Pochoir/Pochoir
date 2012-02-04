@@ -94,9 +94,9 @@ int main(int argc, char * argv[])
     Pochoir_Array_1D(double) a(N);
     Pochoir_Array_1D(double) b(N);
     Pochoir_1D overlap;
-    a.Register_Boundary(aperiodic_1D);
+    a.Register_Boundary(periodic_1D);
     b.Register_Shape(oned_3pt);
-    b.Register_Boundary(aperiodic_1D);
+    b.Register_Boundary(periodic_1D);
 
     Pochoir_Guard_1D_Begin(g_exclusive_0, t, i)
         if (i < N/2)
@@ -298,6 +298,7 @@ int main(int argc, char * argv[])
     Pochoir_Plan<1> & l_plan = overlap.Gen_Plan(T);
     sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat", N, T);
     overlap.Store_Plan(pochoir_plan_file_name, l_plan);
+    overlap.Destroy_Plan(l_plan);
     Pochoir_Plan<1> & ll_plan = overlap.Load_Plan(pochoir_plan_file_name);
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
@@ -306,6 +307,7 @@ int main(int argc, char * argv[])
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
     printf("Pochoir time = %.6f ms\n", min_tdiff);
+    overlap.Destroy_Plan(ll_plan);
 
     printf("\n--------------------------------------------------------------------------\n");
     min_tdiff = INF;

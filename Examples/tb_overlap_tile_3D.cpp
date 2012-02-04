@@ -35,7 +35,7 @@
 #include <pochoir.hpp>
 
 // using namespace std;
-#define APP_DEBUG 0
+#define APP_DEBUG 1
 #define TIMES 1
 #define TOLERANCE (1e-6)
 
@@ -62,8 +62,8 @@ Pochoir_Boundary_2D(aperiodic_2D, arr, t, i, j)
     return 0;
 Pochoir_Boundary_End
 
-#define N 555
-#define T 555
+#define N 5 
+#define T 2
 
 int main(int argc, char * argv[])
 {
@@ -115,9 +115,9 @@ int main(int argc, char * argv[])
     Pochoir_Array_2D(double) a(N, N);
     Pochoir_Array_2D(double) b(N, N);
     Pochoir_2D leap_frog;
-    a.Register_Boundary(periodic_2D);
+    a.Register_Boundary(aperiodic_2D);
     b.Register_Shape(twod_5pt);
-    b.Register_Boundary(periodic_2D);
+    b.Register_Boundary(aperiodic_2D);
 
     /* begin Pochoir_Guard functions */
     Pochoir_Guard_2D_Begin(g_exclusive_0, t, i, j)
@@ -480,7 +480,7 @@ int main(int argc, char * argv[])
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
-            cilk_for (int i = 0; i < N; ++i) {
+            for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
             if (g_exclusive_0(t, i, j)) {
                 if ((t) % 2 == 0 && i % 2 == 0 && j % 2 == 0) {
@@ -708,7 +708,7 @@ int main(int argc, char * argv[])
     t = T;
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-//             check_result(t, i, j, a(t, i, j), b(t, i, j));
+             check_result(t, i, j, a(t, i, j), b(t, i, j));
         }
     } 
 
