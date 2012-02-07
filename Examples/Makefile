@@ -151,6 +151,14 @@ overlap_tile_3D : tb_overlap_tile_3D.cpp # tb_overlap_tile_3D_pochoir.cpp
 #	${CC} -o overlap_tile_3D ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_3D.cpp 
 #	${ICC} -o overlap_tile_3D ${OPT_FLAGS} tb_overlap_tile_3D.cpp 
 
+overlap_tile_3D_merge : tb_overlap_tile_3D_merge.cpp # tb_overlap_tile_3D_merge_pochoir.cpp 
+#   Phase-II compilation
+	${CC} -o overlap_tile_3D_merge ${OPT_FLAGS} -all-cond-tile-pointer-overlap tb_overlap_tile_3D_merge.cpp
+	${ICC} -o overlap_tile_3D_merge_gdb ${ICC_DEBUG_FLAGS} tb_overlap_tile_3D_merge_pochoir.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o overlap_tile_3D_merge ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_3D_merge.cpp 
+#	${ICC} -o overlap_tile_3D_merge ${OPT_FLAGS} tb_overlap_tile_3D_merge.cpp 
+
 full_overlap_tile_3D : tb_full_overlap_tile_3D.cpp # tb_full_overlap_tile_3D_pochoir.cpp 
 #   Phase-II compilation
 	${CC} -o full_overlap_tile_3D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_full_overlap_tile_3D.cpp

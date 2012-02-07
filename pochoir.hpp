@@ -475,7 +475,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     l_tree = new Spawn_Tree<N_RANK>();
     l_tree->set_add_empty_region(true);
     l_root = l_tree->get_root();
-    l_internal = new Node_Info<N_RANK>(0 + time_shift_, timestep + time_shift_, logic_grid_);
+    Homogeneity white_clone(0);
+    l_internal = new Node_Info<N_RANK>(0 + time_shift_, timestep + time_shift_, logic_grid_, white_clone);
     l_tree->add_node(l_root, l_internal, IS_SPAWN);
     l_sz_base_data = 2;
     l_sz_sync_data = 0;

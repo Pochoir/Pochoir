@@ -376,6 +376,7 @@ struct Pochoir_Run_Regional_Guard_Tile_Kernel {
             }
         }
     }
+#if 0
     template <typename ... IS>
     inline void operator() (int t, IS ... is) const {
         if (pg_((t - time_shift_), is ...)) {
@@ -386,6 +387,19 @@ struct Pochoir_Run_Regional_Guard_Tile_Kernel {
             pt_.kernel_[l_kernel_pointer](t, is ...);
         }
     }
+#else
+    template <typename ... IS>
+    inline void operator() (int t, IS ... is) const {
+        if (pg_(t, is ...)) {
+            int l_kernel_pointer = set_pointer(N_RANK, t, is ...);
+#if DEBUG
+            printf("<%s> l_kernel_pointer = %d\n", __FUNCTION__, l_kernel_pointer);
+#endif
+            pt_.kernel_[l_kernel_pointer](t, is ...);
+        }
+    }
+
+#endif
 };
 
 template <int N_RANK>

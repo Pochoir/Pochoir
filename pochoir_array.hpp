@@ -69,6 +69,9 @@ class Storage {
 
 		inline void dec_ref() { 
 			--ref_; 
+            if (ref_ == 0) {
+                delete [] storage_;
+            }
 		}
 
 		inline int ref() { 
@@ -349,8 +352,13 @@ class Pochoir_Array {
 		~Pochoir_Array() {
 			view_->dec_ref();
             allocMemFlag_ = false;
+#if 0
+            // it looks that if I delete [] shape_, it will cause some error: 
+            // corruped double-linked list : 0x0000000000637b80 ***
+            // why??
             if (shape_ != NULL) 
-                delete[] shape_;
+                delete [] shape_;
+#endif
 		}
 
 		inline Storage<T> * view() {

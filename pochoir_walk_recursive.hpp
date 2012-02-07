@@ -1871,7 +1871,11 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, Grid_Info<N_RANK
  ************************************************************************************/
 // #define gen_plan_space_can_cut(_dim) (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim]))
 
+// The version doesn't count the boundary region
 #define gen_plan_space_can_cut_p(_dim) (cut_lb ? (lb >= 2 * thres && tb > dx_homo_[_dim]) : (tb >= 2 * thres && lb > dx_homo_[_dim]))
+
+// The version consider minimizing the boundary region
+// #define gen_plan_space_can_cut_p(_dim) (l_touch_boundary ? (cut_lb ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim])) : (cut_lb ? (lb >= 2 * thres && tb > dx_homo_[_dim]) : (tb >= 2 * thres && lb > dx_homo_[_dim])))
 
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level)
@@ -1922,7 +1926,7 @@ inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
                 // const int l_padding = 2 * l_slope;
-                // const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
+                const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
                 const bool can_cut = gen_plan_space_can_cut_p(level);
                 if (!can_cut) {
                     /* if we can't cut into this dimension, just directly push
@@ -2605,7 +2609,6 @@ inline void Algorithm<N_RANK>::plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> co
  ************************************************************************************/
 #define plan_space_can_cut_m(_dim) (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim]))
 
-// #define plan_space_can_cut_mp(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb + l_padding > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim])) : ((l_touch_boundary) ? (lb == phys_length_[_dim] ? (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_boundary_[_dim])) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
 #define plan_space_can_cut_mp(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim])) : ((l_touch_boundary) ? (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
 
 template <int N_RANK> template <typename F> 
