@@ -852,11 +852,11 @@ struct Pochoir_Plan {
             WARNING("dloader != NULL!");
             return 0;
         }
-        fprintf(stderr, "<DLoader> starts loading!\n");
+        LOG(0, "<DLoader> starts loading!\n");
         /***************************************************************************************/
         char gen_kernel_fname [strlen(fname_) + 20];
         sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname_, order_num_);
-        fprintf(stderr, "gen_kernel_fname = %s\n", gen_kernel_fname);
+        LOG_ARGS(0, "gen_kernel_fname = %s\n", gen_kernel_fname);
         dloader_ = new DynamicLoader(gen_kernel_fname);
         std::function < int (T_Pochoir &, T_Array &) > create_lambdas = dloader_->load < int (T_Pochoir &, T_Array &) > ("Create_Lambdas");
         std::function < int (T_Pochoir &) > register_lambdas = dloader_->load < int (T_Pochoir &) > ("Register_Lambdas");
@@ -864,7 +864,7 @@ struct Pochoir_Plan {
         create_lambdas(_pochoir, _a);
         register_lambdas(_pochoir);
         /***************************************************************************************/
-        fprintf(stderr, "<DLoader> ends loading!\n");
+        LOG(0, "<DLoader> ends loading!\n");
         return 0;
     }
     template <typename T_Pochoir, typename T_Array, typename ... T_ArrayS>
@@ -873,11 +873,11 @@ struct Pochoir_Plan {
             WARNING("dloader != NULL!");
             return 0;
         }
-        fprintf(stderr, "<DLoader> starts loading!\n");
+        LOG(0, "<DLoader> starts loading!\n");
         /***************************************************************************************/
         char gen_kernel_fname [strlen(fname_) + 20];
         sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname_, order_num_);
-        fprintf(stderr, "gen_kernel_fname = %s\n", gen_kernel_fname);
+        LOG_ARGS(0, "gen_kernel_fname = %s\n", gen_kernel_fname);
         dloader_ = new DynamicLoader(gen_kernel_fname);
         std::function < int (T_Pochoir &, T_Array &, T_ArrayS ...) > create_lambdas = dloader_->load < int (T_Pochoir &, T_Array &, T_ArrayS ...) > ("Create_Lambdas");
         std::function < int (T_Pochoir &) > register_lambdas = dloader_->load < int (T_Pochoir &) > ("Register_Lambdas");
@@ -885,11 +885,11 @@ struct Pochoir_Plan {
         create_lambdas(_pochoir, _a, _as ...);
         register_lambdas(_pochoir);
         /***************************************************************************************/
-        fprintf(stderr, "<DLoader> ends loading!\n");
+        LOG(0, "<DLoader> ends loading!\n");
         return 0;
     }
     int unload_kernels(void) {
-        fprintf(stderr, "<DLoader> starts Deloading!\n");
+        LOG(0, "<DLoader> starts Deloading!\n");
         /***************************************************************************************/
         if (dloader_ == NULL) {
             WARNING("dloader == NULL");
@@ -898,8 +898,10 @@ struct Pochoir_Plan {
         std::function < int (void) > destroy_lambdas = dloader_->load < int (void) > ("Destroy_Lambdas");
         destroy_lambdas();
         dloader_->close();
+        delete dloader_;
+        dloader_ = NULL;
         /***************************************************************************************/
-        fprintf(stderr, "<DLoader> ends Deloading!\n");
+        LOG(0, "<DLoader> ends Deloading!\n");
         return 0;
     }
     void store_plan(const char * base_file_name, const char * sync_file_name) {

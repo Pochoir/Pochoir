@@ -605,9 +605,11 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     char cpp_filename[strlen(gen_kernel_fname) + 10], so_filename[strlen(gen_kernel_fname) + 10];
     sprintf(cpp_filename, "%s.cpp", gen_kernel_fname);
     sprintf(so_filename, "%s.so", gen_kernel_fname);
-#if DEBUG 
+#if 0 
+    /* This branch is for debugging purpose */
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #else
+    /* This branch is for best performance */
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #endif
 
@@ -735,7 +737,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     char cpp_filename[strlen(gen_kernel_fname) + 10], so_filename[strlen(gen_kernel_fname) + 10];
     sprintf(cpp_filename, "%s.cpp", gen_kernel_fname);
     sprintf(so_filename, "%s.so", gen_kernel_fname);
-#if DEBUG
+#if 0
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #else
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
@@ -819,7 +821,7 @@ void Pochoir<N_RANK>::Destroy_Plan(Pochoir_Plan<N_RANK> & _plan) {
     delete (&_plan);
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    LOG_ARGS(INF, "Dynamic Unloading time : %.6f milliseconds\n", l_min_tdiff);
+    LOG_ARGS(0, "Dynamic Unloading time : %.6f milliseconds\n", l_min_tdiff);
     return;
 }
 
@@ -963,7 +965,7 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
 #endif
     gettimeofday(&l_end, 0);
     pochoir_time_ = min (pochoir_time_, (1.0e3 * tdiff(&l_end, &l_start)));
-    LOG_ARGS(INF, "Pochoir time = %.6f milliseconds\n", pochoir_time_);
+    LOG_ARGS(0, "Pochoir time = %.6f milliseconds\n", pochoir_time_);
 #if DEBUG
     int l_num_kernel = 0, l_num_cond_kernel = 0, l_num_bkernel = 0, l_num_cond_bkernel = 0;
     algor.read_stat_kernel(l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
