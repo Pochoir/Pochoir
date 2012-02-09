@@ -143,6 +143,14 @@ struct Homogeneity {
         for (int i = 0; i < _size; ++i) {
             o_ <<= 1; o_ |= 1;
         }
+    }
+    inline void set_size(int _size) {
+        /* set up a white color with size '_size' */
+        size_ = _size;
+        o_ = 0; a_ = 0;
+        for (int i = 0; i < _size; ++i) {
+            o_ <<= 1; o_ |= 1;
+        }
         return;
     }
     inline int size(void) { return size_; }
@@ -193,7 +201,7 @@ struct Homogeneity {
 #else
         T_color r = 0;
         int s = size_;
-        for (v, r; v; v >>= 1, r <<= 1, --s) {
+        for ( ; v; v >>= 1, r <<= 1, --s) {
             r |= (v & 1);
         }
         r <<= s;

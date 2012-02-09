@@ -1740,7 +1740,8 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, Grid_Info<N_RANK
     bool sim_can_cut = false, call_boundary = false;
     Grid_Info<N_RANK> l_father_grid = grid, l_son_grid;
     int l_dt_stop, l_unroll;
-    const int region_n = (*pure_region_)(t0, t1, l_father_grid);;
+    // const int region_n = (*pure_region_)(t0, t1, l_father_grid);;
+    const int region_n = (*color_region_)(t0, t1, l_father_grid);;
     const bool cross_region = (region_n == CROSS_REGION);
 
     for (int i = N_RANK-1; i >= 0; --i) {
@@ -1872,10 +1873,10 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, Grid_Info<N_RANK
 // #define gen_plan_space_can_cut(_dim) (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim]))
 
 // The version doesn't count the boundary region
-#define gen_plan_space_can_cut_p(_dim) (cut_lb ? (lb >= 2 * thres && tb > dx_homo_[_dim]) : (tb >= 2 * thres && lb > dx_homo_[_dim]))
+// #define gen_plan_space_can_cut_p(_dim) (cut_lb ? (lb >= 2 * thres && tb > dx_homo_[_dim]) : (tb >= 2 * thres && lb > dx_homo_[_dim]))
 
 // The version consider minimizing the boundary region
-// #define gen_plan_space_can_cut_p(_dim) (l_touch_boundary ? (cut_lb ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim])) : (cut_lb ? (lb >= 2 * thres && tb > dx_homo_[_dim]) : (tb >= 2 * thres && lb > dx_homo_[_dim])))
+#define gen_plan_space_can_cut_p(_dim) (l_touch_boundary ? (cut_lb ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim])) : (cut_lb ? (lb >= 2 * thres && tb > dx_homo_[_dim]) : (tb >= 2 * thres && lb > dx_homo_[_dim])))
 
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level)

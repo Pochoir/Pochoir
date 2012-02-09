@@ -34,7 +34,9 @@
 
 #include <pochoir.hpp>
 
-// using namespace std;
+using namespace std;
+
+#define APP_DEBUG 1
 #define TIMES 1
 #define TOLERANCE (1e-6)
 
@@ -59,6 +61,9 @@ Pochoir_Boundary_1D(aperiodic_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
 
+#define N 10
+#define T 10
+
 int main(int argc, char * argv[])
 {
     const int BASE = 1024;
@@ -66,7 +71,7 @@ int main(int argc, char * argv[])
     struct timeval start, end;
     double min_tdiff = INF;
     /* the 1D spatial dimension has 'N' points */
-    int N = 0, T = 0;
+    // int N = 0, T = 0;
     double umin, umax;
     char pochoir_plan_file_name[100];
 
@@ -74,8 +79,8 @@ int main(int argc, char * argv[])
         printf("argc < 3, quit! \n");
         exit(1);
     }
-    N = StrToInt(argv[1]);
-    T = StrToInt(argv[2]);
+    // N = StrToInt(argv[1]);
+    // T = StrToInt(argv[2]);
     printf("N = %d, T = %d\n", N, T);
     Pochoir_Shape_1D oned_3pt[] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}};
     Pochoir_Shape_1D shape_interior_0[] = {{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}};
@@ -103,26 +108,41 @@ int main(int argc, char * argv[])
     Pochoir_Guard_1D_End(guard_interior)
 
     Pochoir_Guard_1D_Begin(guard_exterior, t, i)
-        return (!guard_interior(t, i));
+        return (!__guard_interior__(t, i));
     Pochoir_Guard_1D_End(guard_exterior)
 
     Pochoir_Kernel_1D_Begin(interior_0, t, i)
+#if APP_DEBUG
+        fprintf(stderr, "<interior_0> a(%d, %d)\n", t, i);
+#endif
         a(t, i) = 0.1 * a(t-1, i-1) + 0.15 * a(t-1, i) + 0.189 * a(t-1, i+1) + 0.8;
     Pochoir_Kernel_1D_End(interior_0, shape_interior_0)
 
     Pochoir_Kernel_1D_Begin(interior_1, t, i)
+#if APP_DEBUG
+        fprintf(stderr, "<interior_1> a(%d, %d)\n", t, i);
+#endif
         a(t, i) = 0.2 * a(t-1, i-1) + 0.25 * a(t-1, i) + 0.289 * a(t-1, i+1) + 0.8;
     Pochoir_Kernel_1D_End(interior_1, shape_interior_1)
 
     Pochoir_Kernel_1D_Begin(interior_2, t, i)
+#if APP_DEBUG
+        fprintf(stderr, "<interior_2> a(%d, %d)\n", t, i);
+#endif
         a(t, i) = 0.3 * a(t-1, i-1) + 0.35 * a(t-1, i) + 0.389 * a(t-1, i+1) + 0.8;
     Pochoir_Kernel_1D_End(interior_2, shape_interior_2)
 
     Pochoir_Kernel_1D_Begin(exterior_0, t, i)
+#if APP_DEBUG
+        fprintf(stderr, "<exterior_0> a(%d, %d)\n", t, i);
+#endif
         a(t, i) = 0.1 * a(t-1, i-1) - 0.15 * a(t-1, i) - 0.189 * a(t-1, i+1) - 0.8;
     Pochoir_Kernel_1D_End(exterior_0, shape_exterior_0)
 
     Pochoir_Kernel_1D_Begin(exterior_1, t, i)
+#if APP_DEBUG
+        fprintf(stderr, "<exterior_1> a(%d, %d)\n", t, i);
+#endif
         a(t, i) = 0.2 * a(t-1, i-1) - 0.25 * a(t-1, i) - 0.289 * a(t-1, i+1) - 0.8;
     Pochoir_Kernel_1D_End(exterior_1, shape_exterior_1)
 
@@ -141,11 +161,11 @@ int main(int argc, char * argv[])
     Pochoir_Plan<1> & l_plan = leap_frog.Gen_Plan(T);
     sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat", N, T);
     leap_frog.Store_Plan(pochoir_plan_file_name, l_plan);
-    Pochoir_Plan<1> & ll_plan = leap_frog.Load_Plan(pochoir_plan_file_name);
+    // Pochoir_Plan<1> & ll_plan = leap_frog.Load_Plan(pochoir_plan_file_name);
 
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        leap_frog.Run(ll_plan);
+        leap_frog.Run(l_plan);
         // leap_frog.Run(6*T);
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
@@ -162,21 +182,36 @@ int main(int argc, char * argv[])
             cilk_for (int i = 0; i < N; ++i) {
             if (guard_interior(t, i)) {
                 /* interior sub-region */
-                if (t % 3 == 1) {
+                if (t % 3 == 0) {
+#if APP_DEBUG
+                    fprintf(stderr, "<interior_0> b(%d, %d)\n", t, i);
+#endif
                     b(t, i) = 0.1 * b(t-1, i-1) + 0.15 * b(t-1, i) + 0.189 * b(t-1, i+1) + 0.8;
                 }
-                if (t % 3 == 2) {
+                if (t % 3 == 1) {
+#if APP_DEBUG
+                    fprintf(stderr, "<interior_1> b(%d, %d)\n", t, i);
+#endif
                     b(t, i) = 0.2 * b(t-1, i-1) + 0.25 * b(t-1, i) + 0.289 * b(t-1, i+1) + 0.8;
                 }
-                if (t % 3 == 0) {
+                if (t % 3 == 2) {
+#if APP_DEBUG
+                    fprintf(stderr, "<interior_2> b(%d, %d)\n", t, i);
+#endif
                     b(t, i) = 0.3 * b(t-1, i-1) + 0.35 * b(t-1, i) + 0.389 * b(t-1, i+1) + 0.8;
                 }
             } else {
                 /* exterior sub-region*/
-                if (t % 2 == 1) {
+                if (t % 2 == 0) {
+#if APP_DEBUG
+                    fprintf(stderr, "<exterior_0> b(%d, %d)\n", t, i);
+#endif
                     b(t, i) = 0.1 * b(t-1, i-1) - 0.15 * b(t-1, i) - 0.189 * b(t-1, i+1) - 0.8;
                 }
-                if (t % 2 == 0) {
+                if (t % 2 == 1) {
+#if APP_DEBUG
+                    fprintf(stderr, "<exterior_1> b(%d, %d)\n", t, i);
+#endif
                     b(t, i) = 0.2 * b(t-1, i-1) - 0.25 * b(t-1, i) - 0.289 * b(t-1, i+1) - 0.8;
                 }
             }
@@ -190,7 +225,7 @@ int main(int argc, char * argv[])
 //    std::cout << "Parallel Loop time : " << min_tdiff << " ms" << std::endl;
 
     /* check results! */
-    t = 6*T;
+    t = T;
     for (int i = 0; i < N; ++i) {
         check_result(t, i, a(t, i), b(t, i));
     } 

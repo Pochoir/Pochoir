@@ -122,6 +122,8 @@ data PKernelFunc = PKernelFunc {
     kfShape :: PShape,
     kfTileOp :: TileOp,
     kfTileOrder :: Int,
+    kfTileSizes :: [Int], -- sizes of each time/space dimension in original tile
+    kfTileIndex :: [Int], -- index in the tile
     kfGuardFunc :: PGuardFunc, -- each kernel function is guarded by one and only one 
                                -- guard function
     kfComment :: String
@@ -134,6 +136,7 @@ data PGuardFunc = PGuardFunc {
     -- How many lines of statement do we have
     gfStmtSize :: Int,
     gfIter :: [Iter],
+    gfOrder :: Int,
     gfComment :: String
 } deriving Show
 
@@ -141,8 +144,8 @@ data PGuard = PGuard {
     gName :: PName,
     gRank :: Int,
     gFunc :: PGuardFunc,
-    gOrder :: Int,
     gColor :: Homogeneity,
+    gOrder :: Int,
     gComment :: [String]
 } deriving Show
 
@@ -152,6 +155,7 @@ data PKernel = PKernel {
     kFunc :: PKernelFunc,
     kShape :: PShape,
     kIndex :: [Int], -- this is the index in the tile
+    kTileSizes :: [Int], -- The sizes of each time/space dimension in original tile
     kComment :: String
 } deriving Show
 
@@ -161,8 +165,9 @@ data PTileKernel = SK PKernel
 data PTile = PTile {
     tName :: PName,
     tRank :: Int,
-    tSize :: [Int],
-    tKernel :: PTileKernel,
+    tSizes :: [Int], -- size of each time/spatial dimension
+    -- tKernel :: PTileKernel,
+    tKernels :: [PKernel],
     tOrigGuard :: PGuard, -- each tile has one and only one guard
     tOp :: TileOp, -- the OP is used in determining how to tile in automatically generated overlapped kernel
     tOrder :: Int, -- tile order
@@ -180,13 +185,13 @@ emptyShape :: PShape
 emptyShape = PShape { shapeName = "", shapeRank = 0, shapeLen = 0, shapeToggle = 0, shapeSlopes = [], shapeTimeShift = 0, shape = [], shapeComment = cEmpty "Pochoir_Shape" }
 
 emptyKernelFunc :: PKernelFunc
-emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfStmtSize = 0, kfIter = [], kfShape = emptyShape, kfTileOp = PNULL, kfGuardFunc = emptyGuardFunc, kfTileOrder = 0, kfComment = cEmpty "Pochoir_Kernel_Func" }
+emptyKernelFunc = PKernelFunc { kfName = "", kfParams = [], kfStmt = [], kfStmtSize = 0, kfIter = [], kfShape = emptyShape, kfTileOp = PNULL, kfGuardFunc = emptyGuardFunc, kfTileOrder = 0,kfTileSizes = [], kfTileIndex = [], kfComment = cEmpty "Pochoir_Kernel_Func" }
 
 emptyKernel :: PKernel
-emptyKernel = PKernel { kName = "", kRank = 0, kFunc = emptyKernelFunc, kShape = emptyShape, kIndex = [], kComment = cEmpty "Pochoir_Kernel" }
+emptyKernel = PKernel { kName = "", kRank = 0, kFunc = emptyKernelFunc, kShape = emptyShape, kIndex = [], kTileSizes = [], kComment = cEmpty "Pochoir_Kernel" }
 
 emptyGuardFunc :: PGuardFunc
-emptyGuardFunc = PGuardFunc { gfName = "", gfParams = [], gfStmt = [], gfStmtSize = 0, gfIter = [], gfComment = cEmpty "Pochoir_Guard_Func" }
+emptyGuardFunc = PGuardFunc { gfName = "", gfParams = [], gfStmt = [], gfStmtSize = 0, gfIter = [], gfOrder = 0, gfComment = cEmpty "Pochoir_Guard_Func" }
 
 emptyGuard :: PGuard
 emptyGuard = PGuard { gName = "", gRank = 0, gFunc = emptyGuardFunc, gComment = [], gOrder = 0, gColor = emptyColor }
@@ -198,7 +203,7 @@ emptyTileKernel :: PTileKernel
 emptyTileKernel = LK [] 
 
 emptyTile :: PTile
-emptyTile = PTile { tName = "", tRank = 0, tSize = [], tKernel = emptyTileKernel, tComment = cEmpty "Pochoir_Tile", tOp = PNULL, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
+emptyTile = PTile { tName = "", tRank = 0, tSizes = [], tKernels = [], tComment = cEmpty "Pochoir_Tile", tOp = PNULL, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
 
 -- prefix 'c' means "comment"
 cUnknown :: String -> String
@@ -225,6 +230,8 @@ data ParserState = ParserState {
     pGuard :: Map.Map PName PGuard,
     pTile :: Map.Map PName PTile,
     pTileOrder :: Int,
+    pGuardOrder :: Int,
+    pGuardFuncOrder :: Int,
     pGenPlan :: Map.Map Int PStencil, -- this is a snapshot of each PStencil object
                                       -- at the time of calling Gen_Plan_Obase(T)
     pGenPlanOrder :: Int,

@@ -501,7 +501,10 @@ pShowTileGuardHeadOnAll l_params l_dim_sizes l_tile_index l_time_shift =
         l_dim_guards = zipWith pInsCheckEq l_lefts l_rights
         l_rev_dim_guards = filter (/= "") l_dim_guards
         l_guards = intercalate " && " l_rev_dim_guards
-    in  if null l_guards then "{" else  "if (" ++ l_guards ++ ") {"
+        l_comments = "/* " ++ show l_dim_sizes ++ " */" 
+    in  if null l_guards 
+           then l_comments ++ breakline ++ "{" 
+           else l_comments ++ breakline ++ "if (" ++ l_guards ++ ") {"
 
 pShowTileGuardHeadOnSpatial :: [String] -> [Int] -> [Int] -> String
 pShowTileGuardHeadOnSpatial l_spatial_params l_spatial_dim_sizes l_tile_spatial_index =
@@ -527,7 +530,7 @@ pShowAutoGuardString l_op (l_pGuard, l_tiles@(t:ts)) =
     let l_color = "/* " ++ show (gColor l_pGuard) ++ " */"
         l_gfName = pGetOverlapGuardFuncName l_pGuard
         l_gName = pGetOverlapGuardName l_pGuard
-        l_pShapes = if null l_tiles then [emptyShape] else map (kShape) $ concatMap getTileKernels l_tiles
+        l_pShapes = if null l_tiles then [emptyShape] else map (kShape) $ concatMap tKernels l_tiles 
         l_mergedPShape = if null l_tiles then pSysShape emptyShape else pSysShape $ foldr mergePShapes emptyShape l_pShapes
         l_timeShift = shapeTimeShift l_mergedPShape
         l_rank = gRank l_pGuard
@@ -564,7 +567,7 @@ pShowGlobalGuardString l_op (l_pGuard, l_tiles@(t:ts)) =
     let l_color = "/* " ++ show (gColor l_pGuard) ++ " */"
         l_gfName = pGetOverlapGuardFuncName l_pGuard
         l_gName = pGetOverlapGuardName l_pGuard
-        l_pShapes = map (kShape) $ concatMap getTileKernels l_tiles
+        l_pShapes = map (kShape) $ concatMap tKernels l_tiles
         l_mergedPShape = pSysShape $ foldr mergePShapes emptyShape l_pShapes
         l_timeShift = shapeTimeShift l_mergedPShape
         l_rank = gRank l_pGuard
@@ -672,7 +675,8 @@ pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kL
     let l_params = kfParams $ head k
         l_spatial_params = tail l_params
         l_rank = length l_spatial_params
-        l_dim_sizes = getTileSizes l_tile_indices
+        -- l_dim_sizes = getTileSizes l_tile_indices
+        l_dim_sizes = if null k then [] else (kfTileSizes . head) k
         l_tile_index = head l_tile_indices
         l_tileOp_all_null = pIsTileOpNull $ foldr1 foldTileOp $ map kfTileOp k
         l_guard_head = pShowTileGuardHeadOnAll l_params l_dim_sizes l_tile_index

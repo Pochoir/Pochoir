@@ -70,7 +70,7 @@ whilst :: Bool -> IO () -> IO ()
 whilst True action = action
 whilst False action = return () 
 
-pInitState = ParserState { pMode = PDefault, pColorVectors = [], pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0, pGenPlan = Map.empty, pGenPlanOrder = 0, pColorNum = 0 }
+pInitState = ParserState { pMode = PDefault, pColorVectors = [], pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0, pGuardOrder = 0, pGuardFuncOrder = 0, pGenPlan = Map.empty, pGenPlanOrder = 0, pColorNum = 0 }
 
 icc = "icpc"
 

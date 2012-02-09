@@ -556,16 +556,20 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     l_plan->set_fname(fname);
 
     char color_vector_fname[FNAME_LENGTH], kernel_info_fname[FNAME_LENGTH];
-    sprintf(color_vector_fname, "%s_%d_color.dat\0", fname, order_num_);
-    sprintf(kernel_info_fname, "%s_kernel_info.cpp\0", fname);
+    sprintf(color_vector_fname, "%s_%d_color.dat", fname, order_num_);
+    sprintf(kernel_info_fname, "%s_kernel_info.cpp", fname);
 
     Vector_Info< Homogeneity > & l_color_vector = algor.get_color_vector();
     Homogeneity * white_clone = NULL;
 
-    if (l_color_vector.size() > 0)
+    if (l_color_vector.size() > 0) {
         white_clone = new Homogeneity(l_color_vector[0].size());
-    else
+        // white_clone = (Homogeneity *)calloc(1, sizeof(Homogeneity)); 
+        // if (white_clone != NULL) 
+        //     white_clone->set_size(l_color_vector[0].size());
+    } else {
         white_clone = new Homogeneity(0);
+    }
     /* sort the color vector according to the member 'measure_' */
     l_color_vector.sort();
     l_color_vector.set_size(55);
@@ -587,16 +591,16 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     l_min_tdiff = INF;
     gettimeofday(&l_start, 0);
     char cmd[200];
-    sprintf(cmd, "./genkernels -order %d %s %s %s\0", order_num_, pochoir_mode, color_vector_fname, kernel_info_fname);
+    sprintf(cmd, "./genstencils -order %d %s %s %s", order_num_, pochoir_mode, color_vector_fname, kernel_info_fname);
     LOG_ARGS(INF, "%s\n", cmd);
     int ret = system(cmd);
     if (ret == -1) {
-        ERROR("system() call to genkernels failed!\n");
+        ERROR("system() call to genstencils failed!\n");
     }
-    LOG(INF, "./genkernels exits!\n");
+    LOG(INF, "./genstencils exits!\n");
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    LOG_ARGS(INF, "Kernel Generation (genkernels) time : %.6f milliseconds\n", l_min_tdiff);
+    LOG_ARGS(INF, "Kernel Generation (genstencils) time : %.6f milliseconds\n", l_min_tdiff);
 
     l_min_tdiff = INF;
     gettimeofday(&l_start, 0);
@@ -611,7 +615,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #else
     /* This branch is for best performance */
-    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
+    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
 #endif
 
     LOG_ARGS(INF, "%s\n", cmd);
@@ -719,16 +723,16 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     l_min_tdiff = INF;
     gettimeofday(&l_start, 0);
     char cmd[200];
-    sprintf(cmd, "./genkernels -order %d %s %s %s\0", order_num_, pochoir_mode, color_vector_fname, kernel_info_fname);
+    sprintf(cmd, "./genstencils -order %d %s %s %s\0", order_num_, pochoir_mode, color_vector_fname, kernel_info_fname);
     LOG_ARGS(INF, "%s\n", cmd);
     int ret = system(cmd);
     if (ret == -1) {
-        ERROR("system() call to genkernels failed!\n");
+        ERROR("system() call to genstencils failed!\n");
     }
-    LOG_ARGS(INF, "./genkernels exits!\n");
+    LOG(INF, "./genstencils exits!\n");
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    LOG_ARGS(INF, "Kernel Generation (genkernels) time : %.6f milliseconds\n", l_min_tdiff);
+    LOG_ARGS(INF, "Kernel Generation (genstencils) time : %.6f milliseconds\n", l_min_tdiff);
 
     l_min_tdiff = INF;
     gettimeofday(&l_start, 0);
@@ -741,7 +745,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
 #if 0
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #else
-    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
+    // sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
+    sprintf(cmd, "g++-cilk -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #endif
 
     LOG_ARGS(INF, "%s\n", cmd);

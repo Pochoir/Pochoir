@@ -1,11 +1,15 @@
 #!/bin/bash
 CC = ./pochoir
 ICC = icpc
+# ICC = g++-cilk
 # ICC = g++
 # it seems that '-ipo' '-O1' optimization flag will cause unexpected 
 # segmentation fault sometimes.
 # OPT_FLAGS = -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH}
+# OPT_FLAGS for icpc
 OPT_FLAGS = -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH}
+# OPT_FLAGS for g++-cilk
+# OPT_FLAGS = -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -std=c++0x -I${POCHOIR_LIB_PATH}
 # OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
 # OPT_FLAGS = -O3 -DNDEBUG -std=c++0x -I${POCHOIR_LIB_PATH}
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
@@ -68,7 +72,8 @@ animwave_irregular : tb_animwave_irregular.cpp tb_animwave_irregular_pochoir.cpp
 
 diamond : tb_diamond.cpp # tb_diamond_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o diamond ${OPT_FLAGS} -unroll-t-tile-pointer tb_diamond.cpp
+	${CC} -o diamond ${OPT_FLAGS} -all-cond-tile-pointer-overlap tb_diamond.cpp
+	${ICC} -o diamond_gdb ${ICC_DEBUG_FLAGS} tb_diamond_pochoir.cpp
 #	${CC} -o diamond ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_diamond.cpp
 #	${ICC} -o diamond ${OPT_FLAGS} tb_diamond_pochoir.cpp
 #	${ICC} -o diamond_gdb ${ICC_DEBUG_FLAGS} tb_diamond_pochoir.cpp

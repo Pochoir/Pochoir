@@ -36,7 +36,7 @@ template<typename T>
 class Pochoir_Proxy
 {
 public:
-    explicit Pochoir_Proxy(T * v) : ref_(v), val_(*v) { }
+    explicit Pochoir_Proxy(T * v) : val_(*v), ref_(v) { }
     explicit Pochoir_Proxy(T v) : val_(v), ref_(&val_) { }
 
     operator T() const { // the implicit conversion makes a proxy just like the value itself
@@ -60,8 +60,8 @@ public:
         return (*this);
     }
 private:
-    T * ref_;
     T val_;
+    T * ref_;
 };
 
 #endif /* POCHOIR_PROXY_H */

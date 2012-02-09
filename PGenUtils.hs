@@ -40,6 +40,14 @@ updatePTileOrder :: Int -> ParserState -> ParserState
 updatePTileOrder l_tile_order parserState =
     parserState { pTileOrder = l_tile_order }
 
+updatePGuardOrder :: Int -> ParserState -> ParserState
+updatePGuardOrder l_guardOrder parserState =
+    parserState { pGuardOrder = l_guardOrder }
+
+updatePGuardFuncOrder :: Int -> ParserState -> ParserState
+updatePGuardFuncOrder l_guardFuncOrder parserState =
+    parserState { pGuardFuncOrder = l_guardFuncOrder }
+
 updatePGenPlanOrder :: Int -> ParserState -> ParserState
 updatePGenPlanOrder l_gen_plan_order parserState =
     parserState { pGenPlanOrder = l_gen_plan_order }
@@ -207,13 +215,25 @@ getValidTile l_state l_tileName =
         Nothing -> 
             let l_kernel = case Map.lookup l_tileName $ pKernel l_state of
                                     Nothing -> emptyKernel
-                                    Just l_kernel -> l_kernel
+                                    Just l_kern -> l_kern
                 l_tileKernel = SK l_kernel
-            in  PTile { tName = l_tileName, tRank = kRank l_kernel, tSize = [1], tKernel = l_tileKernel, tComment = "", tOp = PNULL, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
+            in  PTile { tName = l_tileName, tRank = kRank l_kernel, tSizes = [1], tKernels = [l_kernel], tComment = "", tOp = PNULL, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
         Just l_pTile -> l_pTile { tComment = cKnown "Tile" }
 
-getTileKernels :: PTile -> [PKernel]
-getTileKernels l_tile = getKernelsTile [] 0 l_tile $ tKernel l_tile
+getSetKernelsFromTile :: PTile -> [PKernel]
+getSetKernelsFromTile l_tile =
+    let l_kernels = tKernels l_tile
+    in  map (pSetKernel l_tile) l_kernels
+            where pSetKernel l_tile l_kernel = 
+                    let l_kfunc = kFunc l_kernel
+                        l_gfunc = gFunc $ tOrigGuard l_tile
+                        l_tile_op = tOp l_tile
+                        l_tile_order = tOrder l_tile
+                        l_tile_sizes = tSizes l_tile
+                    in  l_kernel { kFunc = l_kfunc { kfGuardFunc = l_gfunc, kfTileOp = l_tile_op, kfTileOrder = l_tile_order, kfTileSizes = l_tile_sizes, kfTileIndex = kIndex l_kernel } }
+
+getTileKernels :: PTile -> PTileKernel -> [PKernel]
+getTileKernels l_tile l_tile_kernels = getKernelsTile [] 0 l_tile l_tile_kernels
 
 getKernelsTile :: [Int] -> Int -> PTile -> PTileKernel -> [PKernel]
 getKernelsTile l_indices l_index l_tile (SK l_kernel) =
@@ -234,6 +254,15 @@ getKernelsTile l_indices l_index l_tile (LK []) = []
 getTileSizes :: [[Int]] -> [Int]
 getTileSizes l_tile_indices = map ((+) 1 . maximum) $ transpose l_tile_indices
 
+getTileDimSizes :: [PKernel] -> ([Int], [PKernel])
+getTileDimSizes l_kernels =
+    let l_tile_indices = map kIndex l_kernels
+        l_tile_sizes = getTileSizes l_tile_indices
+    in  (l_tile_sizes, map (pFillTileSizesInPKernel l_tile_sizes) l_kernels)
+
+pFillTileSizesInPKernel :: [Int] -> PKernel -> PKernel
+pFillTileSizesInPKernel l_tile_sizes l_kernel = l_kernel { kTileSizes = l_tile_sizes } 
+
 eqTileOpPKernelFunc :: PKernelFunc -> PKernelFunc -> Bool
 eqTileOpPKernelFunc a b = (kfTileOp a) == (kfTileOp b)
 
@@ -242,6 +271,8 @@ eqTPKernel a b = (head $ kIndex a) == (head $ kIndex b)
 
 eqTGroupPKernel :: [PKernel] -> [PKernel] -> Bool
 eqTGroupPKernel [] [] = True
+eqTGroupPKernel _ [] = False
+eqTGroupPKernel [] _ = False
 eqTGroupPKernel a b = (head . kIndex . head) a == (head . kIndex . head) b
 
 eqTPTile :: [Int] -> [Int] -> Bool
@@ -574,11 +605,13 @@ pFillIters :: [Iter] -> PKernelFunc -> PKernelFunc
 pFillIters l_iters l_kernel_func = l_kernel_func { kfIter = l_iters}
 
 pTileLength :: PTile -> Int
-pTileLength l_tile =
+pTileLength l_tile = (head . tSizes) l_tile
+{-
     let l_tile_kernel = tKernel l_tile
     in  case l_tile_kernel of
             SK _ -> 1
             LK l_tKs -> length l_tKs
+-}
 
 transArrayMap :: [PArray] -> Map.Map PName PArray
 transArrayMap aL = Map.fromList $ transAssocList aL

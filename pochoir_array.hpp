@@ -24,8 +24,9 @@
 
 #ifndef POCHOIR_ARRAY_H
 #define POCHOIR_ARRAY_H
-// #include <iostream>
-// #include <iomanip>
+
+#include <iostream>
+#include <iomanip>
 #include <cstdio>
 #include <cstdlib>
 
@@ -1230,13 +1231,13 @@ class Pochoir_Array {
 
 #if 1
 		template <typename T2, int N2>
-		friend std::ostream& operator<<(std::ostream& os, Pochoir_Array<T2, N2> const & x); 
+		friend ostream& operator<<(ostream& os, Pochoir_Array<T2, N2> const & x); 
 #endif
 };
 
 #if 1
 template<typename T2, int N2>
-std::ostream& operator<<(std::ostream& os, Pochoir_Array<T2, N2> const & x) { 
+ostream& operator<<(ostream& os, Pochoir_Array<T2, N2> const & x) { 
 	typedef int size_info[N2];
 	size_info l_index, l_head_index, l_tail_index;
 	bool done = false, line_break = false;
@@ -1249,16 +1250,16 @@ std::ostream& operator<<(std::ostream& os, Pochoir_Array<T2, N2> const & x) {
 		l_tail_index[i] = x.phys_size(i);
 		os << "Dim " << i << ", size<" << x.phys_size(i) << "> ; ";
 	}
-	os << std::endl;
+	os << endl;
 
 	while (!done) {
 		T2 x0, x1;
 		x0 = const_cast<Pochoir_Array<T2, N2> &>(x).orig_value(0, l_index);
 		x1 = const_cast<Pochoir_Array<T2, N2> &>(x).orig_value(1, l_index);
-		os << std::setw(9) << x0 << " (" << x1 << ")" << " "; 
+		os << setw(9) << x0 << " (" << x1 << ")" << " "; 
 		done = const_cast<Pochoir_Array<T2, N2> &>(x).update_index(l_index, line_break, l_head_index, l_tail_index);
 		if (line_break) {
-			os << std::endl;
+			os << endl;
 			line_break = false;
 		}
 	}

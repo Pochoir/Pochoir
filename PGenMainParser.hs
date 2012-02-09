@@ -36,6 +36,7 @@ import PGenData
 import PGenShow
 -- import Text.Show
 import Data.List
+import Data.Ord
 import qualified Data.Map as Map
 
 -- first pass will be gathering the info
@@ -52,7 +53,7 @@ pParser = do tokens0 <- many $ pToken
              let l_colorNum = pColorNum l_state
              -- let l_stencils = Map.elems $ pGenPlan l_state
              let l_colorVectors = pColorVectors l_state
-             let l_guardFuncs = Map.elems $ pGuardFunc l_state
+             let l_guardFuncs = sortBy (comparing gfOrder) $ Map.elems $ pGuardFunc l_state
              -- let l_reg_GTs = sRegTileKernel l_stencil
              case Map.lookup l_colorNum $ pGenPlan l_state of
                  Nothing -> 
@@ -63,7 +64,7 @@ pParser = do tokens0 <- many $ pToken
                        let l_regBound = foldr (||) False $ map (getArrayRegBound l_state) l_arrayInUse
                        let l_stencil' = l_stencil { sRegBound = l_regBound }
                        let l_output = pCodeGen l_mode l_colorVectors l_guardFuncs l_stencil'
-                       return $ fst l_output
+                       return $ concat tokens0 ++ fst l_output
 
 pToken :: GenParser Char ParserState String
 pToken = 
@@ -121,7 +122,7 @@ pParsePochoirKernel =
                 case Map.lookup l_kernelFunc $ pKernelFunc l_state of
                      Nothing -> return ""
                      Just l_pKernelFunc -> 
-                          do let l_kernel = PKernel { kName = l_name, kRank = l_rank, kShape = l_pShape, kFunc = l_pKernelFunc { kfShape = l_pShape, kfName = l_name }, kIndex = [], kComment = "" }
+                          do let l_kernel = PKernel { kName = l_name, kRank = l_rank, kShape = l_pShape, kFunc = l_pKernelFunc { kfShape = l_pShape, kfName = l_name }, kIndex = [], kTileSizes = [], kComment = "" }
                              updateState $ updatePKernel l_kernel
                              return ""
 
@@ -132,12 +133,23 @@ pParsePochoirTile =
        l_name <- identifier
        l_sizes <- many1 $ brackets pDeclStaticNum
        reservedOp "="
-       l_tile_kernel <- pParseTileKernel
+       l_tile_kernels <- pParseTileKernel
        semi
-       let l_tile = PTile { tName = l_name, tRank = l_rank, tSize = l_sizes, tKernel = l_tile_kernel, tComment = "", tOp = PNULL, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
-       let l_kernels = getTileKernels l_tile
-       updateState $ updatePTile l_tile
-       return ""
+       let l_tile = PTile { tName = l_name, tRank = l_rank, tSizes = l_sizes, tKernels = [], tComment = "", tOp = PNULL, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
+       let l_kernels = getTileKernels l_tile l_tile_kernels
+       let (l_sizes', l_kernels') = getTileDimSizes l_kernels
+       let l_tile' = l_tile { tSizes = l_sizes', tKernels = l_kernels' }
+       updateState $ updatePTile l_tile'
+       let l_ret =
+            breakline ++ "/* " ++
+            "Pochoir_Kernel <" ++ show l_rank ++ "> " ++
+            l_name ++ pShowArrayDims l_sizes' ++ " = " ++
+            show l_tile_kernels ++ ";" ++ " */" ++ breakline ++
+            "/* " ++ (intercalate "; " $
+                        zipWith (++) (map kName l_kernels')
+                                     (map (show . kIndex) l_kernels')) ++
+            " */" ++ breakline
+       return l_ret 
 
 pParsePochoirGuard :: GenParser Char ParserState String
 pParsePochoirGuard =
@@ -147,11 +159,13 @@ pParsePochoirGuard =
        l_guardFunc <- parens identifier
        semi
        l_state <- getState
+       let l_guardOrder = pGuardOrder l_state
        case Map.lookup l_guardFunc $ pGuardFunc l_state of
             Nothing -> return ""
             Just l_pGuardFunc -> 
-                 do let l_guard = emptyGuard { gName = l_name, gRank = l_rank, gFunc = l_pGuardFunc { gfName = l_name } }
+                 do let l_guard = emptyGuard { gName = l_name, gRank = l_rank, gFunc = l_pGuardFunc { gfName = l_name }, gOrder = l_guardOrder }
                     updateState $ updatePGuard l_guard
+                    updateState $ updatePGuardOrder (l_guardOrder + 1)
                     return ""
 
 pParsePochoirShapeInfo :: GenParser Char ParserState String
@@ -226,6 +240,7 @@ pParsePochoirAutoKernelFunc =
                                         kfStmtSize = length exprStmts,
                                         kfIter = [], kfShape = emptyShape, 
                                         kfTileOp = PNULL, kfGuardFunc = emptyGuardFunc,
+                                        kfTileSizes = [], kfTileIndex = [],
                                         kfTileOrder = 0, kfComment = "" }
        updateState $ updatePKernelFunc l_kernelFunc
        return ""
@@ -241,11 +256,15 @@ pParsePochoirAutoGuardFunc =
        reserved "bool" 
        reserved "{"
        exprStmts <- manyTill pStatement (try $ reserved "};")
+       l_state <- getState
+       let l_guardFuncOrder = pGuardFuncOrder l_state
        let l_guardFunc = PGuardFunc { gfName = l_guard_name, gfParams = l_guard_params,
                                       gfStmt = exprStmts, 
                                       gfStmtSize = length exprStmts, 
+                                      gfOrder = l_guardFuncOrder,
                                       gfIter = [], gfComment = "" }
        updateState $ updatePGuardFunc l_guardFunc
+       updateState $ updatePGuardFuncOrder (l_guardFuncOrder + 1)
        return ""
 
 transPArray :: (PType, Int) -> [([PName], PName, [DimExpr])] -> [(PName, PArray)]

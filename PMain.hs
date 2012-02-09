@@ -118,6 +118,7 @@ pInitState = ParserState { pMode = PCaching, pInFile = "", pInDir = "", pMacro =
 
 -- icc = "g++"
 icc = "icpc"
+-- icc = "g++-cilk"
 
 -- compilation flags for icpc
 iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]

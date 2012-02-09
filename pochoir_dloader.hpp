@@ -38,7 +38,6 @@ class DynamicLoader
 public:
     DynamicLoader(const char * filename)
     {
-        char cmd[200];
         char so_filename[strlen(filename) + 10];
 
         sprintf(so_filename, "%s.so", filename);

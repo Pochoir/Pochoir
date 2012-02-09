@@ -70,8 +70,8 @@ Pochoir_Boundary_2D(aperiodic_2D, arr, t, i, j)
     return 0;
 Pochoir_Boundary_End
 
-#define N 575
-#define T 575
+#define N 55
+#define T 55
 
 int main(int argc, char * argv[])
 {
@@ -81,7 +81,6 @@ int main(int argc, char * argv[])
     double min_tdiff = INF;
     /* the 1D spatial dimension has 'N' points */
     // int N = 0, T = 0;
-    double umin, umax;
     char pochoir_plan_file_name[100];
 
     if (argc < 3) {
@@ -469,7 +468,7 @@ int main(int argc, char * argv[])
     }
 
     Pochoir_Plan<2> & l_plan = leap_frog.Gen_Plan(T);
-    sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat\0", N, T);
+    sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat", N, T);
     leap_frog.Store_Plan(pochoir_plan_file_name, l_plan);
     // Pochoir_Plan<2> & ll_plan = leap_frog.Load_Plan(pochoir_plan_file_name);
     min_tdiff = INF;

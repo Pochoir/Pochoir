@@ -200,7 +200,7 @@ ppStencil l_id l_state =
                       updateState $ updatePTileOrder $ l_tile_order + 1
                       updateState $ updateTileOrigGuard (tName l_tile) l_guard
                       updateState $ updateStencilRegTileKernel l_id l_sRegTileKernel'
-                      let l_pShapes = map kShape $ getTileKernels l_tile'
+                      let l_pShapes = map kShape $ tKernels l_tile'
                       let l_merged_pShape = foldr mergePShapes (sShape l_stencil) l_pShapes
                       updateState $ updateStencilToggle l_id (shapeToggle l_merged_pShape)
                       updateState $ updateStencilTimeShift l_id (shapeTimeShift l_merged_pShape)
@@ -327,7 +327,7 @@ getIterFromKernel l_mode l_stencil l_params l_stmts =
 
 pShowRegTileKernel :: PMode -> PStencil -> (PGuard, PTile) -> String
 pShowRegTileKernel l_mode l_stencil (l_guard, l_tile) =
-    let l_kernels = getTileKernels l_tile
+    let l_kernels = tKernels l_tile
         l_unroll = pTileLength l_tile
         -- l_kernels_by_t : group the [PKernel] by the stagger on time step
         l_kernels_by_t = pGroupBy eqTPKernel l_kernels
@@ -390,12 +390,15 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
         l_order = gOrder l_guard
         l_comments = pShowAutoTileComments l_tiles
         -- getTileKernels also fills the guardFunc/tile_op/tile_order into PKernelFuncs
-        l_kernels = concatMap getTileKernels l_tiles
+        -- l_kernels = concatMap getTileKernels l_tiles
+        l_kernels = concatMap getSetKernelsFromTile l_tiles
+        -- l_kernels = concatMap tKernels l_tiles
         l_unroll = foldr max 0 $ map pTileLength l_tiles
         -- group kernels by the tile index (tIndex)
         -- l_kernels_by_tIndex = groupBy eqIndexPKernel l_kernels
         -- l_kernels_by_tIndex = pGroupBy eqIndexPKernel l_kernels
         l_kernels_by_tIndex = pGroupPKernelBy eqIndexPKernelTOrder l_kernels
+        -- l_kernels_by_tIndex = pGroupBy eqIndexPKernelTOrder l_kernels
         -- l_kernels_by_tIndex = pGroupPKernelByMerge eqVarLenIndexPKernelTOrder l_kernels
         l_kernels_by_tIndex_by_t = pGroupBy eqTGroupPKernel l_kernels_by_tIndex
         -- for each l_tile_index, there could be a list of kernel functions
