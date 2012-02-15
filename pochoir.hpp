@@ -448,6 +448,9 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a, Pochoir_Array
 template <int N_RANK> 
 void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> * shape, int N_SIZE) {
     /* we extract time_shift_, toggle_, slope_ out of Shape */
+    /* we make a copy of the Pochoir_Shape since it can be accumulated
+     * across multiple kernels
+     */
     Pochoir_Shape<N_RANK> * l_shape;
     if (!regShapeFlag_) {
         regShapeFlag_ = true;

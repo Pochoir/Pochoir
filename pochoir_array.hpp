@@ -362,7 +362,9 @@ class Pochoir_Array {
             }
         
             allocMemFlag_ = false;
+#if 0
             del_arr(shape_);
+#endif
 		}
 
 		inline Storage<T> * view() {
@@ -406,8 +408,10 @@ class Pochoir_Array {
         void Register_Shape(Pochoir_Shape<N_RANK> * shape, int shape_size) {
             /* currently we just get the slope_[] and toggle_ out of the shape[] */
             int l_min_time_shift=0, l_max_time_shift=0, depth=0;
+#if 0
             assert(shape_ == NULL);
             shape_ = new Pochoir_Shape<N_RANK>[shape_size];
+#endif
             shape_size_ = shape_size;
             for (int r = 0; r < N_RANK; ++r) {
                 slope_[r] = 0;
@@ -417,18 +421,21 @@ class Pochoir_Array {
                     l_min_time_shift = shape[i].shift[0];
                 if (shape[i].shift[0] > l_max_time_shift)
                     l_max_time_shift = shape[i].shift[0];
+#if 0
                 for (int r = 0; r < N_RANK+1; ++r) {
                     shape_[i].shift[r] = shape[i].shift[r];
                 }
+#endif
             }
             depth = l_max_time_shift - l_min_time_shift;
             toggle_ = depth + 1;
+            shape_ = shape;
             for (int i = 0; i < shape_size; ++i) {
                 for (int r = 0; r < N_RANK; ++r) {
-                    slope_[r] = max(slope_[r], abs((int)ceil((float)shape_[i].shift[r+1]/(l_max_time_shift - shape_[i].shift[0]))));
+                    slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
                 }
             }
-#if 1 
+#if DEBUG 
             printf("<%s> toggle = %d\n", __FUNCTION__, toggle_);
             for (int r = 0; r < N_RANK; ++r) {
                 printf("<%s> slope[%d] = %d, ", __FUNCTION__, r, slope_[r]);
@@ -447,8 +454,10 @@ class Pochoir_Array {
         void Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
             /* currently we just get the slope_[] and toggle_ out of the shape[] */
             int l_min_time_shift=0, l_max_time_shift=0, depth=0;
+#if 0
             assert(shape_ == NULL);
             shape_ = new Pochoir_Shape<N_RANK>[N_SIZE];
+#endif
             shape_size_ = N_SIZE;
             for (int r = 0; r < N_RANK; ++r) {
                 slope_[r] = 0;
@@ -458,15 +467,18 @@ class Pochoir_Array {
                     l_min_time_shift = shape[i].shift[0];
                 if (shape[i].shift[0] > l_max_time_shift)
                     l_max_time_shift = shape[i].shift[0];
+#if 0
                 for (int r = 0; r < N_RANK+1; ++r) {
                     shape_[i].shift[r] = shape[i].shift[r];
                 }
+#endif
             }
             depth = l_max_time_shift - l_min_time_shift;
             toggle_ = depth + 1;
+            shape_ = shape;
             for (int i = 0; i < N_SIZE; ++i) {
                 for (int r = 0; r < N_RANK; ++r) {
-                    slope_[r] = max(slope_[r], abs((int)ceil((float)shape_[i].shift[r+1]/(l_max_time_shift - shape_[i].shift[0]))));
+                    slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
                 }
             }
 #if DEBUG 
@@ -481,6 +493,7 @@ class Pochoir_Array {
             }
         }
 
+#if 0
         /* This function could be called directly from user's app to 
          * register a shape with Pochoir_Array
          */
@@ -531,6 +544,7 @@ class Pochoir_Array {
                 alloc_mem();
             }
         }
+#endif
 
         inline void print_shape(void) {
             printf("\nInput Pochoir_Shape<%d> = \n{", N_RANK);
