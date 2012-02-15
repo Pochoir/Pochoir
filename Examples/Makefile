@@ -7,14 +7,15 @@ ICC = icpc
 # segmentation fault sometimes.
 # OPT_FLAGS = -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH}
 # OPT_FLAGS for icpc
-OPT_FLAGS = -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH}
+OPT_FLAGS = -DCHECK_SHAPE -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x 
 # OPT_FLAGS for g++-cilk
 # OPT_FLAGS = -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -std=c++0x -I${POCHOIR_LIB_PATH}
 # OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
 # OPT_FLAGS = -O3 -DNDEBUG -std=c++0x -I${POCHOIR_LIB_PATH}
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
 # POCHOIR_DEBUG_FLAGS = -O0 -g3 -debug -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
-ICC_DEBUG_FLAGS = -rdynamic -ldl -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
+# ICC_DEBUG_FLAGS = -rdynamic -ldl -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
+ICC_DEBUG_FLAGS = -rdynamic -ldl -O0 -g3 -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
 # ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
 POCHOIR_LIB_FILES = "../pochoir.hpp ../pochoir_common.hpp ../pochoir_dloader.hpp ../pochoir_array.hpp ../pochoir_walk.hpp ../pochoir_walk_recursive.hpp ../pochoir_walk_loops.hpp ../pochoir_kernel.hpp ../pochoir_range.hpp"
 

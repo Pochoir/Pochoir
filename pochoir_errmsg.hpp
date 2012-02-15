@@ -4,7 +4,7 @@
  *  Copyright (C) 2010-2011  Yuan Tang <yuantang@csail.mit.edu>
  * 		                     Charles E. Leiserson <cel@mit.edu>
  * 	 
- *   This program is delete software: you can redistribute it and/or modify
+ *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
@@ -40,12 +40,12 @@
 
 #define LOG(log_level, fmt) \
 if (log_level >= LOG_LEVEL) { \
-    fprintf(stderr, "<%s:%d> " fmt "\nExit!\n", __FUNCTION__, __LINE__); \
+    fprintf(stderr, "<%s:%d> " fmt "\n", __FUNCTION__, __LINE__); \
 }
 
 #define LOG_ARGS(log_level, fmt, ...) \
 if (log_level >= LOG_LEVEL) { \
-    fprintf(stderr, "<%s:%d> " fmt "\nExit!\n", __FUNCTION__, __LINE__, __VA_ARGS__); \
+    fprintf(stderr, "<%s:%d> " fmt "\n", __FUNCTION__, __LINE__, __VA_ARGS__); \
 }
 
 #else 

@@ -61,15 +61,14 @@ class Pochoir {
         int order_num_;
         double pochoir_time_;
         Pochoir_Mode pmode_;
-        /* assuming that the number of distinct sub-regions is less than 10 */
-        /* We put the pxgs_ here just to make the Gen_Plan compatible
-         * in Phase I, since we may need to store/load the plan from 
-         * disk files
-         */
-        Vector_Info< Pochoir_Guard<N_RANK> > pxgs_, pigs_;
+        Vector_Info< Pochoir_Guard<N_RANK> > pigs_;
         Vector_Info< Pochoir_Tile_Kernel<N_RANK> > pits_;
         Vector_Info< Pochoir_Guard<N_RANK> > opgs_;
         Vector_Info< Pochoir_Combined_Obase_Kernel<N_RANK> > opks_;
+        vector< Pochoir_Tile_Kernel<N_RANK> * > reg_tile_kernels_;
+        vector< Pochoir_Combined_Obase_Kernel<N_RANK> * > reg_obase_kernels_;
+        vector< Pochoir_Guard<N_RANK> * > reg_guards_;
+        vector< Pochoir_Guard<N_RANK> * > reg_obase_guards_;
 
         /* Private Register Kernel Function */
         template <typename I>
@@ -108,6 +107,31 @@ class Pochoir {
         pmode_ = Pochoir_Null;
         order_num_ = 0;
         pochoir_time_ = INF;
+    }
+    ~Pochoir() {
+        del_arr(shape_);
+        shape_size_ = 0; 
+        regArrayFlag_ = regLogicDomainFlag_ = regPhysDomainFlag_ = regShapeFlag_ = false;
+        size_t l_size = reg_tile_kernels_.size();
+        for (int i = 0; i < l_size; ++i) {
+            auto k = reg_tile_kernels_[i];
+            delete k;
+        }
+        l_size = reg_obase_kernels_.size();
+        for (int i = 0; i < l_size; ++i) {
+            auto k = reg_obase_kernels_[i];
+            delete k;
+        }
+        l_size = reg_guards_.size();
+        for (int i = 0; i < l_size; ++i) {
+            auto g = reg_guards_[i];
+            delete g;
+        }
+        l_size = reg_obase_guards_.size();
+        for (int i = 0; i < l_size; ++i) {
+            auto g = reg_obase_guards_[i];
+            delete g;
+        }
     }
 
     /* currently, we just compute the slope[] out of the shape[] */
@@ -159,6 +183,11 @@ void Pochoir<N_RANK>::reg_tile_dim(Pochoir_Tile_Kernel<N_RANK> & pt, int dim, I 
     for (int i = 1; i < dim; ++i) {
         pt.stride_[i] = pt.stride_[i - 1] * pt.size_[i - 1];
     }
+    int l_total_size_ = 1;
+    for (int i = 0; i < dim; ++i) {
+        l_total_size_ *= pt.size_[i];
+    }
+    pt.total_size_ = l_total_size_;
     return;
 }
 
@@ -189,6 +218,9 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     pits_.add_element(*l_pit);
     ++sz_pigk_;
     assert(sz_pigk_ == pits_.size());
+
+    reg_guards_.push_back(l_pig);
+    reg_tile_kernels_.push_back(l_pit);
     return;
 }
 
@@ -209,6 +241,9 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     pits_.add_element(*l_pit);
     ++sz_pigk_;
     assert(sz_pigk_ == pits_.size());
+
+    reg_guards_.push_back(l_pig);
+    reg_tile_kernels_.push_back(l_pit);
     return;
 }
 
@@ -231,6 +266,9 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     pits_.add_element(*l_pit);
     ++sz_pigk_;
     assert(sz_pigk_ == pits_.size());
+
+    reg_guards_.push_back(l_pig);
+    reg_tile_kernels_.push_back(l_pit);
     return;
 }
 
@@ -255,6 +293,9 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     pits_.add_element(*l_pit);
     ++sz_pigk_;
     assert(sz_pigk_ == pits_.size());
+
+    reg_guards_.push_back(l_pig);
+    reg_tile_kernels_.push_back(l_pit);
     return;
 }
 
@@ -277,6 +318,10 @@ void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int
     lcm_unroll_ = lcm(lcm_unroll_, unroll);
     ++sz_pxgk_;
     assert(sz_pxgk_ == opks_.size());
+
+    reg_obase_guards_.push_back(l_opg);
+    reg_obase_kernels_.push_back(l_opk);
+    return;
 }
 
 template <int N_RANK> 
@@ -300,6 +345,10 @@ void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int
     lcm_unroll_ = lcm(lcm_unroll_, unroll);
     ++sz_pxgk_;
     assert(sz_pxgk_ == opks_.size());
+
+    reg_obase_guards_.push_back(l_opg);
+    reg_obase_kernels_.push_back(l_opk);
+    return;
 }
 
 template <int N_RANK>
@@ -402,9 +451,9 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> * shape, int N_SIZE) 
     Pochoir_Shape<N_RANK> * l_shape;
     if (!regShapeFlag_) {
         regShapeFlag_ = true;
-        l_shape = new Pochoir_Shape<N_RANK>[N_SIZE];
-        shape_ = l_shape;
+        shape_ = new Pochoir_Shape<N_RANK>[N_SIZE];
     } else {
+        assert(shape_ != NULL);
         l_shape = new Pochoir_Shape<N_RANK>[N_SIZE + shape_size_] ;
         /* copy in the old shape value */
         for (int i = 0; i < shape_size_; ++i)  {
@@ -412,7 +461,7 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> * shape, int N_SIZE) 
                 l_shape[i].shift[r]  = shape_[i].shift[r];
             }
         }
-        delete (shape_);
+        del_arr(shape_);
         shape_ = l_shape;
     }
     /* currently we just get the slope_[]  and toggle_ out of the shape[]  */
@@ -433,7 +482,7 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> * shape, int N_SIZE) 
     }
     for (int i = 0; i < N_SIZE; ++i) {
         for (int r = 0; r < N_RANK; ++r) {
-            slope_[r] = max(slope_[r], abs((int)ceil((float)shape_[i].shift[r+1]/(l_max_time_shift - shape_[i].shift[0]))));
+            slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
         }
     }
     shape_size_ += N_SIZE;
@@ -500,6 +549,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
     l_plan->sync_data_->add_element(END_SYNC);
     l_plan->set_order_num(order_num_);
     ++order_num_;
+    del_ele(l_tree);
     return (*l_plan);
 }
 
@@ -610,7 +660,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     char cpp_filename[strlen(gen_kernel_fname) + 10], so_filename[strlen(gen_kernel_fname) + 10];
     sprintf(cpp_filename, "%s.cpp", gen_kernel_fname);
     sprintf(so_filename, "%s.so", gen_kernel_fname);
-#if 0 
+#if 1 
     /* This branch is for debugging purpose */
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #else
@@ -635,6 +685,9 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     LOG_ARGS(INF, "Dynamic loading time : %.6f milliseconds\n", l_min_tdiff);
 
     ++order_num_;
+    /* clean up the memory to avoid memory leak */
+    del_ele(white_clone);
+    del_ele(l_tree); 
     return (*l_plan);
 }
 
@@ -742,11 +795,11 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     char cpp_filename[strlen(gen_kernel_fname) + 10], so_filename[strlen(gen_kernel_fname) + 10];
     sprintf(cpp_filename, "%s.cpp", gen_kernel_fname);
     sprintf(so_filename, "%s.so", gen_kernel_fname);
-#if 0
+#if 1
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #else
-    // sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
-    sprintf(cmd, "g++-cilk -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
+    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
+    // sprintf(cmd, "g++-cilk -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #endif
 
     LOG_ARGS(INF, "%s\n", cmd);
@@ -766,6 +819,9 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     LOG_ARGS(INF, "Dynamic loading time : %.6f milliseconds\n", l_min_tdiff);
 
     ++order_num_;
+    /* clean up the temporary local memory */
+    del_ele(white_clone);
+    del_ele(l_tree);
     return (*l_plan);
 }
 
@@ -776,6 +832,8 @@ void Pochoir<N_RANK>::Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & 
     char * l_sync_file_name = new char[100];
     sprintf(l_sync_file_name, "sync_%s", file_name);
     _plan.store_plan(l_base_file_name, l_sync_file_name);
+    del_arr(l_base_file_name);
+    del_arr(l_sync_file_name);
     return;
 }
 
@@ -824,7 +882,8 @@ void Pochoir<N_RANK>::Destroy_Plan(Pochoir_Plan<N_RANK> & _plan) {
     double l_min_tdiff = INF;
     gettimeofday(&l_start, 0);
     _plan.unload_kernels();
-    delete (&_plan);
+    Pochoir_Plan<N_RANK> * l_plan = &_plan;
+    del_ele(l_plan);
     gettimeofday(&l_end, 0);
     l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
     LOG_ARGS(0, "Dynamic Unloading time : %.6f milliseconds\n", l_min_tdiff);

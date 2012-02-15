@@ -469,6 +469,11 @@ struct Algorithm {
 
     }
 
+    ~Algorithm() {
+        del_ele(color_region_);
+        del_ele(homogeneity_vector_);
+        sz_pxgk_ = 0;
+    }
     /* README!!!: set_phys_grid()/set_stride() must be called before call to 
      * - walk_adaptive 
      * - walk_ncores_hybrid

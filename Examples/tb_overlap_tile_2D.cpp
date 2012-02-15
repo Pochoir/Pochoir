@@ -39,12 +39,19 @@
 #define TIMES 1
 #define TOLERANCE (1e-6)
 
+static double max_diff = 0;
+static double max_a = 0, max_b = 0;
+
 void check_result(int t, int i, double a, double b)
 {
-    if (abs(a - b) < TOLERANCE) {
+    double l_diff = abs(a - b);
+    if (l_diff < TOLERANCE) {
     //    printf("a(%d, %d) == b(%d, %d) == %f : passed!\n", t, i, t, i, a);
     } else {
-        printf("a(%d, %d) = %f, b(%d, %d) = %f : FAILED!\n", t, i, a, t, i, b);
+        if (l_diff > max_diff) {
+            max_diff = l_diff;
+            max_a = a; max_b = b;
+        }
     }
 }
 
@@ -60,8 +67,8 @@ Pochoir_Boundary_1D(aperiodic_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
 
-#define N 555 
-#define T 555
+#define N 55
+#define T 55
 
 int main(int argc, char * argv[])
 {
@@ -293,21 +300,23 @@ int main(int argc, char * argv[])
     for (int i = 0; i < N; ++i) {
         a(0, i) = 1.0 * (rand() % BASE);
         b(0, i) = a(0, i);
+        a(1, i) = 0;
+        b(1, i) = 0;
     }
 
     Pochoir_Plan<1> & l_plan = overlap.Gen_Plan(T);
     sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat", N, T);
     overlap.Store_Plan(pochoir_plan_file_name, l_plan);
-    overlap.Destroy_Plan(l_plan);
-    Pochoir_Plan<1> & ll_plan = overlap.Load_Plan(pochoir_plan_file_name);
+    // Pochoir_Plan<1> & ll_plan = overlap.Load_Plan(pochoir_plan_file_name);
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        overlap.Run(ll_plan);
+        overlap.Run(l_plan);
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
     printf("Pochoir time = %.6f ms\n", min_tdiff);
-    overlap.Destroy_Plan(ll_plan);
+    overlap.Destroy_Plan(l_plan);
+    // overlap.Destroy_Plan(ll_plan);
 
     printf("\n--------------------------------------------------------------------------\n");
     min_tdiff = INF;
@@ -443,6 +452,7 @@ int main(int argc, char * argv[])
     for (int i = 0; i < N; ++i) {
         check_result(t, i, a(t, i), b(t, i));
     } 
+    printf("max_diff = %f, when a = %f, b = %f\n", max_diff, max_a, max_b);
 
     return 0;
 }

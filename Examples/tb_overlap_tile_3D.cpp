@@ -39,12 +39,12 @@
 #define TIMES 1
 #define TOLERANCE (1e-6)
 
-static double max_diff = 0;
-static double max_a = 0, max_b = 0;
+double max_diff = 0;
+double max_a = 0, max_b = 0;
 
 void check_result(int t, int i, int j, double a, double b)
 {
-    double l_diff = abs(a - b);
+    double l_diff = pabs(a, b);
     if (l_diff < TOLERANCE) {
     //    printf("a(%d, %d, %d) == b(%d, %d, %d) == %f : passed!\n", t, i, j, t, i, j, a);
     } else {
@@ -70,8 +70,8 @@ Pochoir_Boundary_2D(aperiodic_2D, arr, t, i, j)
     return 0;
 Pochoir_Boundary_End
 
-#define N 55
-#define T 55
+#define N 65
+#define T 65
 
 int main(int argc, char * argv[])
 {
@@ -122,9 +122,9 @@ int main(int argc, char * argv[])
     Pochoir_Array_2D(double) a(N, N);
     Pochoir_Array_2D(double) b(N, N);
     Pochoir_2D leap_frog;
-    a.Register_Boundary(periodic_2D);
+    a.Register_Boundary(aperiodic_2D);
     b.Register_Shape(twod_5pt);
-    b.Register_Boundary(periodic_2D);
+    b.Register_Boundary(aperiodic_2D);
 
     /* begin Pochoir_Guard functions */
     Pochoir_Guard_2D_Begin(g_exclusive_0, t, i, j)
@@ -459,9 +459,9 @@ int main(int argc, char * argv[])
     /* initialization */
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-            // a(0, i, j) = 1.0 * (rand() % BASE);
-            a(0, i, j) = 1.0 * (rand() / BASE);
-            b(0, i, j) = a(0, i, j);
+            auto tmp = 1.0 * (rand() % BASE);
+            a(0, i, j) = tmp;
+            b(0, i, j) = tmp;
             a(1, i, j) = 0;
             b(1, i, j) = 0;
         }
@@ -485,6 +485,7 @@ int main(int argc, char * argv[])
 
     min_tdiff = INF;
     /* cilk_for */
+// #define b(t, i, j) b.interior(t, i, j)
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
@@ -509,9 +510,13 @@ int main(int argc, char * argv[])
 #if APP_DEBUG
                     printf("<k_0_2> : loop_b(%d, %d, %d)\n", t, i, j);
 #endif
-                    b(t, i, j) =
-                        0.3 * b(t-1, i-1, j) + 0.35 * b(t-1, i, j) + 0.35 * b(t-1, i+1, j)
-                      - 0.3 * b(t-1, i, j-1) - 0.35 * b(t-1, i, j) - 0.35 * b(t-1, i, j+1);
+                    b(t, i, j) = 
+                        0.3 * b(t-1, i-1, j) + 
+                        0.35 * b(t-1, i, j) + 
+                        0.35 * b(t-1, i+1, j) - 
+                        0.3 * b(t-1, i, j-1) - 
+                        0.35 * b(t-1, i, j) - 
+                        0.35 * b(t-1, i, j+1);
                 } else if ((t) % 2 == 0 && i % 2 == 1 && j % 2 == 1) {
 #if APP_DEBUG
                     printf("<k_0_3> : loop_b(%d, %d, %d)\n", t, i, j);
@@ -706,6 +711,7 @@ int main(int argc, char * argv[])
         } 
             }
         }
+// #undef b(t, i, j)
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }

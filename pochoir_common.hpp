@@ -4,7 +4,7 @@
  *  Copyright (C) 2010-2011  Yuan Tang <yuantang@csail.mit.edu>
  * 		                     Charles E. Leiserson <cel@mit.edu>
  * 	 
- *   This program is delete software: you can redistribute it and/or modify
+ *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
@@ -36,6 +36,8 @@
 #include <iostream>
 #include <fstream>
 #include <functional>
+#include <vector>
+#include <boost/type_traits.hpp> /* to decide if a typename T is a pointer? */
 #include "pochoir_errmsg.hpp"
 #include "pochoir_dloader.hpp"
 
@@ -99,11 +101,25 @@ enum Pochoir_Mode {
 #define POCHOIR_TILE Pochoir_Kernel
 #define max(a, b) ((a) > (b) ? (a) : (b))
 #define min(a, b) ((a) < (b) ? (a) : (b))
+#define pabs(a, b) ((a) > (b) ? ((a) - (b)) : ((b) - (a)))
 /* a bit tricky version of modulo operation, assuming a < 2 * b */
 #define pmod(a, b) ((a) - ((b) & -((a)>=(b))))
 #define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -((a)>=(ub))))
 
 #define pCond(b, x, y) (x&(-b)) | (y&-(!b))
+#define del_ele(obj) \
+    do { \
+    if ((obj) != NULL) {\
+        delete (obj); \
+        (obj) = NULL; \
+    } } while (0) 
+
+#define del_arr(obj) \
+    do { \
+    if ((obj) != NULL) {\
+        delete [] (obj); \
+        (obj) = NULL; \
+    } } while (0)
 
 static inline bool select(bool b, bool x, bool y) {
     return (x&(-b)) | (y&-(!b));
@@ -154,18 +170,18 @@ struct Homogeneity {
         return;
     }
     inline int size(void) { return size_; }
+    inline int size(void) const { return size_; }
     inline bool operator<= (Homogeneity const & h) {
         /* define the partial order between Homogeneities */
         return ((a_ & h.a_) == a_ && (~o_ & ~h.o_) == ~o_);
     }
-    inline Homogeneity & operator+ (Homogeneity const & h) {
+    inline Homogeneity operator+ (Homogeneity const & h) {
         /* to combine regions, or to get the maximum-norm kernel
          * <= both this and h
          */
         T_color l_o = o_ | h.o_; T_color l_a = a_ & h.a_;
 
-        Homogeneity * l_h = new Homogeneity(l_o, l_a, size_);
-        return (*l_h);
+        return Homogeneity(l_o, l_a, size_);
     }
     inline bool operator== (Homogeneity const & h) {
         return (size_ == h.size_ && o_ == h.o_ && a_ == h.a_);
@@ -345,9 +361,7 @@ struct Region_Info {
     int region_n_;
     Region_Info() : t0_(0), t1_(0), region_n_(NONE_EXCLUSIVE_IFS) { }
 
-    // Region_Info(int _t0, int _t1, Grid_Info<N_RANK> const & _grid, int _region_n) : t0_(_t0), t1_(_t1), grid_(_grid), region_n_(_region_n) { }
-
-    Region_Info(int _t0, int _t1, Grid_Info<N_RANK> const & _grid, Homogeneity const & _color, int _region_n) : t0_(_t0), t1_(_t1), grid_(_grid), color_(_color), region_n_(_region_n) { }
+    Region_Info(int _t0, int _t1, Grid_Info<N_RANK> const & _grid, Homogeneity _color, int _region_n) : t0_(_t0), t1_(_t1), grid_(_grid), color_(_color), region_n_(_region_n) { }
 
     inline Region_Info<N_RANK> & operator= (Region_Info<N_RANK> const & r) {
         t0_ = r.t0_; t1_ = r.t1_;
@@ -456,24 +470,73 @@ struct Region_Info {
 
 template <typename T>
 bool is_basic_data_type() { return false; };
+template <> bool is_basic_data_type<char>() { return true; };
 template <> bool is_basic_data_type<int>() { return true; };
 template <> bool is_basic_data_type<long>() { return true; };
 template <> bool is_basic_data_type<float>() { return true; };
 template <> bool is_basic_data_type<double>() { return true; };
+template <> bool is_basic_data_type< Homogeneity >() { return true; }
+template <> bool is_basic_data_type<char*>() { return true; };
+template <> bool is_basic_data_type<int*>() { return true; };
+template <> bool is_basic_data_type<long*>() { return true; };
+template <> bool is_basic_data_type<float*>() { return true; };
+template <> bool is_basic_data_type<double*>() { return true; };
+template <> bool is_basic_data_type<Homogeneity*>() { return true; }
 
 typedef double T_measure;
 
 template <typename T>
 struct Vector_Info {
     T * region_;
-    int pointer_, size_;
-
     /* the measure_ is the unit for sorting the elements stored in the Vector */
     T_measure * measure_;
+    int pointer_, size_;
 
+    typedef boost::integral_constant<bool, ::boost::is_pointer<T>::value> region_type_;
+    typedef boost::integral_constant<bool, ::boost::is_pointer<T_measure>::value> measure_type_;
+
+    template <typename TT>
+    inline TT * setup_region(int _size, const boost::false_type&) {
+        /* set up the region which is a value, rather than a pointer */
+        TT * l_tt = new TT[_size];
+        return l_tt;
+    }
+    template <typename TT>
+    inline TT * setup_region(int _size, const boost::true_type&) {
+        /* set up the region which is a pointer 
+         * - so l_tt is a pointer to pointer
+         * - an array of pointer
+         */
+        TT * l_tt = new TT[_size];
+        for (int i = 0; i < _size; ++i) {
+            l_tt[i] = NULL;
+        }
+    }
+    template <typename TT>
+    inline int release_region(TT * _region, int _size, bool _is_basic_type, const boost::false_type&) {
+        /* release region containing only values */
+        // if (_is_basic_type) {
+            del_arr(_region);
+        // }
+        return 0;
+    }
+    template <typename TT>
+    inline int release_region(TT * _region, int _size, bool _is_basic_type, const boost::true_type&) {
+        /* release region containing pointers: 
+         * this method also release the memory region each entry pointer
+         * points to
+         */
+        // if (_is_basic_type) {
+            for (int i = 0; i < _size; ++i) {
+                del_ele(_region[i]);
+            }
+            del_arr(_region);
+        // }
+        return 0;
+    }
     Vector_Info() {
-        region_ = new T[VECTOR_SIZE];
-        measure_ = new T_measure[VECTOR_SIZE];
+        region_ = setup_region<T>(VECTOR_SIZE, region_type_());
+        measure_ = setup_region<T_measure>(VECTOR_SIZE, measure_type_());
         for (int i = 0; i < VECTOR_SIZE; ++i)
             measure_[i] = 0;
         pointer_ = 0; size_ = VECTOR_SIZE;
@@ -482,8 +545,8 @@ struct Vector_Info {
 #endif
     }
     Vector_Info(int size) {
-        region_ = new T[size];
-        measure_ = new T_measure[size];
+        region_ = setup_region<T>(size, region_type_());
+        measure_ = setup_region<T_measure>(size, measure_type_());
         for (int i = 0; i < size; ++i)
             measure_[i] = 0;
         pointer_ = 0; size_ = size;
@@ -491,11 +554,10 @@ struct Vector_Info {
         printf("init size = %d\n", size_);
 #endif
     }
-    // Vector_Info(Vector_Info<T> const & rhs) {
-    Vector_Info(Vector_Info<T> & rhs) {
+    Vector_Info(Vector_Info<T> const & rhs) {
         int l_rhs_size = rhs.size();
-        region_ = new T[l_rhs_size];
-        measure_ = new T_measure[l_rhs_size];
+        region_ = setup_region<T>(l_rhs_size, region_type_());
+        measure_ = setup_region<T_measure>(l_rhs_size, measure_type_());
         size_ = l_rhs_size;
         for (int i = 0; i < l_rhs_size; ++i) {
             region_[i] = rhs[i];
@@ -505,22 +567,14 @@ struct Vector_Info {
     }
 
     ~Vector_Info() {
-        pointer_ = size_ = 0;
         /* how to write a destructor if the region_[] is an array of function objects? 
          */
-#if DEBUG
-        t = is_basic_data_type<int>();
-#endif
-#if 0
-        if (is_basic_data_type<T>()) {
-            delete [] region_;
-        }
-#else
-        delete [] region_;
-        delete [] measure_;
-#endif
+        LOG(0, "Call destructor of Vector_Info"); 
+        release_region<T>(region_, pointer_, is_basic_data_type<T>(), region_type_());
+        release_region<T_measure>(measure_, pointer_, is_basic_data_type<T_measure>(), measure_type_());
+        pointer_ = size_ = 0;
     } 
-    void sort(void) {
+    inline void sort(void) {
         /* bubble sort */
         for (int i = 0; i < pointer_ - 1; ++i) {
             T_measure l_max = measure_[i];
@@ -543,7 +597,7 @@ struct Vector_Info {
         }
     }
     /* add_element() without measurement */
-    void add_element(T ele) {
+    inline void add_element(T const & ele) {
         /* by add_element, the element added into the vector will always
          * occupy a seperate slot in the vector regardless if it's a duplicate
          * of existing elements
@@ -558,19 +612,16 @@ struct Vector_Info {
 #if DEBUG
             printf("realloc memory size = %d -> %d!\n", size_, 2*size_);
 #endif
-            T * l_region = new T[2 * size_];
-            if (l_region != NULL) {
+            T * l_region = setup_region<T>(2 * size_, region_type_());
+            T_measure * l_measure = setup_region<T_measure>(2 * size_, measure_type_());
+            if (l_region != NULL && l_measure != NULL) {
                 for (int i = 0; i < size_; ++i) {
                     l_region[i] = region_[i];
                 }
-#if 0
-                if (is_basic_data_type<T>()) {
-                    delete [] region_;
-                }
-#else
-                delete [] region_;
-#endif
+                release_region<T>(region_, pointer_, is_basic_data_type<T>(), region_type_());
+                release_region<T_measure>(measure_, pointer_, is_basic_data_type<T_measure>(), measure_type_());
                 region_ = l_region;
+                measure_ = l_measure;
                 region_[pointer_] = ele;
                 ++pointer_;
                 size_ = 2 * size_;
@@ -580,7 +631,7 @@ struct Vector_Info {
         }
         return;
     }
-    void add_unique_element(T ele) {
+    inline void add_unique_element(T const & ele) {
         /* by add_unique_element, it's guaranteed that the element added
          * into the vector will be union'ed against the existing elements
          */
@@ -592,68 +643,40 @@ struct Vector_Info {
             if (region_[i] == ele)
                 return;
         }
-        if (pointer_ < size_) {
-            region_[pointer_] = ele;
-            ++pointer_;
-        } else {
-#if DEBUG
-            printf("realloc memory size = %d -> %d!\n", size_, 2*size_);
-#endif
-            T * l_region = new T[2 * size_];
-            if (l_region != NULL) {
-                for (int i = 0; i < size_; ++i) {
-                    l_region[i] = region_[i];
-                }
-                if (is_basic_data_type<T>()) {
-                    delete [] region_;
-                }
-                region_ = l_region;
-                region_[pointer_] = ele;
-                ++pointer_;
-                size_ = 2 * size_;
-            } else {
-                ERROR("realloc wrong!");
-            }
-        }
+        add_element(ele); 
         return;
     }
     /* add_element() with measurement */
-    void add_element(T ele, int rec_level) {
+    inline void add_element(T const & ele, int rec_level) {
         /* by add_element, the element added into the vector will always
          * occupy a seperate slot in the vector regardless if it's a duplicate
          * of existing elements
          */
-        double l_inc = (double)1/(0x1 << rec_level);
+        T_measure l_inc = (T_measure)1/(0x1 << rec_level);
 #if DEBUG
         std::cerr << "add_element " << ele << std::endl;
 #endif
         if (pointer_ < size_) {
             region_[pointer_] = ele;
-            measure_[pointer_] += l_inc;
+            measure_[pointer_] = l_inc;
             ++pointer_;
         } else {
 #if DEBUG
-            printf("realloc memory size = %d -> %d!\n", size_, 2*size_);
+            LOG_ARGS("realloc memory size = %d -> %d!\n", size_, 2 * size_);
 #endif
-            T * l_region = new T[2 * size_];
-            T_measure * l_measure = new T_measure[2 * size_];
+            T * l_region = setup_region<T>(2 * size_, region_type_());
+            T_measure * l_measure = setup_region<T_measure>(2 * size_, measure_type_());
             if (l_region != NULL && l_measure != NULL) {
                 for (int i = 0; i < size_; ++i) {
                     l_region[i] = region_[i];
                     l_measure[i] = measure_[i];
                 }
-#if 0
-                if (is_basic_data_type<T>()) {
-                    delete [] region_;
-                }
-#else
-                delete [] region_;
-                delete [] measure_;
-#endif
+                release_region(region_, pointer_, is_basic_data_type<T>(), region_type_());
+                release_region(measure_, pointer_, is_basic_data_type<T_measure>(), measure_type_());
                 region_ = l_region;
                 measure_ = l_measure;
                 region_[pointer_] = ele;
-                measure_[pointer_] += ele;
+                measure_[pointer_] = l_inc;
                 ++pointer_;
                 size_ = 2 * size_;
             } else {
@@ -662,7 +685,7 @@ struct Vector_Info {
         }
         return;
     }
-    void add_unique_element(T ele, int rec_level) {
+    inline void add_unique_element(T const & ele, int rec_level) {
         /* by add_unique_element, it's guaranteed that the element added
          * into the vector will be union'ed against the existing elements
          */
@@ -677,50 +700,18 @@ struct Vector_Info {
                 return;
             }
         }
-        if (pointer_ < size_) {
-            region_[pointer_] = ele;
-            measure_[pointer_] += l_inc;
-            ++pointer_;
-        } else {
-#if DEBUG
-            printf("realloc memory size = %d -> %d!\n", size_, 2*size_);
-#endif
-            T * l_region = new T[2 * size_];
-            T_measure * l_measure = new T_measure[2 * size_];
-            if (l_region != NULL) {
-                for (int i = 0; i < size_; ++i) {
-                    l_region[i] = region_[i];
-                    l_measure[i] = measure_[i];
-                }
-#if 0
-                if (is_basic_data_type<T>()) {
-                    delete [] region_;
-                }
-#else
-                delete [] region_;
-                delete [] measure_;
-#endif
-                region_ = l_region;
-                measure_ = l_measure;
-                region_[pointer_] = ele;
-                measure_[pointer_] += l_inc;
-                ++pointer_;
-                size_ = 2 * size_;
-            } else {
-                ERROR("realloc wrong!");
-            }
-        }
+        add_element(ele, rec_level);
         return;
     }
-    int get_index(T ele) {
+    inline int get_index(T const & ele) {
         for (int i = 0; i < pointer_; ++i) {
             if (region_[i] == ele)
                 return i;
         }
         return -1;
     }
-    int get_largest_lb (T & ele) {
-        T & l_orig = ele;
+    inline int get_largest_lb (T const & ele) {
+        T const & l_orig = ele;
         /* l_subsume is initialized to white_clone */
         T l_subsume(ele.size());
         /* l_idx is initialized to the idx of white_clone */
@@ -734,13 +725,14 @@ struct Vector_Info {
         }
         return l_idx;
     }
-    void scan () {
+    inline void scan () {
         for (int i = 1; i < pointer_; ++i) {
             region_[i] = region_[i] + region_[i-1];
         }
     }
     T * get_root() { return region_; }
-    T & operator[] (int _idx) { return region_[_idx]; }
+    inline T & operator[] (int _idx) { return region_[_idx]; }
+    inline T_measure measure(int _idx) { return measure_[_idx]; }
     int size() { return pointer_; }
     int set_size(int _size) { 
         /* So, don't Over-size the vector */
@@ -749,31 +741,30 @@ struct Vector_Info {
         }
         return pointer_;
     }
-    T & operator= (T & rhs) {
+    T & operator= (T const & rhs) {
         const int l_rhs_size = rhs.size();
         if (l_rhs_size <= size_) {
             for (int i = 0; i < l_rhs_size; ++i) {
                 region_[i] = rhs[i];
+                measure_[i] = rhs.measure(i);
             }
             pointer_ = l_rhs_size;
             return (*this);
         }
         /* l_rhs_size > size_ */
-        T * l_region = new T[l_rhs_size];
-        if (l_region == NULL) {
+        T * l_region = setup_region(l_rhs_size, region_type_());
+        T_measure * l_measure = setup_region(l_rhs_size, measure_type_());
+        if (l_region == NULL || l_measure == NULL) {
             ERROR("Run out of memory!");
         }
         for (int i = 0; i < l_rhs_size; ++i) {
             l_region[i] = rhs[i];
+            l_measure[i] = rhs.measure(i);
         }
-#if 0
-        if (is_basic_data_type<T>()) { 
-            delete [] region_; 
-        }
-#else
-        delete [] region_;
-#endif
+        release_region(region_, pointer_, is_basic_data_type<T>(), region_type_());
+        release_region(measure_, pointer_, is_basic_data_type<T_measure>(), measure_type_());
         region_ = l_region;
+        measure_ = l_measure;
         size_ = l_rhs_size;
         pointer_ = l_rhs_size;
         return (*this);
@@ -782,14 +773,12 @@ struct Vector_Info {
     friend std::ofstream & operator<<(std::ofstream & fs, Vector_Info<T> const & v) {
         for (int i = 0; i < v.pointer_; ++i) {
             fs << v.region_[i] << std::endl;
-            // std::cerr << region_[i] << "\n";
         }
         return fs;
     }
     friend std::ostream & operator<<(std::ostream & fs, Vector_Info<T> const & v) {
         for (int i = 0; i < v.pointer_; ++i) {
             fs << v.region_[i] << std::endl;
-            // std::cerr << region_[i] << "\n";
         }
         return fs;
     }
@@ -821,10 +810,10 @@ struct Pochoir_Plan {
     ~Pochoir_Plan() {
         sz_base_data_ = sz_sync_data_ = 0;
         order_num_ = -1;
-        delete base_data_;
-        delete sync_data_;
-        delete dloader_;
-        delete [] fname_;
+        del_ele(base_data_);
+        del_ele(sync_data_);
+        del_ele(dloader_);
+        del_arr(fname_);
     }
     void change_region_n(Vector_Info< Homogeneity > & color_vectors) {
         int const l_size = base_data_->size();
@@ -848,7 +837,8 @@ struct Pochoir_Plan {
     void set_order_num(int _order_num) { order_num_ = _order_num; }
     int get_order_num(void) { return order_num_; }
     void set_fname(const char * _fname) {
-        fname_ = new char[strlen(_fname)];
+        // fname_ = new char[strlen(_fname)+2];
+        fname_ = new char[120];
         strcpy(fname_, _fname);
     }
     char * get_fname(void) {
@@ -862,7 +852,7 @@ struct Pochoir_Plan {
         }
         LOG(0, "<DLoader> starts loading!\n");
         /***************************************************************************************/
-        char gen_kernel_fname [strlen(fname_) + 20];
+        char gen_kernel_fname [120];
         sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname_, order_num_);
         LOG_ARGS(0, "gen_kernel_fname = %s\n", gen_kernel_fname);
         dloader_ = new DynamicLoader(gen_kernel_fname);
@@ -906,8 +896,7 @@ struct Pochoir_Plan {
         std::function < int (void) > destroy_lambdas = dloader_->load < int (void) > ("Destroy_Lambdas");
         destroy_lambdas();
         dloader_->close();
-        delete dloader_;
-        dloader_ = NULL;
+        del_ele(dloader_);
         /***************************************************************************************/
         LOG(0, "<DLoader> ends Deloading!\n");
         return 0;
@@ -944,11 +933,11 @@ struct Pochoir_Plan {
     }
     Pochoir_Plan<N_RANK> & load_plan(const char * base_file_name, const char * sync_file_name) {
         if (sz_base_data_ != 0) {
-            delete base_data_;
+            del_ele(base_data_);
             sz_base_data_ = 0;
         }
         if (sz_sync_data_ != 0) {
-            delete sync_data_;
+            del_ele(sync_data_);
             sz_sync_data_ = 0;
         }
         alloc_base_data(10);
@@ -1049,7 +1038,7 @@ struct Node_Info {
     }
 #endif
 
-    Node_Info(int _t0, int _t1, Grid_Info<N_RANK> const & _grid, Homogeneity const & _color) : region_(_t0, _t1, _grid, _color, -1) {
+    Node_Info(int _t0, int _t1, Grid_Info<N_RANK> const & _grid, Homogeneity _color) : region_(_t0, _t1, _grid, _color, -1) {
         /* constructor */
         op = IS_INTERNAL; 
         parent = left = right = NULL;
@@ -1082,7 +1071,7 @@ struct Spawn_Tree {
         /* free the entire tree */
         add_empty_region_ = false;
         if (root_->left == NULL) {
-            delete root_;
+            del_ele(root_);
             return;
         } else {
             dfs_rm_tree(root_);
@@ -1128,7 +1117,7 @@ struct Spawn_Tree {
         return;
     }
 
-    void add_node(Node_Info<N_RANK> * parent, Node_Info<N_RANK> * child, enum Meta_Op _op, Homogeneity const & _color, int _region_n) {
+    void add_node(Node_Info<N_RANK> * parent, Node_Info<N_RANK> * child, enum Meta_Op _op, Homogeneity _color, int _region_n) {
         if (_op == IS_SPAWN && _region_n == NONE_EXCLUSIVE_IFS && !add_empty_region_) {
             /* we don't add the empty region into the tree */
             return;
@@ -1167,9 +1156,7 @@ struct Spawn_Tree {
             assert(l_node->right == node);
             l_node->right = node->right;
         }
-        delete(node);
-        if (node != NULL)
-            node = NULL;
+        del_ele(node);
         --size_;
     }
 

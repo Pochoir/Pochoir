@@ -54,14 +54,18 @@ class Storage {
 		int ref_;
 	public:
 		inline Storage(int _sz) {
+#if 1
 			storage_ = new T[_sz];
 			ref_ = 1;
 			for (int i = 0; i < _sz; ++i)
 				storage_[i] = T();
+#else
+            storage_ = (T *)calloc(_sz, sizeof(T));
+#endif
 		}
 
 		inline ~Storage() {
-			delete[] storage_;
+            del_arr(storage_);
 		}
 
 		inline void inc_ref() { 
@@ -70,9 +74,6 @@ class Storage {
 
 		inline void dec_ref() { 
 			--ref_; 
-            if (ref_ == 0) {
-                delete [] storage_;
-            }
 		}
 
 		inline int ref() { 
@@ -89,6 +90,10 @@ class Storage {
 
 		T * data() { return storage_; }
 };
+
+#ifdef CHECK_SHAPE
+#undef CHECK_SHAPE
+#endif
 
 template <typename T, int N_RANK>
 class Pochoir_Array {
@@ -351,15 +356,13 @@ class Pochoir_Array {
 
 		/* destructor : free memory */
 		~Pochoir_Array() {
-			view_->dec_ref();
+            if (view_ != NULL) {
+                view_->dec_ref();
+                del_ele(view_);
+            }
+        
             allocMemFlag_ = false;
-#if 0
-            // it looks that if I delete [] shape_, it will cause some error: 
-            // corruped double-linked list : 0x0000000000637b80 ***
-            // why??
-            if (shape_ != NULL) 
-                delete [] shape_;
-#endif
+            del_arr(shape_);
 		}
 
 		inline Storage<T> * view() {
@@ -403,6 +406,7 @@ class Pochoir_Array {
         void Register_Shape(Pochoir_Shape<N_RANK> * shape, int shape_size) {
             /* currently we just get the slope_[] and toggle_ out of the shape[] */
             int l_min_time_shift=0, l_max_time_shift=0, depth=0;
+            assert(shape_ == NULL);
             shape_ = new Pochoir_Shape<N_RANK>[shape_size];
             shape_size_ = shape_size;
             for (int r = 0; r < N_RANK; ++r) {
@@ -422,10 +426,6 @@ class Pochoir_Array {
             for (int i = 0; i < shape_size; ++i) {
                 for (int r = 0; r < N_RANK; ++r) {
                     slope_[r] = max(slope_[r], abs((int)ceil((float)shape_[i].shift[r+1]/(l_max_time_shift - shape_[i].shift[0]))));
-                    /* array copy from input parameter shape 
-                     * NOTE: this copy exclude the time dimension, 
-                     * which is not needed in checking the shape !
-                     */
                 }
             }
 #if 1 
@@ -447,12 +447,13 @@ class Pochoir_Array {
         void Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
             /* currently we just get the slope_[] and toggle_ out of the shape[] */
             int l_min_time_shift=0, l_max_time_shift=0, depth=0;
+            assert(shape_ == NULL);
             shape_ = new Pochoir_Shape<N_RANK>[N_SIZE];
             shape_size_ = N_SIZE;
             for (int r = 0; r < N_RANK; ++r) {
                 slope_[r] = 0;
             }
-            for (unsigned int i = 0; i < N_SIZE; ++i) {
+            for (int i = 0; i < N_SIZE; ++i) {
                 if (shape[i].shift[0] < l_min_time_shift)
                     l_min_time_shift = shape[i].shift[0];
                 if (shape[i].shift[0] > l_max_time_shift)
@@ -463,7 +464,7 @@ class Pochoir_Array {
             }
             depth = l_max_time_shift - l_min_time_shift;
             toggle_ = depth + 1;
-            for (unsigned int i = 0; i < N_SIZE; ++i) {
+            for (int i = 0; i < N_SIZE; ++i) {
                 for (int r = 0; r < N_RANK; ++r) {
                     slope_[r] = max(slope_[r], abs((int)ceil((float)shape_[i].shift[r+1]/(l_max_time_shift - shape_[i].shift[0]))));
                 }
@@ -487,6 +488,7 @@ class Pochoir_Array {
         void Register_Shape(Pochoir_Shape<N_RANK> (& shape1)[N_SIZE1], Pochoir_Shape<N_RANK> (& shape2)[N_SIZE2]) {
             /* currently we just get the slope_[] and toggle_ out of the shape[] */
             int l_min_time_shift=0, l_max_time_shift=0, depth=0;
+            assert(shape_ == NULL);
             shape_ = new Pochoir_Shape<N_RANK>[N_SIZE1+N_SIZE2];
             shape_size_ = N_SIZE1+N_SIZE2;
             int i;

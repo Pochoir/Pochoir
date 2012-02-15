@@ -36,16 +36,23 @@
 
 using namespace std;
 
-#define APP_DEBUG 1
+#define APP_DEBUG 0
 #define TIMES 1
 #define TOLERANCE (1e-6)
 
+static double max_diff = 0;
+static double max_a = 0, max_b = 0;
+
 void check_result(int t, int i, double a, double b)
 {
-    if (abs(a - b) < TOLERANCE) {
+    double l_diff = abs(a - b);
+    if (l_diff < TOLERANCE) {
     //    printf("a(%d, %d) == b(%d, %d) == %f : passed!\n", t, i, t, i, a);
     } else {
-        printf("a(%d, %d) = %f, b(%d, %d) = %f : FAILED!\n", t, i, a, t, i, b);
+        if (l_diff > max_diff) {
+            max_diff = l_diff;
+            max_a = a; max_b = b;
+        }
     }
 }
 
@@ -61,8 +68,8 @@ Pochoir_Boundary_1D(aperiodic_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
 
-#define N 10
-#define T 10
+#define N 1000
+#define T 1000
 
 int main(int argc, char * argv[])
 {
@@ -171,6 +178,7 @@ int main(int argc, char * argv[])
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
     printf("Pochoir time = %.6f ms\n", min_tdiff);
+    leap_frog.Destroy_Plan(l_plan);
 //    std::cout << "Pochoir time : " << min_tdiff << " ms" << std::endl;
 
     min_tdiff = INF;
@@ -229,6 +237,7 @@ int main(int argc, char * argv[])
     for (int i = 0; i < N; ++i) {
         check_result(t, i, a(t, i), b(t, i));
     } 
+    printf("max_diff = %f, when a = %f, b = %f\n", max_diff, max_a, max_b);
 
     return 0;
 }

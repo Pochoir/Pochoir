@@ -4,7 +4,7 @@
  *  Copyright (C) 2010-2011  Yuan Tang <yuantang@csail.mit.edu>
  *                           Charles E. Leiserson <cel@mit.edu>
  *   
- *   This program is delete software: you can redistribute it and/or modify
+ *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
@@ -46,6 +46,8 @@ public:
             dlerror();
             ERROR_ARGS("can't load library named %s", so_filename);
         }
+    }
+    ~DynamicLoader() {
     }
 
     template<class T>
