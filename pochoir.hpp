@@ -56,19 +56,15 @@ class Pochoir {
         int shape_size_;
         int num_arr_;
         int arr_type_size_;
-        int sz_pxgk_, sz_pigk_;
         int lcm_unroll_;
         int order_num_;
         double pochoir_time_;
         Pochoir_Mode pmode_;
-        Vector_Info< Pochoir_Guard<N_RANK> > pigs_;
-        Vector_Info< Pochoir_Tile_Kernel<N_RANK> > pits_;
-        Vector_Info< Pochoir_Guard<N_RANK> > opgs_;
-        Vector_Info< Pochoir_Combined_Obase_Kernel<N_RANK> > opks_;
-        vector< Pochoir_Tile_Kernel<N_RANK> * > reg_tile_kernels_;
-        vector< Pochoir_Combined_Obase_Kernel<N_RANK> * > reg_obase_kernels_;
-        vector< Pochoir_Guard<N_RANK> * > reg_guards_;
-        vector< Pochoir_Guard<N_RANK> * > reg_obase_guards_;
+
+        Vector_Info< Pochoir_Tile_Kernel<N_RANK> * > reg_tile_kernels_;
+        Vector_Info< Pochoir_Combined_Obase_Kernel<N_RANK> * > reg_obase_kernels_;
+        Vector_Info< Pochoir_Guard<N_RANK> * > reg_guards_;
+        Vector_Info< Pochoir_Guard<N_RANK> * > reg_obase_guards_;
 
         /* Private Register Kernel Function */
         template <typename I>
@@ -102,7 +98,6 @@ class Pochoir {
         regArrayFlag_ = regLogicDomainFlag_ = regPhysDomainFlag_ = regShapeFlag_ = false;
         num_arr_ = 0;
         arr_type_size_ = 0;
-        sz_pxgk_ = sz_pigk_ = 0;
         lcm_unroll_ = 1;
         pmode_ = Pochoir_Null;
         order_num_ = 0;
@@ -115,22 +110,22 @@ class Pochoir {
         size_t l_size = reg_tile_kernels_.size();
         for (int i = 0; i < l_size; ++i) {
             auto k = reg_tile_kernels_[i];
-            delete k;
+            del_ele (k);
         }
         l_size = reg_obase_kernels_.size();
         for (int i = 0; i < l_size; ++i) {
             auto k = reg_obase_kernels_[i];
-            delete k;
+            del_ele (k);
         }
         l_size = reg_guards_.size();
         for (int i = 0; i < l_size; ++i) {
             auto g = reg_guards_[i];
-            delete g;
+            del_ele (g);
         }
         l_size = reg_obase_guards_.size();
         for (int i = 0; i < l_size; ++i) {
             auto g = reg_obase_guards_[i];
-            delete g;
+            del_ele (g);
         }
     }
 
@@ -152,7 +147,7 @@ class Pochoir {
         arr.Register_Boundary(_bv);
         Register_Array(arr);
     } 
-    Grid_Info<N_RANK> get_phys_grid(void);
+    Grid_Info<N_RANK> & get_phys_grid(void);
 
     /* Executable Spec */
     /* to remove: Run(timestep) */
@@ -207,20 +202,18 @@ template <int N_RANK>
 void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> & k) {
     typedef Pochoir_Kernel<N_RANK> T_Kernel;
     pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_pig = new Pochoir_Guard<N_RANK>;
+    Pochoir_Guard<N_RANK> * l_pig = new Pochoir_Guard<N_RANK>();
     *l_pig = g;
-    pigs_.add_element(*l_pig);
-    Pochoir_Tile_Kernel<N_RANK> * l_pit = new Pochoir_Tile_Kernel<N_RANK>;
+    Pochoir_Tile_Kernel<N_RANK> * l_pit = new Pochoir_Tile_Kernel<N_RANK>();
     l_pit->kernel_ = new T_Kernel[1];
     l_pit->kernel_[0] = k;
     Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
     reg_tile_dim(*l_pit, 1, 1);
-    pits_.add_element(*l_pit);
-    ++sz_pigk_;
-    assert(sz_pigk_ == pits_.size());
 
-    reg_guards_.push_back(l_pig);
-    reg_tile_kernels_.push_back(l_pit);
+    // pigs_.add_element(*l_pig);
+    // pits_.add_element(*l_pit);
+    reg_guards_.add_element(l_pig);
+    reg_tile_kernels_.add_element(l_pit);
     return;
 }
 
@@ -228,22 +221,20 @@ template <int N_RANK> template <int N_SIZE1>
 void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1]) {
     typedef Pochoir_Kernel<N_RANK> T_Kernel;
     pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_pig = new Pochoir_Guard<N_RANK>;
+    Pochoir_Guard<N_RANK> * l_pig = new Pochoir_Guard<N_RANK>();
     *l_pig = g;
-    pigs_.add_element(*l_pig);
-    Pochoir_Tile_Kernel<N_RANK> * l_pit = new Pochoir_Tile_Kernel<N_RANK>;
+    Pochoir_Tile_Kernel<N_RANK> * l_pit = new Pochoir_Tile_Kernel<N_RANK>();
     l_pit->kernel_ = new T_Kernel[N_SIZE1];
     for (int i = 0; i < N_SIZE1; ++i) {
         l_pit->kernel_[i] = tile[i];
         Register_Shape(tile[i].Get_Shape(), tile[i].Get_Shape_Size());
     }
     reg_tile_dim(*l_pit, 1, N_SIZE1);
-    pits_.add_element(*l_pit);
-    ++sz_pigk_;
-    assert(sz_pigk_ == pits_.size());
 
-    reg_guards_.push_back(l_pig);
-    reg_tile_kernels_.push_back(l_pit);
+    // pigs_.add_element(*l_pig);
+    // pits_.add_element(*l_pit);
+    reg_guards_.add_element(l_pig);
+    reg_tile_kernels_.add_element(l_pit);
     return;
 }
 
@@ -251,10 +242,9 @@ template <int N_RANK> template <int N_SIZE1, int N_SIZE2>
 void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2]) {
     typedef Pochoir_Kernel<N_RANK> T_Kernel;
     pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_pig = new Pochoir_Guard<N_RANK>;
+    Pochoir_Guard<N_RANK> * l_pig = new Pochoir_Guard<N_RANK>();
     *l_pig = g;
-    pigs_.add_element(*l_pig);
-    Pochoir_Tile_Kernel<N_RANK> * l_pit = new Pochoir_Tile_Kernel<N_RANK>;
+    Pochoir_Tile_Kernel<N_RANK> * l_pit = new Pochoir_Tile_Kernel<N_RANK>();
     l_pit->kernel_ = new T_Kernel[N_SIZE1 * N_SIZE2];
     for (int i = 0; i < N_SIZE1; ++i) {
         for (int j = 0; j < N_SIZE2; ++j) {
@@ -263,12 +253,11 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
         }
     }
     reg_tile_dim(*l_pit, 2, N_SIZE1, N_SIZE2);
-    pits_.add_element(*l_pit);
-    ++sz_pigk_;
-    assert(sz_pigk_ == pits_.size());
 
-    reg_guards_.push_back(l_pig);
-    reg_tile_kernels_.push_back(l_pit);
+    // pigs_.add_element(*l_pig);
+    // pits_.add_element(*l_pit);
+    reg_guards_.add_element(l_pig);
+    reg_tile_kernels_.add_element(l_pit);
     return;
 }
 
@@ -276,10 +265,9 @@ template <int N_RANK> template <int N_SIZE1, int N_SIZE2, int N_SIZE3>
 void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> (& tile)[N_SIZE1][N_SIZE2][N_SIZE3]) {
     typedef Pochoir_Kernel<N_RANK> T_Kernel;
     pmode_ = Pochoir_Tile;
-    Pochoir_Guard<N_RANK> * l_pig = new Pochoir_Guard<N_RANK>;
+    Pochoir_Guard<N_RANK> * l_pig = new Pochoir_Guard<N_RANK>();
     *l_pig = g;
-    pigs_.add_element(*l_pig);
-    Pochoir_Tile_Kernel<N_RANK> * l_pit = new Pochoir_Tile_Kernel<N_RANK>;
+    Pochoir_Tile_Kernel<N_RANK> * l_pit = new Pochoir_Tile_Kernel<N_RANK>();
     l_pit->kernel_ = new T_Kernel[N_SIZE1 * N_SIZE2 * N_SIZE3];
     for (int i = 0; i < N_SIZE1; ++i) {
         for (int j = 0; j < N_SIZE2; ++j) {
@@ -290,12 +278,11 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
         }
     }
     reg_tile_dim(*l_pit, 3, N_SIZE1, N_SIZE2, N_SIZE3);
-    pits_.add_element(*l_pit);
-    ++sz_pigk_;
-    assert(sz_pigk_ == pits_.size());
 
-    reg_guards_.push_back(l_pig);
-    reg_tile_kernels_.push_back(l_pit);
+    // pigs_.add_element(*l_pig);
+    // pits_.add_element(*l_pit);
+    reg_guards_.add_element(l_pig);
+    reg_tile_kernels_.add_element(l_pit);
     return;
 }
 
@@ -303,10 +290,9 @@ template <int N_RANK>
 void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Base_Kernel<N_RANK> & k, Pochoir_Base_Kernel<N_RANK> & bk) {
     // typedef Pochoir_Base_Kernel<N_RANK> T_Kernel;
     pmode_ = Pochoir_Obase_Tile;
-    Pochoir_Guard<N_RANK> * l_opg = new Pochoir_Guard<N_RANK>;
+    Pochoir_Guard<N_RANK> * l_opg = new Pochoir_Guard<N_RANK>();
     *l_opg = g;
-    opgs_.add_element(*l_opg);
-    Pochoir_Combined_Obase_Kernel<N_RANK> * l_opk = new Pochoir_Combined_Obase_Kernel<N_RANK>;
+    Pochoir_Combined_Obase_Kernel<N_RANK> * l_opk = new Pochoir_Combined_Obase_Kernel<N_RANK>();
     l_opk->unroll_ = unroll;
     l_opk->kernel_ = &k;
     Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
@@ -314,13 +300,12 @@ void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int
     Register_Shape(bk.Get_Shape(), bk.Get_Shape_Size());
     l_opk->cond_kernel_ = NULL;
     l_opk->cond_bkernel_ = NULL;
-    opks_.add_element(*l_opk);
     lcm_unroll_ = lcm(lcm_unroll_, unroll);
-    ++sz_pxgk_;
-    assert(sz_pxgk_ == opks_.size());
 
-    reg_obase_guards_.push_back(l_opg);
-    reg_obase_kernels_.push_back(l_opk);
+    // opgs_.add_element(*l_opg);
+    // opks_.add_element(*l_opk);
+    reg_obase_guards_.add_element(l_opg);
+    reg_obase_kernels_.add_element(l_opk);
     return;
 }
 
@@ -328,10 +313,9 @@ template <int N_RANK>
 void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int unroll, Pochoir_Base_Kernel<N_RANK> & k, Pochoir_Base_Kernel<N_RANK> & cond_k, Pochoir_Base_Kernel<N_RANK> & bk, Pochoir_Base_Kernel<N_RANK> & cond_bk) {
     // typedef Pochoir_Base_Kernel<N_RANK> T_Kernel;
     pmode_ = Pochoir_Obase_Tile;
-    Pochoir_Guard<N_RANK> * l_opg = new Pochoir_Guard<N_RANK>;
+    Pochoir_Guard<N_RANK> * l_opg = new Pochoir_Guard<N_RANK>();
     *l_opg = g;
-    opgs_.add_element(*l_opg);
-    Pochoir_Combined_Obase_Kernel<N_RANK> * l_opk = new Pochoir_Combined_Obase_Kernel<N_RANK>;
+    Pochoir_Combined_Obase_Kernel<N_RANK> * l_opk = new Pochoir_Combined_Obase_Kernel<N_RANK>();
     l_opk->unroll_ = unroll;
     l_opk->kernel_ = &k;
     Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
@@ -341,13 +325,12 @@ void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int
     Register_Shape(bk.Get_Shape(), bk.Get_Shape_Size());
     l_opk->cond_bkernel_ = &cond_bk;
     Register_Shape(cond_bk.Get_Shape(), cond_bk.Get_Shape_Size());
-    opks_.add_element(*l_opk);
     lcm_unroll_ = lcm(lcm_unroll_, unroll);
-    ++sz_pxgk_;
-    assert(sz_pxgk_ == opks_.size());
 
-    reg_obase_guards_.push_back(l_opg);
-    reg_obase_kernels_.push_back(l_opk);
+    // opgs_.add_element(*l_opg);
+    // opks_.add_element(*l_opk);
+    reg_obase_guards_.add_element(l_opg);
+    reg_obase_kernels_.add_element(l_opk);
     return;
 }
 
@@ -411,11 +394,6 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a) {
         cmpPhysDomainFromArray(a);
     }
     a.Register_Shape(shape_, shape_size_);
-#if 0
-    arr.set_slope(slope_);
-    arr.set_toggle(toggle_);
-    arr.alloc_mem();
-#endif
     regArrayFlag_ = true;
 }
 
@@ -436,11 +414,6 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a, Pochoir_Array
         cmpPhysDomainFromArray(a);
     }
     a.Register_Shape(shape_, shape_size_);
-#if 0
-    arr.set_slope(slope_);
-    arr.set_toggle(toggle_);
-    arr.alloc_mem();
-#endif
     Register_Array(as ...);
     regArrayFlag_ = true;
 }
@@ -511,7 +484,7 @@ void Pochoir<N_RANK>::Register_Domain(D const & d, DS ... ds) {
 }
 
 template <int N_RANK> 
-Grid_Info<N_RANK> Pochoir<N_RANK>::get_phys_grid(void) {
+Grid_Info<N_RANK> & Pochoir<N_RANK>::get_phys_grid(void) {
     return phys_grid_;
 }
 
@@ -571,9 +544,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     algor.set_thres(arr_type_size_);
     /* set individual unroll factor from opgk_ */
     if (pmode_ == Pochoir_Tile) {
-        // set color_region
-        assert(sz_pigk_ > 0);
-        algor.set_pts(sz_pigk_, pigs_, pits_.get_root());
+        algor.set_pts(reg_guards_);
     } else {
         ERROR("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
     }
@@ -710,8 +681,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     /* set individual unroll factor from opgk_ */
     if (pmode_ == Pochoir_Tile) {
         // set color_region
-        assert(sz_pigk_ > 0);
-        algor.set_pts(sz_pigk_, pigs_, pits_.get_root());
+        algor.set_pts(reg_guards_);
     } else {
         ERROR("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
     }
@@ -895,10 +865,7 @@ void Pochoir<N_RANK>::Destroy_Plan(Pochoir_Plan<N_RANK> & _plan) {
 
 template <int N_RANK>
 void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
-    /* In this Phase I run, we will just run over the entire grid,
-     * with checking of all the pigs_/pits_
-     */
-    int offset = 0;
+    int offset = 0, l_sz_pigk = reg_tile_kernels_.size();
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
             int l_region_n = _plan.base_data_->region_[i].region_n_;
@@ -906,8 +873,8 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
             int l_t1 = _plan.base_data_->region_[i].t1_;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
             for (int t = l_t0; t < l_t1; ++t) {
-                for (int i = 0; i < sz_pigk_; ++i) {
-                    Pochoir_Run_Regional_Guard_Tile_Kernel<N_RANK> l_kernel(time_shift_, pigs_[i], pits_[i]);
+                for (int i = 0; i < l_sz_pigk; ++i) {
+                    Pochoir_Run_Regional_Guard_Tile_Kernel<N_RANK> l_kernel(time_shift_, reg_guards_[i], reg_tile_kernels_[i]);
                     meta_grid_boundary<N_RANK>::single_step(t, l_grid, phys_grid_, l_kernel);
                 }
                 for (int i = 0; i < N_RANK; ++i) {
@@ -928,7 +895,7 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
     algor.set_unroll(lcm_unroll_);
     algor.set_time_shift(time_shift_);
     if (pmode_ == Pochoir_Obase_Tile) {
-        algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
+        algor.set_opks(reg_obase_kernels_.get_root());
     } else {
         ERROR("Something is wrong in Run_Obase(Plan)!\n");
     }
@@ -983,8 +950,9 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
     algor.set_thres(arr_type_size_);
     algor.set_unroll(lcm_unroll_);
     algor.set_time_shift(time_shift_);
+    size_t l_size = reg_obase_kernels_.size();
     if (pmode_ == Pochoir_Obase_Tile) {
-        algor.set_opks(sz_pxgk_, opgs_, opks_.get_root());
+        algor.set_opks(reg_obase_kernels_.get_root());
     } else {
         ERROR("Something is wrong in Run_Obase(Plan)!\n");
     }
@@ -1000,8 +968,8 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
             int l_t0 = _plan.base_data_->region_[i].t0_;
             int l_t1 = _plan.base_data_->region_[i].t1_;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
-            auto f = opks_[l_region_n].kernel_;
-            auto bf = opks_[l_region_n].bkernel_;
+            auto f = (*reg_obase_kernels_[l_region_n]).kernel_;
+            auto bf = (*reg_obase_kernels_[l_region_n]).bkernel_;
             algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
         }
         offset = _plan.sync_data_->region_[j];
@@ -1015,8 +983,8 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
             int l_t0 = _plan.base_data_->region_[i].t0_;
             int l_t1 = _plan.base_data_->region_[i].t1_;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
-            auto f = opks_[l_region_n].kernel_;
-            auto bf = opks_[l_region_n].bkernel_;
+            auto f = (*reg_obase_kernels_[l_region_n]).kernel_;
+            auto bf = (*reg_obase_kernels_[l_region_n]).bkernel_;
             cilk_spawn algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
         }
         int l_region_n = _plan.base_data_->region_[i].region_n_;
@@ -1024,8 +992,8 @@ void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
         int l_t0 = _plan.base_data_->region_[i].t0_;
         int l_t1 = _plan.base_data_->region_[i].t1_;
         Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
-        auto f = opks_[l_region_n].kernel_;
-        auto bf = opks_[l_region_n].bkernel_;
+        auto f = (*reg_obase_kernels_[l_region_n]).kernel_;
+        auto bf = (*reg_obase_kernels_[l_region_n]).bkernel_;
         algor.plan_bicut_mp(l_t0, l_t1, l_grid, l_region_n, (*f), (*bf));
         cilk_sync;
         offset = _plan.sync_data_->region_[j];

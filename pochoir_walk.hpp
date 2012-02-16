@@ -412,12 +412,8 @@ struct Algorithm {
         int slope_[N_RANK+1];
         int ulb_boundary[N_RANK], uub_boundary[N_RANK], lub_boundary[N_RANK];
         bool boundarySet, physGridSet, slopeSet, opksSet, ptsSet;
-        int sz_pxgk_;
         int lcm_unroll_, time_shift_;
-        // Vector_Info< Pochoir_Guard<N_RANK> > pgs_;
-        Pochoir_Combined_Obase_Kernel<N_RANK> * opks_;
-        // Pochoir_Tile_Kernel<N_RANK> * pts_;
-        // Pure_Region_All<N_RANK> * pure_region_;
+        Pochoir_Combined_Obase_Kernel<N_RANK> ** opks_;
         int sz_base_data_, sz_sync_data_;
         Spawn_Tree<N_RANK> * tree_;
         Color_Region<N_RANK> * color_region_;
@@ -452,7 +448,7 @@ struct Algorithm {
         sz_base_data_ = sz_sync_data_ = 0;
         num_kernel_ = num_cond_kernel_ = num_bkernel_ = num_cond_bkernel_ = 0;
         // pks_ = NULL; pts_ = NULL;
-        sz_pxgk_ = 0; opks_ = NULL; 
+        opks_ = NULL; 
         // pure_region_ = NULL; 
         color_region_ = NULL; homogeneity_vector_ = NULL;
         /* ALGOR_QUEUE_SIZE = 3^N_RANK */
@@ -472,7 +468,6 @@ struct Algorithm {
     ~Algorithm() {
         del_ele(color_region_);
         del_ele(homogeneity_vector_);
-        sz_pxgk_ = 0;
     }
     /* README!!!: set_phys_grid()/set_stride() must be called before call to 
      * - walk_adaptive 
@@ -535,9 +530,8 @@ struct Algorithm {
     void set_phys_grid(Grid_Info<N_RANK> const & grid);
     // void set_stride(int const stride[]);
     void set_slope(int const slope[]);
-    // void set_opks(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Combined_Obase_Kernel<N_RANK> * _opks);
-    void set_pts(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Tile_Kernel<N_RANK> * _pts);
-    void set_opks(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Combined_Obase_Kernel<N_RANK> * _opks);
+    void set_pts(Vector_Info<Pochoir_Guard<N_RANK> *> & _pgs);
+    void set_opks(Pochoir_Combined_Obase_Kernel<N_RANK> ** _opks);
     void set_unroll(int _lcm_unroll) { lcm_unroll_ = _lcm_unroll; }
     void set_time_shift(int _time_shift) { time_shift_ = _time_shift; }
 
@@ -694,17 +688,14 @@ void Algorithm<N_RANK>::set_slope(int const slope[])
 }
 
 template <int N_RANK> 
-void Algorithm<N_RANK>::set_pts(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Tile_Kernel<N_RANK> * _pts) {
+void Algorithm<N_RANK>::set_pts(Vector_Info< Pochoir_Guard<N_RANK> *> & _pgs) {
     /* for pgs_, we use the container Vector_Info since it's called in Gen_Plan,
      * the time of which is not counted into the total running time;
      * for pts_, we keep using raw pointer for performance
      */
     assert(physGridSet);
-    // sz_pgk_ = _sz_pgk; pgs_ = _pgs; pts_ = _pts; 
-    // pure_region_ = new Pure_Region_All<N_RANK>(_sz_opgk, _opgs);
-    // pure_region_->set_phys_grid(phys_grid_);
     if (color_region_ == NULL) {
-        color_region_ = new Color_Region<N_RANK>(_sz_pgk, _pgs, phys_grid_);
+        color_region_ = new Color_Region<N_RANK>(_pgs, phys_grid_);
         homogeneity_vector_ = new Vector_Info< Homogeneity >();
     }
     ptsSet = true;
@@ -712,18 +703,13 @@ void Algorithm<N_RANK>::set_pts(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> 
 }
 
 template <int N_RANK>
-void Algorithm<N_RANK>::set_opks(int _sz_pgk, Vector_Info<Pochoir_Guard<N_RANK> > & _pgs, Pochoir_Combined_Obase_Kernel<N_RANK> * _opks) {
+void Algorithm<N_RANK>::set_opks(Pochoir_Combined_Obase_Kernel<N_RANK> ** _opks) {
     /* for pgs_, we use the container Vector_Info since it's called in Gen_Plan,
      * the time of which is not counted into the total running time;
      * for opks_, we keep using raw pointer for performance
      */
     assert(physGridSet);
-    sz_pxgk_ = _sz_pgk; opks_ = _opks;
-#if 0
-    if (pure_region_ == NULL) {
-        pure_region_ = new Pure_Region_All<N_RANK>(_sz_pgk, _pgs, phys_grid_);
-    }
-#endif
+    opks_ = _opks;
     opksSet = true;
     return;
 }

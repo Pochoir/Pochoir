@@ -57,16 +57,7 @@ struct Pochoir_Kernel {
         depth = l_max_time_shift - l_min_time_shift;
         time_shift_ = 0 - l_min_time_shift;
         toggle_ = depth + 1;
-#if 0
-        shape_ = new Pochoir_Shape<N_RANK>[N_SIZE];
-        for (int i = 0; i < N_SIZE; ++i) {
-            for (int r = 0; r < N_RANK+1; ++r) {
-                shape_[i].shift[r] = _shape[i].shift[r];
-            }
-        }
-#else
         shape_ = _shape;
-#endif
         for (int i = 0; i < N_SIZE; ++i) {
             for (int r = 0; r < N_RANK; ++r) {
                 slope_[r] = max(slope_[r], abs((int)ceil((float)_shape[i].shift[r+1]/(l_max_time_shift - _shape[i].shift[0]))));
@@ -74,51 +65,12 @@ struct Pochoir_Kernel {
         }
         shape_size_ = N_SIZE;
     }
-    Pochoir_Kernel(Pochoir_Kernel<N_RANK> const & k) : kernel_(const_cast<Pochoir_Kernel<N_RANK> &>(k).kernel_) {
-        shape_size_ = k.shape_size_; time_shift_ = k.time_shift_; toggle_ = k.toggle_;
-        for (int i = 0; i < N_RANK; ++i) {
-            slope_[i] = k.slope_[i];
-        }
-#if 0
-        shape_ = new Pochoir_Shape<N_RANK>[shape_size_];
-        for (int i = 0; i < shape_size_; ++i) {
-            for (int r = 0; r < N_RANK + 1; ++r) {
-                shape_[i].shift[r] = k.shape_[i].shift[r];
-            }
-        }
-#else
-        shape_ = k.shape_;
-#endif
-    }
     Pochoir_Shape<N_RANK> * Get_Shape() { return shape_; }
     int Get_Shape_Size() { return shape_size_; }
     T_Kernel & Get_Kernel(void) { return (kernel_); }
-    inline Pochoir_Kernel<N_RANK> & operator= (Pochoir_Kernel<N_RANK> const & k) {
-        kernel_ = k.kernel_;
-        shape_size_ = k.shape_size_; time_shift_ = k.time_shift_; toggle_ = k.toggle_;
-        for (int i = 0; i < N_RANK; ++i) {
-            slope_[i] = k.slope_[i];
-        }
-#if 0
-        del_arr(shape_);
-        shape_ = new Pochoir_Shape<N_RANK>[shape_size_];
-        for (int i = 0; i < shape_size_; ++i) {
-            for (int r = 0; r < N_RANK + 1; ++r) {
-                shape_[i].shift[r] = k.shape_[i].shift[r];
-            }
-        }
-#else
-        shape_ = k.shape_;
-#endif
-        return (*this);
-    }
     template <typename ... IS>
     inline void operator() (int t, IS ... is) const { kernel_(t, is ...); }
-    ~Pochoir_Kernel() { 
-#if 0
-        del_arr(shape_);
-#endif
-    }
+    ~Pochoir_Kernel() { }
 };
 
 /* Pochoir_Obase_Kernel for Phase II */
@@ -162,16 +114,7 @@ struct Pochoir_Obase_Kernel : public Pochoir_Base_Kernel<N_RANK> {
             }
         }
         shape_size_ = N_SIZE;
-#if 0
-        shape_ = new Pochoir_Shape<N_RANK>[N_SIZE];
-        for (int i = 0; i < N_SIZE; ++i) {
-            for (int r = 0; r < N_RANK+1; ++r) {
-                shape_[i].shift[r] = _shape[i].shift[r];
-            }
-        }
-#else
         shape_ = _shape;
-#endif
 #if DEBUG
         printf("time_shift_ = %d, toggle = %d\n", time_shift_, toggle_);
         for (int r = 0; r < N_RANK; ++r) {
@@ -186,11 +129,7 @@ struct Pochoir_Obase_Kernel : public Pochoir_Base_Kernel<N_RANK> {
     void operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const {
         kernel_(t0, t1, grid);
     }
-    ~Pochoir_Obase_Kernel() { 
-#if 0
-        del_arr(shape_);
-#endif
-    }
+    ~Pochoir_Obase_Kernel() { }
 };
 
 template <int N_RANK>
@@ -277,6 +216,9 @@ struct Pochoir_Tile_Kernel {
         total_size_ = 0;
         kernel_ = NULL;
     }
+    /* if we use the default copy constructor, the kernel_ will only get a copy of
+     * address instead of the real kernels
+     */
     explicit Pochoir_Tile_Kernel(Pochoir_Tile_Kernel<N_RANK> const & t) {
         for (int i = 0; i < N_RANK + 1; ++i) {
             size_[i] = t.size_[i];
@@ -322,216 +264,40 @@ struct Pochoir_Combined_Obase_Kernel {
 };      
 
 template <int N_RANK>
-struct Pochoir_Run_Regional_Tile_Kernel {
-    int const time_shift_;
-    Pochoir_Tile_Kernel<N_RANK> & pt_;
-    Pochoir_Run_Regional_Tile_Kernel(int _time_shift, Pochoir_Tile_Kernel<N_RANK> & _pt) : time_shift_(_time_shift), pt_(_pt) {}
-    ~Pochoir_Run_Regional_Tile_Kernel() { }
-    template <typename I>
-    int set_pointer(int dim, I i) const { 
-        assert(dim == 0);
-        int l_idx = pt_.size_[0] == 0 ? 0 : (i % pt_.size_[0]) * pt_.stride_[0];
-        return (l_idx);
-    }
-    template <typename I, typename ... IS>
-    int set_pointer(int dim, I i, IS ... is) const {
-        if (dim == 0) {
-            int l_idx = pt_.size_[0] == 0 ? 0 : (i % pt_.size_[0]) * pt_.stride_[0];
-            return (l_idx);
-        } else {
-            if ((pt_).size_[dim] == 0) {
-                return set_pointer(dim-1, i, is ...);
-            } else {
-                return ((i % pt_.size_[dim]) * pt_.stride_[dim] + set_pointer(dim-1, is ...));
-            }
-        }
-    }
-    template <typename ... IS>
-    inline void operator() (int t, IS ... is) const {
-        int l_kernel_pointer = set_pointer(N_RANK, (t - time_shift_), is ...);
-#if DEBUG
-        printf("<%s> l_kernel_pointer = %d\n", __FUNCTION__, l_kernel_pointer);
-#endif
-        (*(pt_.kernel_[l_kernel_pointer]))(t, is ...);
-    }
-};
-
-template <int N_RANK>
 struct Pochoir_Run_Regional_Guard_Tile_Kernel {
     int const time_shift_;
-    Pochoir_Guard<N_RANK> & pg_;
-    Pochoir_Tile_Kernel<N_RANK> & pt_;
-    Pochoir_Run_Regional_Guard_Tile_Kernel(int _time_shift, Pochoir_Guard<N_RANK> & _pg, Pochoir_Tile_Kernel<N_RANK> & _pt) : time_shift_(_time_shift), pg_(_pg), pt_(_pt) { }
+    Pochoir_Guard<N_RANK> * pg_;
+    Pochoir_Tile_Kernel<N_RANK> * pt_;
+    Pochoir_Run_Regional_Guard_Tile_Kernel(int _time_shift, Pochoir_Guard<N_RANK> * _pg, Pochoir_Tile_Kernel<N_RANK> * _pt) : time_shift_(_time_shift), pg_(_pg), pt_(_pt) { }
     ~Pochoir_Run_Regional_Guard_Tile_Kernel() { }
     template <typename I>
     int set_pointer(int dim, I i) const { 
         assert(dim == 0);
-        int l_idx = pt_.size_[0] == 0 ? 0 : (i % pt_.size_[0]) * pt_.stride_[0];
+        int l_idx = pt_->size_[0] == 0 ? 0 : (i % pt_->size_[0]) * pt_->stride_[0];
         return (l_idx);
     }
     template <typename I, typename ... IS>
     int set_pointer(int dim, I i, IS ... is) const {
         if (dim == 0) {
-            int l_idx = pt_.size_[0] == 0 ? 0 : (i % pt_.size_[0]) * pt_.stride_[0];
+            int l_idx = pt_->size_[0] == 0 ? 0 : (i % pt_->size_[0]) * pt_->stride_[0];
             return (l_idx);
         } else {
-            if ((pt_).size_[dim] == 0) {
+            if (pt_->size_[dim] == 0) {
                 return set_pointer(dim-1, i, is ...);
             } else {
-                return ((i % pt_.size_[dim]) * pt_.stride_[dim] + set_pointer(dim-1, is ...));
+                return ((i % pt_->size_[dim]) * pt_->stride_[dim] + set_pointer(dim-1, is ...));
             }
         }
     }
     template <typename ... IS>
     inline void operator() (int t, IS ... is) const {
-        if (pg_(t, is ...)) {
+        if ((*pg_)(t, is ...)) {
             int l_kernel_pointer = set_pointer(N_RANK, t, is ...);
 #if DEBUG
             printf("<%s> l_kernel_pointer = %d\n", __FUNCTION__, l_kernel_pointer);
 #endif
-            (*(pt_.kernel_[l_kernel_pointer]))(t, is ...);
+            (pt_->kernel_[l_kernel_pointer])(t, is ...);
         }
-    }
-};
-
-template <int N_RANK>
-struct Pure_Region_All {
-    int sz_pgk_;
-    Vector_Info< Pochoir_Guard<N_RANK> > & pgs_;
-    Grid_Info<N_RANK> phys_grid_;
-    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Grid_Info<N_RANK> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs), phys_grid_(_grid) { assert(_sz_pgk == _pgs.size()); return; }
-    int operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const { 
-        /* return 0 to make g++ happy! */
-        return 0; 
-    }
-};
-
-template <>
-struct Pure_Region_All<1> {
-    int sz_pgk_;
-    Vector_Info< Pochoir_Guard<1> > & pgs_;
-    Grid_Info<1> phys_grid_;
-    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<1> > & _pgs, Grid_Info<1> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs), phys_grid_(_grid) { assert(_sz_pgk == _pgs.size()); return; }
-    int operator() (int t0, int t1, Grid_Info<1> const & grid) const {
-        const int start_i = pmod_lu(grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
-        Grid_Info<1> l_grid = grid;
-        int start_region = NONE_EXCLUSIVE_IFS;
-        for (int pt = 0; pt < sz_pgk_; ++pt) {
-            bool is_pure = pgs_[pt](t0, start_i);
-            if (is_pure) {
-                start_region = pt;
-                break;
-            }
-        }
-        for (int t = t0; t < t1; ++t) {
-            for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
-                int new_i = pmod_lu(i, phys_grid_.x0[0], phys_grid_.x1[0]);
-                int l_region = NONE_EXCLUSIVE_IFS;
-                for (int pt = 0; pt < sz_pgk_; ++pt) {
-                    bool is_pure = pgs_[pt](t, new_i);
-                    if (is_pure) {
-                        l_region = pt;
-                        break;
-                    }
-                } 
-                if (l_region != start_region)
-                    return CROSS_REGION;
-            }
-            /* Adjust trapezoid */
-            l_grid.x0[0] += l_grid.dx0[0]; l_grid.x1[0] += l_grid.dx1[0];
-        }
-        return start_region;
-    }
-};
-
-template <>
-struct Pure_Region_All<2> {
-    int sz_pgk_;
-    Vector_Info< Pochoir_Guard<2> > & pgs_;
-    Grid_Info<2> phys_grid_;
-    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<2> > & _pgs, Grid_Info<2> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs), phys_grid_(_grid) { assert(_sz_pgk == _pgs.size()); return; }
-    int operator() (int t0, int t1, Grid_Info<2> const & grid) const {
-        const int start_j = pmod_lu(grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
-        const int start_i = pmod_lu(grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
-        Grid_Info<2> l_grid = grid;
-        int start_region = NONE_EXCLUSIVE_IFS;
-        for (int pt = 0; pt < sz_pgk_; ++pt) {
-            bool is_pure = pgs_[pt](t0, start_i, start_j);
-            if (is_pure) {
-                start_region = pt;
-                break;
-            }
-        }
-        assert (start_region >= 0);
-        for (int t = t0; t < t1; ++t) {
-            for (int i = l_grid.x0[1]; i < l_grid.x1[1]; ++i) {
-            int new_i = pmod_lu(i, phys_grid_.x0[1], phys_grid_.x1[1]);
-        for (int j = l_grid.x0[0]; j < l_grid.x1[0]; ++j) {
-            int new_j = pmod_lu(j, phys_grid_.x0[0], phys_grid_.x1[0]);
-            int l_region = NONE_EXCLUSIVE_IFS;
-            for (int pt = 0; pt < sz_pgk_; ++pt) {
-                bool is_pure = pgs_[pt](t, new_i, new_j);
-                if (is_pure) {
-                    l_region = pt;
-                    break;
-                }
-            } 
-            if (l_region != start_region) {
-                return CROSS_REGION;
-            }
-        } }
-        /* Adjust trapezoid */
-        l_grid.x0[0] += l_grid.dx0[0]; l_grid.x1[0] += l_grid.dx1[0];
-        l_grid.x0[1] += l_grid.dx0[1]; l_grid.x1[1] += l_grid.dx1[1];
-        }
-        return start_region;
-    }
-};
-
-template <>
-struct Pure_Region_All<3> {
-    int sz_pgk_;
-    Vector_Info< Pochoir_Guard<3> > & pgs_;
-    Grid_Info<3> phys_grid_;
-    Pure_Region_All(int _sz_pgk, Vector_Info< Pochoir_Guard<3> > & _pgs, Grid_Info<3> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs), phys_grid_(_grid) { assert(_sz_pgk == _pgs.size()); return; }
-    int operator() (int t0, int t1, Grid_Info<3> const & grid) const {
-        const int start_k = pmod_lu(grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
-        const int start_j = pmod_lu(grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
-        const int start_i = pmod_lu(grid.x0[2], phys_grid_.x0[2], phys_grid_.x1[2]);
-        Grid_Info<3> l_grid = grid;
-        int start_region = NONE_EXCLUSIVE_IFS;
-        for (int pt = 0; pt < sz_pgk_; ++pt) {
-            bool is_pure = pgs_[pt](t0, start_i, start_j, start_k);
-            if (is_pure) {
-                start_region = pt;
-                break;
-            }
-        }
-        assert (start_region >= 0);
-        for (int t = t0; t < t1; ++t) {
-            for (int i = l_grid.x0[2]; i < l_grid.x1[2]; ++i) {
-            int new_i = pmod_lu(i, phys_grid_.x0[2], phys_grid_.x1[2]);
-        for (int j = l_grid.x0[1]; j < l_grid.x1[1]; ++j) {
-            int new_j = pmod_lu(j, phys_grid_.x0[1], phys_grid_.x1[1]);
-            for (int k = l_grid.x0[0]; k < l_grid.x1[0]; ++k) {
-            int new_k = pmod_lu(k, phys_grid_.x0[0], phys_grid_.x1[0]);
-            int l_region = NONE_EXCLUSIVE_IFS;
-        for (int pt = 0; pt < sz_pgk_; ++pt) {
-            bool is_pure = pgs_[pt](t, new_i, new_j, new_k);
-            if (is_pure) {
-                l_region = pt;
-                break;
-            }
-        } 
-            if (l_region != start_region)
-                return CROSS_REGION;
-            } } }
-        /* Adjust trapezoid */
-        l_grid.x0[0] += l_grid.dx0[0]; l_grid.x1[0] += l_grid.dx1[0];
-        l_grid.x0[1] += l_grid.dx0[1]; l_grid.x1[1] += l_grid.dx1[1];
-        l_grid.x0[2] += l_grid.dx0[2]; l_grid.x1[2] += l_grid.dx1[2];
-        }
-        return start_region;
     }
 };
 
@@ -544,17 +310,9 @@ struct Color_Region {
      * register more than 32 different kernels for now
      */
     int sz_pgk_;
-    Vector_Info< Pochoir_Guard<N_RANK> > & pgs_;
-    Grid_Info<N_RANK> phys_grid_;
-    Color_Region(int _sz_pgk, Vector_Info< Pochoir_Guard<N_RANK> > & _pgs, Grid_Info<N_RANK> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs) { 
-        assert(_sz_pgk == _pgs.size()); 
-        for (int i = 0; i < N_RANK; ++i) {
-            /* verify it's rectangular grid */
-            assert (_grid.dx0[i] == 0 && _grid.dx1[i] == 0);
-        }
-        phys_grid_ = _grid;
-        return; 
-    }
+    Vector_Info< Pochoir_Guard<N_RANK> * > & pgs_;
+    Grid_Info<N_RANK> & phys_grid_;
+    Color_Region(Vector_Info< Pochoir_Guard<N_RANK> * > & _pgs, Grid_Info<N_RANK> & _grid) : sz_pgk_(_pgs.size()), pgs_(_pgs), phys_grid_(_grid) { }
     T_color get_color() { return 0; }
     T_color operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) { 
         /* return 0 to make g++ happy! */
@@ -565,25 +323,15 @@ struct Color_Region {
 template <>
 struct Color_Region<1> {
     int sz_pgk_;
-    Vector_Info< Pochoir_Guard<1> > & pgs_;
-    Grid_Info<1> phys_grid_;
-    Color_Region(int _sz_pgk, Vector_Info< Pochoir_Guard<1> > & _pgs, Grid_Info<1> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs) { 
-        assert(_sz_pgk == _pgs.size()); 
-        for (int i = 0; i < 1; ++i) {
-            /* verify it's rectangular grid */
-            assert (_grid.dx0[i] == 0 && _grid.dx1[i] == 0);
-        }
-        phys_grid_ = _grid;
-        /* We will generate the color_map_ on demand and on-the-fly
-         */
-        return; 
-    }
+    Vector_Info< Pochoir_Guard<1> * > & pgs_;
+    Grid_Info<1> & phys_grid_;
+    Color_Region(Vector_Info< Pochoir_Guard<1> * > & _pgs, Grid_Info<1> & _grid) : sz_pgk_(_pgs.size()), pgs_(_pgs), phys_grid_(_grid) { }
 
     T_color get_color(int t, int i) {
         T_color l_color = 0;
         for (int pt = 0; pt < sz_pgk_; ++pt) {
             l_color <<= 1;
-            bool is_color = pgs_[pt](t, i);
+            bool is_color = (*pgs_[pt])(t, i);
             if (is_color)
                 l_color |= 1;
         }
@@ -611,26 +359,15 @@ struct Color_Region<1> {
 template <>
 struct Color_Region<2> {
     int sz_pgk_;
-    Vector_Info< Pochoir_Guard<2> > & pgs_;
-    Grid_Info<2> phys_grid_;
-    Color_Region(int _sz_pgk, Vector_Info< Pochoir_Guard<2> > & _pgs, Grid_Info<2> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs) { 
-        assert(_sz_pgk == _pgs.size()); 
-        for (int i = 0; i < 2; ++i) {
-            /* verify it's rectangular grid */
-            assert (_grid.dx0[i] == 0 && _grid.dx1[i] == 0);
-        }
-        phys_grid_ = _grid;
-        /* We will generate the color_map_ only when needed, and
-         * on-the-fly
-         */
-        return; 
-    }
+    Vector_Info< Pochoir_Guard<2> * > & pgs_;
+    Grid_Info<2> & phys_grid_;
+    Color_Region(Vector_Info< Pochoir_Guard<2> * > & _pgs, Grid_Info<2> & _grid) : sz_pgk_(_pgs.size()), pgs_(_pgs), phys_grid_(_grid) { }
 
     T_color get_color(int t, int i, int j) {
         T_color l_color = 0;
         for (int pt = 0; pt < sz_pgk_; ++pt) {
             l_color <<= 1;
-            bool is_color = pgs_[pt](t, i, j);
+            bool is_color = (*pgs_[pt])(t, i, j);
             if (is_color)
                 l_color |= 1;
         }
@@ -663,26 +400,15 @@ struct Color_Region<2> {
 template <>
 struct Color_Region<3> {
     int sz_pgk_;
-    Vector_Info< Pochoir_Guard<3> > & pgs_;
-    Grid_Info<3> phys_grid_;
-    Color_Region(int _sz_pgk, Vector_Info< Pochoir_Guard<3> > & _pgs, Grid_Info<3> & _grid) : sz_pgk_(_sz_pgk), pgs_(_pgs) { 
-        assert(_sz_pgk == _pgs.size()); 
-        for (int i = 0; i < 3; ++i) {
-            /* verify it's rectangular grid */
-            assert (_grid.dx0[i] == 0 && _grid.dx1[i] == 0);
-        }
-        phys_grid_ = _grid;
-        /* We will generate the color_map_ only when needed, and
-         * on-the-fly
-         */
-        return; 
-    }
+    Vector_Info< Pochoir_Guard<3> * > & pgs_;
+    Grid_Info<3> & phys_grid_;
+    Color_Region(Vector_Info< Pochoir_Guard<3> * > & _pgs, Grid_Info<3> & _grid) : sz_pgk_(_pgs.size()), pgs_(_pgs), phys_grid_(_grid) { }
 
     T_color get_color(int t, int i, int j, int k) {
         T_color l_color = 0;
         for (int pt = 0; pt < sz_pgk_; ++pt) {
             l_color <<= 1;
-            bool is_color = pgs_[pt](t, i, j, k);
+            bool is_color = (*pgs_[pt])(t, i, j, k);
             if (is_color)
                 l_color |= 1;
         }

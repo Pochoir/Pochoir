@@ -511,6 +511,7 @@ struct Vector_Info {
         for (int i = 0; i < _size; ++i) {
             l_tt[i] = NULL;
         }
+        return l_tt;
     }
     template <typename TT>
     inline int release_region(TT * _region, int _size, bool _is_basic_type, const boost::false_type&) {
@@ -527,9 +528,9 @@ struct Vector_Info {
          * points to
          */
         // if (_is_basic_type) {
-            for (int i = 0; i < _size; ++i) {
-                del_ele(_region[i]);
-            }
+            // for (int i = 0; i < _size; ++i) {
+            //     del_ele(_region[i]);
+            // }
             del_arr(_region);
         // }
         return 0;

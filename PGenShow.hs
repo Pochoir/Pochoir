@@ -269,7 +269,7 @@ pShowUnrolledBoundaryKernels l_cond l_name l_stencil l_kL@(l_kernelFunc:l_kernel
                         breakline ++ pDefPMODLU
         l_undefMacro = pUndefPMODLU ++ breakline ++
                         pUndefMacroArrayInUse l_arrayInUse l_kfParams 
-        l_showPhysGrid = "Grid_Info<" ++ show l_rank ++ "> l_phys_grid = " ++ 
+        l_showPhysGrid = "Grid_Info<" ++ show l_rank ++ "> const & l_phys_grid = " ++ 
                          sName l_stencil ++ ".get_phys_grid();"
         l_unfold_kernels = 
                 if l_cond then pShowCondMacroKernel True l_t 0 l_unroll l_kL
@@ -728,7 +728,7 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
         l_t_begin = l_t ++ "0"
         l_t_end = l_t ++ "1"
         l_kernelFuncName = pSys l_name
-        l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> l_phys_grid = " ++
+        l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> const & l_phys_grid = " ++
                             sName l_stencil ++ ".get_phys_grid();"
 {----------------------------------------------------------------------------------------
         - The header and tail definition for the auto lambda function
@@ -869,7 +869,7 @@ pShowUnrollTimeTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_ste
         l_t_begin = l_t ++ "0"
         l_t_end = l_t ++ "1"
         l_kernelFuncName = pSys l_name
-        l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> l_phys_grid = " ++
+        l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> const & l_phys_grid = " ++
                             sName l_stencil ++ ".get_phys_grid();"
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++
                    " = [&] (int " ++ l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
@@ -975,7 +975,7 @@ pShowUnrollTimeTileKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_
         l_t_begin = l_t ++ "0" 
         l_t_end = l_t ++ "1"
         l_kernelFuncName = pSys l_name
-        l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> l_phys_grid = " ++
+        l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> const & l_phys_grid = " ++
                             sName l_stencil ++ ".get_phys_grid();"
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
                    " = [&] (int " ++ l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
@@ -1090,7 +1090,7 @@ pShowAllCondTileKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pSh
         l_t_begin = l_t ++ "0" 
         l_t_end = l_t ++ "1" 
         l_kernelFuncName = pSys l_name
-        l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> l_phys_grid = " ++
+        l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> const & l_phys_grid = " ++
                             sName l_stencil ++ ".get_phys_grid();" 
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++ 
                    " = [&] (int " ++ l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
