@@ -195,9 +195,6 @@ void Pochoir<N_RANK>::reg_tile_dim(Pochoir_Tile_Kernel<N_RANK> & pt, int dim, I 
     return;
 }
 
-/* By default, what the user register in Phase I will be treated as
- * inclusive tile/kernels
- */
 template <int N_RANK>
 void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_Kernel<N_RANK> & k) {
     typedef Pochoir_Kernel<N_RANK> T_Kernel;
@@ -210,10 +207,8 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
     reg_tile_dim(*l_pit, 1, 1);
 
-    // pigs_.add_element(*l_pig);
-    // pits_.add_element(*l_pit);
-    reg_guards_.add_element(l_pig);
-    reg_tile_kernels_.add_element(l_pit);
+    reg_guards_.push_back(l_pig);
+    reg_tile_kernels_.push_back(l_pit);
     return;
 }
 
@@ -231,10 +226,8 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     }
     reg_tile_dim(*l_pit, 1, N_SIZE1);
 
-    // pigs_.add_element(*l_pig);
-    // pits_.add_element(*l_pit);
-    reg_guards_.add_element(l_pig);
-    reg_tile_kernels_.add_element(l_pit);
+    reg_guards_.push_back(l_pig);
+    reg_tile_kernels_.push_back(l_pit);
     return;
 }
 
@@ -254,10 +247,8 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     }
     reg_tile_dim(*l_pit, 2, N_SIZE1, N_SIZE2);
 
-    // pigs_.add_element(*l_pig);
-    // pits_.add_element(*l_pit);
-    reg_guards_.add_element(l_pig);
-    reg_tile_kernels_.add_element(l_pit);
+    reg_guards_.push_back(l_pig);
+    reg_tile_kernels_.push_back(l_pit);
     return;
 }
 
@@ -279,10 +270,8 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     }
     reg_tile_dim(*l_pit, 3, N_SIZE1, N_SIZE2, N_SIZE3);
 
-    // pigs_.add_element(*l_pig);
-    // pits_.add_element(*l_pit);
-    reg_guards_.add_element(l_pig);
-    reg_tile_kernels_.add_element(l_pit);
+    reg_guards_.push_back(l_pig);
+    reg_tile_kernels_.push_back(l_pit);
     return;
 }
 
@@ -302,10 +291,8 @@ void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int
     l_opk->cond_bkernel_ = NULL;
     lcm_unroll_ = lcm(lcm_unroll_, unroll);
 
-    // opgs_.add_element(*l_opg);
-    // opks_.add_element(*l_opk);
-    reg_obase_guards_.add_element(l_opg);
-    reg_obase_kernels_.add_element(l_opk);
+    reg_obase_guards_.push_back(l_opg);
+    reg_obase_kernels_.push_back(l_opk);
     return;
 }
 
@@ -327,10 +314,8 @@ void Pochoir<N_RANK>::Register_Tile_Obase_Kernels(Pochoir_Guard<N_RANK> & g, int
     Register_Shape(cond_bk.Get_Shape(), cond_bk.Get_Shape_Size());
     lcm_unroll_ = lcm(lcm_unroll_, unroll);
 
-    // opgs_.add_element(*l_opg);
-    // opks_.add_element(*l_opk);
-    reg_obase_guards_.add_element(l_opg);
-    reg_obase_kernels_.add_element(l_opk);
+    reg_obase_guards_.push_back(l_opg);
+    reg_obase_kernels_.push_back(l_opk);
     return;
 }
 
@@ -515,14 +500,14 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
         l_tree->dfs_until_sync(l_root->left, (*(l_plan->base_data_)));
         int l_tree_size_end = l_tree->size();
         if (l_tree_size_begin - l_tree_size_end > 0) {
-            l_plan->sync_data_->add_element(l_tree_size_begin - l_tree_size_end);
+            l_plan->sync_data_->push_back(l_tree_size_begin - l_tree_size_end);
         }
         l_tree->dfs_rm_sync(l_root->left);
         l_tree_size_begin = l_tree->size();
         LOG_ARGS(0, "tree size = %d\n", l_tree_size_begin);
     }
     l_plan->sync_data_->scan();
-    l_plan->sync_data_->add_element(END_SYNC);
+    l_plan->sync_data_->push_back(END_SYNC);
     l_plan->set_order_num(order_num_);
     ++order_num_;
     del_ele(l_tree);
@@ -568,14 +553,14 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
         l_tree->dfs_until_sync(l_root->left, (*(l_plan->base_data_)));
         int l_tree_size_end = l_tree->size();
         if (l_tree_size_begin - l_tree_size_end > 0) {
-            l_plan->sync_data_->add_element(l_tree_size_begin - l_tree_size_end);
+            l_plan->sync_data_->push_back(l_tree_size_begin - l_tree_size_end);
         }
         l_tree->dfs_rm_sync(l_root->left);
         l_tree_size_begin = l_tree->size();
         LOG_ARGS(0, "tree size = %d\n", l_tree_size_begin);
     }
     l_plan->sync_data_->scan();
-    l_plan->sync_data_->add_element(END_SYNC);
+    l_plan->sync_data_->push_back(END_SYNC);
     l_plan->set_order_num(order_num_);
     l_plan->set_fname(fname);
 
@@ -598,7 +583,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     l_color_vector.sort();
     l_color_vector.set_size(55);
     /* make the 'rec_level' of white_clone to be 0, so it won't be eliminated out */
-    l_color_vector.add_unique_element(*white_clone, 0);
+    l_color_vector.push_back_unique(*white_clone, 0);
     l_plan->change_region_n(l_color_vector);
     std::ofstream os_color_vector;
     os_color_vector.open(color_vector_fname, ofstream::out | ofstream::trunc);
@@ -639,7 +624,9 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #else
     /* This branch is for best performance */
-    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
+    // sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
+    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -Wall -Werror -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
+    // sprintf(cmd, "g++-cilk -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #endif
 
     LOG_ARGS(INF, "%s\n", cmd);
@@ -705,14 +692,14 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
         l_tree->dfs_until_sync(l_root->left, (*(l_plan->base_data_)));
         int l_tree_size_end = l_tree->size();
         if (l_tree_size_begin - l_tree_size_end > 0) {
-            l_plan->sync_data_->add_element(l_tree_size_begin - l_tree_size_end);
+            l_plan->sync_data_->push_back(l_tree_size_begin - l_tree_size_end);
         }
         l_tree->dfs_rm_sync(l_root->left);
         l_tree_size_begin = l_tree->size();
         LOG_ARGS(0, "tree size = %d\n", l_tree_size_begin);
     }
     l_plan->sync_data_->scan();
-    l_plan->sync_data_->add_element(END_SYNC);
+    l_plan->sync_data_->push_back(END_SYNC);
     l_plan->set_order_num(order_num_);
     l_plan->set_fname(fname);
 
@@ -731,7 +718,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     l_color_vector.sort();
     l_color_vector.set_size(55);
     /* make the 'rec_level' of white_clone to be 0, so it won't be eliminated out */
-    l_color_vector.add_unique_element(*white_clone, 0);
+    l_color_vector.push_back_unique(*white_clone, 0);
     l_plan->change_region_n(l_color_vector);
     std::ofstream os_color_vector;
     os_color_vector.open(color_vector_fname, ofstream::out | ofstream::trunc);
@@ -768,10 +755,10 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     char cpp_filename[strlen(gen_kernel_fname) + 10], so_filename[strlen(gen_kernel_fname) + 10];
     sprintf(cpp_filename, "%s.cpp", gen_kernel_fname);
     sprintf(so_filename, "%s.so", gen_kernel_fname);
-#if 1
+#if 0
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #else
-    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
+    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
     // sprintf(cmd, "g++-cilk -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #endif
 

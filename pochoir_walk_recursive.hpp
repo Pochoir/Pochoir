@@ -2050,7 +2050,7 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
     if (cross_region) {
         (*tree_).add_node(parent, l_internal, IS_INTERNAL);
     } else {
-        (*homogeneity_vector_).add_unique_element(homo, rec_level);
+        (*homogeneity_vector_).push_back_unique(homo, rec_level);
         int region_n = (*homogeneity_vector_).get_index(homo);
         (*tree_).add_node(parent, l_internal, IS_SPAWN, homo, region_n);
         ++sz_base_data_;
@@ -2112,7 +2112,7 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
     } 
 
     /* Add Inhomogeneous node into the tree */
-    (*homogeneity_vector_).add_unique_element(homo, rec_level);
+    (*homogeneity_vector_).push_back_unique(homo, rec_level);
     int region_n = (*homogeneity_vector_).get_index(homo);
     Node_Info<N_RANK> * l_leaf = new Node_Info<N_RANK>(t0, t1, l_father_grid, homo);
     (*tree_).add_node(l_internal, l_leaf, IS_SPAWN, homo, region_n);

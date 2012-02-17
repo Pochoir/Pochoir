@@ -516,9 +516,7 @@ struct Vector_Info {
     template <typename TT>
     inline int release_region(TT * _region, int _size, bool _is_basic_type, const boost::false_type&) {
         /* release region containing only values */
-        // if (_is_basic_type) {
-            del_arr(_region);
-        // }
+        del_arr(_region);
         return 0;
     }
     template <typename TT>
@@ -527,12 +525,7 @@ struct Vector_Info {
          * this method also release the memory region each entry pointer
          * points to
          */
-        // if (_is_basic_type) {
-            // for (int i = 0; i < _size; ++i) {
-            //     del_ele(_region[i]);
-            // }
-            del_arr(_region);
-        // }
+        del_arr(_region);
         return 0;
     }
     Vector_Info() {
@@ -597,14 +590,14 @@ struct Vector_Info {
             }
         }
     }
-    /* add_element() without measurement */
-    inline void add_element(T const & ele) {
-        /* by add_element, the element added into the vector will always
+    /* push_back() without measurement */
+    inline void push_back(T const & ele) {
+        /* by push_back, the element added into the vector will always
          * occupy a seperate slot in the vector regardless if it's a duplicate
          * of existing elements
          */
 #if DEBUG
-        std::cerr << "add_element " << ele << std::endl;
+        std::cerr << "push_back " << ele << std::endl;
 #endif
         if (pointer_ < size_) {
             region_[pointer_] = ele;
@@ -632,30 +625,30 @@ struct Vector_Info {
         }
         return;
     }
-    inline void add_unique_element(T const & ele) {
-        /* by add_unique_element, it's guaranteed that the element added
+    inline void push_back_unique(T const & ele) {
+        /* by push_back_unique, it's guaranteed that the element added
          * into the vector will be union'ed against the existing elements
          */
 #if DEBUG
-        std::cerr << "add_unique_element " << ele << std::endl;
+        std::cerr << "push_back_unique " << ele << std::endl;
 #endif
         /* to make sure every element in this vector is unique */
         for (int i = 0; i < pointer_; ++i) {
             if (region_[i] == ele)
                 return;
         }
-        add_element(ele); 
+        push_back(ele); 
         return;
     }
-    /* add_element() with measurement */
-    inline void add_element(T const & ele, int rec_level) {
-        /* by add_element, the element added into the vector will always
+    /* push_back() with measurement */
+    inline void push_back(T const & ele, int rec_level) {
+        /* by push_back, the element added into the vector will always
          * occupy a seperate slot in the vector regardless if it's a duplicate
          * of existing elements
          */
         T_measure l_inc = (T_measure)1/(0x1 << rec_level);
 #if DEBUG
-        std::cerr << "add_element " << ele << std::endl;
+        std::cerr << "push_back " << ele << std::endl;
 #endif
         if (pointer_ < size_) {
             region_[pointer_] = ele;
@@ -686,13 +679,13 @@ struct Vector_Info {
         }
         return;
     }
-    inline void add_unique_element(T const & ele, int rec_level) {
-        /* by add_unique_element, it's guaranteed that the element added
+    inline void push_back_unique(T const & ele, int rec_level) {
+        /* by push_back_unique, it's guaranteed that the element added
          * into the vector will be union'ed against the existing elements
          */
         double l_inc = (double)1/(0x1 << rec_level);
 #if DEBUG
-        std::cerr << "add_unique_element " << ele << std::endl;
+        std::cerr << "push_back_unique " << ele << std::endl;
 #endif
         /* to make sure every element in this vector is unique */
         for (int i = 0; i < pointer_; ++i) {
@@ -701,7 +694,7 @@ struct Vector_Info {
                 return;
             }
         }
-        add_element(ele, rec_level);
+        push_back(ele, rec_level);
         return;
     }
     inline int get_index(T const & ele) {
@@ -961,7 +954,7 @@ struct Pochoir_Plan {
             while (!feof(is_base_data)) {
                 Region_Info<N_RANK> l_region;
                 l_region.pscanf(is_base_data);
-                base_data_->add_element(l_region);
+                base_data_->push_back(l_region);
             }
             sz_base_data_ = base_data_->size();
         } else {
@@ -987,7 +980,7 @@ struct Pochoir_Plan {
             while (!feof(is_sync_data)) {
                 int l_sync;
                 fscanf(is_sync_data, "%d\n", &l_sync);
-                sync_data_->add_element(l_sync);
+                sync_data_->push_back(l_sync);
             }
             sz_sync_data_ = sync_data_->size();
         } else {
@@ -1174,7 +1167,7 @@ struct Spawn_Tree {
             assert(node->left == NULL);
             assert(node->region_.region_n >= 0);
             l_node = node->right;
-            base_data.add_element(node->region_);
+            base_data.push_back(node->region_);
             rm_node(node);
         } else if (node->op == IS_INTERNAL) {
             l_node = node->right;
