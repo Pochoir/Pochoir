@@ -53,6 +53,7 @@ pTab = "\t"
 newtype PShift = PShift Int deriving (Eq, Ord)
 data RegionT = Periodic | Nonperiodic | UnknownRegionT deriving Show
 data PBasicType = PChar | PShort | PLong | PSigned | PUnsigned | PVoid | PInt | PDouble | PFloat | PBool | PUserType deriving Eq
+data PPred = PLEQ | PGEQ | PEQ | PNEQ deriving (Eq, Show)
 data PRWMode = PRead | PWrite | POther deriving (Eq, Show)
 data PType = PType {
     basicType :: PBasicType,
@@ -174,6 +175,22 @@ data PTile = PTile {
     tColor :: Homogeneity,
     tComment :: String
 } deriving Show
+
+data PMTile = PMTile {
+    -- mtSizes == concatMap mttSizes mtItems
+    mtSizes :: [Int], -- sizes of each space/time dimensions, starting from t, i, j, ... 
+    mtKernelFuncs :: [PKernelFunc], -- collection of all inserted kernel funcs
+    mtTerms :: [PMTileTerm]
+}
+
+data PMTileTerm = PMTileTerm {
+    mttIndex :: [Int],
+    mttSizes :: [Int],
+    mttItem :: PMTileItem 
+}
+    
+data PMTileItem = ST [PKernelFunc]
+                | LT [PMTileTerm]
 
 emptyPType :: PType
 emptyPType = PType { basicType = PUserType, typeName = "" }

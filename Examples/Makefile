@@ -175,7 +175,7 @@ full_overlap_tile_3D : tb_full_overlap_tile_3D.cpp # tb_full_overlap_tile_3D_poc
 
 overlap_stagger_2D : tb_overlap_stagger_2D.cpp # tb_overlap_stagger_2D_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o overlap_stagger_2D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_overlap_stagger_2D.cpp
+	${CC} -o overlap_stagger_2D ${OPT_FLAGS} -all-cond-tile-pointer-overlap tb_overlap_stagger_2D.cpp
 	${ICC} -o overlap_stagger_2D_gdb ${ICC_DEBUG_FLAGS} tb_overlap_stagger_2D_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o overlap_stagger_2D ${POCHOIR_DEBUG_FLAGS} tb_overlap_stagger_2D.cpp 

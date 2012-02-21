@@ -122,9 +122,9 @@ int main(int argc, char * argv[])
     Pochoir_Array_2D(double) a(N, N);
     Pochoir_Array_2D(double) b(N, N);
     Pochoir_2D leap_frog;
-    a.Register_Boundary(aperiodic_2D);
+    a.Register_Boundary(periodic_2D);
     b.Register_Shape(twod_5pt);
-    b.Register_Boundary(aperiodic_2D);
+    b.Register_Boundary(periodic_2D);
 
     /* begin Pochoir_Guard functions */
     Pochoir_Guard_2D_Begin(g_exclusive_0, t, i, j)
@@ -777,7 +777,8 @@ int main(int argc, char * argv[])
                         0.8 * b(t-1, i-1, j) + 0.85 * b(t-1, i, j) + 0.85 * b(t-1, i+1, j)
                       - 0.8 * b(t-1, i, j-1) - 0.85 * b(t-1, i, j) - 0.85 * b(t-1, i, j+1);
                 }
-            } if (g_exclusive_1(t, i, j)) {
+            } 
+            if (g_exclusive_1(t, i, j)) {
                 if ((t) % 2 == 0 && i % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_1_0> : loop_b(%d, %d, %d)\n", t, i, j);

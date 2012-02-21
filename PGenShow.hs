@@ -669,28 +669,96 @@ pShowOverlapGuardTail k ks =
        then "}"
        else "}"
 
-pShowAllCondTileOverlapKernelLoops :: (PKernelFunc -> String) -> [[Int]] -> [[PKernelFunc]] -> String
-pShowAllCondTileOverlapKernelLoops _ [] _ = ""
-pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_tile_indices@(t:ts) l_kL@(k:ks) =
-    let l_params = kfParams $ head k
+pShowMTileSingleKernel :: (PKernelFunc -> String) -> [PKernelFunc] -> String
+pShowMTileSingleKernel _ [] = ""
+pShowMTileSingleKernel l_showSingleKernel l@(k:ks) =
+    let l_params = kfParams k
+        l_spatial_params = tail l_params
+        l_t = pHead l_params
+        l_iter = kfIter k
+        l_arrayInUse = unionArrayIter l_iter
+        l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l)
+        l_timeShift = shapeTimeShift l_pShape
+        l_tile_op = kfTileOp k
+{-
+        l_t_dim = if l_timeShift /= 0
+                     then l_t ++ " + " ++ show l_timeShift
+                     else l_t
+ -}
+        l_t_dim = l_t
+        g = ("__" ++ (gfName $ kfGuardFunc k) ++ "__") ++ " ( " ++
+            l_t_dim ++ ", " ++ intercalate ", " l_spatial_params ++ " ) "
+        l_header = if l_tile_op == PEXCLUSIVE || l_tile_op == PINCLUSIVE
+                      then "if (" ++ g ++ ") {" 
+                      else "{"
+        l_tail = if (l_tile_op == PEXCLUSIVE && length ks > 0)
+                    then "} else "
+                    else "}"
+    in  (breakline ++ l_header ++
+         breakline ++ l_showSingleKernel k ++
+         breakline ++ l_tail ++
+         breakline ++ pShowMTileSingleKernel l_showSingleKernel ks)
+
+pShowMTileItem :: (PKernelFunc -> String) -> Int -> [PName] -> Int -> PMTileItem -> String
+pShowMTileItem l_showSingleKernel _ _ _ (ST l_ks) = 
+    pShowMTileSingleKernel l_showSingleKernel l_ks
+pShowMTileItem l_showSingleKernel l_rank l_params l_time_shift (LT l_ts) = 
+    pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift l_ts
+
+pShowTileGuardHead :: [PName] -> [Int] -> [Int] -> String
+pShowTileGuardHead l_params l_indices l_sizes =
+    let l_cond = intercalate " && " $ zipWith3 pInsMod l_params l_indices l_sizes
+    in  breakline ++ "if " ++ mkParen l_cond ++ "{"
+
+pShowTileGuardHeadT :: [PName] -> Int -> [Int] -> [Int] -> String
+pShowTileGuardHeadT l_params l_time_shift l_indices l_sizes = 
+    let l_t = head l_params
+        l_t' = mkParen $ l_t ++ " + " ++ show l_time_shift
+        l_params' = l_t':(tail l_params)
+    in  pShowTileGuardHead l_params' l_indices l_sizes
+
+pShowMTileTerm :: (PKernelFunc -> String) -> Int -> [PName] -> Int -> [PMTileTerm] -> String
+pShowMTileTerm _ _ _ _ [] = ""
+pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift l_mterms@(t:ts) =
+    let l_indices = mttIndex t
+        l_sizes = mttSizes t
+        l_items = mttItem t
+        l_len = length l_sizes
+        l_header = if l_rank + 1 == length l_params 
+                      then pShowTileGuardHeadT l_params l_time_shift l_indices l_sizes
+                      else pShowTileGuardHead l_params l_indices l_sizes
+        l_tail = if null ts 
+                    then breakline ++ "}"
+                    else breakline ++ "} else "
+        l_items = pShowMTileItem l_showSingleKernel 
+                    l_rank (drop l_len l_params) l_time_shift l_items
+    in  l_header ++ breakline ++ l_items ++ l_tail ++ 
+        pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift ts
+
+pShowMTile :: (PKernelFunc -> String) -> Int -> [PName] -> Int -> PMTile -> String
+pShowMTile l_showSingleKernel l_rank l_params l_time_shift l_mtile =
+    let l_mterms = mtTerms l_mtile
+        l_num_dims = (length . mtSizes) l_mtile
+    in  if l_num_dims == l_rank + 1
+           then breakline ++ 
+                pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift l_mterms ++ 
+                breakline
+           else "/* l_num_dims = " ++ show l_num_dims ++ 
+                ", l_rank = " ++ show l_rank ++ " */"
+
+pShowAllCondTileOverlapKernelLoops :: (PKernelFunc -> String) -> [PMTile] -> String
+pShowAllCondTileOverlapKernelLoops _ [] = ""
+pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_mtiles@(t:ts) =
+    let l_kernel_funcs = concatMap mtKernelFuncs l_mtiles
+        l_params = (kfParams . head) l_kernel_funcs 
         l_spatial_params = tail l_params
         l_rank = length l_spatial_params
-        -- l_dim_sizes = getTileSizes l_tile_indices
-        l_dim_sizes = if null k then [] else (kfTileSizes . head) k
-        l_tile_index = head l_tile_indices
-        l_tileOp_all_null = pIsTileOpNull $ foldr1 foldTileOp $ map kfTileOp k
-        l_guard_head = pShowTileGuardHeadOnAll l_params l_dim_sizes l_tile_index
-                                                (shapeTimeShift $ kfShape $ head k)
-        k' = pGroupBy eqTileOpPKernelFunc k
-        l_kernels = pShowAllCondTileOverlapSingleKernel l_showSingleKernel k'
-        l_guard_tail = pShowOverlapGuardTail k ks 
+        l_time_shift = (shapeTimeShift . kfShape . head) l_kernel_funcs
+        l_tileOp_all_null = pIsTileOpNull $ foldr1 foldTileOp $ map kfTileOp l_kernel_funcs 
+        l_str_mtiles = concatMap (pShowMTile l_showSingleKernel l_rank l_params l_time_shift) l_mtiles
     in  if l_tileOp_all_null
-           then pShowAllCondTileOverlapKernelLoops l_showSingleKernel ts ks
-           else breakline ++ l_guard_head ++ 
-                breakline ++ l_kernels ++ 
-                breakline ++ l_guard_tail ++ 
-                pShowAllCondTileOverlapKernelLoops l_showSingleKernel ts ks
-
+           then "" 
+           else breakline ++ l_str_mtiles ++ breakline
 
 pShowPochoirArrayRef :: (Int, PType, String) -> String
 pShowPochoirArrayRef (l_rank, l_type, l_name) =
@@ -703,26 +771,17 @@ pShowStencilRef (l_rank, l_name) =
 pShowDefaultTileString :: PMode -> PStencil -> PGuard -> String
 pShowDefaultTileString _ _ _ = ""
 
-{-
-pShowPochoirArrayRef :: PArray -> String
-pShowPochoirArrayRef l_pArray = 
-    let l_rank = aRank l_pArray
-        l_type = aType l_pArray
-        l_name = aName l_pArray
-    in  "Pochoir_Array <" ++ show l_type ++ ", " ++ show l_rank ++ "> & " ++ l_name
--}
-
-pShowAllCondTileOverlapKernels :: (PKernelFunc -> String) -> Bool -> PMode -> String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String
-pShowAllCondTileOverlapKernels _ _ _ _ _ _ _ [] = ""
-pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pShape l_tile_indices l_kfss@(k:ks) =
+pShowAllCondTileOverlapKernels :: (PKernelFunc -> String) -> Bool -> PMode -> String -> PStencil -> PShape -> [PMTile] -> String
+pShowAllCondTileOverlapKernels _ _ _ _ _ _ [] = ""
+pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pShape l_mtiles@(t:ts) =
     let l_rank = sRank l_stencil
         l_arrayInUse = sArrayInUse l_stencil
-        l_kernel_funcs = concat l_kfss
+        l_kernel_funcs = concatMap mtKernelFuncs l_mtiles
         l_iter = foldr union (kfIter $ head l_kernel_funcs) 
                              (map kfIter $ tail l_kernel_funcs)
         -- We are assuming that all kernel functions have the 
         -- same number of input parameters
-        l_params = (kfParams . head . head) l_kfss
+        l_params = (kfParams . head) l_kernel_funcs
         l_spatial_params = tail l_params
         l_t = head l_params
         l_t_begin = l_t ++ "0"
@@ -761,20 +820,6 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
                    l_stencilName ++ mkParen l_stencilInputName ++ ", " ++
                    (intercalate ", " $ 
                         zipWith (++) l_arrayList (map mkParen l_arrayInputList)) ++ " {}" ++
-{-
-                   breakline ++ "int Init" ++ mkParen (l_stencilInputRef ++ ", " ++ 
-                                                intercalate ", " l_arrayInputRefList) ++
-                   " : " ++ 
-                   l_stencilName ++ mkParen l_stencilInputName ++ ", " ++
-                   (intercalate ", " $ 
-                        zipWith (++) l_arrayList (map mkParen l_arrayInputList)) ++ 
-                   " {" ++
-                   breakline ++ l_stencilName ++ " = " ++ l_stencilInputName ++ ";" ++
-                   breakline ++ (concat $ zipWith (zipInsert " = " $ ";" ++ breakline) 
-                                    l_arrayList l_arrayInputList) ++
-                   breakline ++ "return 0;" ++
-                   breakline ++ "}" ++
- -}
                    breakline ++ "void operator() (int " ++ 
                    l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
                    " Grid_Info <" ++ show l_rank ++ "> const & grid) {"
@@ -830,15 +875,10 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
                 PUnrollTimeTileOptPointerOverlap ->
                             pShowObaseForTail l_rank
         l_unfold_kernels = 
-               pShowAllCondTileOverlapKernelLoops l_showSingleKernel 
-                        l_tile_indices l_kfss
+               pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_mtiles
         l_def_mod_lu = if l_bound then pDefPMODLU else ""
         l_undef_mod_lu = if l_bound then pUndefPMODLU else ""
-        l_str_tile_indices = "/* " ++ show l_tile_indices ++ " */"
-        l_str_kernel_funcs = "/* " ++ show (map (map kfName) l_kfss) ++ " */"
     in  breakline ++ l_def_mod_lu ++
-        breakline ++ l_str_tile_indices ++
-        breakline ++ l_str_kernel_funcs ++
         breakline ++ l_header ++
         breakline ++ "Grid_Info <" ++ show l_rank ++ "> l_grid = grid;" ++
         pShowArrayInfo l_arrayInUse ++ pShowArrayGaps l_rank l_arrayInUse ++

@@ -230,7 +230,10 @@ getSetKernelsFromTile l_tile =
                         l_tile_op = tOp l_tile
                         l_tile_order = tOrder l_tile
                         l_tile_sizes = tSizes l_tile
-                    in  l_kernel { kFunc = l_kfunc { kfGuardFunc = l_gfunc, kfTileOp = l_tile_op, kfTileOrder = l_tile_order, kfTileSizes = l_tile_sizes, kfTileIndex = kIndex l_kernel } }
+                        -- l_res_dims = (length . kfParams) l_kfunc - length l_tile_sizes
+                        -- l_res = replicate l_res_dims 0
+                        l_res = []
+                    in  l_kernel { kFunc = l_kfunc { kfGuardFunc = l_gfunc, kfTileOp = l_tile_op, kfTileOrder = l_tile_order, kfTileSizes = l_tile_sizes ++ l_res, kfTileIndex = kIndex l_kernel ++ l_res } }
 
 getTileKernels :: PTile -> PTileKernel -> [PKernel]
 getTileKernels l_tile l_tile_kernels = getKernelsTile [] 0 l_tile l_tile_kernels
@@ -290,6 +293,26 @@ eqTileIndex aL@(a:as) bL@(b:bs) =
        then eqTileIndex as bs
        else False
 
+pEqList :: Eq a => [a] -> [a] -> PPred
+pEqList aL bL = 
+    let len_a = length aL
+        len_b = length bL
+    in  if (len_a < len_b)
+           then if aL == take len_a bL then PLEQ else PNEQ
+           else if len_a > len_b
+                   then if take len_b aL == bL then PGEQ else PNEQ
+                   else if aL == bL then PEQ else PNEQ
+
+-- Get the longest common prefix of two lists
+pLongestCommonPrefix :: Eq a => [a] -> [a] -> [a]
+pLongestCommonPrefix [] [] = []
+pLongestCommonPrefix [] _ = []
+pLongestCommonPrefix _ [] = []
+pLongestCommonPrefix aL@(a:as) bL@(b:bs) = 
+    if a == b
+       then a:(pCmpListHead as bs)
+       else []
+
 eqKIndex :: PKernel -> PKernel -> Bool
 eqKIndex a b = (kIndex a) == (kIndex b)
 
@@ -324,15 +347,6 @@ pSerializePKernel kL@(k:ks) n counter l =
                 else k { kFunc = l_kf { kfTileOrder = counter+1 } }
         l' = l ++ [k']
     in  pSerializePKernel ks n' counter' l'
-
-pPartition :: (PKernel -> PKernel -> Bool) -> PKernel -> [PKernel] -> ([PKernel], [PKernel]) -> ([PKernel], [PKernel])
-pPartition b x [] (inSet, outSet) = (inSet, outSet)
-pPartition b x l@(a:as) (inSet, outSet) =
-    if b x a
-       then let inSet' = inSet ++ [a]
-            in  pPartition b a as (inSet', outSet)
-       else let outSet' = outSet ++ [a]
-            in  pPartition b x as (inSet, outSet')
 
 pFillKIndex :: [Int] -> PKernel -> PKernel
 pFillKIndex index k = k { kIndex = index }
@@ -412,6 +426,15 @@ pGroupPKernelByTerm b l@(x:xs) ass =
         ass' = ass ++ [inSet]
     in  pGroupPKernelByTerm b outSet ass'
 
+pPartition :: (PKernel -> PKernel -> Bool) -> PKernel -> [PKernel] -> ([PKernel], [PKernel]) -> ([PKernel], [PKernel])
+pPartition b x [] (inSet, outSet) = (inSet, outSet)
+pPartition b x l@(a:as) (inSet, outSet) =
+    if b x a
+       then let inSet' = inSet ++ [a]
+            in  pPartition b a as (inSet', outSet)
+       else let outSet' = outSet ++ [a]
+            in  pPartition b x as (inSet, outSet')
+
 pGroupBy :: (a -> a -> Bool) -> [a] -> [[a]]
 pGroupBy b l = pGroupByTerm b l []
 
@@ -421,6 +444,109 @@ pGroupByTerm b l@(x:xs) ass =
     let (as1, as2) = partition (b x) l
         ass' = if null as1 then ass else ass ++ [as1]
     in  pGroupByTerm b as2 ass'
+
+pPackKernelFuncsIntoMTiles :: [PKernelFunc] -> [PMTile]
+pPackKernelFuncsIntoMTiles l@(x:xs) =
+    let l_mtile = mkMTile x
+    in  pPackKernelFuncsIntoMTilesTerm xs l_mtile
+        where pPackKernelFuncsIntoMTilesTerm [] t = t
+              pPackKernelFuncsIntoMTilesTerm l@(x:xs) t = 
+                  pPackKernelFuncsIntoMTilesTerm xs $ pushBackMTile x t
+
+mkMTile :: PKernelFunc -> PMTile
+mkMTile l_kernel_func =
+    let l_indices = kfTileIndex l_kernel_func
+        l_sizes = kfTileSizes l_kernel_func
+        l_term = mkMTileTerm l_indices l_sizes (ST [l_kernel_func])
+    in  PMTile { mtSizes = l_sizes, mtKernelFuncs = [l_kernel_func], mtTerms = [l_term] }
+
+mkMTileTerm :: [Int] -> [Int] -> PMTileItem -> PMTileTerm
+mkMTileTerm l_indices l_sizes l_item =
+    let l_tileTerm = PMTileTerm { mttIndex = l_indices,
+                                  mttSizes = l_sizes,
+                                  mttIterm = l_item }
+    in  l_tileTerm
+
+pushBackMTile :: PKernelFunc -> [PMTile] -> [PMTile]
+pushBackMTile l_kernel_func [] =
+    let l_mtile = mkMTile l_kernel_func
+    in  [l_mtile]
+pushBackMTile l_kernel_func tL@(t:ts) =
+    let l_indices = kfTileIndex l_kernel_func
+        l_sizes = kfTileSizes l_kernel_func
+        l_t_sizes = mtSizes t
+        l_terms = mtTerms t
+        -- lcp : longest common prefix
+        l_lcp = pLongestCommonPrefix l_sizes l_t_sizes
+        l_len_lcp = length l_lcp
+        l_len_sizes = length l_sizes
+        l_len_t_sizes = length l_t_sizes
+    in  if l_len_lcp < l_len_sizes && l_len_lcp < l_len_t_sizes
+           then t:(pushBackMTile l_kernel_func ts)
+           else let t' = 
+                    t { mtSizes = if length l_sizes > length l_t_sizes
+                                     then l_sizes
+                                     else l_t_sizes
+                        ,
+                        mtKernelFuncs = mtKernelFuncs t ++ [l_kernel_func],
+                        mtTerms = pushBackMTileTerm l_indices l_sizes l_kernel_func l_terms }
+                in  t':ts
+
+pushBackMTileTerm :: [Int] -> [Int] -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]
+pushBackMTileTerm l_indices l_sizes l_kernel_func [] = []
+pushBackMTileTerm l_indices l_sizes l_kernel_func l_terms@(t:ts) =
+    let l_t_indices = mttIndex t
+        l_lcp = pLongestCommonPrefix l_indices l_t_indices
+        l_len_lcp = length l_lcp
+        l_len_t = length l_t_indices
+        l_len_indices = length l_indices
+    in  if l_len_lcp == l_len_t
+           -- 'then' implies that length l_indices >= length l_t_indices
+           then let l_mitem = pushBackMTileItem (drop l_len_lcp l_indices) (drop l_len_lcp l_sizes) l_kernel_func (mttItem t)
+                    t' = t { mttItem = l_mitem }
+                -- in  t':(pushBackMTileTerm l_indices l_sizes l_kernel_func ts)
+                in  t':ts
+           -- else: implies length l_indices < length l_t_indices 
+           --       we have to split 
+           else if l_len_lcp == l_len_indices || (l_len_lcp > 0 && null ts)
+                   then let l_this_index = take l_len_lcp $ mttIndex t
+                            l_this_sizes = take l_len_lcp $ mttSizes t
+                            l_new_mterm_0 = PMTileTerm {
+                                mttIndex = (drop l_len_lcp $ mttIndex t),
+                                mttSizes = (drop l_len_lcp $ mttSizes t),
+                                mttItem = mttItem t }
+                            l_new_mterm_1 = PMTileTerm {
+                                mttIndex = (drop l_len_lcp l_indices),
+                                mttSizes = (drop l_len_lcp l_sizes),
+                                mttItem = (ST [l_kernel_func]) }
+                            t' = PMTileTerm {
+                                mttIndex = l_this_index,
+                                mttSizes = l_this_sizes,
+                                mttItem = LT (l_new_mterm_0:l_new_mterm_1) }
+                        in  t':(pushBackMTileTerm l_indices l_sizes l_kernel_func ts)
+                   -- else : implies l_len_lcp < l_len_t && l_len_lcp < l_len_indices 
+                   --        we have to split
+                   else if (l_len_lcp == 0 && null ts)
+                           then let t' = mkMTileTerm l_indices l_sizes (ST [l_kernel_func])
+                                in  t:t'
+                           else t:(pushBackMTileTerm l_indices l_sizes l_kenrel_func ts)
+
+pushBackMTileItem :: [Int] -> [Int] -> PKernelFunc -> PMTileItem -> PMTileItem
+pushBackMTileItem [] [] l_kernel_func (ST l_ks) = 
+    ST (l_ks ++ [l_kernel_func])
+pushBackMTileItem l_indices l_sizes l_kernel_func (ST l_ks) =
+    let l_old_term = PMTileTerm {
+            mttIndex = [],
+            mttSizes = [],
+            mttItem = ST l_ks }
+        l_new_term = PMTileTerm {
+            mttIndex = l_indices,
+            mttSizes = l_sizes,
+            mttItem = ST [l_kernel_func] }
+    in  LT (l_old_term:l_new_term)
+pushBackMTileItem l_indices l_sizes l_kernel_func (LT l_ts) =
+    let l_new_terms = pushBackMTileTerm l_indices l_sizes l_kernel_func l_ts
+    in  LT l_new_terms
 
 pSetTileOp :: TileOp -> PTile -> PTile
 pSetTileOp l_op pTile = pTile { tOp = l_op }
@@ -720,6 +846,10 @@ pBinToDec bValue = pBinToDecTerm 0 (length bValue) bValue
 rename :: String -> String -> String
 rename pSuffix fname = name ++ pSuffix ++ ".cpp"
     where (name, suffix) = break ('.' ==) fname
+
+pInsMod :: PName -> Int -> Int -> String
+pInsMod l_param l_index l_size =
+    (mkParen $ l_param ++ " % " ++ show l_size) ++ " == " ++ show l_index
 
 mkInput :: String -> String
 mkInput a = "_" ++ a
