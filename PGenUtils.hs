@@ -501,7 +501,7 @@ pushBackMTileTerm l_indices l_sizes l_kernel_func l_terms@(t:ts) =
         l_len_lcp = length l_lcp
         l_len_t = length l_t_indices
         l_len_indices = length l_indices
-    in  if l_len_lcp == l_len_t
+    in  if l_len_lcp == l_len_t && l_len_lcp > 0
            -- 'then' implies that length l_indices >= length l_t_indices
            then let l_mitem = pushBackMTileItem (drop l_len_lcp l_indices) (drop l_len_lcp l_sizes) l_kernel_func (mttItem t)
                     t' = t { mttItem = l_mitem }
@@ -545,6 +545,12 @@ pushBackMTileItem l_indices l_sizes l_kernel_func (ST l_ks) =
             mttSizes = l_sizes,
             mttItem = ST [l_kernel_func] }
     in  MT ([l_old_term] ++ [l_new_term])
+pushBackMTileItem [] [] l_kernel_func (MT l_ts) =
+    let l_new_term = PMTileTerm {
+            mttIndex = [],
+            mttSizes = [],
+            mttItem = ST [l_kernel_func] }
+    in  MT (l_ts ++ [l_new_term])
 pushBackMTileItem l_indices l_sizes l_kernel_func (MT l_ts) =
     let l_new_terms = pushBackMTileTerm l_indices l_sizes l_kernel_func l_ts
     in  MT l_new_terms

@@ -349,25 +349,51 @@ instance Show PMode where
 instance Show Homogeneity where
     show h = "<" ++ showBin (size h - 1) (o h) ++ ", " ++ showBin (size h - 1) (a h) ++ ">\n"
 
+{-
 instance Show PMTile where
     show a = let l_sizes = mtSizes a
                  l_terms = mtTerms a
-             in  breakline ++ "PMTile : " ++ 
-                 breakline ++ "sizes = " ++ show l_sizes ++ 
-                 breakline ++ "terms = " ++ show l_terms
+             in  breakline ++ "PMTile (" ++ 
+                 "sizes = " ++ show l_sizes ++ 
+                 "), terms = " ++ breakline ++ show l_terms
 
 instance Show PMTileTerm where
     show a = let l_indices = mttIndex a
                  l_sizes = mttSizes a
                  l_item = mttItem a
-             in  breakline ++ "PMTileTerm : " ++ 
-                 breakline ++ "indices = " ++ show l_indices ++ 
-                 breakline ++ "sizes = " ++ show l_sizes ++ 
-                 breakline ++ "item = " ++ show l_item
+             in  pTab ++ "PMTileTerm (" ++ 
+                 "indices = " ++ show l_indices ++ 
+                 ", sizes = " ++ show l_sizes ++ 
+                 "), item = " ++ show l_item
 
 instance Show PMTileItem where
     show (ST l_ks) = concatMap kfName l_ks ++ breakline
-    show (MT l_mts) = show l_mts
+    show (MT l_mts) = breakline ++ pTab ++ show l_mts
+ -}
+
+pShowPMTile :: Int -> PMTile -> String
+pShowPMTile l_rec l_mtile =
+    let l_sizes = mtSizes l_mtile
+        l_terms = mtTerms l_mtile
+    in  breakline ++ "PMTile (sizes = " ++
+        show l_sizes ++ "), terms = " ++ breakline ++ 
+        (intercalate (", " ++ breakline) $ map (pShowPMTileTerm (l_rec + 1)) l_terms)
+
+pShowPMTileTerm :: Int -> PMTileTerm -> String
+pShowPMTileTerm l_rec l_mterm =
+    let l_indices = mttIndex l_mterm
+        l_sizes = mttSizes l_mterm
+        l_item = mttItem l_mterm
+    in  (concat $ replicate l_rec pTab) ++
+        "PMTileTerm (indices = " ++ show l_indices ++
+        ", sizes = " ++ show l_sizes ++
+        "), item = " ++ pShowPMTileItem (l_rec + 1) l_item
+
+pShowPMTileItem :: Int -> PMTileItem -> String
+pShowPMTileItem l_rec (ST l_ks) = concatMap kfName l_ks ++ breakline
+pShowPMTileItem l_rec (MT l_mts) = 
+    breakline ++ 
+    (intercalate (", " ++ breakline) $ map (pShowPMTileTerm l_rec) l_mts)
 
 showBin :: Int -> Int -> String
 showBin (-1) a = ""

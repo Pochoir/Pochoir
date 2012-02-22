@@ -710,8 +710,8 @@ pShowTileGuardHead :: [PName] -> [Int] -> [Int] -> String
 pShowTileGuardHead l_params l_indices l_sizes =
     let l_cond = intercalate " && " $ zipWith3 pInsMod l_params l_indices l_sizes
     in  if l_cond == ""
-           then breakline ++ "{"
-           else breakline ++ "if " ++ mkParen l_cond ++ "{"
+           then breakline -- ++ "{"
+           else breakline ++ "if " ++ mkParen l_cond ++ " {"
 
 pShowTileGuardHeadT :: [PName] -> Int -> [Int] -> [Int] -> String
 pShowTileGuardHeadT l_params l_time_shift l_indices l_sizes = 
@@ -735,11 +735,13 @@ pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift l_mterms@(t:ts) =
                       then pShowTileGuardHeadT l_params l_time_shift l_indices l_sizes
                       else pShowTileGuardHead l_params l_indices l_sizes
  -}
-        l_tail = if (null ts) || ((null . mttIndex . head) ts)
-                    then breakline ++ "}"
-                    else breakline ++ "} else "
+        l_tail = if null l_indices
+                    then ""
+                    else if null ts || (null . mttIndex . head) ts
+                            then breakline ++ "}"
+                            else breakline ++ "} else "
         l_str_items = pShowMTileItem l_showSingleKernel 
-                    (l_rank - l_len) (drop l_len l_params) l_time_shift l_items
+                        (l_rank - l_len) (drop l_len l_params) l_time_shift l_items
     in  l_header ++ breakline ++ l_str_items ++ l_tail ++ 
         pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift ts
 

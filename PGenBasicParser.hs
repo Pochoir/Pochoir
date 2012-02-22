@@ -318,7 +318,7 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
                       breakline ++ (mkComment $ intercalate ", " $ map (show . kfTileOp) l_rev_kernel_funcs) ++
                       breakline ++ (mkComment $ intercalate ", " $ map (show . kfTileIndex) l_rev_kernel_funcs) ++
                       breakline ++ (mkComment $ intercalate ", " $ map (show . kfTileSizes) l_rev_kernel_funcs) ++
-                      breakline ++ (mkComment $ show l_kernel_funcs_by_tIndex)
+                      breakline ++ (mkComment $ intercalate breakline $ map (pShowPMTile 0) l_kernel_funcs_by_tIndex)
         -- l_kernels_by_tIndex_by_t :: [PMTile]
         -- pMTileUnroll may be wrong!!!
         l_kernel_funcs_by_tIndex_by_t = l_kernel_funcs_by_tIndex 
