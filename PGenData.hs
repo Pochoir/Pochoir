@@ -181,16 +181,16 @@ data PMTile = PMTile {
     mtSizes :: [Int], -- sizes of each space/time dimensions, starting from t, i, j, ... 
     mtKernelFuncs :: [PKernelFunc], -- collection of all inserted kernel funcs
     mtTerms :: [PMTileTerm]
-}
+} 
 
 data PMTileTerm = PMTileTerm {
     mttIndex :: [Int],
     mttSizes :: [Int],
     mttItem :: PMTileItem 
-}
+} 
     
 data PMTileItem = ST [PKernelFunc]
-                | LT [PMTileTerm]
+                | MT [PMTileTerm]
 
 emptyPType :: PType
 emptyPType = PType { basicType = PUserType, typeName = "" }
@@ -348,6 +348,26 @@ instance Show PMode where
 
 instance Show Homogeneity where
     show h = "<" ++ showBin (size h - 1) (o h) ++ ", " ++ showBin (size h - 1) (a h) ++ ">\n"
+
+instance Show PMTile where
+    show a = let l_sizes = mtSizes a
+                 l_terms = mtTerms a
+             in  breakline ++ "PMTile : " ++ 
+                 breakline ++ "sizes = " ++ show l_sizes ++ 
+                 breakline ++ "terms = " ++ show l_terms
+
+instance Show PMTileTerm where
+    show a = let l_indices = mttIndex a
+                 l_sizes = mttSizes a
+                 l_item = mttItem a
+             in  breakline ++ "PMTileTerm : " ++ 
+                 breakline ++ "indices = " ++ show l_indices ++ 
+                 breakline ++ "sizes = " ++ show l_sizes ++ 
+                 breakline ++ "item = " ++ show l_item
+
+instance Show PMTileItem where
+    show (ST l_ks) = concatMap kfName l_ks ++ breakline
+    show (MT l_mts) = show l_mts
 
 showBin :: Int -> Int -> String
 showBin (-1) a = ""

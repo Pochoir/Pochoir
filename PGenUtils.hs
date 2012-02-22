@@ -310,7 +310,7 @@ pLongestCommonPrefix [] _ = []
 pLongestCommonPrefix _ [] = []
 pLongestCommonPrefix aL@(a:as) bL@(b:bs) = 
     if a == b
-       then a:(pCmpListHead as bs)
+       then a:(pLongestCommonPrefix as bs)
        else []
 
 eqKIndex :: PKernel -> PKernel -> Bool
@@ -448,10 +448,12 @@ pGroupByTerm b l@(x:xs) ass =
 pPackKernelFuncsIntoMTiles :: [PKernelFunc] -> [PMTile]
 pPackKernelFuncsIntoMTiles l@(x:xs) =
     let l_mtile = mkMTile x
-    in  pPackKernelFuncsIntoMTilesTerm xs l_mtile
-        where pPackKernelFuncsIntoMTilesTerm [] t = t
-              pPackKernelFuncsIntoMTilesTerm l@(x:xs) t = 
-                  pPackKernelFuncsIntoMTilesTerm xs $ pushBackMTile x t
+    in  pPackKernelFuncsIntoMTilesTerm xs [l_mtile]
+        where pPackKernelFuncsIntoMTilesTerm [] ts = ts
+              pPackKernelFuncsIntoMTilesTerm l@(x:xs) ts = 
+                  case kfTileOp x of
+                      PNULL -> pPackKernelFuncsIntoMTilesTerm xs ts
+                      otherwise -> pPackKernelFuncsIntoMTilesTerm xs $ pushBackMTile x ts
 
 mkMTile :: PKernelFunc -> PMTile
 mkMTile l_kernel_func =
@@ -464,7 +466,7 @@ mkMTileTerm :: [Int] -> [Int] -> PMTileItem -> PMTileTerm
 mkMTileTerm l_indices l_sizes l_item =
     let l_tileTerm = PMTileTerm { mttIndex = l_indices,
                                   mttSizes = l_sizes,
-                                  mttIterm = l_item }
+                                  mttItem = l_item }
     in  l_tileTerm
 
 pushBackMTile :: PKernelFunc -> [PMTile] -> [PMTile]
@@ -483,13 +485,12 @@ pushBackMTile l_kernel_func tL@(t:ts) =
         l_len_t_sizes = length l_t_sizes
     in  if l_len_lcp < l_len_sizes && l_len_lcp < l_len_t_sizes
            then t:(pushBackMTile l_kernel_func ts)
-           else let t' = 
-                    t { mtSizes = if length l_sizes > length l_t_sizes
-                                     then l_sizes
-                                     else l_t_sizes
-                        ,
-                        mtKernelFuncs = mtKernelFuncs t ++ [l_kernel_func],
-                        mtTerms = pushBackMTileTerm l_indices l_sizes l_kernel_func l_terms }
+           else let t' = t { mtSizes = if length l_sizes > length l_t_sizes 
+                                          then l_sizes 
+                                          else l_t_sizes
+                             ,
+                             mtKernelFuncs = mtKernelFuncs t ++ [l_kernel_func],
+                             mtTerms = pushBackMTileTerm l_indices l_sizes l_kernel_func l_terms }
                 in  t':ts
 
 pushBackMTileTerm :: [Int] -> [Int] -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]
@@ -522,14 +523,14 @@ pushBackMTileTerm l_indices l_sizes l_kernel_func l_terms@(t:ts) =
                             t' = PMTileTerm {
                                 mttIndex = l_this_index,
                                 mttSizes = l_this_sizes,
-                                mttItem = LT (l_new_mterm_0:l_new_mterm_1) }
+                                mttItem = MT ([l_new_mterm_0] ++ [l_new_mterm_1]) }
                         in  t':(pushBackMTileTerm l_indices l_sizes l_kernel_func ts)
                    -- else : implies l_len_lcp < l_len_t && l_len_lcp < l_len_indices 
                    --        we have to split
                    else if (l_len_lcp == 0 && null ts)
                            then let t' = mkMTileTerm l_indices l_sizes (ST [l_kernel_func])
-                                in  t:t'
-                           else t:(pushBackMTileTerm l_indices l_sizes l_kenrel_func ts)
+                                in  [t] ++ [t']
+                           else t:(pushBackMTileTerm l_indices l_sizes l_kernel_func ts)
 
 pushBackMTileItem :: [Int] -> [Int] -> PKernelFunc -> PMTileItem -> PMTileItem
 pushBackMTileItem [] [] l_kernel_func (ST l_ks) = 
@@ -543,10 +544,10 @@ pushBackMTileItem l_indices l_sizes l_kernel_func (ST l_ks) =
             mttIndex = l_indices,
             mttSizes = l_sizes,
             mttItem = ST [l_kernel_func] }
-    in  LT (l_old_term:l_new_term)
-pushBackMTileItem l_indices l_sizes l_kernel_func (LT l_ts) =
+    in  MT ([l_old_term] ++ [l_new_term])
+pushBackMTileItem l_indices l_sizes l_kernel_func (MT l_ts) =
     let l_new_terms = pushBackMTileTerm l_indices l_sizes l_kernel_func l_ts
-    in  LT l_new_terms
+    in  MT l_new_terms
 
 pSetTileOp :: TileOp -> PTile -> PTile
 pSetTileOp l_op pTile = pTile { tOp = l_op }
@@ -862,6 +863,9 @@ mkLocal a = "l_" ++ a
 
 mkParen :: String -> String
 mkParen a = "(" ++ a ++ ")"
+
+mkComment :: String -> String
+mkComment a = "/* " ++ a ++ " */ "
 
 mkPointer :: String -> String
 mkPointer a = a ++ " * "
