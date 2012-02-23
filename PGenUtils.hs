@@ -519,20 +519,21 @@ pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func l_terms@(t
         l_len_lcp = length l_lcp
         l_len_t = length l_t_indices
         l_len_indices = length l_indices
+        l_latest_tile_order' = if null ts then l_t_tile_order else l_latest_tile_order
     in  if l_t_tile_order == l_latest_tile_order || null ts 
            then if l_len_lcp == l_len_t && l_len_lcp > 0 
-                   then directInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func l_terms
+                   then directInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func l_terms
                    else if l_len_lcp < l_len_t && l_len_lcp > 0 
                            then if null ts 
-                                   then splitInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func l_terms 
-                                   else t:(pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func ts)
+                                   then splitInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func l_terms 
+                                   else t:(pushBackMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func ts)
                            else if l_len_lcp == 0 
                                    then if null ts
                                            then let t' = mkMTileTerm l_indices l_sizes l_tile_order (ST [l_kernel_func])
                                                 in  [t] ++ [t']
-                                           else t:(pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func ts)
+                                           else t:(pushBackMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func ts)
                                    else l_terms
-           else t:(pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func ts)
+           else t:(pushBackMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func ts)
 
 directInsertCurrentPMTileTerm :: [Int] -> [Int] -> Int -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]
 directInsertCurrentPMTileTerm _ _ _ _ [] = []
