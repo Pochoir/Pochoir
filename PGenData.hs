@@ -179,6 +179,7 @@ data PTile = PTile {
 data PMTile = PMTile {
     -- mtSizes == concatMap mttSizes mtItems
     mtSizes :: [Int], -- sizes of each space/time dimensions, starting from t, i, j, ... 
+    mtLatestTileOrder :: Int, -- the tile-order of latest inserted kernel_func
     mtKernelFuncs :: [PKernelFunc], -- collection of all inserted kernel funcs
     mtTerms :: [PMTileTerm]
 } 
@@ -186,6 +187,7 @@ data PMTile = PMTile {
 data PMTileTerm = PMTileTerm {
     mttIndex :: [Int],
     mttSizes :: [Int],
+    mttLatestTileOrder :: Int, -- the tile-order of latest inserted kernel_func
     mttItem :: PMTileItem 
 } 
     
@@ -375,25 +377,29 @@ pShowPMTile :: Int -> PMTile -> String
 pShowPMTile l_rec l_mtile =
     let l_sizes = mtSizes l_mtile
         l_terms = mtTerms l_mtile
+        l_tile_order = mtLatestTileOrder l_mtile
     in  breakline ++ "PMTile (sizes = " ++
-        show l_sizes ++ "), terms = " ++ breakline ++ 
-        (intercalate (", " ++ breakline) $ map (pShowPMTileTerm (l_rec + 1)) l_terms)
+        show l_sizes ++ ", latest_tile_order = " ++ show l_tile_order ++
+        "), terms = " ++ breakline ++ 
+        (concatMap (pShowPMTileTerm (l_rec + 1)) l_terms)
 
 pShowPMTileTerm :: Int -> PMTileTerm -> String
 pShowPMTileTerm l_rec l_mterm =
     let l_indices = mttIndex l_mterm
         l_sizes = mttSizes l_mterm
+        l_tile_order = mttLatestTileOrder l_mterm
         l_item = mttItem l_mterm
     in  (concat $ replicate l_rec pTab) ++
         "PMTileTerm (indices = " ++ show l_indices ++
         ", sizes = " ++ show l_sizes ++
+        ", latest_tile_order = " ++ show l_tile_order ++
         "), item = " ++ pShowPMTileItem (l_rec + 1) l_item
 
 pShowPMTileItem :: Int -> PMTileItem -> String
-pShowPMTileItem l_rec (ST l_ks) = concatMap kfName l_ks ++ breakline
+pShowPMTileItem l_rec (ST l_ks) = (intercalate ", " $ map kfName l_ks) ++ breakline
 pShowPMTileItem l_rec (MT l_mts) = 
     breakline ++ 
-    (intercalate (", " ++ breakline) $ map (pShowPMTileTerm l_rec) l_mts)
+    (concatMap (pShowPMTileTerm l_rec) l_mts)
 
 showBin :: Int -> Int -> String
 showBin (-1) a = ""

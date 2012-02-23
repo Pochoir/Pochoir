@@ -315,6 +315,7 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
         l_kernel_funcs_by_tIndex = pPackKernelFuncsIntoMTiles l_rev_kernel_funcs
         l_comments' = breakline ++ l_comments ++ 
                       breakline ++ (mkComment $ intercalate ", " $ map kfName l_rev_kernel_funcs) ++
+                      breakline ++ (mkComment $ intercalate ", " $ map (show . kfTileOrder) l_rev_kernel_funcs) ++
                       breakline ++ (mkComment $ intercalate ", " $ map (show . kfTileOp) l_rev_kernel_funcs) ++
                       breakline ++ (mkComment $ intercalate ", " $ map (show . kfTileIndex) l_rev_kernel_funcs) ++
                       breakline ++ (mkComment $ intercalate ", " $ map (show . kfTileSizes) l_rev_kernel_funcs) ++

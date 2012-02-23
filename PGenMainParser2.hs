@@ -139,7 +139,8 @@ pGetGuardTilesTerm l_mode l_order l_rank l_color l_reg_GTs =
                          then emptyTile
                          else pSetTileOp PNULL $ head l_tiles'
         l_out_tiles = foldr (pColorTile l_rank l_color) [l_null_tile] l_tiles'
-        l_out_tiles' = map (pFillTileOrder l_order) l_out_tiles
+        -- l_out_tiles' = map (pFillTileOrder l_order) l_out_tiles
+        l_out_tiles' = l_out_tiles
     in  (l_out_guard', l_out_tiles')
 
 pColorGuard :: Int -> Homogeneity -> PGuard -> PGuard -> PGuard
