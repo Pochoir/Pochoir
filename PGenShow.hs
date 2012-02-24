@@ -729,7 +729,6 @@ pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift l_mterms@(t:ts) =
         l_items = mttItem t
         l_len = length l_sizes
         l_header = pShowTileGuardHead l_params l_indices l_sizes
-
 {-
         l_header = if l_rank + 1 == length l_params 
                       then pShowTileGuardHeadT l_params l_time_shift l_indices l_sizes
