@@ -524,6 +524,23 @@ pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func l_terms@(t
            then if l_len_lcp == l_len_t && l_len_lcp > 0 
                    then directInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func l_terms
                    else if l_len_lcp < l_len_t && l_len_lcp > 0 
+                           then splitInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func l_terms 
+                           else if l_len_lcp == 0 
+                                   then if null ts
+                                           then let t' = mkMTileTerm l_indices l_sizes l_tile_order (ST [l_kernel_func])
+                                                in  [t] ++ [t']
+                                           else t:(pushBackMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func ts)
+                                   else l_terms
+           else t:(pushBackMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func ts)
+{-
+    - This is the initial version that seems working correctly.
+    - The main point: if l_len_lcp < l_len_t && l_len_lcp > 0, 
+    - we check: if null ts -> we do a splitInsertCurrentPMTileTerm, 
+    - else if (not . null) ts -> we check it against next PMTileTerm
+    in  if l_t_tile_order == l_latest_tile_order || null ts 
+           then if l_len_lcp == l_len_t && l_len_lcp > 0 
+                   then directInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func l_terms
+                   else if l_len_lcp < l_len_t && l_len_lcp > 0 
                            then if null ts 
                                    then splitInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func l_terms 
                                    else t:(pushBackMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func ts)
@@ -534,7 +551,7 @@ pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func l_terms@(t
                                            else t:(pushBackMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func ts)
                                    else l_terms
            else t:(pushBackMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func ts)
-
+ -}
 directInsertCurrentPMTileTerm :: [Int] -> [Int] -> Int -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]
 directInsertCurrentPMTileTerm _ _ _ _ [] = []
 directInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func (t:ts) = 
