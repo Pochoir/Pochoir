@@ -506,18 +506,18 @@ pushBackMTile l_kernel_func tL@(t:ts) =
                            }
                 in  t':ts
 
-checkLCP :: [Int] -> [Int] -> Int -> [PMTileTerm] -> Int
+checkLCP :: [Int] -> [Int] -> Int -> [PMTileTerm] -> (Int, Int)
 checkLCP l_indices l_sizes l_latest_tile_order l_terms =
-    let (l_pos_torder, l_last_pos_torder) = checkLCP_torder l_indices l_sizes l_latest_tile_order l_terms (0, -1) (0, -1)
-        l_pos = checkLCP_term l_indices l_sizes l_latest_tile_order l_terms (0, l_last_pos_torder) (0, -1)
+    let (l_len_torder, l_pos_torder, l_last_pos_torder) = checkLCP_torder l_indices l_sizes l_latest_tile_order l_terms (0, -1) (0, -1)
+        (l_len, l_pos) = checkLCP_term l_indices l_sizes l_latest_tile_order l_terms (0, l_last_pos_torder) (0, -1)
     in  if l_pos_torder >= 0
-           then l_pos_torder
+           then (l_len_torder, l_pos_torder)
            else if l_pos > l_last_pos_torder
-                   then l_pos
-                   else l_last_pos_torder
+                   then (l_len, l_pos)
+                   else (0, l_last_pos_torder) 
 
-checkLCP_torder :: [Int] -> [Int] -> Int -> [PMTileTerm] -> (Int, Int) -> (Int, Int) -> (Int, Int)
-checkLCP_torder _ _ _ [] (_, l_last_pos_torder) (l_len_torder, l_pos_torder) = (l_pos_torder, l_last_pos_torder) 
+checkLCP_torder :: [Int] -> [Int] -> Int -> [PMTileTerm] -> (Int, Int) -> (Int, Int) -> (Int, Int, Int)
+checkLCP_torder _ _ _ [] (_, l_last_pos_torder) (l_len_torder, l_pos_torder) = (l_len_torder, l_pos_torder, l_last_pos_torder) 
 checkLCP_torder l_indices l_sizes l_latest_tile_order l_terms@(t:ts) (l_curr_pos, l_last_pos_torder) (l_len_torder, l_pos_torder) =
     let l_t_indices = mttIndex t
         l_t_tile_order = mttLatestTileOrder t
@@ -533,8 +533,8 @@ checkLCP_torder l_indices l_sizes l_latest_tile_order l_terms@(t:ts) (l_curr_pos
            else checkLCP_torder l_indices l_sizes l_latest_tile_order ts (l_curr_pos', l_last_pos_torder') (l_len_torder, l_pos_torder)
 
 -- find the first term that makes l_len_lcp > 0 && l_pos > l_last_pos_torder
-checkLCP_term :: [Int] -> [Int] -> Int -> [PMTileTerm] -> (Int, Int) -> (Int, Int) -> Int
-checkLCP_term _ _ _ [] (_, l_last_pos_torder) (l_len, l_pos) = l_pos 
+checkLCP_term :: [Int] -> [Int] -> Int -> [PMTileTerm] -> (Int, Int) -> (Int, Int) -> (Int, Int)
+checkLCP_term _ _ _ [] (_, l_last_pos_torder) (l_len, l_pos) = (l_len, l_pos)
 checkLCP_term l_indices l_sizes l_latest_tile_order l_terms@(t:ts) (l_curr_pos, l_last_pos_torder) (l_len, l_pos) =
     let l_t_indices = mttIndex t
         l_t_tile_order = mttLatestTileOrder t
@@ -554,14 +554,14 @@ pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func [] =
     in  [l_mterm]
 pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func l_terms =
     let l_tile_order = kfTileOrder l_kernel_func
-        l_insert_pos = checkLCP l_indices l_sizes l_latest_tile_order l_terms
+        (l_len_lcp, l_insert_pos) = checkLCP l_indices l_sizes l_latest_tile_order l_terms
     in  if l_insert_pos == -1
            then let t' = mkMTileTerm l_indices l_sizes l_tile_order (ST [l_kernel_func])
                 in  l_terms ++ [t']
            else let l_t = l_terms !! l_insert_pos 
                     l_t_tile_order = mttLatestTileOrder l_t 
                     l_latest_tile_order' = l_t_tile_order
-                in  (take (l_insert_pos) l_terms) ++ (splitInsertPMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func l_t) ++ (drop (l_insert_pos + 1) l_terms)
+                in  (take (l_insert_pos) l_terms) ++ (splitInsertPMTileTerm l_len_lcp l_indices l_sizes l_latest_tile_order' l_kernel_func l_t) ++ (drop (l_insert_pos + 1) l_terms)
 {-
     -- Second version that seems working correctly.
     -- The main point: if l_len_lcp < l_len_t && l_len_lcp > 0, 
@@ -647,13 +647,11 @@ directInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_fun
                        else l_t_tile_order }
     in  t':ts
 
-splitInsertPMTileTerm :: [Int] -> [Int] -> Int -> PKernelFunc -> PMTileTerm -> [PMTileTerm]
-splitInsertPMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func t = 
+splitInsertPMTileTerm :: Int -> [Int] -> [Int] -> Int -> PKernelFunc -> PMTileTerm -> [PMTileTerm]
+splitInsertPMTileTerm l_len_lcp l_indices l_sizes l_latest_tile_order l_kernel_func t = 
     let l_t_indices = mttIndex t
         l_t_tile_order = mttLatestTileOrder t
         l_tile_order = kfTileOrder l_kernel_func
-        l_lcp = pLongestCommonPrefix l_indices l_t_indices
-        l_len_lcp = length l_lcp
     in  if l_len_lcp >= length l_t_indices && l_len_lcp > 0
            then let l_mitem = pushBackMTileItem
                                 (drop l_len_lcp l_indices)
