@@ -734,9 +734,11 @@ pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift l_mterms@(t:ts) =
                       then pShowTileGuardHeadT l_params l_time_shift l_indices l_sizes
                       else pShowTileGuardHead l_params l_indices l_sizes
  -}
+        l_current_tile_order = mttLatestTileOrder t
+        l_next_tile_order = (mttLatestTileOrder . head) ts
         l_tail = if null l_indices
                     then ""
-                    else if null ts || (null . mttIndex . head) ts
+                    else if null ts || (null . mttIndex . head) ts || l_current_tile_order < l_next_tile_order
                             then breakline ++ "}"
                             else breakline ++ "} else "
         l_str_items = pShowMTileItem l_showSingleKernel 
