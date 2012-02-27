@@ -376,7 +376,8 @@ pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_order, l_unro
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape $ concatMap mtKernelFuncs l_mtiles)
         l_pShape' = pFillPShapeName "" l_order l_pShape
         bdryKernel = if regBound
-                        then pShowAllCondTileOverlapKernels (pShowMacroStmt True) 
+                        then pShowAllCondTileOverlapKernels 
+                                (pShowMacroStmt True) 
                                 regBound PAllCondTileMacroOverlap 
                                 bdryKernelName l_stencil l_pShape'
                                 l_mtiles
@@ -397,7 +398,8 @@ pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_order, l_unro
  ------------------------------------------------------------------------------------------}
     -- new version
     in  (breakline ++ l_comments ++
-         breakline ++ (mkStatic . show) l_pShape' ++ bdryKernel ++ breakline ++ obaseKernel ++ breakline)
+         breakline ++ (mkStatic . show) l_pShape' ++ 
+         breakline ++ bdryKernel ++ breakline ++ obaseKernel ++ breakline)
 
 pSplitUnrollTimeTileOverlapScope :: (String, PMode, PName, PName, Int, Int, [PMTile], [PMTile], PStencil, String) -> (PKernelFunc -> String) -> String
 pSplitUnrollTimeTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_order, l_unroll, l_mtiles, l_mtiles_by_t, l_stencil, l_comments) l_showSingleKernel =
@@ -416,37 +418,39 @@ pSplitUnrollTimeTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_order, l_u
                                      l_mtiles
                              else ""
         bdryKernel = if regBound
-                        then ""
-{-
                         then pShowUnrollTimeTileOverlapKernels
                                 (pShowMacroStmt True)
                                 regBound PUnrollTimeTileMacroOverlap
                                 bdryKernelName l_stencil l_pShape'
                                 l_mtiles_by_t
--}
                         else ""
         cond_obaseKernel = pShowAllCondTileOverlapKernels 
                                 l_showSingleKernel 
                                 False l_mode 
                                 cond_obaseKernelName l_stencil l_pShape'
                                 l_mtiles
-        obaseKernel = ""
-{-
         obaseKernel = pShowUnrollTimeTileOverlapKernels
                                 l_showSingleKernel
                                 False l_mode 
                                 obaseKernelName l_stencil l_pShape'
                                 l_mtiles_by_t
- -}
         runKernel = if regBound
                        then obaseKernelName ++ ", " ++ cond_obaseKernelName ++
                             ", " ++ bdryKernelName ++ ", " ++ cond_bdryKernelName
                        else obaseKernelName ++ ", " ++ cond_obaseKernelName
+{-------------------------------------------------------------------------------------
+    -- old version
     in  (breakline ++ l_comments ++ breakline ++ show l_pShape' ++ 
          bdryKernel ++ breakline ++ cond_bdryKernel ++ breakline ++
          obaseKernel ++ breakline ++ cond_obaseKernel ++ breakline ++ 
          l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++
          ", " ++ show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
+ ------------------------------------------------------------------------------------}
+    -- new version
+    in  (breakline ++ l_comments ++
+         breakline ++ (mkStatic . show) l_pShape' ++ 
+         breakline ++ cond_bdryKernel ++ breakline ++ bdryKernel ++
+         breakline ++ cond_obaseKernel ++ breakline ++ obaseKernel ++ breakline)
 
 {------------------------------------------------------------------------------------- 
  - End functions for overlapped modes

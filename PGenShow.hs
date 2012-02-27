@@ -775,6 +775,71 @@ pShowStencilRef :: (Int, String) -> String
 pShowStencilRef (l_rank, l_name) =
     "Pochoir <" ++ show l_rank ++ "> & " ++ l_name
 
+pShowFuncObjectHeader :: String -> PStencil -> [PMTile] -> String
+pShowFuncObjectHeader l_name l_stencil l_mtiles =
+    let l_rank = sRank l_stencil
+        l_arrayInUse = sArrayInUse l_stencil
+        l_kernel_funcs = concatMap mtKernelFuncs l_mtiles
+        l_params = (kfParams . head) l_kernel_funcs
+        l_spatial_params = tail l_params
+        l_t = head l_params
+        l_t_begin = l_t ++ "0"
+        l_t_end = l_t ++ "1"
+        l_kernelFuncName = pSys l_name
+        l_arrayList = map aName l_arrayInUse
+        l_arrayInputList = map (mkInput . aName) l_arrayInUse
+        l_arrayRefList = map pShowPochoirArrayRef $ zip3 (map aRank l_arrayInUse) (map aType l_arrayInUse) l_arrayList
+        l_arrayInputRefList = map pShowPochoirArrayRef $ zip3 (map aRank l_arrayInUse) (map aType l_arrayInUse) l_arrayInputList
+        l_stencilName = sName l_stencil
+        l_stencilInputName = (mkInput . sName) l_stencil
+        l_stencilRef = pShowStencilRef (sRank l_stencil, l_stencilName)
+        l_stencilInputRef = pShowStencilRef (sRank l_stencil, l_stencilInputName)
+        l_header = "/* KNOWN */" ++ breakline ++
+                   "class " ++ l_kernelFuncName ++ " {" ++ breakline ++
+                   "private: " ++ breakline ++
+                   l_stencilRef ++ "; " ++ breakline ++
+                   (intercalate "; " l_arrayRefList) ++ "; " ++ breakline ++
+                   "public: " ++ breakline ++
+                   l_kernelFuncName ++ mkParen (l_stencilInputRef ++ ", " ++
+                                                intercalate ", " l_arrayInputRefList) __
+                   " : " ++
+                   l_stencilName ++ mkParen l_stencilInputName ++ ", " ++
+                   (intercalate ", " $ 
+                        zipWith (++) l_arrayList (map mkParen l_arrayInputList)) ++ " {} " ++
+                   breakline ++ "void operator() (int " ++ 
+                   l_t_begin ++ ", int " ++ l_t_end ++ ", " ++ 
+                   " Grid_Info <" ++ show l_rank ++ "> const & grid) {"
+    in  l_header
+
+pShowFuncObjectTail :: String -> Int -> String
+pShowFuncObjectTail l_name l_rank =
+    let l_kernelFuncName = pSys l_name
+        l_lambdaPointer = mkInput l_name
+        l_tail = "}" ++ breakline ++ "};" ++ 
+                 breakline ++ mkStatic l_kernelFuncName ++ " * " ++ l_lambdaPointer ++
+                 " = NULL;" ++ 
+                 breakline ++ mkStatic "Pochoir_Base_Kernel <" ++ show l_rank ++
+                 "> * " ++ l_name ++ " = NULL;"
+    in  l_tail
+
+pShowAutoLambdaHeader :: String -> String -> Int -> String
+pShowAutoLambdaHeader l_name l_t l_rank =
+    let l_t_begin = l_t ++ "0"
+        l_t_end = l_t ++ "1"
+        l_kernelFuncName = pSys l_name
+        l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++
+                   " = [&] (int " ++ l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
+                   " Grid_Info <" ++ show l_rank ++ "> const & grid) {"
+    in  l_header
+
+pShowAutoLambdaTail :: String -> Int -> PShape -> String
+pShowAutoLambdaTail l_name l_rank l_pShape =
+    let l_kernelFuncName = pSys l_name
+        l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel <" ++ show l_rank ++
+                 "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++
+                 shapeName l_pShape ++ " );"
+    in  l_tail
+
 pShowDefaultTileString :: PMode -> PStencil -> PGuard -> String
 pShowDefaultTileString _ _ _ = ""
 
@@ -797,15 +862,12 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
         l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> const & l_phys_grid = " ++
                             sName l_stencil ++ ".get_phys_grid();"
 {----------------------------------------------------------------------------------------
-        - The header and tail definition for the auto lambda function
-        l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++
-                   " = [&] (int " ++ l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
-                   " Grid_Info <" ++ show l_rank ++ "> const & grid) {"
-        l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel <" ++ show l_rank ++
-                 "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++
-                 shapeName l_pShape ++ " );"
+        -- The header and tail definition for the auto lambda function
+        l_header = pShowAutoLambdaHeader l_name l_t l_rank
+        l_tail = pShowAutoLambdaTail l_name l_rank l_pShape 
  ----------------------------------------------------------------------------------------}
         -- The header and tail definition for the function object -----------------------
+{-
         l_arrayList = map aName l_arrayInUse
         l_arrayInputList = map (mkInput . aName) l_arrayInUse
         l_arrayRefList = map pShowPochoirArrayRef $ zip3 (map aRank l_arrayInUse) (map aType l_arrayInUse) l_arrayList
@@ -835,6 +897,9 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
                  " = NULL;" ++ 
                  breakline ++ mkStatic "Pochoir_Base_Kernel <" ++ show l_rank ++
                  "> * " ++ l_name ++ " = NULL;"
+ -}
+        l_header = pShowFuncObjectHeader l_name l_stencil l_mtiles
+        l_tail = pShowFuncObjectTail l_name l_rank 
         ---------------------------------------------------------------------------------
 
         l_spatial_loop_header = 
@@ -903,10 +968,10 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
 {-
 pShowUnrollTimeTileOverlapKernels :: (PKernelFunc -> String) -> Bool -> PMode -> String -> PStencil -> PShape -> [PMTile] -> String
 pShowUnrollTimeTileOverlapKernels _ _ _ _ _ _ [] = ""
-pShowUnrollTimeTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pShape l_mtiles_by_t@(k:ks) =
+pShowUnrollTimeTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pShape l_mtiles@(k:ks) =
     let l_rank = sRank l_stencil
         l_arrayInUse = sArrayInUse l_stencil
-        l_kernel_funcs = concat $ concat l_mtiles_by_t
+        l_kernel_funcs = concatMap mtKernelFuncs l_mtiles
         l_iter = foldr union (kfIter $ head l_kernel_funcs) 
                              (map kfIter $ tail l_kernel_funcs)
         -- We are assuming that all kernel functions have the 
@@ -919,12 +984,18 @@ pShowUnrollTimeTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_ste
         l_kernelFuncName = pSys l_name
         l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> const & l_phys_grid = " ++
                             sName l_stencil ++ ".get_phys_grid();"
+{-----------------------------------------------------------------------------------------
+        -- The header and tail definition for the auto lambda function
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++
                    " = [&] (int " ++ l_t_begin ++ ", int " ++ l_t_end ++ ", " ++
                    " Grid_Info <" ++ show l_rank ++ "> const & grid) {"
         l_tail = "};" ++ breakline ++ "Pochoir_Obase_Kernel <" ++ show l_rank ++
                  "> " ++ l_name ++ "( " ++ l_kernelFuncName ++ ", " ++
                  shapeName l_pShape ++ " );"
+ -----------------------------------------------------------------------------------------}
+        -- The header and tail definition for the function object
+        l_header = pShowFuncObjectHeader l_name l_stencil l_mtiles
+        l_tail = pShowFuncObjectTail l_name l_rank
         l_unfold_kernels = 
             pShowUnrollTimeTileOverlapKernelOnT 
                 l_showSingleKernel l_bound l_mode l_stencil l_mtiles_by_t
