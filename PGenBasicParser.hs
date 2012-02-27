@@ -312,8 +312,9 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
         l_iters = getIterFromKernel l_mode l_stencil l_params l_stmts
         l_rev_kernel_funcs = map (pFillIters l_iters) l_kernel_funcs
         -- l_kernels_by_tIndex :: [PMTile]
-        l_kernel_funcs_by_tIndex = pPackOptKernelFuncsIntoMTiles l_rev_kernel_funcs
-        -- l_kernel_funcs_by_tIndex = pPackLinearKernelFuncsIntoMTiles l_rev_kernel_funcs
+        l_kernel_funcs_by_tIndex = pPackKernelFuncsIntoMTiles l_rev_kernel_funcs pushBackMTileTerm True
+        -- l_kernel_funcs_by_tIndex = pPackKernelFuncsIntoMTiles l_rev_kernel_funcs directInsertMTileTerm False
+        -- l_kernel_funcs_by_tIndex = pPackKernelFuncsIntoMTiles l_rev_kernel_funcs insertMTileTermByT False
         l_comments' = breakline ++ l_comments ++ 
                       breakline ++ (mkComment $ intercalate ", " $ map kfName l_rev_kernel_funcs) ++
                       breakline ++ (mkComment $ intercalate ", " $ map (show . kfTileOrder) l_rev_kernel_funcs) ++

@@ -444,100 +444,19 @@ pGroupByTerm b l@(x:xs) ass =
         ass' = if null as1 then ass else ass ++ [as1]
     in  pGroupByTerm b as2 ass'
 
-pPackLinearKernelFuncsIntoMTiles :: [PKernelFunc] -> [PMTile]
-pPackLinearKernelFuncsIntoMTiles l@(k:ks) =
-    let l_mtile = mkMTile k
-    in  [(pPackLinearKernelFuncsIntoMTilesTerm ks l_mtile)]
-        where pPackLinearKernelFuncsIntoMTilesTerm [] t = t
-              pPackLinearKernelFuncsIntoMTilesTerm l@(k:ks) t = 
-                  case kfTileOp k of
-                      PNULL -> pPackLinearKernelFuncsIntoMTilesTerm ks t
-                      otherwise -> pPackLinearKernelFuncsIntoMTilesTerm ks $ directInsertMTile k t
+checkT :: [Int] -> [Int] -> Int -> [PMTileTerm] -> (Int, Int)
+checkT l_indices l_sizes l_latest_tile_order l_terms =
+    checkTterm l_indices l_sizes l_latest_tile_order l_terms (0, -1)
 
--- we are assuming that the incoming PKernelFunc are sorted in a non-decreasing order
-pPackOptKernelFuncsIntoMTiles :: [PKernelFunc] -> [PMTile]
-pPackOptKernelFuncsIntoMTiles l@(k:ks) =
-    let l_mtile = mkMTile k
-    in  pPackOptKernelFuncsIntoMTilesTerm ks [l_mtile]
-        where pPackOptKernelFuncsIntoMTilesTerm [] ts = ts
-              pPackOptKernelFuncsIntoMTilesTerm l@(k:ks) ts = 
-                  case kfTileOp k of
-                      PNULL -> pPackOptKernelFuncsIntoMTilesTerm ks ts
-                      otherwise -> pPackOptKernelFuncsIntoMTilesTerm ks $ pushBackMTile k ts
-
-mkMTile :: PKernelFunc -> PMTile
-mkMTile l_kernel_func =
-    let l_indices = kfTileIndex l_kernel_func
-        l_sizes = kfTileSizes l_kernel_func
-        l_tile_order = kfTileOrder l_kernel_func
-        l_term = mkMTileTerm l_indices l_sizes l_tile_order (ST [l_kernel_func])
-    in  PMTile { mtSizes = l_sizes, 
-                 mtLatestTileOrder = l_tile_order, 
-                 mtKernelFuncs = [l_kernel_func], 
-                 mtTerms = [l_term] }
-
-mkMTileTerm :: [Int] -> [Int] -> Int -> PMTileItem -> PMTileTerm
-mkMTileTerm l_indices l_sizes l_tile_order l_item =
-    let l_tileTerm = PMTileTerm { mttIndex = l_indices,
-                                  mttSizes = l_sizes,
-                                  mttLatestTileOrder = l_tile_order,
-                                  mttItem = l_item }
-    in  l_tileTerm
-
-directInsertMTile :: PKernelFunc -> PMTile -> PMTile
-directInsertMTile l_kernel_func t =
-    let l_indices = kfTileIndex l_kernel_func
-        l_sizes = kfTileSizes l_kernel_func
-        l_tile_order = kfTileOrder l_kernel_func
-        l_t_tile_order = mtLatestTileOrder t
-        l_t_sizes = mtSizes t
-        l_mterm = mkMTileTerm l_indices l_sizes l_tile_order (ST [l_kernel_func])
-    in  t { mtLatestTileOrder = 
-                if l_tile_order > l_t_tile_order
-                   then l_tile_order
-                   else l_t_tile_order
-            ,
-            mtKernelFuncs = mtKernelFuncs t ++ [l_kernel_func]
-            ,
-            mtSizes = 
-                if length l_sizes > length l_t_sizes
-                   then l_sizes
-                   else l_t_sizes
-            ,
-            mtTerms = mtTerms t ++ [l_mterm] }
-        
-pushBackMTile :: PKernelFunc -> [PMTile] -> [PMTile]
-pushBackMTile l_kernel_func [] =
-    let l_mtile = mkMTile l_kernel_func
-    in  [l_mtile]
-pushBackMTile l_kernel_func tL@(t:ts) =
-    let l_indices = kfTileIndex l_kernel_func
-        l_sizes = kfTileSizes l_kernel_func
-        l_tile_order = kfTileOrder l_kernel_func
-        l_t_sizes = mtSizes t
-        l_t_tile_order = mtLatestTileOrder t
-        l_terms = mtTerms t
-        -- lcp : longest common prefix
-        l_lcp = pLongestCommonPrefix l_sizes l_t_sizes
-        l_len_lcp = length l_lcp
-        l_len_sizes = length l_sizes
-        l_len_t_sizes = length l_t_sizes
-    in  if l_len_lcp < l_len_sizes && l_len_lcp < l_len_t_sizes
-           then t:(pushBackMTile l_kernel_func ts)
-           else let t' = t { mtSizes = 
-                                if length l_sizes > length l_t_sizes 
-                                   then l_sizes 
-                                   else l_t_sizes
-                             ,
-                             mtLatestTileOrder = 
-                                if l_tile_order > l_t_tile_order
-                                   then l_tile_order
-                                   else l_t_tile_order
-                             ,       
-                             mtKernelFuncs = mtKernelFuncs t ++ [l_kernel_func],
-                             mtTerms = pushBackMTileTerm l_indices l_sizes l_t_tile_order l_kernel_func l_terms 
-                           }
-                in  t':ts
+checkTterm :: [Int] -> [Int] -> Int -> [PMTileTerm] -> (Int, Int) -> (Int, Int)
+checkTterm _ _ _ [] (_, l_pos) = (1, l_pos)
+checkTterm l_indices l_sizes l_latest_tile_order l_terms@(t:ts) (l_curr_pos, l_pos) = 
+    let l_t = head l_indices
+        l_t_t = head $ mttIndex t
+        l_curr_pos' = l_curr_pos + 1
+    in  if l_t == l_t_t
+           then (1, l_curr_pos)
+           else checkTterm l_indices l_sizes l_latest_tile_order ts (l_curr_pos', l_pos)
 
 checkLCP :: [Int] -> [Int] -> Int -> [PMTileTerm] -> (Int, Int)
 checkLCP l_indices l_sizes l_latest_tile_order l_terms =
@@ -565,7 +484,7 @@ checkLCP_torder l_indices l_sizes l_latest_tile_order l_terms@(t:ts) (l_curr_pos
            then checkLCP_torder l_indices l_sizes l_latest_tile_order ts (l_curr_pos', l_last_pos_torder') (l_len_lcp, l_curr_pos)
            else checkLCP_torder l_indices l_sizes l_latest_tile_order ts (l_curr_pos', l_last_pos_torder') (l_len_torder, l_pos_torder)
 
--- find the first term that makes l_len_lcp > 0 && l_pos > l_last_pos_torder
+-- find the term that makes max(l_len_lcp > 0) while l_pos > l_last_pos_torder
 checkLCP_term :: [Int] -> [Int] -> Int -> [PMTileTerm] -> (Int, Int) -> (Int, Int) -> (Int, Int)
 checkLCP_term _ _ _ [] (_, l_last_pos_torder) (l_len, l_pos) = (l_len, l_pos)
 checkLCP_term l_indices l_sizes l_latest_tile_order l_terms@(t:ts) (l_curr_pos, l_last_pos_torder) (l_len, l_pos) =
@@ -578,14 +497,97 @@ checkLCP_term l_indices l_sizes l_latest_tile_order l_terms@(t:ts) (l_curr_pos, 
            then checkLCP_term l_indices l_sizes l_latest_tile_order ts (l_curr_pos', l_last_pos_torder) (l_len_lcp, l_curr_pos)
            else checkLCP_term l_indices l_sizes l_latest_tile_order ts (l_curr_pos', l_last_pos_torder) (l_len, l_pos)
 
-    -- FIXME: This is the buggy version!!!
-    -- Key point: directly find and insert at the right position,
-    -- rather than attempting from begining to end.
-pushBackMTileTerm :: [Int] -> [Int] -> Int -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]
-pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func [] = 
+pushBackMTile :: (Bool -> [Int] -> [Int] -> Int -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]) -> Bool -> PKernelFunc -> [PMTile] -> [PMTile]
+pushBackMTile l_pushBackMTileTerm l_rec_insert l_kernel_func []=
+    let l_mtile = mkMTile l_kernel_func
+    in  [l_mtile]
+pushBackMTile l_pushBackMTileTerm l_rec_insert l_kernel_func tL@(t:ts) =
+    let l_indices = kfTileIndex l_kernel_func
+        l_sizes = kfTileSizes l_kernel_func
+        l_tile_order = kfTileOrder l_kernel_func
+        l_t_sizes = mtSizes t
+        l_t_tile_order = mtLatestTileOrder t
+        l_terms = mtTerms t
+        -- lcp : longest common prefix
+        l_lcp = pLongestCommonPrefix l_sizes l_t_sizes
+        l_len_lcp = length l_lcp
+        l_len_sizes = length l_sizes
+        l_len_t_sizes = length l_t_sizes
+    in  if l_len_lcp < l_len_sizes && l_len_lcp < l_len_t_sizes
+           then t:(pushBackMTile l_pushBackMTileTerm l_rec_insert l_kernel_func ts)
+           else let t' = t { mtSizes = 
+                                if length l_sizes > length l_t_sizes 
+                                   then l_sizes 
+                                   else l_t_sizes
+                             ,
+                             mtLatestTileOrder = 
+                                if l_tile_order > l_t_tile_order
+                                   then l_tile_order
+                                   else l_t_tile_order
+                             ,       
+                             mtKernelFuncs = mtKernelFuncs t ++ [l_kernel_func],
+                             mtTerms = l_pushBackMTileTerm l_rec_insert l_indices l_sizes l_t_tile_order l_kernel_func l_terms 
+                           }
+                in  t':ts
+
+pPackKernelFuncsIntoMTiles :: [PKernelFunc] -> (Bool -> [Int] -> [Int] -> Int -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]) -> Bool -> [PMTile]
+pPackKernelFuncsIntoMTiles l@(k:ks) l_pushBackMTileTerm l_rec_insert =
+    let l_mtile = mkMTile k
+    in  pPackKernelFuncsIntoMTilesTerm ks [l_mtile]
+        where pPackKernelFuncsIntoMTilesTerm [] ts = ts
+              pPackKernelFuncsIntoMTilesTerm l@(k:ks) ts = 
+                  case kfTileOp k of
+                      PNULL -> pPackKernelFuncsIntoMTilesTerm ks ts
+                      otherwise -> pPackKernelFuncsIntoMTilesTerm ks $ pushBackMTile l_pushBackMTileTerm l_rec_insert k ts
+
+mkMTile :: PKernelFunc -> PMTile
+mkMTile l_kernel_func =
+    let l_indices = kfTileIndex l_kernel_func
+        l_sizes = kfTileSizes l_kernel_func
+        l_tile_order = kfTileOrder l_kernel_func
+        l_term = mkMTileTerm l_indices l_sizes l_tile_order (ST [l_kernel_func])
+    in  PMTile { mtSizes = l_sizes, 
+                 mtLatestTileOrder = l_tile_order, 
+                 mtKernelFuncs = [l_kernel_func], 
+                 mtTerms = [l_term] }
+
+mkMTileTerm :: [Int] -> [Int] -> Int -> PMTileItem -> PMTileTerm
+mkMTileTerm l_indices l_sizes l_tile_order l_item =
+    let l_tileTerm = PMTileTerm { mttIndex = l_indices,
+                                  mttSizes = l_sizes,
+                                  mttLatestTileOrder = l_tile_order,
+                                  mttItem = l_item }
+    in  l_tileTerm
+        
+directInsertMTileTerm :: Bool -> [Int] -> [Int] -> Int -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]
+directInsertMTileTerm l_rec_insert l_indices l_sizes l_latest_tile_order l_kernel_func l_terms =
+    let l_tile_order = kfTileOrder l_kernel_func
+        l_mterm = mkMTileTerm l_indices l_sizes l_tile_order (ST [l_kernel_func])
+    in  l_terms ++ [l_mterm]
+
+insertMTileTermByT :: Bool -> [Int] -> [Int] -> Int -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]
+insertMTileTermByT l_rec_insert l_indices l_sizes l_latest_tile_order l_kernel_func [] = 
     let l_mterm = mkMTileTerm l_indices l_sizes (kfTileOrder l_kernel_func) (ST [l_kernel_func])
     in  [l_mterm]
-pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func l_terms =
+insertMTileTermByT l_rec_insert l_indices l_sizes l_latest_tile_order l_kernel_func l_terms =
+    let l_tile_order = kfTileOrder l_kernel_func
+        (l_len, l_insert_pos) = checkT l_indices l_sizes l_latest_tile_order l_terms
+    in  if l_insert_pos == -1
+           then let t' = mkMTileTerm l_indices l_sizes l_tile_order (ST [l_kernel_func])
+                in  l_terms ++ [t']
+           else let l_t = l_terms !! l_insert_pos
+                    l_t_tile_order = mttLatestTileOrder l_t
+                    l_latest_tile_order' = l_t_tile_order
+                in  (take (l_insert_pos) l_terms) ++ (splitInsertPMTileTerm l_rec_insert 1 l_indices l_sizes l_latest_tile_order' l_kernel_func l_t) ++ (drop (l_insert_pos + 1) l_terms)
+
+    -- Third version that seems working correctly!
+    -- Key point: directly find and insert at the right position,
+    -- rather than attempting from begining to end.
+pushBackMTileTerm :: Bool -> [Int] -> [Int] -> Int -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]
+pushBackMTileTerm l_rec_insert l_indices l_sizes l_latest_tile_order l_kernel_func [] = 
+    let l_mterm = mkMTileTerm l_indices l_sizes (kfTileOrder l_kernel_func) (ST [l_kernel_func])
+    in  [l_mterm]
+pushBackMTileTerm l_rec_insert l_indices l_sizes l_latest_tile_order l_kernel_func l_terms =
     let l_tile_order = kfTileOrder l_kernel_func
         (l_len_lcp, l_insert_pos) = checkLCP l_indices l_sizes l_latest_tile_order l_terms
     in  if l_insert_pos == -1
@@ -594,7 +596,7 @@ pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func l_terms =
            else let l_t = l_terms !! l_insert_pos 
                     l_t_tile_order = mttLatestTileOrder l_t 
                     l_latest_tile_order' = l_t_tile_order
-                in  (take (l_insert_pos) l_terms) ++ (splitInsertPMTileTerm l_len_lcp l_indices l_sizes l_latest_tile_order' l_kernel_func l_t) ++ (drop (l_insert_pos + 1) l_terms)
+                in  (take (l_insert_pos) l_terms) ++ (splitInsertPMTileTerm l_rec_insert l_len_lcp l_indices l_sizes l_latest_tile_order' l_kernel_func l_t) ++ (drop (l_insert_pos + 1) l_terms)
 {-
     -- Second version that seems working correctly.
     -- The main point: if l_len_lcp < l_len_t && l_len_lcp > 0, 
@@ -660,15 +662,15 @@ pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func l_terms =
            else t:(pushBackMTileTerm l_indices l_sizes l_latest_tile_order' l_kernel_func ts)
  -}
 
-directInsertCurrentPMTileTerm :: [Int] -> [Int] -> Int -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]
-directInsertCurrentPMTileTerm _ _ _ _ [] = []
-directInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func (t:ts) = 
+directInsertCurrentPMTileTerm :: Bool -> [Int] -> [Int] -> Int -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]
+directInsertCurrentPMTileTerm _ _ _ _ _ [] = []
+directInsertCurrentPMTileTerm l_rec_insert l_indices l_sizes l_latest_tile_order l_kernel_func (t:ts) = 
     let l_t_indices = mttIndex t
         l_t_tile_order = mttLatestTileOrder t
         l_tile_order = kfTileOrder l_kernel_func 
         l_lcp = pLongestCommonPrefix l_indices l_t_indices
         l_len_lcp = length l_lcp
-        l_mitem = pushBackMTileItem 
+        l_mitem = pushBackMTileItem l_rec_insert 
                    (drop l_len_lcp l_indices) 
                    (drop l_len_lcp l_sizes) 
                    l_latest_tile_order l_kernel_func 
@@ -680,13 +682,13 @@ directInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_fun
                        else l_t_tile_order }
     in  t':ts
 
-splitInsertPMTileTerm :: Int -> [Int] -> [Int] -> Int -> PKernelFunc -> PMTileTerm -> [PMTileTerm]
-splitInsertPMTileTerm l_len_lcp l_indices l_sizes l_latest_tile_order l_kernel_func t = 
+splitInsertPMTileTerm :: Bool -> Int -> [Int] -> [Int] -> Int -> PKernelFunc -> PMTileTerm -> [PMTileTerm]
+splitInsertPMTileTerm l_rec_insert l_len_lcp l_indices l_sizes l_latest_tile_order l_kernel_func t = 
     let l_t_indices = mttIndex t
         l_t_tile_order = mttLatestTileOrder t
         l_tile_order = kfTileOrder l_kernel_func
     in  if l_len_lcp >= length l_t_indices && l_len_lcp > 0
-           then let l_mitem = pushBackMTileItem
+           then let l_mitem = pushBackMTileItem l_rec_insert
                                 (drop l_len_lcp l_indices)
                                 (drop l_len_lcp l_sizes)
                                 l_latest_tile_order l_kernel_func
@@ -754,10 +756,10 @@ splitInsertCurrentPMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func
             mttItem = MT ([l_old_mterm] ++ [l_new_mterm]) } 
     in  t':ts  
 
-pushBackMTileItem :: [Int] -> [Int] -> Int -> PKernelFunc -> PMTileItem -> PMTileItem
-pushBackMTileItem [] [] _ l_kernel_func (ST l_ks) = 
+pushBackMTileItem :: Bool -> [Int] -> [Int] -> Int -> PKernelFunc -> PMTileItem -> PMTileItem
+pushBackMTileItem _ [] [] _ l_kernel_func (ST l_ks) = 
     ST (l_ks ++ [l_kernel_func])
-pushBackMTileItem l_indices l_sizes l_latest_tile_order l_kernel_func (ST l_ks) =
+pushBackMTileItem _ l_indices l_sizes l_latest_tile_order l_kernel_func (ST l_ks) =
     let l_old_term = PMTileTerm {
             mttIndex = [],
             mttSizes = [],
@@ -769,16 +771,23 @@ pushBackMTileItem l_indices l_sizes l_latest_tile_order l_kernel_func (ST l_ks) 
             mttLatestTileOrder = kfTileOrder l_kernel_func,
             mttItem = ST [l_kernel_func] }
     in  MT ([l_old_term] ++ [l_new_term])
-pushBackMTileItem [] [] l_latest_tile_order l_kernel_func (MT l_ts) =
+pushBackMTileItem _ [] [] l_latest_tile_order l_kernel_func (MT l_ts) =
     let l_new_term = PMTileTerm {
             mttIndex = [],
             mttSizes = [],
             mttLatestTileOrder = kfTileOrder l_kernel_func,
             mttItem = ST [l_kernel_func] }
     in  MT (l_ts ++ [l_new_term])
-pushBackMTileItem l_indices l_sizes l_latest_tile_order l_kernel_func (MT l_ts) =
-    let l_new_terms = pushBackMTileTerm l_indices l_sizes l_latest_tile_order l_kernel_func l_ts
-    in  MT l_new_terms
+pushBackMTileItem l_rec_insert l_indices l_sizes l_latest_tile_order l_kernel_func (MT l_ts) =
+    let l_new_terms = pushBackMTileTerm l_rec_insert l_indices l_sizes l_latest_tile_order l_kernel_func l_ts
+        l_new_term = PMTileTerm {
+            mttIndex = l_indices,
+            mttSizes = l_sizes,
+            mttLatestTileOrder = kfTileOrder l_kernel_func,
+            mttItem = ST [l_kernel_func] }
+    in  if l_rec_insert
+           then MT l_new_terms
+           else MT (l_ts ++ [l_new_term])
 
 pSetTileOp :: TileOp -> PTile -> PTile
 pSetTileOp l_op pTile = pTile { tOp = l_op }
