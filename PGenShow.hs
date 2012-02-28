@@ -738,7 +738,8 @@ pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift l_mterms@(t:ts) =
  -}
         l_current_tile_order = mttLatestTileOrder t
         l_next_tile_order = (mttLatestTileOrder . head) ts
-        l_tail = if null l_indices
+        l_cond = intercalate " && " $ zipWith3 pInsMod l_params l_indices l_sizes
+        l_tail = if l_cond == ""
                     then ""
                     else if null ts || (null . mttIndex . head) ts || l_current_tile_order < l_next_tile_order
                             then breakline ++ "}"
@@ -751,9 +752,7 @@ pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift l_mterms@(t:ts) =
 pShowMTile :: (PKernelFunc -> String) -> Int -> [PName] -> Int -> PMTile -> String
 pShowMTile l_showSingleKernel l_rank l_params l_time_shift l_mtile =
     let l_mterms = mtTerms l_mtile
-    in  breakline ++ 
-        pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift l_mterms ++ 
-        breakline
+    in  pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift l_mterms 
 
 pShowAllCondTileOverlapKernelLoops :: (PKernelFunc -> String) -> [PMTile] -> String
 pShowAllCondTileOverlapKernelLoops _ [] = ""
@@ -1042,8 +1041,16 @@ pGetPosMTileTerm :: Int -> [PMTile] -> [PMTile]
 pGetPosMTileTerm _ [] = []
 pGetPosMTileTerm l_curr_pos l_mtiles@(t:ts) =
     let l_unroll = (length . mtTerms) t
+        l_term = (mtTerms t) !! l_curr_pos
+        l_t_indices = mttIndex l_term
+        l_t_sizes = mttSizes l_term
+        l_term' = l_term {
+                    mttIndex = if null l_t_indices then [] else 0:(tail l_t_indices)
+                    ,
+                    mttSizes = if null l_t_sizes then [] else 0:(tail l_t_sizes)
+                    }
         t' = if l_curr_pos < l_unroll 
-                then t { mtTerms = [(mtTerms t) !! l_curr_pos] }
+                then t { mtTerms = [l_term'] }
                 else t
     in  if l_curr_pos < l_unroll 
            then t':(pGetPosMTileTerm l_curr_pos ts)

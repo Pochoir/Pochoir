@@ -1091,6 +1091,7 @@ rename pSuffix fname = name ++ pSuffix ++ ".cpp"
 pInsMod :: PName -> Int -> Int -> String
 pInsMod l_param l_index l_size =
     case l_size of
+        0 -> ""
         2 -> (mkParen $ l_param ++ " & 0x1") ++ " == " ++ show l_index
         4 -> (mkParen $ l_param ++ " & 0x3") ++ " == " ++ show l_index
         8 -> (mkParen $ l_param ++ " & 0x7") ++ " == " ++ show l_index

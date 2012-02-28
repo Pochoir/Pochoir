@@ -83,8 +83,17 @@ pDestroyLambdas _ _ _ [] = ""
 pDestroyLambdas l_mode l_rank l_stencil cL =
     let l_header = externC ++ "int Destroy_Lambdas " ++
                    mkParen "void" ++ " { " ++ breakline
-        l_content = concatMap (pDestroyLambdaTerm l_mode l_rank "boundary" l_stencil) cL ++
+        l_content = 
+            if l_mode == PAllCondTileMacroOverlap ||
+               l_mode == PAllCondTileCPointerOverlap ||
+               l_mode == PAllCondTilePointerOverlap ||
+               l_mode == PAllCondTileOptPointerOverlap 
+               then concatMap (pDestroyLambdaTerm l_mode l_rank "boundary" l_stencil) cL ++
                     concatMap (pDestroyLambdaTerm l_mode l_rank "interior" l_stencil) cL 
+               else concatMap (pDestroyLambdaTerm l_mode l_rank "boundary" l_stencil) cL ++
+                    concatMap (pDestroyLambdaTerm l_mode l_rank "cond_boundary" l_stencil) cL ++
+                    concatMap (pDestroyLambdaTerm l_mode l_rank "interior" l_stencil) cL ++
+                    concatMap (pDestroyLambdaTerm l_mode l_rank "cond_interior" l_stencil) cL
         l_tail = breakline ++ pTab ++ "return 0;" ++ breakline ++ "}"
     in  l_header ++ l_content ++ l_tail
 
@@ -101,8 +110,28 @@ pCreateLambdas l_mode l_rank l_stencil cL =
                     mkParen (l_stencilInputRef ++ ", " ++ intercalate ", " l_arrayInputRefList) ++ 
                     "{" ++ breakline
         l_content = 
-            concatMap (pCreateLambdaTerm l_mode l_rank "boundary" l_stencil l_inputList) cL ++ 
-            concatMap (pCreateLambdaTerm l_mode l_rank "interior" l_stencil l_inputList) cL
+            if l_mode == PAllCondTileMacroOverlap ||
+               l_mode == PAllCondTileCPointerOverlap ||
+               l_mode == PAllCondTilePointerOverlap ||
+               l_mode == PAllCondTileOptPointerOverlap 
+               then concatMap 
+                        (pCreateLambdaTerm l_mode l_rank "boundary" l_stencil l_inputList) 
+                        cL ++ 
+                    concatMap 
+                        (pCreateLambdaTerm l_mode l_rank "interior" l_stencil l_inputList) 
+                        cL
+               else concatMap
+                        (pCreateLambdaTerm l_mode l_rank "boundary" l_stencil l_inputList)
+                        cL ++
+                    concatMap
+                        (pCreateLambdaTerm l_mode l_rank "cond_boundary" l_stencil l_inputList)
+                        cL ++
+                    concatMap 
+                        (pCreateLambdaTerm l_mode l_rank "interior" l_stencil l_inputList) 
+                        cL ++
+                    concatMap
+                        (pCreateLambdaTerm l_mode l_rank "cond_interior" l_stencil l_inputList)
+                        cL 
         l_tail = breakline ++ pTab ++ "return 0;" ++ breakline ++ "}\n"
     in  l_header ++ l_content ++ l_tail
 

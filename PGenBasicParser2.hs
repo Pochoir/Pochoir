@@ -48,12 +48,25 @@ pRegLambdaTerm l_mode l_rank l_stencil (g, t) =
         l_regBound = sRegBound l_stencil
         l_order = gOrder g
         l_bdry_name = l_tag ++ "_boundary_kernel_" ++ show l_order
+        l_cond_bdry_name = l_tag ++ "_cond_boundary_kernel_" ++ show l_order
         l_obase_name = l_tag ++ "_interior_kernel_" ++ show l_order
+        l_cond_obase_name = l_tag ++ "_cond_interior_kernel_" ++ show l_order
         l_bdry_pointer = (mkParen . derefPointer) l_bdry_name
+        l_cond_bdry_pointer = (mkParen . derefPointer) l_cond_bdry_name
         l_obase_pointer = (mkParen . derefPointer) l_obase_name
-        l_run_kernel = if l_regBound 
-                          then l_obase_pointer ++ ", " ++ l_bdry_pointer
-                          else l_obase_pointer
+        l_cond_obase_pointer = (mkParen . derefPointer) l_cond_obase_name
+        l_run_kernel = 
+            if l_mode == PAllCondTileMacroOverlap ||
+               l_mode == PAllCondTileCPointerOverlap ||
+               l_mode == PAllCondTilePointerOverlap ||
+               l_mode == PAllCondTileOptPointerOverlap 
+               then if l_regBound 
+                       then l_obase_pointer ++ ", " ++ l_bdry_pointer
+                       else l_obase_pointer
+               else if l_regBound
+                       then l_obase_pointer ++ ", " ++ l_cond_obase_pointer ++
+                            ", " ++ l_bdry_pointer ++ ", " ++ l_cond_bdry_pointer
+                       else l_obase_pointer ++ ", " ++ l_cond_obase_pointer
         l_pochoir_id = sName l_stencil
         l_guard_name = pGetOverlapGuardName g
         l_unroll = foldr max 0 $ map pTileLength t
@@ -68,11 +81,17 @@ pDestroyLambdaTerm l_mode l_rank l_str l_stencil (g, t) =
         l_name = l_tag ++ "_" ++ l_str ++ "_kernel_" ++ show l_order
         l_pointer = mkInput l_name
         l_del_lambdaPointer =
-            if (l_regBound && l_str == "boundary") || (l_str == "interior")
+            if (l_regBound && l_str == "boundary") || 
+               (l_regBound && l_str == "cond_boundary") ||
+               (l_str == "interior") ||
+               (l_str == "cond_interior")
                then pDelPointer  l_pointer 
                else ""
         l_del_kernelPointer =
-            if (l_regBound && l_str == "boundary") || (l_str == "interior")
+            if (l_regBound && l_str == "boundary") || 
+               (l_regBound && l_str == "cond_boundary") ||
+               (l_str == "interior") ||
+               (l_str == "cond_interior")
                then pDelPointer  l_name
                else ""
     in  breakline ++ l_del_lambdaPointer ++
@@ -93,11 +112,17 @@ pCreateLambdaTerm l_mode l_rank l_str l_stencil l_inputParams (g, t) =
                          ", " ++ show l_rank ++ " > "
         l_kernel_inputs = [(mkParen . derefPointer) l_pointer] ++ [l_shape_name] 
         l_new_lambdaPointer =
-            if (l_regBound && l_str == "boundary") || (l_str == "interior")
+            if (l_regBound && l_str == "boundary") || 
+               (l_regBound && l_str == "cond_boundary") ||
+               (l_str == "interior") ||
+               (l_str == "cond_interior")
                then pNewPointer  l_pointer l_class l_inputParams
                else "" 
         l_new_kernelPointer =
-            if (l_regBound && l_str == "boundary") || (l_str == "interior")
+            if (l_regBound && l_str == "boundary") || 
+               (l_regBound && l_str == "cond_boundary") ||
+               (l_str == "interior") ||
+               (l_str == "cond_interior")
                then pNewPointer  l_kernel_pointer l_kernel_class l_kernel_inputs
                else "" 
         l_decl_local_obase = pDeclVar (mkPointer l_kernel_class) l_kernel_pointer "NULL"

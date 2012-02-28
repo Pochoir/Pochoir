@@ -2471,7 +2471,8 @@ inline void Algorithm<N_RANK>::plan_bicut(int t0, int t1, Grid_Info<N_RANK> cons
         return;
     } else {
         // base case
-        if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
+        // if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
+        if (t1 % l_unroll != 0 || t0 % l_unroll != 0) {
 #if DEBUG
             printf("call cond_kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
             print_grid(stdout, t0, t1, grid);
@@ -2565,7 +2566,8 @@ inline void Algorithm<N_RANK>::plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> co
         // in order to get a pure-region, it's possible the bottom bar of current
         // trapezoid is not aligned to the unroll factor if \delta t < lcm_unroll_
         // -- see 'gen_plan' procedure for details!!!
-        if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
+        // if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
+        if (t1 % l_unroll != 0 || t0 % l_unroll != 0) {
 #if DEBUG
             printf("call cond_boundary_kernel <%d>, l_unroll = %d!\n", region_n, l_unroll);
             print_grid(stdout, t0, t1, l_father_grid);
@@ -2581,7 +2583,8 @@ inline void Algorithm<N_RANK>::plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> co
             (*opks_[region_n]).bkernel_[0](t0, t1, l_father_grid);
         }
     } else {
-        if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
+        // if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
+        if (t1 % l_unroll != 0 || t0 % l_unroll != 0) {
 #if DEBUG
             printf("call cond_kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
             print_grid(stdout, t0, t1, l_father_grid);

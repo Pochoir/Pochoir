@@ -350,22 +350,22 @@ pShowAutoTileString l_mode l_stencil (l_guard, l_tiles@(t:ts)) =
             PUnrollTimeTileMacroOverlap ->
                 breakline ++ l_color ++
                 pSplitUnrollTimeTileOverlapScope 
-                  ("Macro", l_mode, l_id, l_guardName, l_order, l_unroll, l_kernel_funcs_by_tIndex, l_kernel_funcs_by_tIndex_by_t, l_stencil, l_comments)
+                  ("Macro", l_mode, l_id, l_guardName, l_order, l_unroll, l_kernel_funcs_by_tIndex, l_kernel_funcs_by_tIndex_by_t, l_stencil, l_comments')
                   (pShowMacroStmt False)
             PUnrollTimeTileCPointerOverlap ->
                 breakline ++ l_color ++
                 pSplitUnrollTimeTileOverlapScope
-                  ("CPointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_kernel_funcs_by_tIndex, l_kernel_funcs_by_tIndex_by_t, l_stencil, l_comments)
+                  ("CPointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_kernel_funcs_by_tIndex, l_kernel_funcs_by_tIndex_by_t, l_stencil, l_comments')
                   pShowCPointerStmt
             PUnrollTimeTilePointerOverlap ->
                 breakline ++ l_color ++
                 pSplitUnrollTimeTileOverlapScope
-                  ("Pointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_kernel_funcs_by_tIndex, l_kernel_funcs_by_tIndex_by_t, l_stencil, l_comments)
+                  ("Pointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_kernel_funcs_by_tIndex, l_kernel_funcs_by_tIndex_by_t, l_stencil, l_comments')
                   (pShowPointerStmt True)
             PUnrollTimeTileOptPointerOverlap ->
                 breakline ++ l_color ++
                 pSplitUnrollTimeTileOverlapScope
-                  ("Opt_Pointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_kernel_funcs_by_tIndex, l_kernel_funcs_by_tIndex_by_t, l_stencil, l_comments)
+                  ("Opt_Pointer", l_mode, l_id, l_guardName, l_order, l_unroll, l_kernel_funcs_by_tIndex, l_kernel_funcs_by_tIndex_by_t, l_stencil, l_comments')
                   pShowOptPointerStmt
 
 pSplitAllCondTileOverlapScope :: (String, PMode, PName, PName, Int, Int, [PMTile], PStencil, String) -> (PKernelFunc -> String) -> String

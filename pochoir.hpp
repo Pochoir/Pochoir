@@ -887,6 +887,8 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
         ERROR("Something is wrong in Run_Obase(Plan)!\n");
     }
     checkFlags();
+    struct timeval l_start, l_end;
+    gettimeofday(&l_start, 0);
 #if USE_CILK_FOR
     int offset = 0;
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
@@ -921,6 +923,9 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
         offset = _plan.sync_data_->region_[j];
     }
 #endif
+    gettimeofday(&l_end, 0);
+    pochoir_time_ = min(pochoir_time_, (1.0e3 * tdiff(&l_end, &l_start)));
+    LOG_ARGS(0, "Pochoir time = %.6f milliseconds\n", pochoir_time_);
 #if DEBUG
     int l_num_kernel = 0, l_num_cond_kernel = 0, l_num_bkernel = 0, l_num_cond_bkernel = 0;
     algor.read_stat_kernel(l_num_kernel, l_num_cond_kernel, l_num_bkernel, l_num_cond_bkernel);
