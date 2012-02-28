@@ -461,7 +461,7 @@ checkTterm l_indices l_sizes l_latest_tile_order l_terms@(t:ts) (l_curr_pos, l_p
 checkLCP :: [Int] -> [Int] -> Int -> [PMTileTerm] -> (Int, Int)
 checkLCP l_indices l_sizes l_latest_tile_order l_terms =
     let (l_len_torder, l_pos_torder, l_last_pos_torder) = checkLCP_torder l_indices l_sizes l_latest_tile_order l_terms (0, -1) (0, -1)
-        (l_len, l_pos) = checkLCP_term l_indices l_sizes l_latest_tile_order l_terms (0, l_last_pos_torder) (0, -1)
+        (l_len, l_pos) = checkLCP_term l_indices l_sizes l_latest_tile_order (drop (l_last_pos_torder + 1) l_terms) (l_last_pos_torder + 1) (0, -1)
     in  if l_pos_torder >= 0
            then (l_len_torder, l_pos_torder)
            else if l_pos > l_last_pos_torder
@@ -485,17 +485,18 @@ checkLCP_torder l_indices l_sizes l_latest_tile_order l_terms@(t:ts) (l_curr_pos
            else checkLCP_torder l_indices l_sizes l_latest_tile_order ts (l_curr_pos', l_last_pos_torder') (l_len_torder, l_pos_torder)
 
 -- find the term that makes max(l_len_lcp > 0) while l_pos > l_last_pos_torder
-checkLCP_term :: [Int] -> [Int] -> Int -> [PMTileTerm] -> (Int, Int) -> (Int, Int) -> (Int, Int)
-checkLCP_term _ _ _ [] (_, l_last_pos_torder) (l_len, l_pos) = (l_len, l_pos)
-checkLCP_term l_indices l_sizes l_latest_tile_order l_terms@(t:ts) (l_curr_pos, l_last_pos_torder) (l_len, l_pos) =
+checkLCP_term :: [Int] -> [Int] -> Int -> [PMTileTerm] -> Int -> (Int, Int) -> (Int, Int)
+checkLCP_term _ _ _ [] _ (l_len, l_pos) = (l_len, l_pos)
+checkLCP_term l_indices l_sizes l_latest_tile_order l_terms@(t:ts) l_curr_pos (l_len, l_pos) =
     let l_t_indices = mttIndex t
         l_t_tile_order = mttLatestTileOrder t
         l_lcp = pLongestCommonPrefix l_indices l_t_indices
         l_len_lcp = length l_lcp
         l_curr_pos' = l_curr_pos + 1
-    in  if l_len_lcp > l_len && l_t_tile_order < l_latest_tile_order && l_curr_pos > l_last_pos_torder
-           then checkLCP_term l_indices l_sizes l_latest_tile_order ts (l_curr_pos', l_last_pos_torder) (l_len_lcp, l_curr_pos)
-           else checkLCP_term l_indices l_sizes l_latest_tile_order ts (l_curr_pos', l_last_pos_torder) (l_len, l_pos)
+    -- in  if l_len_lcp > l_len && l_t_tile_order < l_latest_tile_order && l_curr_pos > l_last_pos_torder
+    in  if l_len_lcp > l_len 
+           then checkLCP_term l_indices l_sizes l_latest_tile_order ts l_curr_pos' (l_len_lcp, l_curr_pos)
+           else checkLCP_term l_indices l_sizes l_latest_tile_order ts l_curr_pos' (l_len, l_pos)
 
 pushBackMTile :: (Bool -> [Int] -> [Int] -> Int -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]) -> Bool -> PKernelFunc -> [PMTile] -> [PMTile]
 pushBackMTile l_pushBackMTileTerm l_rec_insert l_kernel_func []=
@@ -1091,11 +1092,11 @@ rename pSuffix fname = name ++ pSuffix ++ ".cpp"
 pInsMod :: PName -> Int -> Int -> String
 pInsMod l_param l_index l_size =
     case l_size of
-        0 -> ""
-        2 -> (mkParen $ l_param ++ " & 0x1") ++ " == " ++ show l_index
-        4 -> (mkParen $ l_param ++ " & 0x3") ++ " == " ++ show l_index
-        8 -> (mkParen $ l_param ++ " & 0x7") ++ " == " ++ show l_index
-        otherwise -> (mkParen $ l_param ++ " % " ++ show l_size) ++ " == " ++ show l_index
+            0 -> ""
+            2 -> (mkParen $ l_param ++ " & 0x1") ++ " == " ++ show l_index
+            4 -> (mkParen $ l_param ++ " & 0x3") ++ " == " ++ show l_index
+            8 -> (mkParen $ l_param ++ " & 0x7") ++ " == " ++ show l_index
+            otherwise -> (mkParen $ l_param ++ " % " ++ show l_size) ++ " == " ++ show l_index
 
 mkInput :: String -> String
 mkInput a = "_" ++ a
