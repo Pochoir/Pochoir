@@ -2473,18 +2473,20 @@ inline void Algorithm<N_RANK>::plan_bicut(int t0, int t1, Grid_Info<N_RANK> cons
         // base case
         // if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
         if (t1 % l_unroll != 0 || t0 % l_unroll != 0) {
-#if DEBUG
-            printf("call cond_kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
-            print_grid(stdout, t0, t1, grid);
-#endif
+#if DEBUG 
+            printf("call cond_kernel_ <%d>, l_unroll = %d, (%d, %d)!\n", 
+                    region_n, l_unroll, t0, t1);
+            // print_grid(stdout, t0, t1, grid);
             ++num_cond_kernel_;
+#endif
             (*opks_[region_n]).cond_kernel_[0](t0, t1, grid);
         } else {
-#if DEBUG
-            printf("call kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
-            print_grid(stdout, t0, t1, grid);
-#endif
+#if DEBUG 
+            printf("call kernel_ <%d>, l_unroll = %d, (%d, %d)!\n", 
+                    region_n, l_unroll, t0, t1);
+            // print_grid(stdout, t0, t1, grid);
             ++num_kernel_;
+#endif
             (*opks_[region_n]).kernel_[0](t0, t1, grid);
         }
         return;
@@ -2568,35 +2570,39 @@ inline void Algorithm<N_RANK>::plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> co
         // -- see 'gen_plan' procedure for details!!!
         // if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
         if (t1 % l_unroll != 0 || t0 % l_unroll != 0) {
-#if DEBUG
-            printf("call cond_boundary_kernel <%d>, l_unroll = %d!\n", region_n, l_unroll);
-            print_grid(stdout, t0, t1, l_father_grid);
-#endif
+#if DEBUG 
+            printf("call cond_boundary_kernel <%d>, l_unroll = %d, (%d, %d)!\n", 
+                    region_n, l_unroll, t0, t1);
+            // print_grid(stdout, t0, t1, l_father_grid);
             ++num_cond_bkernel_;
+#endif
             (*opks_[region_n]).cond_bkernel_[0](t0, t1, l_father_grid);
         } else {
-#if DEBUG
-            printf("call boundary_kernel <%d>, l_unroll = %d!\n", region_n, l_unroll);
-            print_grid(stdout, t0, t1, l_father_grid);
-#endif
+#if DEBUG 
+            printf("call boundary_kernel <%d>, l_unroll = %d, (%d, %d)!\n", 
+                    region_n, l_unroll, t0, t1);
+            // print_grid(stdout, t0, t1, l_father_grid);
             ++num_bkernel_;
+#endif
             (*opks_[region_n]).bkernel_[0](t0, t1, l_father_grid);
         }
     } else {
         // if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
         if (t1 % l_unroll != 0 || t0 % l_unroll != 0) {
 #if DEBUG
-            printf("call cond_kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
-            print_grid(stdout, t0, t1, l_father_grid);
-#endif
+            printf("call cond_kernel_ <%d>, l_unroll = %d, (%d, %d)!\n", 
+                    region_n, l_unroll, t0, t1);
+            // print_grid(stdout, t0, t1, l_father_grid);
             ++num_cond_kernel_;
+#endif
             (*opks_[region_n]).cond_kernel_[0](t0, t1, l_father_grid);
         } else {
 #if DEBUG
-            printf("call kernel_ <%d>, l_unroll = %d!\n", region_n, l_unroll);
-            print_grid(stdout, t0, t1, l_father_grid);
-#endif
+            printf("call kernel_ <%d>, l_unroll = %d, (%d, %d)!\n", 
+                    region_n, l_unroll, t0, t1);
+            // print_grid(stdout, t0, t1, l_father_grid);
             ++num_kernel_;
+#endif
             (*opks_[region_n]).kernel_[0](t0, t1, l_father_grid);
         }
     }

@@ -222,7 +222,7 @@ emptyTileKernel :: PTileKernel
 emptyTileKernel = LK [] 
 
 emptyTile :: PTile
-emptyTile = PTile { tName = "", tRank = 0, tSizes = [], tKernels = [], tComment = cEmpty "Pochoir_Tile", tOp = PNULL, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
+emptyTile = PTile { tName = "", tRank = 0, tSizes = [1], tKernels = [], tComment = cEmpty "Pochoir_Tile", tOp = PNULL, tOrigGuard = emptyGuard, tOrder = 0, tColor = emptyColor }
 
 -- prefix 'c' means "comment"
 cUnknown :: String -> String

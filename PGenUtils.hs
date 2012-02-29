@@ -532,6 +532,7 @@ pushBackMTile l_pushBackMTileTerm l_rec_insert l_kernel_func tL@(t:ts) =
                 in  t':ts
 
 pPackKernelFuncsIntoMTiles :: [PKernelFunc] -> (Bool -> [Int] -> [Int] -> Int -> PKernelFunc -> [PMTileTerm] -> [PMTileTerm]) -> Bool -> [PMTile]
+pPackKernelFuncsIntoMTiles [] _ _ = []
 pPackKernelFuncsIntoMTiles l@(k:ks) l_pushBackMTileTerm l_rec_insert =
     let l_mtile = mkMTile k
     in  pPackKernelFuncsIntoMTilesTerm ks [l_mtile]
@@ -971,15 +972,6 @@ transIterN n ((name, array, dim, rw):is) = (name ++ show n, array, dim, rw) : (t
 
 pFillIters :: [Iter] -> PKernelFunc -> PKernelFunc
 pFillIters l_iters l_kernel_func = l_kernel_func { kfIter = l_iters}
-
-pTileLength :: PTile -> Int
-pTileLength l_tile = (head . tSizes) l_tile
-{-
-    let l_tile_kernel = tKernel l_tile
-    in  case l_tile_kernel of
-            SK _ -> 1
-            LK l_tKs -> length l_tKs
--}
 
 transArrayMap :: [PArray] -> Map.Map PName PArray
 transArrayMap aL = Map.fromList $ transAssocList aL

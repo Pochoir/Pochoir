@@ -69,7 +69,7 @@ pRegLambdaTerm l_mode l_rank l_stencil (g, t) =
                        else l_obase_pointer ++ ", " ++ l_cond_obase_pointer
         l_pochoir_id = sName l_stencil
         l_guard_name = pGetOverlapGuardName g
-        l_unroll = foldr max 0 $ map pTileLength t
+        l_unroll = foldr lcm 1 $ map (head . tSizes) t
     in  pTab ++ l_pochoir_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guard_name ++
         ", " ++ show l_unroll ++ ", " ++ l_run_kernel ++ ");" ++ breakline
 

@@ -36,22 +36,27 @@
 
 using namespace std;
 
-#define APP_DEBUG 1
+#define APP_DEBUG 0
 #define TIMES 1
 #define TOLERANCE (1e-6)
 
 static double max_diff = 0;
+static double diff_a = 0, diff_b = 0;
 static double max_a = 0, max_b = 0;
 
 void check_result(int t, int i, double a, double b)
 {
     double l_diff = abs(a - b);
     if (l_diff < TOLERANCE) {
+        max_a = a > max_a ? a : max_a;
+        max_b = b > max_b ? b : max_b;
     //    printf("a(%d, %d) == b(%d, %d) == %f : passed!\n", t, i, t, i, a);
     } else {
+        max_a = a > max_a ? a : max_a;
+        max_b = b > max_b ? b : max_b;
         if (l_diff > max_diff) {
             max_diff = l_diff;
-            max_a = a; max_b = b;
+            diff_a = a; diff_b = b;
         }
     }
 }
@@ -68,8 +73,8 @@ Pochoir_Boundary_1D(aperiodic_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
 
-#define N 20000
-#define T 1000
+#define N 200 
+#define T 20
 
 int main(int argc, char * argv[])
 {
@@ -161,8 +166,11 @@ int main(int argc, char * argv[])
 
     /* initialization */
     for (int i = 0; i < N; ++i) {
-        a(0, i) = 1.0 * (rand() % BASE);
-        b(0, i) = a(0, i);
+        auto tmp = 1.0 * (rand() % BASE);
+        a(0, i) = tmp;
+        b(0, i) = tmp;
+        a(1, i) = 0;
+        b(1, i) = 0;
     }
 
     Pochoir_Plan<1> & l_plan = leap_frog.Gen_Plan(T);
@@ -237,7 +245,8 @@ int main(int argc, char * argv[])
     for (int i = 0; i < N; ++i) {
         check_result(t, i, a(t, i), b(t, i));
     } 
-    printf("max_diff = %f, when a = %f, b = %f\n", max_diff, max_a, max_b);
+    printf("max_diff = %f, when a = %f, b = %f\n", max_diff, diff_a, diff_b);
+    printf("max_a = %f, max_b = %f\n", max_a, max_b);
 
     return 0;
 }

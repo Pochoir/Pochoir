@@ -41,17 +41,22 @@
 
 double max_diff = 0;
 double max_a = 0, max_b = 0;
+double diff_a = 0, diff_b = 0;
 
 void check_result(int t, int i, int j, double a, double b)
 {
     double l_diff = pabs(a, b);
     if (l_diff < TOLERANCE) {
+        max_a = a > max_a ? a : max_a;
+        max_b = b > max_b ? b : max_b;
     //    printf("a(%d, %d, %d) == b(%d, %d, %d) == %f : passed!\n", t, i, j, t, i, j, a);
     } else {
         // printf("a(%d, %d, %d) = %f, b(%d, %d, %d) = %f : FAILED!\n", t, i, j, a, t, i, j, b);
+        max_a = a > max_a ? a : max_a;
+        max_b = b > max_b ? b : max_b;
         if (l_diff > max_diff) {
             max_diff = l_diff;
-            max_a = a; max_b = b;
+            diff_a = a; diff_b = b;
         }
     }
 }
@@ -70,8 +75,8 @@ Pochoir_Boundary_2D(aperiodic_2D, arr, t, i, j)
     return 0;
 Pochoir_Boundary_End
 
-#define N 65
-#define T 65
+#define N 25
+#define T 25
 
 int main(int argc, char * argv[])
 {
@@ -950,7 +955,8 @@ int main(int argc, char * argv[])
              check_result(t, i, j, a(t, i, j), b(t, i, j));
         }
     } 
-    printf("max_diff = %f, when a = %f, b = %f\n", max_diff, max_a, max_b);
+    printf("max_diff = %f, when a = %f, b = %f\n", max_diff, diff_a, diff_b);
+    printf("max_a = %f, max_b = %f\n", max_a, max_b);
 
     return 0;
 }

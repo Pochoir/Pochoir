@@ -846,7 +846,7 @@ pShowDefaultTileString _ _ _ = ""
 
 pShowAllCondTileOverlapKernels :: (PKernelFunc -> String) -> Bool -> PMode -> String -> PStencil -> PShape -> [PMTile] -> String
 pShowAllCondTileOverlapKernels _ _ _ _ _ _ [] = ""
-pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pShape l_mtiles@(t:ts) =
+pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pShape l_mtiles =
     let l_rank = sRank l_stencil
         l_arrayInUse = sArrayInUse l_stencil
         l_kernel_funcs = concatMap mtKernelFuncs l_mtiles
@@ -937,7 +937,7 @@ pShowAllCondTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stenci
 
 pShowUnrollTimeTileOverlapKernels :: (PKernelFunc -> String) -> Bool -> PMode -> String -> PStencil -> PShape -> [PMTile] -> String
 pShowUnrollTimeTileOverlapKernels _ _ _ _ _ _ [] = ""
-pShowUnrollTimeTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pShape l_mtiles@(k:ks) =
+pShowUnrollTimeTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pShape l_mtiles =
     let l_rank = sRank l_stencil
         l_arrayInUse = sArrayInUse l_stencil
         l_kernel_funcs = concatMap mtKernelFuncs l_mtiles
@@ -964,7 +964,7 @@ pShowUnrollTimeTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_ste
         l_header = pShowFuncObjectHeader l_name l_stencil l_mtiles
         l_tail = pShowFuncObjectTail l_name l_rank
 -------------------------------------------------------------------------------------------
-        l_unroll = foldr max 0 $ map (length . mtTerms) l_mtiles
+        l_unroll = foldr lcm 1 $ map (length . mtTerms) l_mtiles
         l_tileOp_all_null = pIsTileOpNull $ foldr1 foldTileOp $ map kfTileOp l_kernel_funcs
         l_unfold_kernels = 
             if l_tileOp_all_null
@@ -1032,7 +1032,7 @@ pShowUnrollTimeTileOverlapKernelOnT l_showSingleKernel l_bound l_mode l_stencil 
 
 pShowUnrollTimeTileOverlapKernelLoops :: (PKernelFunc -> String) -> [PMTile] -> (Int, Int) -> String
 pShowUnrollTimeTileOverlapKernelLoops l_showSingleKernel l_mtiles@(t:ts) (l_curr_pos, l_unroll)
-    | l_curr_pos == l_unroll = ""
+    | l_curr_pos == l_unroll = mkComment $ show l_unroll
     | otherwise =
         let l_curr_mtiles = pGetPosMTileTerm l_curr_pos l_mtiles
         in  pShowAllCondTileOverlapKernelLoops l_showSingleKernel l_curr_mtiles
@@ -1041,7 +1041,7 @@ pGetPosMTileTerm :: Int -> [PMTile] -> [PMTile]
 pGetPosMTileTerm _ [] = []
 pGetPosMTileTerm l_curr_pos l_mtiles@(t:ts) =
     let l_unroll = (length . mtTerms) t
-        l_curr_pos' = if l_curr_pos >= l_unroll then mod l_curr_pos l_unroll else l_curr_pos
+        l_curr_pos' = mod l_curr_pos l_unroll 
         l_term = (mtTerms t) !! l_curr_pos'
         l_t_indices = mttIndex l_term
         l_t_sizes = mttSizes l_term
@@ -1760,7 +1760,7 @@ pShowRawForHeader pL@(p:ps) =
  
 pShowPragma :: String
 pShowPragma = breakline ++ "#pragma ivdep" 
-                ++ breakline ++ "#pragma vector always" 
+                -- ++ breakline ++ "#pragma vector always" 
                 -- ++ breakline ++ "#pragma unroll (2)"
 
             
