@@ -1041,7 +1041,8 @@ pGetPosMTileTerm :: Int -> [PMTile] -> [PMTile]
 pGetPosMTileTerm _ [] = []
 pGetPosMTileTerm l_curr_pos l_mtiles@(t:ts) =
     let l_unroll = (length . mtTerms) t
-        l_term = (mtTerms t) !! l_curr_pos
+        l_curr_pos' = if l_curr_pos >= l_unroll then mod l_curr_pos l_unroll else l_curr_pos
+        l_term = (mtTerms t) !! l_curr_pos'
         l_t_indices = mttIndex l_term
         l_t_sizes = mttSizes l_term
         l_term' = l_term {
@@ -1049,12 +1050,8 @@ pGetPosMTileTerm l_curr_pos l_mtiles@(t:ts) =
                     ,
                     mttSizes = if null l_t_sizes then [] else 0:(tail l_t_sizes)
                     }
-        t' = if l_curr_pos < l_unroll 
-                then t { mtTerms = [l_term'] }
-                else t
-    in  if l_curr_pos < l_unroll 
-           then t':(pGetPosMTileTerm l_curr_pos ts)
-           else pGetPosMTileTerm l_curr_pos ts
+        t' = t { mtTerms = [l_term'] }
+    in  t':(pGetPosMTileTerm l_curr_pos ts)
                     
 pShowUnrollTimeTileKernels :: (PKernelFunc -> String) -> Bool -> PMode -> String -> PStencil -> PShape -> [[[Int]]] -> [[PKernelFunc]] -> String
 pShowUnrollTimeTileKernels l_showSingleKernel l_bound l_mode l_name l_stencil l_pShape l_tile_indices_group_by_t l_kfs_group_by_t = 
@@ -1762,7 +1759,11 @@ pShowRawForHeader pL@(p:ps) =
         pShowRawForHeader ps 
  
 pShowPragma :: String
-pShowPragma = breakline ++ "#pragma ivdep"
+pShowPragma = breakline ++ "#pragma ivdep" 
+                ++ breakline ++ "#pragma vector always" 
+                -- ++ breakline ++ "#pragma unroll (2)"
+
+            
 -- pShowPragma = "#pragma ivdep" ++ breakline ++ "#pragma simd"
 
 pShowRefUnMacro :: [PArray] -> String
