@@ -131,178 +131,50 @@ class Pochoir_Array {
          * - Following dimensions for constructors are spatial dimension
          * - all spatial dimensions are row-majored
          */
-        explicit Pochoir_Array (int sz0) {
-            logic_size_[0] = phys_size_[0] = sz0;
-            logic_start_[0] = 0; logic_end_[0] = sz0;
-            stride_[0] = 1; 
-            total_size_ = sz0;
-            shape_ = NULL;
-            view_ = NULL;
-            bv1_ = NULL; bv2_ = NULL; bv3_ = NULL;
+
+        template <typename I>
+        inline void init (I sz) {
+            logic_size_[0] = phys_size_[0] = sz;
+            logic_start_[0] = 0; logic_end_[0] = sz;
+            stride_[0] = 1; slope_[0] = 0; 
+            shape_ = NULL; shape_size_ = 0; toggle_ = 1;
+            view_ = NULL; data_ = NULL;
+            bv1_ = NULL; bv2_ = NULL; bv3_ = NULL; bv4_ = NULL; 
+            bv5_ = NULL; bv6_ = NULL; bv7_ = NULL; bv8_ = NULL;
+            total_size_ = 1; stride_[0] = 1;
+            for (int i = 0; i < N_RANK; ++i) {
+                total_size_ *= phys_size_[i];
+                if (i < N_RANK - 1) {
+                    stride_[i+1] = stride_[i] * phys_size_[i];
+                }
+            }
             allocMemFlag_ = false;
-//            view_ = new Storage<T>(TOGGLE * total_size_);
-//            data_ = view_->data();
         }
 
-		explicit Pochoir_Array (int sz1, int sz0) {
-			logic_size_[1] = sz1; logic_size_[0] = sz0; 
-			phys_size_[1] = sz1; phys_size_[0] = sz0; 
-            logic_start_[0] = 0; logic_end_[0] = sz0;
-            logic_start_[1] = 0; logic_end_[1] = sz1;
-			stride_[1] = sz0; stride_[0] = 1; 
-            shape_ = NULL;
-			total_size_ = phys_size_[0] * phys_size_[1];
-			view_ = NULL;
-            bv1_ = NULL; bv2_ = NULL; bv3_ = NULL;
-            allocMemFlag_ = false;
-//			  view_ = new Storage<T>(TOGGLE * total_size_) ;
-//            data_ = view_->data();
+        template <typename I, typename ... IS>
+		inline void init (I sz, IS ... szs) {
+            int l_dim = sizeof...(IS);
+            logic_size_[l_dim] = sz; logic_start_[l_dim] = 0; logic_end_[l_dim] = sz;
+            phys_size_[l_dim] = sz; 
+            slope_[l_dim] = 0;
+            init(szs...);
 		}
 
-		explicit Pochoir_Array (int sz2, int sz1, int sz0) {
-			logic_size_[2] = sz2; logic_size_[1] = sz1; logic_size_[0] = sz0; 
-			phys_size_[2] = sz2; phys_size_[1] = sz1; phys_size_[0] = sz0; 
-            logic_start_[0] = 0; logic_end_[0] = sz0;
-            logic_start_[1] = 0; logic_end_[1] = sz1;
-            logic_start_[2] = 0; logic_end_[2] = sz2;
-			stride_[0] = 1;  
-			total_size_ = phys_size_[2];
-            shape_ = NULL;
-			for (int i = 0; i < 2; ++i) {
-				total_size_ *= phys_size_[i];
-				stride_[i+1] = stride_[i] * phys_size_[i];
-			}
-			view_ = NULL;
-			/* double the total_size_ because we are using toggle array */
-            bv1_ = NULL; bv2_ = NULL; bv3_ = NULL;
-            allocMemFlag_ = false;
-//  		  view_ = new Storage<T>(TOGGLE*total_size_) ;
-//            data_ = view_->data();
-		}
+        template <typename I>
+        explicit Pochoir_Array (I sz) {
+            init(sz);
+        }
 
-		explicit Pochoir_Array (int sz3, int sz2, int sz1, int sz0) {
-			logic_size_[3] = sz3; logic_size_[2] = sz2; logic_size_[1] = sz1; logic_size_[0] = sz0; 
-			phys_size_[3] = sz3; phys_size_[2] = sz2; phys_size_[1] = sz1; phys_size_[0] = sz0; 
-            logic_start_[0] = 0; logic_end_[0] = sz0;
-            logic_start_[1] = 0; logic_end_[1] = sz1;
-            logic_start_[2] = 0; logic_end_[2] = sz2;
-            logic_start_[3] = 0; logic_end_[3] = sz3;
-			stride_[0] = 1;  
-			total_size_ = phys_size_[3];
-            shape_ = NULL;
-			for (int i = 0; i < 3; ++i) {
-				total_size_ *= phys_size_[i];
-				stride_[i+1] = stride_[i] * phys_size_[i];
-			}
-			view_ = NULL;
-			/* double the total_size_ because we are using toggle array */
-            bv1_ = NULL; bv2_ = NULL; bv3_ = NULL;
-            allocMemFlag_ = false;
-//			  view_ = new Storage<T>(TOGGLE*total_size_) ;
-//            data_ = view_->data();
-		}
-
-		explicit Pochoir_Array (int sz4, int sz3, int sz2, int sz1, int sz0) {
-			logic_size_[4] = sz4; logic_size_[3] = sz3; logic_size_[2] = sz2; logic_size_[1] = sz1; logic_size_[0] = sz0; 
-			phys_size_[4] = sz4; phys_size_[3] = sz3; phys_size_[2] = sz2; phys_size_[1] = sz1; phys_size_[0] = sz0; 
-            logic_start_[0] = 0; logic_end_[0] = sz0;
-            logic_start_[1] = 0; logic_end_[1] = sz1;
-            logic_start_[2] = 0; logic_end_[2] = sz2;
-            logic_start_[3] = 0; logic_end_[3] = sz3;
-            logic_start_[4] = 0; logic_end_[4] = sz4;
-			stride_[0] = 1;  
-			total_size_ = phys_size_[4];
-            shape_ = NULL;
-			for (int i = 0; i < 4; ++i) {
-				total_size_ *= phys_size_[i];
-				stride_[i+1] = stride_[i] * phys_size_[i];
-			}
-			view_ = NULL;
-			/* double the total_size_ because we are using toggle array */
-            bv1_ = NULL; bv2_ = NULL; bv3_ = NULL; bv4_ = NULL;
-            allocMemFlag_ = false;
-//			  view_ = new Storage<T>(TOGGLE*total_size_) ;
-//            data_ = view_->data();
-		}
-
-		explicit Pochoir_Array (int sz5, int sz4, int sz3, int sz2, int sz1, int sz0) {
-			logic_size_[5] = sz5; logic_size_[4] = sz4; logic_size_[3] = sz3; logic_size_[2] = sz2; logic_size_[1] = sz1; logic_size_[0] = sz0; 
-			phys_size_[5] = sz5; phys_size_[4] = sz4; phys_size_[3] = sz3; phys_size_[2] = sz2; phys_size_[1] = sz1; phys_size_[0] = sz0; 
-            logic_start_[0] = 0; logic_end_[0] = sz0;
-            logic_start_[1] = 0; logic_end_[1] = sz1;
-            logic_start_[2] = 0; logic_end_[2] = sz2;
-            logic_start_[3] = 0; logic_end_[3] = sz3;
-            logic_start_[4] = 0; logic_end_[4] = sz4;
-            logic_start_[5] = 0; logic_end_[5] = sz5;
-			stride_[0] = 1;  
-			total_size_ = phys_size_[5];
-            shape_ = NULL;
-			for (int i = 0; i < 5; ++i) {
-				total_size_ *= phys_size_[i];
-				stride_[i+1] = stride_[i] * phys_size_[i];
-			}
-			view_ = NULL;
-			/* double the total_size_ because we are using toggle array */
-            bv1_ = NULL; bv2_ = NULL; bv3_ = NULL; bv4_ = NULL; bv5_ = NULL;
-            allocMemFlag_ = false;
-//			  view_ = new Storage<T>(TOGGLE*total_size_) ;
-//            data_ = view_->data();
-		}
-
-		explicit Pochoir_Array (int sz6, int sz5, int sz4, int sz3, int sz2, int sz1, int sz0) {
-			logic_size_[6] = sz6; logic_size_[5] = sz5; logic_size_[4] = sz4; logic_size_[3] = sz3; logic_size_[2] = sz2; logic_size_[1] = sz1; logic_size_[0] = sz0; 
-			phys_size_[6] = sz6; phys_size_[5] = sz5; phys_size_[4] = sz4; phys_size_[3] = sz3; phys_size_[2] = sz2; phys_size_[1] = sz1; phys_size_[0] = sz0; 
-            logic_start_[0] = 0; logic_end_[0] = sz0;
-            logic_start_[1] = 0; logic_end_[1] = sz1;
-            logic_start_[2] = 0; logic_end_[2] = sz2;
-            logic_start_[3] = 0; logic_end_[3] = sz3;
-            logic_start_[4] = 0; logic_end_[4] = sz4;
-            logic_start_[5] = 0; logic_end_[5] = sz5;
-            logic_start_[6] = 0; logic_end_[6] = sz6;
-			stride_[0] = 1;  
-			total_size_ = phys_size_[6];
-            shape_ = NULL;
-			for (int i = 0; i < 6; ++i) {
-				total_size_ *= phys_size_[i];
-				stride_[i+1] = stride_[i] * phys_size_[i];
-			}
-			view_ = NULL;
-			/* double the total_size_ because we are using toggle array */
-            bv1_ = NULL; bv2_ = NULL; bv3_ = NULL; bv4_ = NULL; bv5_ = NULL; bv6_ = NULL;
-            allocMemFlag_ = false;
-//			  view_ = new Storage<T>(TOGGLE*total_size_) ;
-//            data_ = view_->data();
-		}
-
-		explicit Pochoir_Array (int sz7, int sz6, int sz5, int sz4, int sz3, int sz2, int sz1, int sz0) {
-			logic_size_[7] = sz7; logic_size_[6] = sz6; logic_size_[5] = sz5; logic_size_[4] = sz4; logic_size_[3] = sz3; logic_size_[2] = sz2; logic_size_[1] = sz1; logic_size_[0] = sz0; 
-			phys_size_[7] = sz7; phys_size_[6] = sz6; phys_size_[5] = sz5; phys_size_[4] = sz4; phys_size_[3] = sz3; phys_size_[2] = sz2; phys_size_[1] = sz1; phys_size_[0] = sz0; 
-            logic_start_[0] = 0; logic_end_[0] = sz0;
-            logic_start_[1] = 0; logic_end_[1] = sz1;
-            logic_start_[2] = 0; logic_end_[2] = sz2;
-            logic_start_[3] = 0; logic_end_[3] = sz3;
-            logic_start_[4] = 0; logic_end_[4] = sz4;
-            logic_start_[5] = 0; logic_end_[5] = sz5;
-            logic_start_[6] = 0; logic_end_[6] = sz6;
-            logic_start_[7] = 0; logic_end_[7] = sz7;
-			stride_[0] = 1;  
-			total_size_ = phys_size_[7];
-            shape_ = NULL;
-			for (int i = 0; i < 7; ++i) {
-				total_size_ *= phys_size_[i];
-				stride_[i+1] = stride_[i] * phys_size_[i];
-			}
-			view_ = NULL;
-			/* double the total_size_ because we are using toggle array */
-            bv1_ = NULL; bv2_ = NULL; bv3_ = NULL; bv4_ = NULL; bv5_ = NULL; bv6_ = NULL; bv7_ = NULL;
-            allocMemFlag_ = false;
-//			  view_ = new Storage<T>(TOGGLE*total_size_) ;
-//            data_ = view_->data();
-		}
+        template <typename I, typename ... IS>
+        explicit Pochoir_Array(I sz, IS ... szs) {
+            init(sz, szs ... );
+        }
 
 		/* Copy constructor -- create another view of the
 		 * same array
+         * -- let's try using the default copy constructor??
 		 */
+#if 0
 		Pochoir_Array (Pochoir_Array<T, N_RANK> const & orig) {
 			total_size_ = orig.total_size();
 			for (int i = 0; i < N_RANK; ++i) {
@@ -313,7 +185,7 @@ class Pochoir_Array {
 			}
 			view_ = NULL;
 			view_ = const_cast<Pochoir_Array<T, N_RANK> &>(orig).view();
-			view_->inc_ref();
+			view_->inc_ref(); data_ = view_->data();
             /* We also get the BValue function pointer from orig */
             bv1_ = const_cast<Pochoir_Array<T, N_RANK> &>(orig).bv_1D(); 
             bv2_ = const_cast<Pochoir_Array<T, N_RANK> &>(orig).bv_2D(); 
@@ -323,12 +195,9 @@ class Pochoir_Array {
             bv6_ = const_cast<Pochoir_Array<T, N_RANK> &>(orig).bv_6D(); 
             bv7_ = const_cast<Pochoir_Array<T, N_RANK> &>(orig).bv_7D(); 
             bv8_ = const_cast<Pochoir_Array<T, N_RANK> &>(orig).bv_8D(); 
-            data_ = view_->data();
             allocMemFlag_ = true;
             shape_ = NULL;
 		}
-
-        /* assignment operator for vector<> */
 		Pochoir_Array<T, N_RANK> & operator= (Pochoir_Array<T, N_RANK> const & orig) {
 			total_size_ = orig.total_size();
 			for (int i = 0; i < N_RANK; ++i) {
@@ -353,6 +222,7 @@ class Pochoir_Array {
             shape_ = NULL;
             return *this;
 		}
+#endif
 
 		/* destructor : free memory */
 		~Pochoir_Array() {
@@ -362,9 +232,6 @@ class Pochoir_Array {
             }
         
             allocMemFlag_ = false;
-#if 0
-            del_arr(shape_);
-#endif
 		}
 
 		inline Storage<T> * view() {
