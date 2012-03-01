@@ -118,6 +118,7 @@ class Pochoir_Array {
         typedef T (*BValue_6D)(Pochoir_Array<T, 6> &, int, int, int, int, int, int, int);
         typedef T (*BValue_7D)(Pochoir_Array<T, 7> &, int, int, int, int, int, int, int, int);
         typedef T (*BValue_8D)(Pochoir_Array<T, 8> &, int, int, int, int, int, int, int, int, int);
+        void * bv_[8];
         BValue_1D bv1_;
         BValue_2D bv2_;
         BValue_3D bv3_;
@@ -784,170 +785,95 @@ class Pochoir_Array {
 		}
 
         /* set()/get() pair to set/get boundary value in user supplied bvalue function */
-		inline T & set (int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + (_idx1 % toggle_) * total_size_;
+        template <typename I>
+		inline int cal_addr (I _idx) {
+			int l_idx = _idx * stride_[0];
+			return l_idx;
+		}
+
+        template <typename I, typename ... IS>
+        inline int cal_addr (I _idx, IS ... idxs) {
+            int l_dim = sizeof...(IS);
+            return (_idx * stride_[l_dim] + cal_addr(idxs ...));
+        }
+
+        template <typename I>
+		inline bool check_bound (I _idx) {
+            return (_idx < logic_start_[0] || _idx >= logic_end_[0]);
+		}
+
+        template <typename I, typename ... IS>
+        inline bool check_bound (I _idx, IS ... idxs) {
+            int l_dim = sizeof...(IS);
+            return (_idx < logic_start_[l_dim] || _idx >= logic_end_[l_dim] || check_bound(idxs ...));
+        }
+
+        template <typename I>
+		inline void print_idx (I _idx) {
+            printf("%d", _idx);
+		}
+
+        template <typename I, typename ... IS>
+        inline void print_idx (I _idx, IS ... idxs) {
+            printf("%d, ", _idx);
+            print_idx(idxs ...);
+        }
+
+        template <typename I>
+		inline T & set (int _idx_t, I _idx) {
+			int l_idx = (_idx_t % toggle_) * total_size_ + cal_addr(_idx);
 			return (*view_)[l_idx];
 		}
 
-		inline T & set (int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + (_idx2 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
+        template <typename I, typename ... IS>
+        inline T & set (int _idx_t, I _idx, IS ... idxs) {
+            int l_idx = (_idx_t % toggle_) * total_size_ + cal_addr(_idx, idxs ...);
+            return (*view_)[l_idx];
+        }
 
-		inline T & set (int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + (_idx3 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T & set (int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + (_idx4 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T & set (int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + (_idx5 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T & set (int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + (_idx6 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T & set (int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + (_idx7 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T & set (int _idx8, int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + _idx7 * stride_[7] + (_idx8 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T get (int _idx1, int _idx0) {
-            if (check_boundary1(_idx1, _idx0)) {
+        template <typename I>
+		inline T get (int _idx_t, I _idx) {
+            bool l_out_bound = check_bound(_idx);
+            if (l_out_bound) {
                 printf("Pochoir illegal access by boundary function error:\n");
-                printf("Out-of-range access by boundary function at index (%d, %d)\n", _idx1, _idx0);
+                printf("Out-of-range access by boundary function at index (");
+                print_idx(_idx_t, _idx);
+                printf(")\n");
                 exit(1);
             }
-			int l_idx = _idx0 * stride_[0] + (_idx1 % toggle_) * total_size_;
+			int l_idx = (_idx_t % toggle_) * total_size_ + cal_addr(_idx);
 			return (*view_)[l_idx];
 		}
 
-		inline T get (int _idx2, int _idx1, int _idx0) {
-            if (check_boundary2(_idx2, _idx1, _idx0)) {
+        template <typename I, typename ... IS>
+        inline T get (int _idx_t, I _idx, IS ... idxs) {
+            bool l_out_bound = check_bound(_idx, idxs ...);
+            if (l_out_bound) {
                 printf("Pochoir illegal access by boundary function error:\n");
-                printf("Out-of-range access by boundary function at index (%d, %d, %d)\n", _idx2, _idx1, _idx0);
+                printf("Out-of-range access by boundary function at index (");
+                print_idx(_idx_t, _idx, idxs ...);
+                printf(")\n");
                 exit(1);
             }
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + (_idx2 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T get (int _idx3, int _idx2, int _idx1, int _idx0) {
-            if (check_boundary3(_idx3, _idx2, _idx1, _idx0)) {
-                printf("Pochoir illegal access by boundary function error:\n");
-                printf("Out-of-range access by boundary function at index (%d, %d, %d, %d)\n", _idx3, _idx2, _idx1, _idx0);
-                exit(1);
-            }
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + (_idx3 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T get (int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-            if (check_boundary4(_idx4, _idx3, _idx2, _idx1, _idx0)) {
-                printf("Pochoir illegal access by boundary function error:\n");
-                printf("Out-of-range access by boundary function at index (%d, %d, %d, %d, %d)\n", _idx4, _idx3, _idx2, _idx1, _idx0);
-                exit(1);
-            }
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + (_idx4 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T get (int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-            if (check_boundary5(_idx5, _idx4, _idx3, _idx2, _idx1, _idx0)) {
-                printf("Pochoir illegal access by boundary function error:\n");
-                printf("Out-of-range access by boundary function at index (%d, %d, %d, %d, %d, %d)\n", _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
-                exit(1);
-            }
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + (_idx5 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T get (int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-            if (check_boundary6(_idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0)) {
-                printf("Pochoir illegal access by boundary function error:\n");
-                printf("Out-of-range accesss by boundary function at index (%d, %d, %d, %d, %d, %d, %d)\n", _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
-                exit(1);
-            }
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + (_idx6 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T get (int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-            if (check_boundary7(_idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0)) {
-                printf("Pochoir illegal access by boundary function error:\n");
-                printf("Out-of-range access by boundary function at index (%d, %d, %d, %d, %d, %d, %d, %d)\n", _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
-                exit(1);
-            }
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + (_idx7 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T get (int _idx8, int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-            if (check_boundary8(_idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0)) {
-                printf("Pochoir illegal access by boundary function error:\n");
-                printf("Out-of-range access by boundary function at index (%d, %d, %d, %d, %d, %d, %d, %d, %d)\n", _idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
-                exit(1);
-            }
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + _idx7 * stride_[7] + (_idx8 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
+            int l_idx = (_idx_t % toggle_) * total_size_ + cal_addr(_idx, idxs ...);
+            return (*view_)[l_idx];
+        }
 
 		/* index operator() for the format of a.interior(i, j, k) 
          * - The highest dimension is always time dimension
          * - this is the interior (non-checking) version
          */
-
-		inline T & interior (int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + (_idx1 % toggle_) * total_size_;
+        template <typename I>
+		inline T & interior (int _idx_t, I _idx) {
+			int l_idx = (_idx_t % toggle_) * total_size_ + cal_addr(_idx);
 			return (*view_)[l_idx];
 		}
 
-		inline T & interior (int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + (_idx2 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T & interior (int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + (_idx3 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T & interior (int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + (_idx4 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T & interior (int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + (_idx5 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T & interior (int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + (_idx6 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T & interior (int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + (_idx7 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
-
-		inline T & interior (int _idx8, int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + _idx7 * stride_[7] + (_idx8 % toggle_) * total_size_;
-			return (*view_)[l_idx];
-		}
+        template <typename I, typename ... IS>
+        inline T & interior (int _idx_t, I _idx, IS ... idxs) {
+            int l_idx = (_idx_t % toggle_) * total_size_ + cal_addr(_idx, idxs ...);
+            return (*view_)[l_idx];
+        }
 
 		inline Pochoir_Proxy<T> boundary (int _idx1, int _idx0) {
             bool l_boundary = check_boundary1(_idx1, _idx0);

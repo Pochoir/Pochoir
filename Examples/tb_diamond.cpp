@@ -36,7 +36,7 @@
 
 using namespace std;
 
-#define APP_DEBUG 1
+#define APP_DEBUG 0
 #define TIMES 1
 #define TOLERANCE (1e-6)
 
@@ -74,7 +74,7 @@ Pochoir_Boundary_1D(aperiodic_1D, arr, t, i)
 Pochoir_Boundary_End
 
 #define N 20
-#define T 10
+#define T 20
 
 int main(int argc, char * argv[])
 {

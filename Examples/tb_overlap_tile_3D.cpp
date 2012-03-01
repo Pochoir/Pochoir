@@ -75,8 +75,8 @@ Pochoir_Boundary_2D(aperiodic_2D, arr, t, i, j)
     return 0;
 Pochoir_Boundary_End
 
-#define N 25
-#define T 25
+#define N 65
+#define T 65
 
 int main(int argc, char * argv[])
 {
