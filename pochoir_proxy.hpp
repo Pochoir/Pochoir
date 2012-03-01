@@ -17,9 +17,6 @@
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *   This helper class 'proxy' was originally written by Dahua Lin@csail.mit.edu
- *   adapted to Pochoir by Yuan Tang
- * 
  *
  *   Suggestsions:                  yuantang@csail.mit.edu
  *   Bugs:                          yuantang@csail.mit.edu
@@ -36,27 +33,37 @@ template<typename T>
 class Pochoir_Proxy
 {
 public:
-    explicit Pochoir_Proxy(T * v) : val_(*v), ref_(v) { }
-    explicit Pochoir_Proxy(T v) : val_(v), ref_(&val_) { }
-
-    operator T() const { // the implicit conversion makes a proxy just like the value itself
-	    return (val_);
+    explicit Pochoir_Proxy(T * v) : ref_(v) { 
+        val_ = *v;
     }
-    operator T& () {
-        return (val_);
-    }
-    T * operator->() {
-        return ref_;
+    explicit Pochoir_Proxy(T v) : val_(v) { 
+        /* if this constructor is used later in assignment operator, it will cause a
+         * segmentation fault!!!
+         */
+        ref_ = NULL;
     }
 
+    Pochoir_Proxy(Pochoir_Proxy<T> const & rhs) { 
+        ref_ = rhs.get_ref(); val_ = rhs.get_val();
+    }
+    /* the implicit conversion makes a proxy just like the value itself
+     */
+    operator T () const { return val_; }
+    operator T () { return val_; }
+
+    T * operator->() { return ref_; }
+    T * get_ref() { return ref_; }
+    T get_val() { return val_; }
     Pochoir_Proxy<T> & operator= (T const & rhs) {
         (*ref_) = rhs;
+        val_ = rhs;
         return (*this);
     }
 
     Pochoir_Proxy<T> & operator= (Pochoir_Proxy<T> & rhs) {
         T const & l_rhs = T(rhs);
         (*ref_) = l_rhs;
+        val_ = l_rhs;
         return (*this);
     }
 private:
