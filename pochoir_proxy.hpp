@@ -40,10 +40,12 @@ public:
     explicit Pochoir_Proxy(T v) : val_(v), ref_(&val_) { }
 
     operator T() const { // the implicit conversion makes a proxy just like the value itself
-	    return (*ref_);
+	    // return (*ref_);
+	    return (val_);
     }
     operator T& () {
-        return (*ref_);
+        // return (*ref_);
+        return (val_);
     }
     T * operator->() {
         return ref_;
