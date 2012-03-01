@@ -1294,6 +1294,7 @@ static inline void klein_region(Grid_Info<2> & grid, Grid_Info<2> const & initia
  * - because these functions will be called inside T & operator() functions,
  *   so we have to return a value of T&
  */
+#if 0
 #define Pochoir_Boundary_1D(name, arr, t, i) \
     template <typename T> \
     T name (Pochoir_Array<T, 1> & arr, int t, int i) { 
@@ -1325,7 +1326,16 @@ static inline void klein_region(Grid_Info<2> & grid, Grid_Info<2> const & initia
 #define Pochoir_Boundary_8D(name, arr, t, i, j, k, l, m, n, o, p) \
     template <typename T> \
     T name (Pochoir_Array<T, 8> & arr, int t, int i, int j, int k, int l, int m, int n, int o, int p) { 
+#else
+#define Pochoir_Boundary_1D(name, arr, t, i) \
+    template <typename T, typename T_Array> \
+    T name (T_Array & arr, int t, int i) { 
 
+#define Pochoir_Boundary_2D(name, arr, t, i, j) \
+    template <typename T, typename T_Array> \
+    T name (T_Array & arr, int t, int i, int j) { 
+
+#endif
 #define Pochoir_Boundary_End }
 
 #endif /* POCHOIR_COMMON_H */
