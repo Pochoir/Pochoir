@@ -118,8 +118,6 @@ class Pochoir_Array {
         typedef T (*BValue_6D)(Pochoir_Array<T, 6> &, int, int, int, int, int, int, int);
         typedef T (*BValue_7D)(Pochoir_Array<T, 7> &, int, int, int, int, int, int, int, int);
         typedef T (*BValue_8D)(Pochoir_Array<T, 8> &, int, int, int, int, int, int, int, int, int);
-#define N_BOUND 8
-        void * bv_[N_BOUND];
         BValue_1D bv1_;
         BValue_2D bv2_;
         BValue_3D bv3_;
@@ -204,9 +202,6 @@ class Pochoir_Array {
                     stride_[i+1] = stride_[i] * phys_size_[i];
                 }
             }
-            for (int i = 0; i < N_BOUND; ++i) {
-                bv_[i] = NULL;
-            }
             allocMemFlag_ = false;
         }
 
@@ -260,49 +255,38 @@ class Pochoir_Array {
 
         /* guarantee that only one version of boundary function is registered ! */
         void Register_Boundary(BValue_1D _bv1) { 
-            bv_[0] = reinterpret_cast<void *>(_bv1);
             bv1_ = _bv1;  bv2_ = NULL; bv3_ = NULL; bv4_ = NULL; 
             bv5_ = NULL; bv6_ = NULL; bv7_ = NULL; bv8_ = NULL;
         }
         void Register_Boundary(BValue_2D _bv2) { 
-            bv_[1] = reinterpret_cast<void *>(_bv2);
             bv2_ = _bv2;  bv1_ = NULL; bv3_ = NULL; bv4_ = NULL; 
             bv5_ = NULL; bv6_ = NULL; bv7_ = NULL; bv8_ = NULL;
         }
         void Register_Boundary(BValue_3D _bv3) { 
-            bv_[2] = reinterpret_cast<void *>(_bv3);
             bv3_ = _bv3;  bv1_ = NULL; bv2_ = NULL; bv4_ = NULL; 
             bv5_ = NULL; bv6_ = NULL; bv7_ = NULL; bv8_ = NULL;
         }
         void Register_Boundary(BValue_4D _bv4) { 
-            bv_[3] = reinterpret_cast<void *>(_bv4);
             bv4_ = _bv4;  bv1_ = NULL; bv2_ = NULL; bv3_ = NULL; 
             bv5_ = NULL; bv6_ = NULL; bv7_ = NULL; bv8_ = NULL;
         }
         void Register_Boundary(BValue_5D _bv5) { 
-            bv_[4] = reinterpret_cast<void *>(_bv5);
             bv5_ = _bv5;  bv1_ = NULL; bv2_ = NULL; bv3_ = NULL; 
             bv4_ = NULL; bv6_ = NULL; bv7_ = NULL; bv8_ = NULL;}
         void Register_Boundary(BValue_6D _bv6) { 
-            bv_[5] = reinterpret_cast<void *>(_bv6);
             bv6_ = _bv6;  bv1_ = NULL; bv2_ = NULL; bv3_ = NULL; 
             bv4_ = NULL; bv5_ = NULL; bv7_ = NULL; bv8_ = NULL;
         }
         void Register_Boundary(BValue_7D _bv7) { 
-            bv_[6] = reinterpret_cast<void *>(_bv7);
             bv7_ = _bv7;  bv1_ = NULL; bv2_ = NULL; bv3_ = NULL; 
             bv4_ = NULL; bv5_ = NULL; bv6_ = NULL; bv8_ = NULL;
         }
         void Register_Boundary(BValue_8D _bv8) { 
-            bv_[7] = reinterpret_cast<void *>(_bv8);
             bv8_ = _bv8;  bv1_ = NULL; bv2_ = NULL; bv3_ = NULL; 
             bv4_ = NULL; bv5_ = NULL; bv6_ = NULL; bv7_ = NULL;
         }
 
         void unRegister_Boundary(void) { 
-            for (int i = 0; i < N_BOUND; ++i) {
-                bv_[i] = NULL;
-            }
             bv1_ = NULL;  bv2_ = NULL; bv3_ = NULL; bv4_ = NULL; 
             bv5_ = NULL; bv6_ = NULL; bv7_ = NULL; bv8_ = NULL; 
         }
@@ -920,83 +904,6 @@ class Pochoir_Array {
             return (*view_)[l_idx];
         }
 
-        template <typename I>
-        inline Pochoir_Proxy<T> boundary (int _idx_t, I _idx) {
-            bool l_out_bound = check_bound(_idx);
-            bool set_bound = (l_out_bound & bv_[0] != NULL);
-            if (set_bound) {
-                BValue_1D bf = reinterpret_cast<BValue_1D>(bv_[0]);
-                return Pochoir_Proxy<T>(bf(*this, _idx_t, _idx));
-            }
-            int l_idx = (_idx_t % toggle_) * total_size_ + cal_addr(_idx);
-            return Pochoir_Proxy<T>(data_ + l_idx);
-        }
-
-        template <typename I, typename ... IS>
-        inline Pochoir_Proxy<T> boundary (int _idx_t, I _idx, IS ... _idxs) {
-            int l_dim = sizeof...(IS);
-            bool l_out_bound = check_bound(_idx, _idxs ...);
-            bool set_bound = (l_out_bound & bv_[l_dim] != NULL);
-            if (set_bound) {
-                switch (l_dim) {
-#if 0
-                    case 0:
-                        { 
-                            BValue_1D bf = reinterpret_cast<BValue_1D>(bv_[0]);
-                            return Pochoir_Proxy<T>(bf(*this, _idx_t, _idx, _idxs ...));
-                        }
-#endif
-                    case 1:
-                        {
-                            BValue_2D bf = reinterpret_cast<BValue_2D>(bv_[1]);
-                            return Pochoir_Proxy<T>(bf(*this, _idx_t, _idx, _idxs ...));
-                            break;
-                        }
-                    case 2:
-                        {
-                            BValue_3D bf = reinterpret_cast<BValue_3D>(bv_[2]);
-                            return Pochoir_Proxy<T>(bf(*this, _idx_t, _idx, _idxs ...));
-                            break;
-                        }
-                    case 3:
-                        {
-                            BValue_4D bf = reinterpret_cast<BValue_4D>(bv_[3]);
-                            return Pochoir_Proxy<T>(bf(*this, _idx_t, _idx, _idxs ...));
-                            break;
-                        }
-                    case 4:
-                        {
-                            BValue_5D bf = reinterpret_cast<BValue_5D>(bv_[4]);
-                            return Pochoir_Proxy<T>(bf(*this, _idx_t, _idx, _idxs ...));
-                            break;
-                        }
-                    case 5:
-                        {
-                            BValue_6D bf = reinterpret_cast<BValue_6D>(bv_[5]);
-                            return Pochoir_Proxy<T>(bf(*this, _idx_t, _idx, _idxs ...));
-                            break;
-                        }
-                    case 6:
-                        {
-                            BValue_7D bf = reinterpret_cast<BValue_7D>(bv_[6]);
-                            return Pochoir_Proxy<T>(bf(*this, _idx_t, _idx, _idxs ...));
-                        }
-                    case 7:
-                        {
-                            BValue_8D bf = reinterpret_cast<BValue_8D>(bv_[7]);
-                            return Pochoir_Proxy<T>(bf(*this, _idx_t, _idx, _idxs ...));
-                        }
-                    default:
-                        {
-                            int l_idx = (_idx_t % toggle_) * total_size_ + cal_addr(_idx, _idxs ...);
-                            return Pochoir_Proxy<T>(data_ + l_idx);
-                        }
-                }
-            }
-            int l_idx = (_idx_t % toggle_) * total_size_ + cal_addr(_idx, _idxs ...);
-            return Pochoir_Proxy<T>(data_ + l_idx);
-        }
-#if 0
 		inline Pochoir_Proxy<T> boundary (int _idx1, int _idx0) {
             bool l_boundary = check_boundary1(_idx1, _idx0);
             bool set_boundary = (l_boundary && bv1_ != NULL);
@@ -1068,7 +975,7 @@ class Pochoir_Array {
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + _idx7 * stride_[7] + (_idx8 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
-#endif
+
 		/* size_info is of type int[] */
 		static inline bool update_index(int * index, bool & line_break, int const * head_index, int const * tail_index)
 		{
