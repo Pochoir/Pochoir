@@ -118,6 +118,7 @@ class Pochoir_Array {
         typedef T (*BValue_6D)(Pochoir_Array<T, 6> &, int, int, int, int, int, int, int);
         typedef T (*BValue_7D)(Pochoir_Array<T, 7> &, int, int, int, int, int, int, int, int);
         typedef T (*BValue_8D)(Pochoir_Array<T, 8> &, int, int, int, int, int, int, int, int, int);
+        BValue bv_;
         BValue_1D bv1_;
         BValue_2D bv2_;
         BValue_3D bv3_;
@@ -454,58 +455,40 @@ class Pochoir_Array {
             return touch_boundary;
         }
 
-#define check_boundary1(_idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0]) \
-        
+        template <typename I>
+		inline int cal_addr (I _idx) {
+			int l_idx = _idx * stride_[0];
+			return l_idx;
+		}
 
-#define check_boundary2(_idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1])
+        template <typename I, typename ... IS>
+        inline int cal_addr (I _idx, IS ... _idxs) {
+            int l_dim = sizeof...(IS);
+            return (_idx * stride_[l_dim] + cal_addr(_idxs ...));
+        }
 
-#define check_boundary3(_idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
-                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2])
+        template <typename I>
+		inline bool check_bound (I _idx) {
+            return (_idx < logic_start_[0] || _idx >= logic_end_[0]);
+		}
 
-#define check_boundary4(_idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
-                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
-                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3])
+        template <typename I, typename ... IS>
+        inline bool check_bound (I _idx, IS ... _idxs) {
+            int l_dim = sizeof...(IS);
+            return (_idx < logic_start_[l_dim] || _idx >= logic_end_[l_dim] || check_bound(_idxs ...));
+        }
 
-#define check_boundary5(_idx5, _idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
-                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
-                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] \
-                 || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4])
+        template <typename I>
+		inline void print_idx (I _idx) {
+            printf("%d", _idx);
+		}
 
-#define check_boundary6(_idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
-                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
-                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] \
-                 || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] \
-                 || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5])
+        template <typename I, typename ... IS>
+        inline void print_idx (I _idx, IS ... _idxs) {
+            printf("%d, ", _idx);
+            print_idx(_idxs ...);
+        }
 
-#define check_boundary7(_idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
-                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
-                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] \
-                 || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] \
-                 || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5] \
-                 || _idx6 < logic_start_[6] || _idx5 >= logic_end_[6])
-
-#define check_boundary8(_idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) \
-            (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] \
-                 || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] \
-                 || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] \
-                 || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] \
-                 || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] \
-                 || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5] \
-                 || _idx6 < logic_start_[6] || _idx5 >= logic_end_[6] \
-                 || _idx7 < logic_start_[7] || _idx5 >= logic_end_[7])
         /* 
          * orig_value() is reserved for "ostream" : cout << Pochoir_Array
          */
@@ -571,11 +554,11 @@ class Pochoir_Array {
                 }
             }
 #endif
-            bool l_boundary = check_boundary1(_idx1, _idx0);
+            bool l_boundary = check_bound(_idx0);
             bool set_boundary = (l_boundary && bv1_ != NULL);
             if (set_boundary) 
                 return Pochoir_Proxy<T>(bv1_(*this, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + (_idx1 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx0) + (_idx1 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
@@ -607,11 +590,11 @@ class Pochoir_Array {
                 }
             }
 #endif
-            bool l_boundary = check_boundary2(_idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx1, _idx0);
             bool set_boundary = (l_boundary && bv2_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv2_(*this, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + (_idx2 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx1, _idx0) + (_idx2 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
@@ -639,11 +622,11 @@ class Pochoir_Array {
                 }
             }
 #endif
-            bool l_boundary = check_boundary3(_idx3, _idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx2, _idx1, _idx0);
             bool set_boundary = (l_boundary && bv3_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv3_(*this, _idx3, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + (_idx3 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx2, _idx1, _idx0) + (_idx3 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
@@ -671,11 +654,11 @@ class Pochoir_Array {
                 }
             }
 #endif
-            bool l_boundary = check_boundary4(_idx4, _idx3, _idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx3, _idx2, _idx1, _idx0);
             bool set_boundary = (l_boundary && bv4_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv4_(*this, _idx4, _idx3, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + (_idx4 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx3, _idx2, _idx1, _idx0) + (_idx4 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx); 
 		}
 
@@ -704,11 +687,11 @@ class Pochoir_Array {
                 }
             }
 #endif
-            bool l_boundary = check_boundary5(_idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx4, _idx3, _idx2, _idx1, _idx0);
             bool set_boundary = (l_boundary && bv5_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv5_(*this, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + (_idx5 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx4, _idx3, _idx2, _idx1, _idx0) + (_idx5 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
@@ -737,11 +720,11 @@ class Pochoir_Array {
                 }
             }
 #endif
-            bool l_boundary = check_boundary6(_idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
             bool set_boundary = (l_boundary && bv6_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv6_(*this, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + (_idx6 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx5, _idx4, _idx3, _idx2, _idx1, _idx0) + (_idx6 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
@@ -771,11 +754,11 @@ class Pochoir_Array {
                 }
             }
 #endif
-            bool l_boundary = check_boundary7(_idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
             bool set_boundary = (l_boundary && bv7_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv7_(*this, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + (_idx7 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) + (_idx7 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
@@ -805,49 +788,15 @@ class Pochoir_Array {
                 }
             }
 #endif
-            bool l_boundary = check_boundary8(_idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
             bool set_boundary = (l_boundary && bv8_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv8_(*this, _idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + _idx7 * stride_[7] + (_idx8 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) + (_idx8 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
         /* set()/get() pair to set/get boundary value in user supplied bvalue function */
-        template <typename I>
-		inline int cal_addr (I _idx) {
-			int l_idx = _idx * stride_[0];
-			return l_idx;
-		}
-
-        template <typename I, typename ... IS>
-        inline int cal_addr (I _idx, IS ... _idxs) {
-            int l_dim = sizeof...(IS);
-            return (_idx * stride_[l_dim] + cal_addr(_idxs ...));
-        }
-
-        template <typename I>
-		inline bool check_bound (I _idx) {
-            return (_idx < logic_start_[0] || _idx >= logic_end_[0]);
-		}
-
-        template <typename I, typename ... IS>
-        inline bool check_bound (I _idx, IS ... _idxs) {
-            int l_dim = sizeof...(IS);
-            return (_idx < logic_start_[l_dim] || _idx >= logic_end_[l_dim] || check_bound(_idxs ...));
-        }
-
-        template <typename I>
-		inline void print_idx (I _idx) {
-            printf("%d", _idx);
-		}
-
-        template <typename I, typename ... IS>
-        inline void print_idx (I _idx, IS ... _idxs) {
-            printf("%d, ", _idx);
-            print_idx(_idxs ...);
-        }
-
         template <typename I>
 		inline T & set (int _idx_t, I _idx) {
 			int l_idx = (_idx_t % toggle_) * total_size_ + cal_addr(_idx);
@@ -905,74 +854,74 @@ class Pochoir_Array {
         }
 
 		inline Pochoir_Proxy<T> boundary (int _idx1, int _idx0) {
-            bool l_boundary = check_boundary1(_idx1, _idx0);
+            bool l_boundary = check_bound(_idx0);
             bool set_boundary = (l_boundary && bv1_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv1_(*this, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + (_idx1 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx0) + (_idx1 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
 		inline Pochoir_Proxy<T> boundary (int _idx2, int _idx1, int _idx0) {
-            bool l_boundary = check_boundary2(_idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx1, _idx0);
             bool set_boundary = (l_boundary && bv2_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv2_(*this, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + (_idx2 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx1, _idx0) + (_idx2 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
 		inline Pochoir_Proxy<T> boundary (int _idx3, int _idx2, int _idx1, int _idx0) {
-            bool l_boundary = check_boundary3(_idx3, _idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx2, _idx1, _idx0);
             bool set_boundary = (l_boundary && bv3_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv3_(*this, _idx3, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + (_idx3 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx2, _idx1, _idx0) + (_idx3 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
 		inline Pochoir_Proxy<T> boundary (int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-            bool l_boundary = check_boundary4(_idx4, _idx3, _idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx3, _idx2, _idx1, _idx0);
             bool set_boundary = (l_boundary && bv4_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv4_(*this, _idx4, _idx3, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + (_idx4 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx3, _idx2, _idx1, _idx0) + (_idx4 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
 		inline Pochoir_Proxy<T> boundary (int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-            bool l_boundary = check_boundary5(_idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx4, _idx3, _idx2, _idx1, _idx0);
             bool set_boundary = (l_boundary && bv5_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv5_(*this, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + (_idx5 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx4, _idx3, _idx2, _idx1, _idx0) + (_idx5 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
 		inline Pochoir_Proxy<T> boundary (int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-            bool l_boundary = check_boundary6(_idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
             bool set_boundary = (l_boundary && bv6_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv6_(*this, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + (_idx6 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx5, _idx4, _idx3, _idx2, _idx1, _idx0) + (_idx6 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
 		inline Pochoir_Proxy<T> boundary (int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-            bool l_boundary = check_boundary7(_idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
             bool set_boundary = (l_boundary && bv7_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv7_(*this, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + (_idx7 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) + (_idx7 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
 		inline Pochoir_Proxy<T> boundary (int _idx8, int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-            bool l_boundary = check_boundary8(_idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+            bool l_boundary = check_bound(_idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
             bool set_boundary = (l_boundary && bv8_ != NULL);
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv8_(*this, _idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + _idx7 * stride_[7] + (_idx8 % toggle_) * total_size_;
+			int l_idx = cal_addr(_idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0) + (_idx8 % toggle_) * total_size_;
             return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 

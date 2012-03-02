@@ -128,17 +128,6 @@ static inline int select(bool b, int x, int y) {
     return (x&(-b)) | (y&-(!b));
 }
 
-#if 0
-static inline float select(bool b, float x, float y) {
-    int __ir__ = ((*(int*)&x) & (-b)) | ((*(int*)&y) & -(!b)); 
-    return *(float*)&__ir__; 
-}   
-static inline double select(bool b, double x, double y) {
-    long __ir__ = ((*(long*)&x) & (-b)) | ((*(long*)&y) & -(!b));
-    return *(double*)&__ir__;
-}
-#endif
-
 typedef int T_dim;
 typedef int T_index;
 /* T_color could be of type int, long, ..., which could be able to
