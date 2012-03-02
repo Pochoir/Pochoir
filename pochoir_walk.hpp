@@ -370,14 +370,14 @@ static inline void set_worker_count(const char * nstr)
 #endif
 }
 
-template <int N_RANK>
+template <int BASE, int EXP>
 struct power {
-    enum { value = 5 * power<N_RANK-1>::value };
+    enum { value = BASE * power<BASE, EXP-1>::value };
 };
 
-template <>
-struct power<1> {
-    enum {value = 5};
+template <int BASE>
+struct power<BASE, 1> {
+    enum { value = BASE };
 }; 
 
 template <int N_RANK>
@@ -403,8 +403,6 @@ struct Algorithm {
             int t0, t1;
             Grid_Info<N_RANK> grid;
         } queue_info;
-
-        int ALGOR_QUEUE_SIZE;
 
         /* we can use toggled circular queue! */
         Grid_Info<N_RANK> phys_grid_;
@@ -451,9 +449,7 @@ struct Algorithm {
         opks_ = NULL; 
         // pure_region_ = NULL; 
         color_region_ = NULL; homogeneity_vector_ = NULL;
-        /* ALGOR_QUEUE_SIZE = 3^N_RANK */
-        // ALGOR_QUEUE_SIZE = power<N_RANK>::value;
-#define ALGOR_QUEUE_SIZE (power<N_RANK>::value)
+#define ALGOR_QUEUE_SIZE (power<5, N_RANK>::value)
 #if STAT
 //        for (int i = 0; i < SUPPORT_RANK; ++i) {
 //            sim_count_cut[i] = 0;
