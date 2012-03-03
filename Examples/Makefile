@@ -15,8 +15,8 @@ OPT_FLAGS = -DCHECK_SHAPE -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggr
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
 # POCHOIR_DEBUG_FLAGS = -O0 -g3 -debug -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
 # ICC_DEBUG_FLAGS = -rdynamic -ldl -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
-ICC_DEBUG_FLAGS = -rdynamic -ldl -O0 -g3 -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
-# ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
+# ICC_DEBUG_FLAGS = -rdynamic -ldl -O0 -g3 -Wall -Werror -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
+ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -std=c++0x -I${CILK_HEADER_PATH} -include cilk_stub.h
 POCHOIR_LIB_FILES = "../pochoir.hpp ../pochoir_common.hpp ../pochoir_dloader.hpp ../pochoir_array.hpp ../pochoir_walk.hpp ../pochoir_walk_recursive.hpp ../pochoir_walk_loops.hpp ../pochoir_kernel.hpp ../pochoir_range.hpp"
 
 # ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x
@@ -143,19 +143,19 @@ wave_2D : tb_wave_2D.cpp # tb_wave_2D_pochoir.cpp
 
 overlap_tile_2D : tb_overlap_tile_2D.cpp # tb_overlap_tile_2D_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o overlap_tile_2D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_overlap_tile_2D.cpp
-	${ICC} -o overlap_tile_2D_gdb ${ICC_DEBUG_FLAGS} tb_overlap_tile_2D_pochoir.cpp
+#	${CC} -o overlap_tile_2D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_overlap_tile_2D.cpp
+#	${ICC} -o overlap_tile_2D_gdb ${ICC_DEBUG_FLAGS} tb_overlap_tile_2D_pochoir.cpp
 #	Phase-I compilation with debugging aid
-#	${CC} -o overlap_tile_2D ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_2D.cpp 
-#	${ICC} -o overlap_tile_2D ${OPT_FLAGS} tb_overlap_tile_2D.cpp 
+	${CC} -o overlap_tile_2D ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_2D.cpp 
+	${ICC} -o overlap_tile_2D_gdb ${ICC_DEBUG_FLAGS} tb_overlap_tile_2D_pochoir.cpp 
 
 overlap_tile_3D : tb_overlap_tile_3D.cpp # tb_overlap_tile_3D_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o overlap_tile_3D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_overlap_tile_3D.cpp
-	${ICC} -o overlap_tile_3D_gdb ${ICC_DEBUG_FLAGS} tb_overlap_tile_3D_pochoir.cpp
+#	${CC} -o overlap_tile_3D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_overlap_tile_3D.cpp
+#	${ICC} -o overlap_tile_3D_gdb ${ICC_DEBUG_FLAGS} tb_overlap_tile_3D_pochoir.cpp
 #	Phase-I compilation with debugging aid
-#	${CC} -o overlap_tile_3D ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_3D.cpp 
-#	${ICC} -o overlap_tile_3D_gdb ${OPT_FLAGS} -I${POCHOIR_LIB_PATH} tb_overlap_tile_3D.cpp 
+	${CC} -o overlap_tile_3D ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_3D.cpp 
+	${ICC} -o overlap_tile_3D_gdb ${ICC_DEBUG_FLAGS} tb_overlap_tile_3D_pochoir.cpp 
 
 overlap_tile_3D_merge : tb_overlap_tile_3D_merge.cpp # tb_overlap_tile_3D_merge_pochoir.cpp 
 #   Phase-II compilation

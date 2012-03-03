@@ -65,12 +65,15 @@ struct meta_grid_boundary <8>{
             int new_o = pmod_lu(o, initial_grid.x0[1], initial_grid.x1[1]);
             for (int p = grid.x0[0]; p < grid.x1[0]; ++p) {
                 int new_p = pmod_lu(p, initial_grid.x0[0], initial_grid.x1[0]);
+#ifdef CHECK_SHAPE
                 if (inRun) {
-                    home_cell_[8] = new_p; home_cell_[7] = new_o;
-                    home_cell_[6] = new_n; home_cell_[5] = new_m;
-                    home_cell_[4] = new_l; home_cell_[3] = new_k;
-                    home_cell_[2] = new_j; home_cell_[1] = new_i;
+                    home_cell_[8] = new_p; 
+                    home_cell_[7] = new_o; home_cell_[6] = new_n; 
+                    home_cell_[5] = new_m; home_cell_[4] = new_l; 
+                    home_cell_[3] = new_k; home_cell_[2] = new_j; 
+                    home_cell_[1] = new_i; home_cell_[0] = t;
                 }
+#endif
                 bf(t, new_i, new_j, new_k, new_l, new_m, new_n, new_o, new_p);
             } } } } } } } }
     }
@@ -95,12 +98,14 @@ struct meta_grid_boundary <7>{
                 int new_n = pmod_lu(n, initial_grid.x0[1], initial_grid.x1[1]);
         for (int o = grid.x0[0]; o < grid.x1[0]; ++o) {
             int new_o = pmod_lu(o, initial_grid.x0[0], initial_grid.x1[0]);
+#ifdef CHECK_SHAPE
                 if (inRun) {
-                    home_cell_[7] = new_o;
-                    home_cell_[6] = new_n; home_cell_[5] = new_m;
-                    home_cell_[4] = new_l; home_cell_[3] = new_k;
-                    home_cell_[2] = new_j; home_cell_[1] = new_i;
+                    home_cell_[7] = new_o; home_cell_[6] = new_n; 
+                    home_cell_[5] = new_m; home_cell_[4] = new_l; 
+                    home_cell_[3] = new_k; home_cell_[2] = new_j; 
+                    home_cell_[1] = new_i; home_cell_[0] = t;
                 }
+#endif
                 bf(t, new_i, new_j, new_k, new_l, new_m, new_n, new_o);
             } } } } } } }
     }
@@ -123,11 +128,14 @@ struct meta_grid_boundary <6>{
             int new_m = pmod_lu(m, initial_grid.x0[1], initial_grid.x1[1]);
             for (int n = grid.x0[0]; n < grid.x1[0]; ++n) {
                 int new_n = pmod_lu(n, initial_grid.x0[0], initial_grid.x1[0]);
+#ifdef CHECK_SHAPE
                 if (inRun) {
-                    home_cell_[6] = new_n; home_cell_[5] = new_m;
-                    home_cell_[4] = new_l; home_cell_[3] = new_k;
-                    home_cell_[2] = new_j; home_cell_[1] = new_i;
+                    home_cell_[6] = new_n; 
+                    home_cell_[5] = new_m; home_cell_[4] = new_l; 
+                    home_cell_[3] = new_k; home_cell_[2] = new_j; 
+                    home_cell_[1] = new_i; home_cell_[0] = t;
                 }
+#endif
                 bf(t, new_i, new_j, new_k, new_l, new_m, new_n);
             } } } } } } 
     }
@@ -148,11 +156,13 @@ struct meta_grid_boundary <5>{
                 int new_l = pmod_lu(l, initial_grid.x0[1], initial_grid.x1[1]);
         for (int m = grid.x0[0]; m < grid.x1[0]; ++m) {
             int new_m = pmod_lu(m, initial_grid.x0[0], initial_grid.x1[0]);
+#ifdef CHECK_SHAPE
                 if (inRun) {
-                    home_cell_[5] = new_m;
-                    home_cell_[4] = new_l; home_cell_[3] = new_k;
-                    home_cell_[2] = new_j; home_cell_[1] = new_i;
+                    home_cell_[5] = new_m; home_cell_[4] = new_l; 
+                    home_cell_[3] = new_k; home_cell_[2] = new_j; 
+                    home_cell_[1] = new_i; home_cell_[0] = t;
                 }
+#endif
                 bf(t, new_i, new_j, new_k, new_l, new_m);
             } } } } } 
     }
@@ -171,10 +181,13 @@ struct meta_grid_boundary <4>{
             int new_k = pmod_lu(k, initial_grid.x0[1], initial_grid.x1[1]);
             for (int l = grid.x0[0]; l < grid.x1[0]; ++l) {
                 int new_l = pmod_lu(l, initial_grid.x0[0], initial_grid.x1[0]);
+#ifdef CHECK_SHAPE
                 if (inRun) {
-                    home_cell_[4] = new_l; home_cell_[3] = new_k;
-                    home_cell_[2] = new_j; home_cell_[1] = new_i;
+                    home_cell_[4] = new_l; 
+                    home_cell_[3] = new_k; home_cell_[2] = new_j; 
+                    home_cell_[1] = new_i; home_cell_[0] = t;
                 }
+#endif
                 bf(t, new_i, new_j, new_k, new_l);
             } } } } 
     } 
@@ -191,11 +204,12 @@ struct meta_grid_boundary <3>{
                 int new_j = pmod_lu(j, initial_grid.x0[1], initial_grid.x1[1]);
         for (int k = grid.x0[0]; k < grid.x1[0]; ++k) {
             int new_k = pmod_lu(k, initial_grid.x0[0], initial_grid.x1[0]);
-                do {
-                    home_cell_[3] = inRun ? new_k : 0;
-                    home_cell_[2] = inRun ? new_j : 0;
-                    home_cell_[1] = inRun ? new_i : 0;
-                } while (0);
+#ifdef CHECK_SHAPE
+                if (inRun) {
+                    home_cell_[3] = new_k; home_cell_[2] = new_j; 
+                    home_cell_[1] = new_i; home_cell_[0] = t;
+                } 
+#endif
                 bf(t, new_i, new_j, new_k);
         } } }
 	} 
@@ -216,10 +230,12 @@ struct meta_grid_boundary <2>{
                 int new_i = i, new_j = j;
                 klein(new_i, new_j, initial_grid);
 #endif
-                do {
-                    home_cell_[2] = inRun ? new_j : 0;
-                    home_cell_[1] = inRun ? new_i : 0;
-                } while (0);
+#ifdef CHECK_SHAPE
+                if (inRun) {
+                    home_cell_[2] = new_j; 
+                    home_cell_[1] = new_i; home_cell_[0] = t;
+                } 
+#endif
                 bf(t, new_i, new_j);
 			} }
 	} 
@@ -231,9 +247,11 @@ struct meta_grid_boundary <1>{
 	static inline void single_step(int t, Grid_Info<1> const & grid, Grid_Info<1> const & initial_grid, BF const & bf) {
 		for (int i = grid.x0[0]; i < grid.x1[0]; ++i) {
             int new_i = pmod_lu(i, initial_grid.x0[0], initial_grid.x1[0]);
-            do {
-                home_cell_[1] = inRun ? new_i : 0;
-            } while (0);
+#ifdef CHECK_SHAPE
+            if (inRun) {
+                home_cell_[1] = new_i; home_cell_[0] = t;
+            }
+#endif
 		    bf(t, new_i);
         }
 	} 

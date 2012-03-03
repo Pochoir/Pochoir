@@ -852,6 +852,9 @@ void Pochoir<N_RANK>::Destroy_Plan(Pochoir_Plan<N_RANK> & _plan) {
 
 template <int N_RANK>
 void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
+#ifdef CHECK_SHAPE
+    inRun = true;
+#endif
     int offset = 0, l_sz_pigk = reg_tile_kernels_.size();
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
@@ -871,6 +874,9 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
         }
         offset = _plan.sync_data_->region_[j];
     }
+#ifdef CHECK_SHAPE
+    inRun = false;
+#endif
     return;
 }
 

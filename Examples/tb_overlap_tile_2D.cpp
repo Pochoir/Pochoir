@@ -298,10 +298,11 @@ int main(int argc, char * argv[])
 
     /* initialization */
     for (int i = 0; i < N; ++i) {
-        a(0, i) = 1.0 * (rand() % BASE);
-        b(0, i) = a(0, i);
-        a(1, i) = 0;
-        b(1, i) = 0;
+        auto tmp = 1.0 * (rand() % BASE);
+        a(0, i) = tmp;
+        b(0, i) = tmp;
+        a(1, i) = tmp;
+        b(1, i) = tmp;
     }
 
     Pochoir_Plan<1> & l_plan = overlap.Gen_Plan(T);

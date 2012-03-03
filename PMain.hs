@@ -133,9 +133,9 @@ iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x"]
 -- debug flags for icpc
-iccDebugPPFlags = ["-P", "-C", "-DNDEBUG", "-g3", "-std=c++0x"]
+iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DNDEBUG", "-g3", "-std=c++0x"]
 -- debug flags for g++
--- iccDebugPPFlags = ["-E", "-DNDEBUG", "-g3", "-std=c++0x"]
+-- iccDebugPPFlags = ["-E", "-DCHECK_SHAPE", "-DNDEBUG", "-g3", "-std=c++0x"]
 
 parseArgs :: ([String], [String], PMode, Bool, Bool, [String]) -> [String] -> ([String], [String], PMode, Bool, Bool, [String])
 parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL 

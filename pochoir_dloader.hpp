@@ -51,13 +51,15 @@ public:
     }
 
     template<class T>
-    std::function<T> load(const char * functionName)
+    // std::function<T> load(const char * functionName)
+    T load(const char * functionName)
     {
         void* result = dlsym(m_handle, functionName);
         if ((error = dlerror()) != NULL) {
             ERROR_ARGS("can't find symbol named %s\n", functionName);
         }
-        return reinterpret_cast<T*>(result);
+        // return reinterpret_cast<T*>(result);
+        return reinterpret_cast<T>(result);
     }
 
     void close(void) { dlclose(m_handle); }
@@ -67,7 +69,7 @@ private:
 };
 
 template <typename T>
-std::function<T> dloader(void * handle, const char * func_name) {
+T dloader(void * handle, const char * func_name) {
     void * result = dlsym(handle, func_name);
     char * error;
 
@@ -75,7 +77,7 @@ std::function<T> dloader(void * handle, const char * func_name) {
         fprintf(stderr, "can't find symbol named %s\n", func_name);
         exit(EXIT_FAILURE);
     }
-    return reinterpret_cast<T*>(result);
+    return reinterpret_cast<T>(result);
 };
 
 #endif

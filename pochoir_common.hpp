@@ -329,9 +329,15 @@ struct Pochoir_Types<1> {
 };
 template <>
 struct Pochoir_Types<2> {
+#if 1
     typedef std::function<void (int, int, int)> T_Kernel;
     typedef std::function<void (int, int, Grid_Info<2> const &)> T_Obase_Kernel;
     typedef std::function<bool (int, int, int)> T_Guard;
+#else
+    typedef void (*T_Kernel)(int, int, int);
+    typedef void (*T_Obase_Kernel)(int, int, Grid_Info<2> const &);
+    typedef bool (*T_Guard)(int, int, int);
+#endif
 };
 template <>
 struct Pochoir_Types<3> {
@@ -839,8 +845,15 @@ struct Pochoir_Plan {
         sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname_, order_num_);
         LOG_ARGS(0, "gen_kernel_fname = %s\n", gen_kernel_fname);
         dloader_ = new DynamicLoader(gen_kernel_fname);
-        std::function < int (T_Pochoir &, T_Array &) > create_lambdas = dloader_->load < int (T_Pochoir &, T_Array &) > ("Create_Lambdas");
-        std::function < int (T_Pochoir &) > register_lambdas = dloader_->load < int (T_Pochoir &) > ("Register_Lambdas");
+#if 1
+        typedef int (*T_Create_Lambda)(T_Pochoir &, T_Array &);
+        typedef int (*T_Register_Lambda)(T_Pochoir &);
+        T_Create_Lambda create_lambdas = dloader_->load < T_Create_Lambda > ("Create_Lambdas");
+        T_Register_Lambda register_lambdas = dloader_->load < T_Register_Lambda > ("Register_Lambdas");
+#else
+        // std::function < int (T_Pochoir &, T_Array &) > create_lambdas = dloader_->load < int (T_Pochoir &, T_Array &) > ("Create_Lambdas");
+        // std::function < int (T_Pochoir &) > register_lambdas = dloader_->load < int (T_Pochoir &) > ("Register_Lambdas");
+#endif
 
         create_lambdas(_pochoir, _a);
         register_lambdas(_pochoir);
@@ -860,8 +873,15 @@ struct Pochoir_Plan {
         sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname_, order_num_);
         LOG_ARGS(0, "gen_kernel_fname = %s\n", gen_kernel_fname);
         dloader_ = new DynamicLoader(gen_kernel_fname);
+#if 1
+        typedef int (*T_Create_Lambda)(T_Pochoir &, T_Array &, T_ArrayS ...);
+        typedef int (*T_Register_Lambda)(T_Pochoir &);
+        T_Create_Lambda create_lambdas = dloader_->load < T_Create_Lambda > ("Create_Lambdas");
+        T_Register_Lambda register_lambdas = dloader_->load < T_Register_Lambda > ("Register_Lambdas");
+#else
         std::function < int (T_Pochoir &, T_Array &, T_ArrayS ...) > create_lambdas = dloader_->load < int (T_Pochoir &, T_Array &, T_ArrayS ...) > ("Create_Lambdas");
         std::function < int (T_Pochoir &) > register_lambdas = dloader_->load < int (T_Pochoir &) > ("Register_Lambdas");
+#endif
 
         create_lambdas(_pochoir, _a, _as ...);
         register_lambdas(_pochoir);
@@ -876,7 +896,12 @@ struct Pochoir_Plan {
             WARNING("dloader == NULL");
             return 0;
         }
+#if 1
+        typedef int (*T_Destroy_Lambda)(void);
+        T_Destroy_Lambda destroy_lambdas = dloader_->load < T_Destroy_Lambda > ("Destroy_Lambdas");
+#else
         std::function < int (void) > destroy_lambdas = dloader_->load < int (void) > ("Destroy_Lambdas");
+#endif
         destroy_lambdas();
         dloader_->close();
         del_ele(dloader_);

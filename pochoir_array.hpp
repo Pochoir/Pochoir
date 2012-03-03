@@ -36,17 +36,6 @@
 
 using namespace std;
 
-template <int DIM>
-inline int cal_index(int const * _idx, int const * _stride) {
-	return (_idx[DIM] * _stride[DIM]) + cal_index<DIM-1>(_idx, _stride);
-}
-
-template <>
-inline int cal_index<0>(int const * _idx, int const * _stride) {
-	/* 0-dim is always the time dimension */
-	return (_idx[0] * _stride[0]);
-}
-
 template <typename T, int N_RANK>
 class Pochoir_Array;
 
@@ -114,10 +103,6 @@ class Storage {
 		T * data() { return storage_; }
 };
 
-#ifdef CHECK_SHAPE
-#undef CHECK_SHAPE
-#endif
-
 template <typename T, int N_RANK>
 class Pochoir_Array {
 	private:
@@ -132,7 +117,7 @@ class Pochoir_Array {
 		int total_size_;
         int slope_[N_RANK], toggle_;
         Pochoir_Shape<N_RANK> * shape_;
-        int shape_size_;
+        int shape_size_, time_shift_;
 
         typedef typename Boundary<T, N_RANK>::Types BValue;
         BValue bv_;
@@ -153,7 +138,7 @@ class Pochoir_Array {
             logic_size_[0] = phys_size_[0] = sz;
             logic_start_[0] = 0; logic_end_[0] = sz;
             stride_[0] = 1; slope_[0] = 0; 
-            shape_ = NULL; shape_size_ = 0; toggle_ = 1;
+            shape_ = NULL; shape_size_ = 0; toggle_ = 1; time_shift_ = 0;
             view_ = NULL; data_ = NULL;
             bv_ = NULL;
             total_size_ = 1; stride_[0] = 1;
@@ -175,14 +160,9 @@ class Pochoir_Array {
             init(szs...);
 		}
 
-        template <typename I>
-        explicit Pochoir_Array (I sz) {
-            init(sz);
-        }
-
-        template <typename I, typename ... IS>
-        explicit Pochoir_Array(I sz, IS ... szs) {
-            init(sz, szs ... );
+        template <typename ... IS>
+        explicit Pochoir_Array(IS ... szs) {
+            init(szs ... );
         }
 
 		/* Copy constructor -- create another view of the
@@ -199,9 +179,7 @@ class Pochoir_Array {
             allocMemFlag_ = false;
 		}
 
-		inline Storage<T> * view() {
-			return view_;
-		}
+		inline Storage<T> * view() { return view_; }
 
         inline T * data() { return data_; }
         /* return the function pointer which generates the boundary value! */
@@ -236,6 +214,7 @@ class Pochoir_Array {
                     l_max_time_shift = shape[i].shift[0];
             }
             depth = l_max_time_shift - l_min_time_shift;
+            time_shift_ = max(time_shift_, 0 - l_min_time_shift);
             toggle_ = depth + 1;
             shape_ = shape;
             for (int i = 0; i < shape_size; ++i) {
@@ -273,6 +252,7 @@ class Pochoir_Array {
                     l_max_time_shift = shape[i].shift[0];
             }
             depth = l_max_time_shift - l_min_time_shift;
+            time_shift_ = max(time_shift_, 0 - l_min_time_shift);
             toggle_ = depth + 1;
             shape_ = shape;
             for (int i = 0; i < N_SIZE; ++i) {
@@ -318,23 +298,22 @@ class Pochoir_Array {
             printf("}\n");
         }
 
-        inline bool check_shape(int const (& l_shift) [N_RANK+1]) {
-            bool shape_match;
-            int const l_home_time_cord = shape_[0].shift[0];
+        inline bool check_shape_shift(int const (& _shift) [N_RANK+1]) {
+            bool l_match;
             for (int i = 0; i < shape_size_; ++i) {
-                shape_match = true;
-                for (int r = 0; shape_match && r < N_RANK+1; ++r) {
+                l_match = true;
+                for (int r = 0; l_match && r < N_RANK+1; ++r) {
                     if (r == 0) {
-                        if (shape_[i].shift[0] != l_shift[r]) {
-                            shape_match = false;
+                        if (shape_[i].shift[0] != _shift[r]) {
+                            l_match = false;
                             break;
                         }
-                    } else if (shape_[i].shift[r] != l_shift[r]) {
-                        shape_match = false;
+                    } else if (shape_[i].shift[r] != _shift[r]) {
+                        l_match = false;
                         break;
                     }
                 }
-                if (shape_match)
+                if (l_match)
                     return true;
             }
             return false;
@@ -364,15 +343,6 @@ class Pochoir_Array {
 
 		/* return stride */
 		int stride (int _dim) const { return stride_[_dim]; }
-
-        inline bool check_boundary(size_info const & _idx) const {
-            bool touch_boundary = false;
-            for (int i = 0; i < N_RANK; ++i) {
-                touch_boundary |= (_idx[i] < logic_start_[i]
-                                | _idx[i] >= logic_end_[i]);
-            }
-            return touch_boundary;
-        }
 
         template <typename I>
 		inline int cal_addr (I _idx) {
@@ -408,48 +378,55 @@ class Pochoir_Array {
             print_idx(_idxs ...);
         }
 
+        inline void print_index(int _sz, int * _idx) {
+            for (int i = 0; i < _sz-1; ++i) {
+                printf("%d, ", _idx[i]);
+            }
+            printf("%d", _idx[_sz-1]);
+        }
         /* 
          * orig_value() is reserved for "ostream" : cout << Pochoir_Array
          */
-        inline T orig_value (int _timestep, size_info & _idx) {
-            bool l_boundary = check_boundary(_idx);
-            bool set_boundary = false;
-            T l_bvalue = 0;
-            if (l_boundary && bv_ != NULL) {
-                l_bvalue = bv_(*this, _timestep, _idx[0]);
-                set_boundary = true;
-            } else if (l_boundary && bv_ != NULL) {
-                l_bvalue = bv_(*this, _timestep, _idx[1], _idx[0]);
-                set_boundary = true;
-            } else if (l_boundary && bv_ != NULL) {
-                l_bvalue = bv_(*this, _timestep, _idx[2], _idx[1], _idx[0]);
-                set_boundary = true;
-            } else if (l_boundary && bv_ != NULL) {
-                l_bvalue = bv_(*this, _timestep, _idx[3], _idx[2], _idx[1], _idx[0]);
-                set_boundary = true;
-            } else if (l_boundary && bv_ != NULL) {
-                l_bvalue = bv_(*this, _timestep, _idx[4], _idx[3], _idx[2], _idx[1], _idx[0]);
-                set_boundary = true;
-            } else if (l_boundary && bv_ != NULL) {
-                l_bvalue = bv_(*this, _timestep, _idx[5], _idx[4], _idx[3], _idx[2], _idx[1], _idx[0]);
-                set_boundary = true;
-            } else if (l_boundary && bv_ != NULL) {
-                l_bvalue = bv_(*this, _timestep, _idx[6], _idx[5], _idx[4], _idx[3], _idx[2], _idx[1], _idx[0]);
-                set_boundary = true;
-            } else if (l_boundary && bv_ != NULL) {
-                l_bvalue = bv_(*this, _timestep, _idx[7], _idx[6], _idx[5], _idx[4], _idx[3], _idx[2], _idx[1], _idx[0]);
-                set_boundary = true;
+        inline T orig_value (int _idx_t, size_info & _idx_s) {
+            int l_idx = (_idx_t % toggle_) * total_size_;
+            for (int i = 0; i < N_RANK; ++i) {
+                l_idx += _idx_s[i] * stride_[i];
             }
-
-            /* the highest dimension is time dimension! */
-            int l_idx = cal_index<N_RANK>(_idx, stride_) + (_timestep % toggle_) * total_size_;
-            return (set_boundary) ? l_bvalue : (*view_)[l_idx];
+            return (*view_)[l_idx];
         }
 
 		/* index operator() for the format of a(i, j, k) 
          * - The highest dimension is always time dimension
          * - this is the uninterior version
          */
+        template <typename I>
+        void check_shape(int (&_shift)[N_RANK+1], int (&_index)[N_RANK+1], I _idx) {
+            _shift[N_RANK] = _idx - home_cell_[N_RANK];
+            _index[N_RANK] = _idx;
+            bool l_within_shape = check_shape_shift(_shift);
+            if (!l_within_shape) {
+               printf("Pochoir off-shape access error:\n");
+               printf("Pochoir array index (");
+               print_index(N_RANK+1, _index);
+#if DEBUG
+               printf("), home_cell (");
+               print_index(N_RANK+1, home_cell_);
+#endif
+               printf("), Shape shift index {");
+               print_index(N_RANK+1, _shift);
+               printf("}\n");
+               print_shape();
+               exit(1);
+            }
+        }
+        template <typename I, typename ... IS>
+        void check_shape(int (&_shift)[N_RANK+1], int (&_index)[N_RANK+1], I _idx, IS ... _idxs) {
+            int l_dim = N_RANK - sizeof...(IS);
+            _shift[l_dim] = _idx - home_cell_[l_dim];
+            _index[l_dim] = _idx;
+            check_shape(_shift, _index, _idxs ...);
+        }
+
         template <typename ... IS>
 		inline Pochoir_Proxy<T> operator() (int _idx_t, IS ... _idxs) {
             if (!allocMemFlag_) {
@@ -460,17 +437,8 @@ class Pochoir_Array {
 #ifdef CHECK_SHAPE
             if (inRun) {
                 int l_shift[N_RANK+1];
-                int const l_home_time_cord = shape_[0].shift[0];
-                l_shift[0] = _idx1 - home_cell_[0];
-                l_shift[1] = _idx0 - home_cell_[1];
-                bool l_within_shape = check_shape(l_shift);
-                if (!l_within_shape) {
-                    printf("Pochoir off-shape access error:\n");
-                    printf("Pochoir array index (%d, %d)\nShape index {%d, %d}\n",
-                            _idx1, _idx0, l_shift[0], l_shift[1]);
-                    print_shape();
-                    exit(1);
-                }
+                int l_index[N_RANK+1];
+                check_shape(l_shift, l_index, _idx_t, _idxs ...);
             }
 #endif
             bool l_boundary = check_bound(_idxs ...);
