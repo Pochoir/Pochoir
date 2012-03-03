@@ -116,8 +116,8 @@ class Pochoir_Array {
         bool allocMemFlag_;
 		int total_size_;
         int slope_[N_RANK], toggle_;
-        Pochoir_Shape<N_RANK> * shape_;
-        int shape_size_, time_shift_;
+        Vector_Info< Pochoir_Shape<N_RANK> > shape_;
+        int time_shift_;
 
         typedef typename Boundary<T, N_RANK>::Types BValue;
         BValue bv_;
@@ -138,7 +138,7 @@ class Pochoir_Array {
             logic_size_[0] = phys_size_[0] = sz;
             logic_start_[0] = 0; logic_end_[0] = sz;
             stride_[0] = 1; slope_[0] = 0; 
-            shape_ = NULL; shape_size_ = 0; toggle_ = 1; time_shift_ = 0;
+            toggle_ = 1; time_shift_ = 0;
             view_ = NULL; data_ = NULL;
             bv_ = NULL;
             total_size_ = 1; stride_[0] = 1;
@@ -200,14 +200,14 @@ class Pochoir_Array {
         /* This function will be called by Pochoir::Register_Array
          * from pochoir.hpp
          */
-        void Register_Shape(Pochoir_Shape<N_RANK> * shape, int shape_size) {
+        void Register_Shape(Vector_Info< Pochoir_Shape<N_RANK> > & shape) {
             /* currently we just get the slope_[] and toggle_ out of the shape[] */
             int l_min_time_shift=0, l_max_time_shift=0, depth=0;
-            shape_size_ = shape_size;
             for (int r = 0; r < N_RANK; ++r) {
                 slope_[r] = 0;
             }
-            for (int i = 0; i < shape_size; ++i) {
+            int l_shape_size = shape.size();
+            for (int i = 0; i < l_shape_size; ++i) {
                 if (shape[i].shift[0] < l_min_time_shift)
                     l_min_time_shift = shape[i].shift[0];
                 if (shape[i].shift[0] > l_max_time_shift)
@@ -216,8 +216,8 @@ class Pochoir_Array {
             depth = l_max_time_shift - l_min_time_shift;
             time_shift_ = max(time_shift_, 0 - l_min_time_shift);
             toggle_ = depth + 1;
-            shape_ = shape;
-            for (int i = 0; i < shape_size; ++i) {
+            for (int i = 0; i < l_shape_size; ++i) {
+                shape_.push_back_unique(shape[i]);
                 for (int r = 0; r < N_RANK; ++r) {
                     slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
                 }
@@ -241,7 +241,6 @@ class Pochoir_Array {
         void Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
             /* currently we just get the slope_[] and toggle_ out of the shape[] */
             int l_min_time_shift=0, l_max_time_shift=0, depth=0;
-            shape_size_ = N_SIZE;
             for (int r = 0; r < N_RANK; ++r) {
                 slope_[r] = 0;
             }
@@ -254,8 +253,8 @@ class Pochoir_Array {
             depth = l_max_time_shift - l_min_time_shift;
             time_shift_ = max(time_shift_, 0 - l_min_time_shift);
             toggle_ = depth + 1;
-            shape_ = shape;
             for (int i = 0; i < N_SIZE; ++i) {
+                shape_.push_back_unique(shape[i]);
                 for (int r = 0; r < N_RANK; ++r) {
                     slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
                 }
@@ -274,7 +273,8 @@ class Pochoir_Array {
 
         inline void print_shape(void) {
             printf("\nInput Pochoir_Shape<%d> = \n{", N_RANK);
-            for (int i = 0; i < shape_size_-1; ++i) {
+            int l_shape_size = shape_.size();
+            for (int i = 0; i < l_shape_size-1; ++i) {
                 printf("{");
                 for (int r = 0; r < N_RANK; ++r) {
                     printf("%d, ", shape_[i].shift[r]);
@@ -285,7 +285,7 @@ class Pochoir_Array {
                 printf("}, ");
             }
 
-            for (int i = shape_size_-1; i < shape_size_; ++i) {
+            for (int i = l_shape_size-1; i < l_shape_size; ++i) {
                 printf("{");
                 for (int r = 0; r < N_RANK; ++r) {
                     printf("%d, ", shape_[i].shift[r]);
@@ -300,7 +300,8 @@ class Pochoir_Array {
 
         inline bool check_shape_shift(int const (& _shift) [N_RANK+1]) {
             bool l_match;
-            for (int i = 0; i < shape_size_; ++i) {
+            int l_shape_size = shape_.size();
+            for (int i = 0; i < l_shape_size; ++i) {
                 l_match = true;
                 for (int r = 0; l_match && r < N_RANK+1; ++r) {
                     if (r == 0) {

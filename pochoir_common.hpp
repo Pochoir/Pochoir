@@ -313,6 +313,13 @@ struct Pochoir_Shape {
      * to correctly calculate the slope[]
      */
     int shift[N_RANK+1];
+    inline bool operator== (Pochoir_Shape<N_RANK> const & _shape) {
+        for (int i = 0; i < N_RANK+1; ++i) {
+            if (shift[i] != _shape.shift[i])
+                return false;
+        }
+        return true;
+    }
 };
  
 template <int N_RANK>

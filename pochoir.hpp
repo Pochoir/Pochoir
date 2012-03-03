@@ -52,8 +52,7 @@ class Pochoir {
         template <typename T_Array>
         void cmpPhysDomainFromArray(T_Array & arr);
         void Register_Shape(Pochoir_Shape<N_RANK> * shape, int N_SIZE);
-        Pochoir_Shape<N_RANK> * shape_;
-        int shape_size_;
+        Vector_Info< Pochoir_Shape<N_RANK> > shape_;
         int num_arr_;
         int arr_type_size_;
         int lcm_unroll_;
@@ -93,7 +92,7 @@ class Pochoir {
             logic_grid_.x0[i] = logic_grid_.x1[i] = logic_grid_.dx0[i] = logic_grid_.dx1[i] = 0;
             phys_grid_.x0[i] = phys_grid_.x1[i] = phys_grid_.dx0[i] = phys_grid_.dx1[i] = 0;
         }
-        shape_ = NULL; shape_size_ = 0; time_shift_ = 0; toggle_ = 0;
+        time_shift_ = 0; toggle_ = 0;
         timestep_ = 0;
         regArrayFlag_ = regLogicDomainFlag_ = regPhysDomainFlag_ = regShapeFlag_ = false;
         num_arr_ = 0;
@@ -104,8 +103,6 @@ class Pochoir {
         pochoir_time_ = INF;
     }
     ~Pochoir() {
-        del_arr(shape_);
-        shape_size_ = 0; 
         regArrayFlag_ = regLogicDomainFlag_ = regPhysDomainFlag_ = regShapeFlag_ = false;
         size_t l_size = reg_tile_kernels_.size();
         for (int i = 0; i < l_size; ++i) {
@@ -378,7 +375,7 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a) {
     } else {
         cmpPhysDomainFromArray(a);
     }
-    a.Register_Shape(shape_, shape_size_);
+    a.Register_Shape(shape_);
     regArrayFlag_ = true;
 }
 
@@ -398,7 +395,7 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & a, Pochoir_Array
     } else {
         cmpPhysDomainFromArray(a);
     }
-    a.Register_Shape(shape_, shape_size_);
+    a.Register_Shape(shape_);
     Register_Array(as ...);
     regArrayFlag_ = true;
 }
@@ -409,22 +406,7 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> * shape, int N_SIZE) 
     /* we make a copy of the Pochoir_Shape since it can be accumulated
      * across multiple kernels
      */
-    Pochoir_Shape<N_RANK> * l_shape;
-    if (!regShapeFlag_) {
-        regShapeFlag_ = true;
-        shape_ = new Pochoir_Shape<N_RANK>[N_SIZE];
-    } else {
-        assert(shape_ != NULL);
-        l_shape = new Pochoir_Shape<N_RANK>[N_SIZE + shape_size_] ;
-        /* copy in the old shape value */
-        for (int i = 0; i < shape_size_; ++i)  {
-            for (int r = 0; r < N_RANK+1; ++r)  {
-                l_shape[i].shift[r]  = shape_[i].shift[r];
-            }
-        }
-        del_arr(shape_);
-        shape_ = l_shape;
-    }
+    regShapeFlag_ = true;
     /* currently we just get the slope_[]  and toggle_ out of the shape[]  */
     int l_min_time_shift=0, l_max_time_shift=0, depth=0;
     for (int i = 0; i < N_SIZE; ++i)  {
@@ -437,16 +419,13 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> * shape, int N_SIZE) 
     time_shift_ = max(time_shift_, 0 - l_min_time_shift);
     toggle_ = max(toggle_, depth + 1);
     for (int i = 0; i < N_SIZE; ++i) {
-        for (int r = 0; r < N_RANK+1; ++r) {
-            shape_[shape_size_ + i].shift[r] = shape[i].shift[r];
-        }
+        shape_.push_back_unique(shape[i]);
     }
     for (int i = 0; i < N_SIZE; ++i) {
         for (int r = 0; r < N_RANK; ++r) {
             slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
         }
     }
-    shape_size_ += N_SIZE;
     LOG_ARGS(0, "toggle = %d\n", toggle_);
     for (int r = 0; r < N_RANK; ++r) {
         LOG_ARGS(0, "slope[%d] = %d, ", r, slope_[r]);
