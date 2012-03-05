@@ -538,7 +538,6 @@ pShowAutoGuardString l_op (l_pGuard, l_tiles@(t:ts)) =
         l_rank = gRank l_pGuard
         l_decl_params = "int t, " ++ 
                     (intercalate ", " $ take l_rank $ map ((++) "int i" . show) [0,1..])
-{-
         -- This is the version that deduct time_shift_ from guard function calls
         l_invoke_params = 
                     if l_timeShift /= 0
@@ -546,9 +545,10 @@ pShowAutoGuardString l_op (l_pGuard, l_tiles@(t:ts)) =
                             (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
                        else "t, " ++ 
                             (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
- -}
+{-
         l_invoke_params = "t, " ++ 
                             (intercalate ", " $ take l_rank $ map ((++) "i" . show) [0,1..])
+ -}
         l_decl_params' = " ( " ++ l_decl_params ++ " ) "
         l_invoke_params' = " ( " ++ l_invoke_params ++ " ) " 
         l_content = if null $ gComment l_pGuard
@@ -682,12 +682,12 @@ pShowMTileSingleKernel l_showSingleKernel l@(k:ks) =
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape l)
         l_timeShift = shapeTimeShift l_pShape
         l_tile_op = kfTileOp k
-{-
         l_t_dim = if l_timeShift /= 0
                      then l_t ++ " + " ++ show l_timeShift
                      else l_t
- -}
+{-
         l_t_dim = l_t
+ -}
         g = ("__" ++ (gfName $ kfGuardFunc k) ++ "__") ++ " ( " ++
             l_t_dim ++ ", " ++ intercalate ", " l_spatial_params ++ " ) "
         l_header = if l_tile_op == PEXCLUSIVE || l_tile_op == PINCLUSIVE
@@ -718,8 +718,8 @@ pShowTileGuardHead l_params l_indices l_sizes =
 pShowTileGuardHeadT :: [PName] -> Int -> [Int] -> [Int] -> String
 pShowTileGuardHeadT l_params l_time_shift l_indices l_sizes = 
     let l_t = head l_params
-        -- l_t' = mkParen $ l_t ++ " + " ++ show l_time_shift
-        l_t' = l_t 
+        l_t' = mkParen $ l_t ++ " + " ++ show l_time_shift
+        -- l_t' = l_t 
         l_params' = l_t':(tail l_params)
     in  pShowTileGuardHead l_params' l_indices l_sizes
 
@@ -730,12 +730,12 @@ pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift l_mterms@(t:ts) =
         l_sizes = mttSizes t
         l_items = mttItem t
         l_len = length l_sizes
-        l_header = pShowTileGuardHead l_params l_indices l_sizes
 {-
+        l_header = pShowTileGuardHead l_params l_indices l_sizes
+ -}
         l_header = if l_rank + 1 == length l_params 
                       then pShowTileGuardHeadT l_params l_time_shift l_indices l_sizes
                       else pShowTileGuardHead l_params l_indices l_sizes
- -}
         l_current_tile_order = mttLatestTileOrder t
         l_next_tile_order = (mttLatestTileOrder . head) ts
         l_cond = intercalate " && " $ zipWith3 pInsMod l_params l_indices l_sizes
@@ -745,7 +745,8 @@ pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift l_mterms@(t:ts) =
                             then breakline ++ "}"
                             else breakline ++ "} else "
         l_str_items = pShowMTileItem l_showSingleKernel 
-                        (l_rank - l_len) (drop l_len l_params) l_time_shift l_items
+                        l_rank (drop l_len l_params) l_time_shift l_items
+--                        (l_rank - l_len) (drop l_len l_params) l_time_shift l_items
     in  l_header ++ breakline ++ l_str_items ++ l_tail ++ 
         pShowMTileTerm l_showSingleKernel l_rank l_params l_time_shift ts
 

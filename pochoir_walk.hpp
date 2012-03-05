@@ -548,7 +548,7 @@ struct Algorithm {
     void set_opks(Pochoir_Combined_Obase_Kernel<N_RANK> ** _opks);
     void set_unroll(int _lcm_unroll) { 
         lcm_unroll_ = _lcm_unroll; 
-        dt_recursive_boundary_ = _lcm_unroll; 
+        // dt_recursive_boundary_ = _lcm_unroll; 
     }
     void set_time_shift(int _time_shift) { time_shift_ = _time_shift; }
 
@@ -567,24 +567,28 @@ struct Algorithm {
 
     /*******************************************************************************/
     /* meta functions to generate the execute plan */
-    inline void gen_plan_space_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level);
+    inline void gen_plan_space_cut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level);
     inline void gen_plan_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level);
     /* meta functions to generate the execute plan */
     /*******************************************************************************/
-    /* meta functions to run the plan */
-    inline void plan_space_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
-    inline void plan_space_bicut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    /* meta functions to run the plan 
+     * -- This is the version for unroll-t-tile-* modes
+     */
+    inline void plan_space_cut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void plan_space_cut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
     inline void plan_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
     inline void plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void plan_cut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void plan_cut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
     /* meta functions to run the plan */
     /*******************************************************************************/
     /* meta functions to run the plan 
-     * -- 'm' is the version with merged kernel
+     * -- 'm' is the version for all-cond-tile-* modes
      */
     template <typename F>
-    inline void plan_space_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f);
+    inline void plan_space_cut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f);
     template <typename F, typename BF>
-    inline void plan_space_bicut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f, BF const & bf);
+    inline void plan_space_cut_mp(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f, BF const & bf);
     template <typename F>
     inline void plan_bicut_m(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n, F const & f);
     template <typename F, typename BF>

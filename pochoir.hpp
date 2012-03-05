@@ -163,8 +163,8 @@ class Pochoir {
     void Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & _plan);
     void Destroy_Plan(Pochoir_Plan<N_RANK> & _plan); 
     void Run(Pochoir_Plan<N_RANK> & _plan);
-    void Run_Obase(Pochoir_Plan<N_RANK> & _plan);
-    void Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan);
+    void Run_Obase_All_Cond(Pochoir_Plan<N_RANK> & _plan);
+    void Run_Obase_Unroll_T(Pochoir_Plan<N_RANK> & _plan);
 };
 
 template <int N_RANK> template <typename I>
@@ -506,6 +506,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
+    algor.set_time_shift(time_shift_);
     /* set individual unroll factor from opgk_ */
     if (pmode_ == Pochoir_Tile) {
         algor.set_pts(reg_guards_);
@@ -598,14 +599,14 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     char cpp_filename[strlen(gen_kernel_fname) + 10], so_filename[strlen(gen_kernel_fname) + 10];
     sprintf(cpp_filename, "%s.cpp", gen_kernel_fname);
     sprintf(so_filename, "%s.so", gen_kernel_fname);
-#if 0 
+#if 1 
     /* This branch is for debugging purpose */
-    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
+    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
 #else
     /* This branch is for best performance */
-    // sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
-    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -Wall -Werror -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
-    // sprintf(cmd, "g++-cilk -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
+    // sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
+    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
+    // sprintf(cmd, "g++-cilk -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
 #endif
 
     LOG_ARGS(INF, "%s\n", cmd);
@@ -644,6 +645,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
+    algor.set_time_shift(time_shift_);
     /* set individual unroll factor from opgk_ */
     if (pmode_ == Pochoir_Tile) {
         // set color_region
@@ -860,7 +862,7 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
 }
 
 template <int N_RANK>
-void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
+void Pochoir<N_RANK>::Run_Obase_Unroll_T(Pochoir_Plan<N_RANK> & _plan) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
@@ -883,7 +885,7 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
             int l_t0 = _plan.base_data_->region_[i].t0_;
             int l_t1 = _plan.base_data_->region_[i].t1_;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
-            algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
+            algor.plan_cut_p(l_t0, l_t1, l_grid, l_region_n);
         }
         offset = _plan.sync_data_->region_[j];
     }
@@ -896,14 +898,14 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
             int l_t0 = _plan.base_data_->region_[i].t0_;
             int l_t1 = _plan.base_data_->region_[i].t1_;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
-            cilk_spawn algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
+            cilk_spawn algor.plan_cut_p(l_t0, l_t1, l_grid, l_region_n);
         }
         int l_region_n = _plan.base_data_->region_[i].region_n_;
         assert(l_region_n >= 0);
         int l_t0 = _plan.base_data_->region_[i].t0_;
         int l_t1 = _plan.base_data_->region_[i].t1_;
         Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
-        algor.plan_bicut_p(l_t0, l_t1, l_grid, l_region_n);
+        algor.plan_cut_p(l_t0, l_t1, l_grid, l_region_n);
         cilk_sync;
         offset = _plan.sync_data_->region_[j];
     }
@@ -921,7 +923,7 @@ void Pochoir<N_RANK>::Run_Obase(Pochoir_Plan<N_RANK> & _plan) {
 }
 
 template <int N_RANK> 
-void Pochoir<N_RANK>::Run_Obase_Merge(Pochoir_Plan<N_RANK> & _plan) {
+void Pochoir<N_RANK>::Run_Obase_All_Cond(Pochoir_Plan<N_RANK> & _plan) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);

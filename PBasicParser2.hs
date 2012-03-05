@@ -86,12 +86,12 @@ ppStencil1 l_id l_state =
                             || l_mode == PAllCondTilePointerOverlap
                             || l_mode == PAllCondTileOptPointerOverlap
                           then do return (breakline ++ l_id ++ 
-                                         ".Run_Obase_Merge(" ++ 
+                                         ".Run_Obase_All_Cond(" ++ 
                                          show l_tstep ++
                                          "); /* Run with Stencil " ++ l_id ++ " */" ++ 
                                          breakline)
                           else do return (breakline ++ l_id ++ 
-                                          ".Run_Obase(" ++
+                                          ".Run_Obase_Unroll_T(" ++
                                           show l_tstep ++  
                                           "); /* Run with Stencil " ++ l_id ++ " */" ++ 
                                           breakline)
