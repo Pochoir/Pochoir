@@ -141,6 +141,7 @@ static inline unsigned long pow2l(unsigned int e) {
     assert(e < 64);
     return (0x1 << e);
 }
+
 typedef int T_dim;
 typedef int T_index;
 /* T_color could be of type int, long, ..., which could be able to

@@ -326,114 +326,114 @@ int main(int argc, char * argv[])
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
             cilk_for (int i = 0; i < N; ++i) {
-                if (g_exclusive_0(t, i)) {
+                if (g_exclusive_0(t-1, i)) {
                     /* k_exclusive_0 */
-                    if ((t) % 2 == 0 && i % 2 == 0) {
+                    if ((t-1) % 2 == 0 && i % 2 == 0) {
 #if APP_DEBUG
                         printf("<k_exclusive_0_0> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.11 * b(t-1, i-1) + 0.15 * b(t-1, i) + 0.185 * b(t-1, i+1) + 0.8;
-                    } else if ((t) % 2 == 0 && i % 2 == 1) {
+                    } else if ((t-1) % 2 == 0 && i % 2 == 1) {
 #if APP_DEBUG
                         printf("<k_exclusive_0_1> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.111 * b(t-1, i-1) + 0.151 * b(t-1, i) + 0.185 * b(t-1, i+1) + 0.81;
-                    } else if ((t) % 2 == 1 && i % 2 == 0) {
+                    } else if ((t-1) % 2 == 1 && i % 2 == 0) {
 #if APP_DEBUG
                         printf("<k_exclusive_0_2> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.112 * b(t-1, i-1) + 0.152 * b(t-1, i) + 0.185 * b(t-1, i+1) + 0.82;
-                    } else if ((t) % 2 == 1 && i % 2 == 1) {
+                    } else if ((t-1) % 2 == 1 && i % 2 == 1) {
  #if APP_DEBUG
                         printf("<k_exclusive_0_3> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.113 * b(t-1, i-1) + 0.153 * b(t-1, i) + 0.185 * b(t-1, i+1) + 0.83;
                     }
-                } else if (g_exclusive_1(t, i)) {
+                } else if (g_exclusive_1(t-1, i)) {
                     /* k_exclusive_1 */
-                    if ((t) % 2 == 0) {
+                    if ((t-1) % 2 == 0) {
 #if APP_DEBUG
                         printf("<k_exclusive_1_0> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.21 * b(t-1, i-1) + 0.25 * b(t-1, i) + 0.285 * b(t-1, i+1) + 0.8;
-                    } else if ((t) % 2 == 1) {
+                    } else if ((t-1) % 2 == 1) {
 #if APP_DEBUG
                         printf("<k_exclusive_1_1> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.212 * b(t-1, i-1) + 0.252 * b(t-1, i) + 0.285 * b(t-1, i+1) + 0.82;
                     }
                 }
-                if (g_inclusive_0(t, i)) {
+                if (g_inclusive_0(t-1, i)) {
                     /* k_inclusive_0 */
-                    if ((t) % 2 == 0 && i % 2 == 0) {
+                    if ((t-1) % 2 == 0 && i % 2 == 0) {
 #if APP_DEBUG
                         printf("<k_inclusive_0_0> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.31 * b(t-1, i-1) - 0.35 * b(t-1, i) + 0.385 * b(t-1, i+1) - 0.8;
-                    } else if ((t) % 2 == 0 && i % 2 == 1) {
+                    } else if ((t-1) % 2 == 0 && i % 2 == 1) {
 #if APP_DEBUG
                         printf("<k_inclusive_0_1> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.311 * b(t-1, i-1) - 0.351 * b(t-1, i) + 0.385 * b(t-1, i+1) - 0.81;
-                    } else if ((t) % 2 == 1 && i % 2 == 0) {
+                    } else if ((t-1) % 2 == 1 && i % 2 == 0) {
 #if APP_DEBUG
                         printf("<k_inclusive_0_2> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.312 * b(t-1, i-1) - 0.352 * b(t-1, i) + 0.385 * b(t-1, i+1) - 0.82;
 
-                    } else if ((t) % 2 == 1 && i % 2 == 1) {
+                    } else if ((t-1) % 2 == 1 && i % 2 == 1) {
 #if APP_DEBUG
                         printf("<k_inclusive_0_3> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.313 * b(t-1, i-1) - 0.353 * b(t-1, i) + 0.385 * b(t-1, i+1) - 0.83;
                     }
                 }
-                if (g_inclusive_1(t, i)) {
+                if (g_inclusive_1(t-1, i)) {
                     /* k_inclusive_1 */
-                    if ((t) % 2 == 0) {
+                    if ((t-1) % 2 == 0) {
 #if APP_DEBUG
                         printf("<k_inclusive_1_0> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.41 * b(t-1, i-1) - 0.45 * b(t-1, i) + 0.485 * b(t-1, i+1) - 0.8;
-                    } else if ((t) % 2 == 1) {
+                    } else if ((t-1) % 2 == 1) {
 #if APP_DEBUG
                         printf("<k_inclusive_1_1> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.414 * b(t-1, i-1) - 0.454 * b(t-1, i) + 0.485 * b(t-1, i+1) - 0.84;
                     }
                 }
-                if (g_tiny_inclusive_0(t, i)) {
+                if (g_tiny_inclusive_0(t-1, i)) {
                     /* k_tiny_inclusive_0 */
-                    if ((t) % 2 == 0 && i % 2 == 0) {
+                    if ((t-1) % 2 == 0 && i % 2 == 0) {
 #if APP_DEBUG
                         printf("<k_tiny_inclusive_0_0> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.51 * b(t-1, i-1) + 0.55 * b(t-1, i) - 0.585 * b(t-1, i+1) + 0.8;
-                    } else if ((t) % 2 == 0 && i % 2 == 1) {
+                    } else if ((t-1) % 2 == 0 && i % 2 == 1) {
 #if APP_DEBUG
                         printf("<k_tiny_inclusive_0_1> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.511 * b(t-1, i-1) + 0.551 * b(t-1, i) - 0.585 * b(t-1, i+1) + 0.81;
-                    } else if ((t) % 2 == 1 && i % 2 == 0) {
+                    } else if ((t-1) % 2 == 1 && i % 2 == 0) {
 #if APP_DEBUG
                         printf("<k_tiny_inclusive_0_2> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.512 * b(t-1, i-1) + 0.552 * b(t-1, i) - 0.585 * b(t-1, i+1) + 0.82;
-                    } else if ((t) % 2 == 1 && i % 2 == 1) {
+                    } else if ((t-1) % 2 == 1 && i % 2 == 1) {
 #if APP_DEBUG
                         printf("<k_tiny_inclusive_0_3> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.513 * b(t-1, i-1) + 0.553 * b(t-1, i) - 0.585 * b(t-1, i+1) + 0.83;
                     }
                 }
-                if (g_tiny_inclusive_1(t, i)) {
+                if (g_tiny_inclusive_1(t-1, i)) {
                     /* k_tiny_inclusive_1 */
-                    if ((t) % 2 == 0) {
+                    if ((t-1) % 2 == 0) {
 #if APP_DEBUG
                         printf("<k_tiny_inclusive_1_0> : b(%d, %d)\n", t, i);
 #endif
                         b(t, i) = 0.61 * b(t-1, i-1) + 0.65 * b(t-1, i) - 0.685 * b(t-1, i+1) + 0.8; 
-                    } else if ((t) % 2 == 1) {
+                    } else if ((t-1) % 2 == 1) {
 #if APP_DEBUG
                         printf("<k_tiny_inclusive_1_1> : b(%d, %d)\n", t, i);
 #endif

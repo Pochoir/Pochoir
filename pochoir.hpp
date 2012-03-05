@@ -204,6 +204,7 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     Register_Shape(k.Get_Shape(), k.Get_Shape_Size());
     reg_tile_dim(*l_pit, 1, 1);
 
+    lcm_unroll_ = lcm(lcm_unroll_, 1);
     reg_guards_.push_back(l_pig);
     reg_tile_kernels_.push_back(l_pit);
     return;
@@ -223,6 +224,7 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     }
     reg_tile_dim(*l_pit, 1, N_SIZE1);
 
+    lcm_unroll_ = lcm(lcm_unroll_, N_SIZE1);
     reg_guards_.push_back(l_pig);
     reg_tile_kernels_.push_back(l_pit);
     return;
@@ -244,6 +246,7 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     }
     reg_tile_dim(*l_pit, 2, N_SIZE1, N_SIZE2);
 
+    lcm_unroll_ = lcm(lcm_unroll_, N_SIZE1);
     reg_guards_.push_back(l_pig);
     reg_tile_kernels_.push_back(l_pit);
     return;
@@ -267,6 +270,7 @@ void Pochoir<N_RANK>::Register_Tile_Kernels(Pochoir_Guard<N_RANK> & g, Pochoir_K
     }
     reg_tile_dim(*l_pit, 3, N_SIZE1, N_SIZE2, N_SIZE3);
 
+    lcm_unroll_ = lcm(lcm_unroll_, N_SIZE1);
     reg_guards_.push_back(l_pig);
     reg_tile_kernels_.push_back(l_pit);
     return;
@@ -507,20 +511,23 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
     algor.set_time_shift(time_shift_);
+    algor.set_unroll(lcm_unroll_);
+#ifdef DEBUG
+    printf("lcm_unroll_ = %d\n", lcm_unroll_);
+#endif
     /* set individual unroll factor from opgk_ */
     if (pmode_ == Pochoir_Tile) {
         algor.set_pts(reg_guards_);
     } else {
         ERROR("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
     }
-    algor.set_unroll(lcm_unroll_);
     timestep_ = timestep;
     checkFlags();
     l_tree = new Spawn_Tree<N_RANK>();
     l_tree->set_add_empty_region(false);
     l_root = l_tree->get_root();
     algor.set_tree(l_tree);
-    algor.gen_plan_bicut_p(l_root, 0 + time_shift_, timestep + time_shift_, logic_grid_, 0);
+    algor.gen_plan_cut_p(l_root, 0 + time_shift_, timestep + time_shift_, logic_grid_, 0);
     l_sz_base_data = algor.get_sz_base_data();
     l_sz_sync_data = max(1, algor.get_sz_sync_data());
     l_plan->alloc_base_data(l_sz_base_data);
@@ -646,6 +653,10 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
     algor.set_time_shift(time_shift_);
+    algor.set_unroll(lcm_unroll_);
+#ifdef DEBUG
+    printf("lcm_unroll_ = %d\n", lcm_unroll_);
+#endif
     /* set individual unroll factor from opgk_ */
     if (pmode_ == Pochoir_Tile) {
         // set color_region
@@ -653,14 +664,13 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     } else {
         ERROR("Something is wrong in Gen_Plan_Obase(Timestep)!\n");
     }
-    algor.set_unroll(lcm_unroll_);
     timestep_ = timestep;
     checkFlags();
     l_tree = new Spawn_Tree<N_RANK>();
     l_tree->set_add_empty_region(false);
     l_root = l_tree->get_root();
     algor.set_tree(l_tree);
-    algor.gen_plan_bicut_p(l_root, 0 + time_shift_, timestep + time_shift_, logic_grid_, 0);
+    algor.gen_plan_cut_p(l_root, 0 + time_shift_, timestep + time_shift_, logic_grid_, 0);
     l_sz_base_data = algor.get_sz_base_data();
     l_sz_sync_data = max(1, algor.get_sz_sync_data());
     l_plan->alloc_base_data(l_sz_base_data);

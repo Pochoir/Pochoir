@@ -73,8 +73,8 @@ Pochoir_Boundary_1D(aperiodic_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
 
-#define N 20
-#define T 20
+#define N 1200
+#define T 200
 
 int main(int argc, char * argv[])
 {
@@ -196,21 +196,21 @@ int main(int argc, char * argv[])
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
             cilk_for (int i = 0; i < N; ++i) {
-            if (guard_interior(t, i)) {
+            if (guard_interior(t-1, i)) {
                 /* interior sub-region */
-                if (t % 3 == 0) {
+                if ((t-1) % 3 == 0) {
 #if APP_DEBUG
                     fprintf(stderr, "<interior_0> b(%d, %d)\n", t, i);
 #endif
                     b(t, i) = 0.1 * b(t-1, i-1) + 0.15 * b(t-1, i) + 0.189 * b(t-1, i+1) + 0.8;
                 }
-                if (t % 3 == 1) {
+                if ((t-1) % 3 == 1) {
 #if APP_DEBUG
                     fprintf(stderr, "<interior_1> b(%d, %d)\n", t, i);
 #endif
                     b(t, i) = 0.2 * b(t-1, i-1) + 0.25 * b(t-1, i) + 0.289 * b(t-1, i+1) + 0.8;
                 }
-                if (t % 3 == 2) {
+                if ((t-1) % 3 == 2) {
 #if APP_DEBUG
                     fprintf(stderr, "<interior_2> b(%d, %d)\n", t, i);
 #endif
@@ -218,13 +218,13 @@ int main(int argc, char * argv[])
                 }
             } else {
                 /* exterior sub-region*/
-                if (t % 2 == 0) {
+                if ((t-1) % 2 == 0) {
 #if APP_DEBUG
                     fprintf(stderr, "<exterior_0> b(%d, %d)\n", t, i);
 #endif
                     b(t, i) = 0.1 * b(t-1, i-1) - 0.15 * b(t-1, i) - 0.189 * b(t-1, i+1) - 0.8;
                 }
-                if (t % 2 == 1) {
+                if ((t-1) % 2 == 1) {
 #if APP_DEBUG
                     fprintf(stderr, "<exterior_1> b(%d, %d)\n", t, i);
 #endif

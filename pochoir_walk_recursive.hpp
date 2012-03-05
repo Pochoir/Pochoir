@@ -1879,7 +1879,7 @@ inline void Algorithm<N_RANK>::adaptive_bicut_p(int t0, int t1, Grid_Info<N_RANK
 #define gen_plan_space_can_cut_p(_dim) (l_touch_boundary ? (cut_lb ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim])) : (cut_lb ? (lb >= 2 * thres && tb > dx_homo_[_dim]) : (tb >= 2 * thres && lb > dx_homo_[_dim])))
 
 template <int N_RANK> 
-inline void Algorithm<N_RANK>::gen_plan_space_cut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level)
+inline void Algorithm<N_RANK>::gen_plan_space_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -2035,12 +2035,247 @@ inline void Algorithm<N_RANK>::gen_plan_space_cut_p(Node_Info<N_RANK> * parent, 
 }
 
 template <int N_RANK> 
+inline void Algorithm<N_RANK>::gen_plan_space_cut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level)
+{
+    queue_info *l_father;
+    queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
+    int queue_head_[2], queue_tail_[2], queue_len_[2];
+
+    for (int i = 0; i < 2; ++i) {
+        queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
+    }
+
+    /* set up the initial grid */
+    push_queue(0, N_RANK-1, t0, t1, grid);
+    for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
+        const int curr_dep_pointer = (curr_dep & 0x1);
+        while (queue_len_[curr_dep_pointer] > 0) {
+            top_queue(curr_dep_pointer, l_father);
+            if (l_father->level < 0) {
+                /* spawn all the grids in circular_queue_[curr_dep][] */
+#if USE_CILK_FOR 
+                /* use cilk_for to spawn all the sub-grid */
+// #pragma cilk_grainsize = 1
+                for (int j = 0; j < queue_len_[curr_dep_pointer]; ++j) {
+                    int i = pmod((queue_head_[curr_dep_pointer]+j), ALGOR_QUEUE_SIZE);
+                    queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
+                    /* assert all the sub-grid has done N_RANK spatial cuts */
+                    assert(l_son->level == -1);
+                    gen_plan_cut_p(parent, l_son->t0, l_son->t1, l_son->grid, rec_level+1);
+                } /* end cilk_for */
+                queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
+                queue_len_[curr_dep_pointer] = 0;
+#else
+                /* use cilk_spawn to spawn all the sub-grid */
+                pop_queue(curr_dep_pointer);
+                gen_plan_cut_p(parent, l_father->t0, l_father->t1, l_father->grid, rec_level+1);
+#endif
+            } else {
+                /* performing a space cut on dimension 'level' */
+                pop_queue(curr_dep_pointer);
+                Grid_Info<N_RANK> l_father_grid = l_father->grid;
+                const int t0 = l_father->t0, t1 = l_father->t1;
+                const int lt = (t1 - t0);
+                const int level = l_father->level;
+                const int l_slope = slope_[level];
+                const int thres = l_slope * lt;
+                const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
+                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
+                const bool cut_lb = (lb < tb);
+                // const int l_padding = 2 * l_slope;
+                const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
+                const bool can_cut = gen_plan_space_can_cut_p(level);
+                if (!can_cut) {
+                    /* if we can't cut into this dimension, just directly push
+                     * it into the circular queue
+                    */
+                    push_queue(curr_dep_pointer, level-1, t0, t1, l_father_grid);
+                } else {
+                    /* can_cut */
+                    if (cut_lb) {
+                        /* if cutting lb, there's no initial cut! */
+                        assert(lb != phys_length_[level] || l_father_grid.dx0[level] != 0 || l_father_grid.dx1[level] != 0);
+                        const int mid = lb/2;
+                        Grid_Info<N_RANK> l_son_grid = l_father_grid;
+                        const int l_start = (l_father_grid.x0[level]);
+                        const int l_end = (l_father_grid.x1[level]);
+
+                        /* push the middle gray minizoid
+                         * into circular queue of (curr_dep) 
+                         */
+                        l_son_grid.x0[level] = l_start + mid - thres;
+                        l_son_grid.dx0[level] = l_slope;
+                        l_son_grid.x1[level] = l_start + mid + thres;
+                        l_son_grid.dx1[level] = -l_slope;
+                        push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                        /* cilk_sync */
+                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                        /* push one sub-grid into circular queue of (curr_dep + 1)*/
+                        l_son_grid.x0[level] = l_start;
+                        l_son_grid.dx0[level] = l_father_grid.dx0[level];
+                        l_son_grid.x1[level] = l_start + mid - thres;
+                        l_son_grid.dx1[level] = l_slope;
+                        push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                        /* push one sub-grid into circular queue of (curr_dep + 1)*/
+                        l_son_grid.x0[level] = l_start + mid + thres;
+                        l_son_grid.dx0[level] = -l_slope;
+                        l_son_grid.x1[level] = l_end;
+                        l_son_grid.dx1[level] = l_father_grid.dx1[level];
+                        push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+                    } /* end if (cut_lb) */
+                    else { /* cut_tb */
+                        if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
+                            assert(l_father_grid.dx0[level] == 0);
+                            assert(l_father_grid.dx1[level] == 0);
+                            const int mid = tb/2;
+                            Grid_Info<N_RANK> l_son_grid = l_father_grid;
+                            const int l_start = (l_father_grid.x0[level]);
+                            const int l_end = (l_father_grid.x1[level]);
+                            const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+                            /* merge the big black trapezoids */
+                            l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.dx0[level] = l_slope;
+                            l_son_grid.x1[level] = l_end + (ul_start - l_start) + mid;
+                            l_son_grid.dx1[level] = -l_slope;
+                            push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                            /* cilk_sync */
+                            const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                            /* push middle minizoid into circular queue of (curr_dep + 1)*/
+                            l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.dx0[level] = -l_slope;
+                            l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.dx1[level] = l_slope;
+                            push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+                        } else { /* NOT the initial cut! */
+                            const int mid = tb/2;
+                            Grid_Info<N_RANK> l_son_grid = l_father_grid;
+                            const int l_start = (l_father_grid.x0[level]);
+                            const int l_end = (l_father_grid.x1[level]);
+                            const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+                            /* push one sub-grid into circular queue of (curr_dep) */
+                            l_son_grid.x0[level] = l_start;
+                            l_son_grid.dx0[level] = l_father_grid.dx0[level];
+                            l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.dx1[level] = -l_slope;
+                            push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                            /* push one sub-grid into circular queue of (curr_dep) */
+                            l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.dx0[level] = l_slope;
+                            l_son_grid.x1[level] = l_end;
+                            l_son_grid.dx1[level] = l_father_grid.dx1[level];
+                            push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                            /* cilk_sync */
+                            const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                            /* push one sub-grid into circular queue of (curr_dep + 1)*/
+                            l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.dx0[level] = -l_slope;
+                            l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.dx1[level] = l_slope;
+                            push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+                        }                    
+                    } /* end if (cut_tb) */
+                } /* end if (can_cut) */
+            } /* end if (performing a space cut) */
+        } /* end while (queue_len_[curr_dep] > 0) */
+        Node_Info<N_RANK> * l_node = new Node_Info<N_RANK>(IS_SYNC);
+        (*tree_).add_node(parent, l_node, IS_SYNC);
+        ++sz_sync_data_;
+        assert(queue_len_[curr_dep_pointer] == 0);
+    } /* end for (curr_dep < N_RANK+1) */
+    return;
+}
+
+
+template <int N_RANK> 
 inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;
     Grid_Info<N_RANK> l_father_grid = grid, l_son_grid;
-    int l_dt_stop, l_unroll;
+    int l_dt_stop;
+    const unsigned int l_unroll = lcm_unroll_;
+    // int region_n = (*pure_region_)(t0, t1, l_father_grid);
+    Homogeneity homo = (*color_region_)(t0-time_shift_, t1-time_shift_, l_father_grid);
+    // const bool cross_region = (region_n == CROSS_REGION);
+    const bool cross_region = !(homo.is_homogeneous());
+    Node_Info<N_RANK> * l_internal = new Node_Info<N_RANK>(t0, t1, l_father_grid, homo);
+
+    if (cross_region) {
+        (*tree_).add_node(parent, l_internal, IS_INTERNAL);
+    } else {
+        (*homogeneity_vector_).push_back_unique(homo, rec_level);
+        int region_n = (*homogeneity_vector_).get_index(homo);
+        (*tree_).add_node(parent, l_internal, IS_SPAWN, homo, region_n);
+        ++sz_base_data_;
+        return;
+    } 
+
+    /* cross_region! */
+    assert(cross_region);
+    for (int i = N_RANK-1; i >= 0; --i) {
+        int lb, thres, tb;
+        bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
+        lb = (grid.x1[i] - grid.x0[i]);
+        tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+        thres = (slope_[i] * lt);
+        bool cut_lb = (lb < tb);
+        // const int l_padding = 2 * slope_[i];
+        sim_can_cut = sim_can_cut || (gen_plan_space_can_cut_p(i));
+        call_boundary |= l_touch_boundary;
+    }
+
+    if (sim_can_cut) {
+        gen_plan_space_bicut_p(l_internal, t0, t1, l_father_grid, rec_level);
+        return;
+    } 
+
+    l_dt_stop = dt_homo_;
+    if (lt > l_dt_stop && lt > l_unroll) {
+        /* cut into time */
+        const unsigned int halflt = lt / 2;
+        /* cut halflt align to unroll_ 
+         * for mixed region: we align it to lcm_unroll_;
+         * for pure region: we refine it to pgk_[region_n].unroll_;
+         */
+        l_son_grid = l_father_grid;
+        gen_plan_bicut_p(l_internal, t0, t0+halflt, l_son_grid, rec_level+1);
+
+        Node_Info<N_RANK> * l_node = new Node_Info<N_RANK>(IS_SYNC);
+        (*tree_).add_node(l_internal, l_node, IS_SYNC);
+        ++sz_sync_data_;
+
+        for (int i = 0; i < N_RANK; ++i) {
+            l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
+            l_son_grid.dx0[i] = l_father_grid.dx0[i];
+            l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
+            l_son_grid.dx1[i] = l_father_grid.dx1[i];
+        }
+        gen_plan_bicut_p(l_internal, t0+halflt, t1, l_son_grid, rec_level+1);
+        return;
+    } 
+
+    /* Add Inhomogeneous node into the tree */
+    (*homogeneity_vector_).push_back_unique(homo, rec_level);
+    int region_n = (*homogeneity_vector_).get_index(homo);
+    Node_Info<N_RANK> * l_leaf = new Node_Info<N_RANK>(t0, t1, l_father_grid, homo);
+    (*tree_).add_node(l_internal, l_leaf, IS_SPAWN, homo, region_n);
+    ++sz_base_data_;
+    return;
+}
+
+template <int N_RANK> 
+inline void Algorithm<N_RANK>::gen_plan_cut_p(Node_Info<N_RANK> * parent, int t0, int t1, Grid_Info<N_RANK> const grid, int rec_level)
+{
+    const int lt = t1 - t0;
+    bool sim_can_cut = false, call_boundary = false;
+    Grid_Info<N_RANK> l_father_grid = grid, l_son_grid;
+    int l_dt_stop;
+    const int l_unroll = lcm_unroll_;
     // int region_n = (*pure_region_)(t0, t1, l_father_grid);
     Homogeneity homo = (*color_region_)(t0-time_shift_, t1-time_shift_, l_father_grid);
     // const bool cross_region = (region_n == CROSS_REGION);
@@ -2077,23 +2312,14 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
     } 
 
     l_dt_stop = dt_homo_;
-#if 0
-    if (call_boundary) {
-        l_unroll = lcm_unroll_;
-    } else {
-        l_unroll = pgk_[region_n].unroll_;
-    }
-#else
-    l_unroll = lcm_unroll_;
-#endif
-    if (lt > l_dt_stop) {
+    if (lt > l_dt_stop && lt > l_unroll) {
         /* cut into time */
-        int halflt = lt / 2;
+        const unsigned int m = log2_floor((unsigned int)lt/l_unroll);
+        const unsigned int halflt = l_unroll * pow2(m);
         /* cut halflt align to unroll_ 
          * for mixed region: we align it to lcm_unroll_;
          * for pure region: we refine it to pgk_[region_n].unroll_;
          */
-        halflt -= (halflt > l_unroll ? (halflt % l_unroll) : 0);
         l_son_grid = l_father_grid;
         gen_plan_bicut_p(l_internal, t0, t0+halflt, l_son_grid, rec_level+1);
 
@@ -2107,7 +2333,7 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
             l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
             l_son_grid.dx1[i] = l_father_grid.dx1[i];
         }
-        gen_plan_bicut_p(l_internal, t0+halflt, t1, l_son_grid, rec_level+1);
+        gen_plan_cut_p(l_internal, t0+halflt, t1, l_son_grid, rec_level+1);
         return;
     } 
 
@@ -2133,7 +2359,7 @@ inline void Algorithm<N_RANK>::gen_plan_bicut_p(Node_Info<N_RANK> * parent, int 
 #define plan_space_can_cut_p(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb > dx_recursive_[_dim])) : ((l_touch_boundary) ? (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
 
 template <int N_RANK> 
-inline void Algorithm<N_RANK>::plan_space_cut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
+inline void Algorithm<N_RANK>::plan_space_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -2272,7 +2498,7 @@ inline void Algorithm<N_RANK>::plan_space_cut(int t0, int t1, Grid_Info<N_RANK> 
 }
 
 template <int N_RANK> 
-inline void Algorithm<N_RANK>::plan_space_cut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
+inline void Algorithm<N_RANK>::plan_space_bicut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -2431,6 +2657,306 @@ inline void Algorithm<N_RANK>::plan_space_cut_p(int t0, int t1, Grid_Info<N_RANK
     } /* end for (curr_dep < N_RANK+1) */
 }
 
+template <int N_RANK> 
+inline void Algorithm<N_RANK>::plan_space_cut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
+{
+    queue_info *l_father;
+    queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
+    int queue_head_[2], queue_tail_[2], queue_len_[2];
+
+    for (int i = 0; i < 2; ++i) {
+        queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
+    }
+
+    /* set up the initial grid */
+    push_queue(0, N_RANK-1, t0, t1, grid);
+    for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
+        const int curr_dep_pointer = (curr_dep & 0x1);
+        while (queue_len_[curr_dep_pointer] > 0) {
+            top_queue(curr_dep_pointer, l_father);
+            if (l_father->level < 0) {
+                /* spawn all the grids in circular_queue_[curr_dep][] */
+#if USE_CILK_FOR 
+                /* use cilk_for to spawn all the sub-grid */
+// #pragma cilk_grainsize = 1
+                cilk_for (int j = 0; j < queue_len_[curr_dep_pointer]; ++j) {
+                    int i = pmod((queue_head_[curr_dep_pointer]+j), ALGOR_QUEUE_SIZE);
+                    queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
+                    /* assert all the sub-grid has done N_RANK spatial cuts */
+                    assert(l_son->level == -1);
+                    plan_cut(l_son->t0, l_son->t1, l_son->grid, region_n);
+                } /* end cilk_for */
+                queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
+                queue_len_[curr_dep_pointer] = 0;
+#else
+                /* use cilk_spawn to spawn all the sub-grid */
+                pop_queue(curr_dep_pointer);
+                if (queue_len_[curr_dep_pointer] == 0)
+                    plan_cut(l_father->t0, l_father->t1, l_father->grid, region_n);
+                else
+                    cilk_spawn plan_cut(l_father->t0, l_father->t1, l_father->grid, region_n);
+#endif
+            } else {
+                /* performing a space cut on dimension 'level' */
+                pop_queue(curr_dep_pointer);
+                const Grid_Info<N_RANK> l_father_grid = l_father->grid;
+                const int t0 = l_father->t0, t1 = l_father->t1;
+                const int lt = (t1 - t0);
+                const int level = l_father->level;
+                const int l_slope = slope_[level];
+                const int thres = l_slope * lt;
+                const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
+                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
+                const bool cut_lb = (lb < tb);
+                const int l_padding = 2 * l_slope;
+                const bool can_cut = plan_space_can_cut(level);
+                if (!can_cut) {
+                    /* if we can't cut into this dimension, just directly push 
+                     * it into the circular queue 
+                     */
+                    push_queue(curr_dep_pointer, level-1, t0, t1, l_father_grid);
+                } else {
+                    /* can_cut! */
+                    if (cut_lb) {
+                        const int mid = (lb/2);
+                        Grid_Info<N_RANK> l_son_grid = l_father_grid;
+                        const int l_start = (l_father_grid.x0[level]);
+                        const int l_end = (l_father_grid.x1[level]);
+
+                        /* push the middle triangular minizoid (gray) into 
+                         * circular queue of (curr_dep) 
+                         */
+                        l_son_grid.x0[level] = l_start + mid - thres;
+                        l_son_grid.dx0[level] = l_slope;
+                        l_son_grid.x1[level] = l_start + mid + thres;
+                        l_son_grid.dx1[level] = -l_slope;
+                        push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                        /* cilk_sync */
+                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                        /* push the left big trapezoid (black)
+                         * into circular queue of (curr_dep + 1)
+                         */
+                        l_son_grid.x0[level] = l_start;
+                        l_son_grid.dx0[level] = l_father_grid.dx0[level];
+                        l_son_grid.x1[level] = l_start + mid - thres;
+                        l_son_grid.dx1[level] = l_slope;
+                        push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                        /* push the right big trapezoid (black)
+                         * into circular queue of (curr_dep + 1)
+                         */
+                        l_son_grid.x0[level] = l_start + mid + thres;
+                        l_son_grid.dx0[level] = -l_slope;
+                        l_son_grid.x1[level] = l_end;
+                        l_son_grid.dx1[level] = l_father_grid.dx1[level];
+                        push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                    } /* end if (cut_lb) */
+                    else {
+                        /* cut_tb */
+                        const int mid = (tb/2);
+                        Grid_Info<N_RANK> l_son_grid = l_father_grid;
+                        const int l_start = (l_father_grid.x0[level]);
+                        const int l_end = (l_father_grid.x1[level]);
+                        const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+
+                        /* push left black sub-grid into circular queue of (curr_dep) */
+                        l_son_grid.x0[level] = l_start;
+                        l_son_grid.dx0[level] = l_father_grid.dx0[level];
+                        l_son_grid.x1[level] = ul_start + mid;
+                        l_son_grid.dx1[level] = -l_slope;
+                        push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                        /* push right black sub-grid into circular queue of (curr_dep) */
+                        l_son_grid.x0[level] = ul_start + mid;;
+                        l_son_grid.dx0[level] = l_slope;
+                        l_son_grid.x1[level] = l_end;
+                        l_son_grid.dx1[level] = l_father_grid.dx1[level];
+                        push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                        /* cilk_sync */
+                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                        /* push the middle gray triangular minizoid into 
+                         * circular queue of (curr_dep + 1)
+                         */
+                        l_son_grid.x0[level] = ul_start + mid;
+                        l_son_grid.dx0[level] = -l_slope;
+                        l_son_grid.x1[level] = ul_start + mid;
+                        l_son_grid.dx1[level] = l_slope;
+                        push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+                    } /* end else (cut_tb) */
+                } /* end if (can_cut) */
+            } /* end if (performing a space cut) */
+        } /* end while (queue_len_[curr_dep] > 0) */
+#if !USE_CILK_FOR
+        cilk_sync;
+#endif
+        assert(queue_len_[curr_dep_pointer] == 0);
+    } /* end for (curr_dep < N_RANK+1) */
+}
+
+template <int N_RANK> 
+inline void Algorithm<N_RANK>::plan_space_cut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
+{
+    queue_info *l_father;
+    queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
+    int queue_head_[2], queue_tail_[2], queue_len_[2];
+
+    for (int i = 0; i < 2; ++i) {
+        queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
+    }
+
+    /* set up the initial grid */
+    push_queue(0, N_RANK-1, t0, t1, grid);
+    for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
+        const int curr_dep_pointer = (curr_dep & 0x1);
+        while (queue_len_[curr_dep_pointer] > 0) {
+            top_queue(curr_dep_pointer, l_father);
+            if (l_father->level < 0) {
+                /* spawn all the grids in circular_queue_[curr_dep][] */
+#if USE_CILK_FOR 
+                /* use cilk_for to spawn all the sub-grid */
+// #pragma cilk_grainsize = 1
+                cilk_for (int j = 0; j < queue_len_[curr_dep_pointer]; ++j) {
+                    int i = pmod((queue_head_[curr_dep_pointer]+j), ALGOR_QUEUE_SIZE);
+                    queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
+                    /* assert all the sub-grid has done N_RANK spatial cuts */
+                    assert(l_son->level == -1);
+                    plan_cut_p(l_son->t0, l_son->t1, l_son->grid, region_n);
+                } /* end cilk_for */
+                queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
+                queue_len_[curr_dep_pointer] = 0;
+#else
+                /* use cilk_spawn to spawn all the sub-grid */
+                pop_queue(curr_dep_pointer);
+                if (queue_len_[curr_dep_pointer] == 0) {
+                    plan_cut_p(l_father->t0, l_father->t1, l_father->grid, region_n);
+                } else {
+                    cilk_spawn plan_cut_p(l_father->t0, l_father->t1, l_father->grid, region_n);
+                }
+#endif
+            } else {
+                /* performing a space cut on dimension 'level' */
+                pop_queue(curr_dep_pointer);
+                Grid_Info<N_RANK> l_father_grid = l_father->grid;
+                const int t0 = l_father->t0, t1 = l_father->t1;
+                const int lt = (t1 - t0);
+                const int level = l_father->level;
+                const int l_slope = slope_[level];
+                const int thres = l_slope * lt;
+                const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
+                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
+                const bool cut_lb = (lb < tb);
+                const int l_padding = 2 * l_slope;
+                const bool cross_region = (region_n < 0);
+                const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
+                const bool can_cut = plan_space_can_cut_p(level);
+                if (!can_cut) {
+                    /* if we can't cut into this dimension, just directly push
+                     * it into the circular queue
+                    */
+                    push_queue(curr_dep_pointer, level-1, t0, t1, l_father_grid);
+                } else {
+                    /* can_cut */
+                    if (cut_lb) {
+                        /* if cutting lb, there's no initial cut! */
+                        assert(lb != phys_length_[level] || l_father_grid.dx0[level] != 0 || l_father_grid.dx1[level] != 0);
+                        const int mid = lb/2;
+                        Grid_Info<N_RANK> l_son_grid = l_father_grid;
+                        const int l_start = (l_father_grid.x0[level]);
+                        const int l_end = (l_father_grid.x1[level]);
+
+                        /* push the middle gray minizoid
+                         * into circular queue of (curr_dep) 
+                         */
+                        l_son_grid.x0[level] = l_start + mid - thres;
+                        l_son_grid.dx0[level] = l_slope;
+                        l_son_grid.x1[level] = l_start + mid + thres;
+                        l_son_grid.dx1[level] = -l_slope;
+                        push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                        /* cilk_sync */
+                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                        /* push one sub-grid into circular queue of (curr_dep + 1)*/
+                        l_son_grid.x0[level] = l_start;
+                        l_son_grid.dx0[level] = l_father_grid.dx0[level];
+                        l_son_grid.x1[level] = l_start + mid - thres;
+                        l_son_grid.dx1[level] = l_slope;
+                        push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                        /* push one sub-grid into circular queue of (curr_dep + 1)*/
+                        l_son_grid.x0[level] = l_start + mid + thres;
+                        l_son_grid.dx0[level] = -l_slope;
+                        l_son_grid.x1[level] = l_end;
+                        l_son_grid.dx1[level] = l_father_grid.dx1[level];
+                        push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+                    } /* end if (cut_lb) */
+                    else { /* cut_tb */
+                        if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
+                            assert(l_father_grid.dx0[level] == 0);
+                            assert(l_father_grid.dx1[level] == 0);
+                            const int mid = tb/2;
+                            Grid_Info<N_RANK> l_son_grid = l_father_grid;
+                            const int l_start = (l_father_grid.x0[level]);
+                            const int l_end = (l_father_grid.x1[level]);
+                            const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+                            /* merge the big black trapezoids */
+                            l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.dx0[level] = l_slope;
+                            l_son_grid.x1[level] = l_end + (ul_start - l_start) + mid;
+                            l_son_grid.dx1[level] = -l_slope;
+                            push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                            /* cilk_sync */
+                            const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                            /* push middle minizoid into circular queue of (curr_dep + 1)*/
+                            l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.dx0[level] = -l_slope;
+                            l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.dx1[level] = l_slope;
+                            push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+                        } else { /* NOT the initial cut! */
+                            const int mid = tb/2;
+                            Grid_Info<N_RANK> l_son_grid = l_father_grid;
+                            const int l_start = (l_father_grid.x0[level]);
+                            const int l_end = (l_father_grid.x1[level]);
+                            const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+                            /* push one sub-grid into circular queue of (curr_dep) */
+                            l_son_grid.x0[level] = l_start;
+                            l_son_grid.dx0[level] = l_father_grid.dx0[level];
+                            l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.dx1[level] = -l_slope;
+                            push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                            /* push one sub-grid into circular queue of (curr_dep) */
+                            l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.dx0[level] = l_slope;
+                            l_son_grid.x1[level] = l_end;
+                            l_son_grid.dx1[level] = l_father_grid.dx1[level];
+                            push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+
+                            /* cilk_sync */
+                            const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                            /* push one sub-grid into circular queue of (curr_dep + 1)*/
+                            l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.dx0[level] = -l_slope;
+                            l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.dx1[level] = l_slope;
+                            push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+                        }                    
+                    } /* end if (cut_tb) */
+                } /* end if (can_cut) */
+            } /* end if (performing a space cut) */
+        } /* end while (queue_len_[curr_dep] > 0) */
+#if !USE_CILK_FOR
+        cilk_sync;
+#endif
+        assert(queue_len_[curr_dep_pointer] == 0);
+    } /* end for (curr_dep < N_RANK+1) */
+}
+
+#define DEBUG_CUT_T_ALIGNMENT 
 /* This is the version for interior region cut! */
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::plan_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
@@ -2450,7 +2976,7 @@ inline void Algorithm<N_RANK>::plan_bicut(int t0, int t1, Grid_Info<N_RANK> cons
     }
 
     if (sim_can_cut) {
-        plan_space_cut(t0, t1, grid, region_n);
+        plan_space_bicut(t0, t1, grid, region_n);
         return;
     } else if (lt > dt_recursive_ && lt > l_unroll) {
         /* cut into time */
@@ -2472,28 +2998,13 @@ inline void Algorithm<N_RANK>::plan_bicut(int t0, int t1, Grid_Info<N_RANK> cons
     } else {
         // base case
         assert ((t1 - time_shift_) % l_unroll == 0 && (t0 - time_shift_) % l_unroll == 0);
-#if 0
-        if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
-        // if (t1 % l_unroll != 0 || t0 % l_unroll != 0) {
-#if DEBUG 
-            printf("call cond_kernel_ <%d>, l_unroll = %d, (%d, %d)!\n", 
-                    region_n, l_unroll, t0, t1);
-            // print_grid(stdout, t0, t1, grid);
-            ++num_cond_kernel_;
+#ifdef DEBUG_CUT_T_ALIGNMENT 
+        printf("<plan_bicut> kernel_[%d] l_unroll = %d, lt(%d, %d)\n", 
+                region_n, l_unroll, t0, t1);
+        // print_grid(stdout, t0, t1, grid);
+        ++num_kernel_;
 #endif
-            (*opks_[region_n]).cond_kernel_[0](t0, t1, grid);
-        } else {
-#endif
-#if 1 
-            printf("<plan_bicut> kernel_[%d] l_unroll = %d, lt(%d, %d)!\n", 
-                    region_n, l_unroll, t0, t1);
-            // print_grid(stdout, t0, t1, grid);
-            ++num_kernel_;
-#endif
-            (*opks_[region_n]).kernel_[0](t0, t1, grid);
-#if 0
-        }
-#endif
+        (*opks_[region_n]).kernel_[0](t0, t1, grid);
         return;
     }  
 }
@@ -2522,9 +3033,9 @@ inline void Algorithm<N_RANK>::plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> co
 
     if (sim_can_cut) {
         if (call_boundary) 
-            plan_space_cut_p(t0, t1, l_father_grid, region_n);
+            plan_space_bicut_p(t0, t1, l_father_grid, region_n);
         else
-            plan_space_cut(t0, t1, l_father_grid, region_n);
+            plan_space_bicut(t0, t1, l_father_grid, region_n);
         return;
     } 
 
@@ -2570,55 +3081,21 @@ inline void Algorithm<N_RANK>::plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> co
     assert((t1 - time_shift_) % l_unroll == 0 && (t0 - time_shift_) % l_unroll == 0);
 
     if (call_boundary) {
-        /* boundary region */
-        // if (t1 - t0 < opks_[region_n].unroll_) {
-        // we use lcm_unroll_ instead of l_unroll_ because when we 'gen_plan',
-        // in order to get a pure-region, it's possible the bottom bar of current
-        // trapezoid is not aligned to the unroll factor if \delta t < lcm_unroll_
-        // -- see 'gen_plan' procedure for details!!!
-#if 0
-        // if (t1 % l_unroll != 0 || t0 % l_unroll != 0) {
-#if DEBUG 
-            printf("call cond_boundary_kernel <%d>, l_unroll = %d, (%d, %d)!\n", 
-                    region_n, l_unroll, t0, t1);
-            // print_grid(stdout, t0, t1, l_father_grid);
-            ++num_cond_bkernel_;
+#ifdef DEBUG_CUT_T_ALIGNMENT 
+        printf("<plan_bicut_p> bkernel_[%d], l_unroll = %d, lt(%d, %d)\n", 
+                region_n, l_unroll, t0, t1);
+        // print_grid(stdout, t0, t1, l_father_grid);
+        ++num_bkernel_;
 #endif
-            (*opks_[region_n]).cond_bkernel_[0](t0, t1, l_father_grid);
-        } else {
-#endif
-#if 1 
-            printf("<plan_bicut_p> bkernel_[%d], l_unroll = %d, lt(%d, %d)!\n", 
-                    region_n, l_unroll, t0, t1);
-            // print_grid(stdout, t0, t1, l_father_grid);
-            ++num_bkernel_;
-#endif
-            (*opks_[region_n]).bkernel_[0](t0, t1, l_father_grid);
-#if 0
-        }
-#endif
+        (*opks_[region_n]).bkernel_[0](t0, t1, l_father_grid);
     } else {
-#if 0
-        // if (t1 % l_unroll != 0 || t0 % l_unroll != 0) {
-#if DEBUG
-            printf("call cond_kernel_ <%d>, l_unroll = %d, (%d, %d)!\n", 
-                    region_n, l_unroll, t0, t1);
-            // print_grid(stdout, t0, t1, l_father_grid);
-            ++num_cond_kernel_;
+#ifdef DEBUG_CUT_T_ALIGNMENT 
+        printf("<plan_bicut_p> kernel_[%d] l_unroll = %d, lt(%d, %d)\n", 
+               region_n, l_unroll, t0, t1);
+        // print_grid(stdout, t0, t1, l_father_grid);
+        ++num_kernel_;
 #endif
-            (*opks_[region_n]).cond_kernel_[0](t0, t1, l_father_grid);
-        } else {
-#endif
-#if 1
-            printf("<plan_bicut_p> kernel_[%d] l_unroll = %d, lt(%d, %d)!\n", 
-                    region_n, l_unroll, t0, t1);
-            // print_grid(stdout, t0, t1, l_father_grid);
-            ++num_kernel_;
-#endif
-            (*opks_[region_n]).kernel_[0](t0, t1, l_father_grid);
-#if 0
-        }
-#endif
+        (*opks_[region_n]).kernel_[0](t0, t1, l_father_grid);
     }
     return;
 }
@@ -2646,8 +3123,8 @@ inline void Algorithm<N_RANK>::plan_cut(int t0, int t1, Grid_Info<N_RANK> const 
         return;
     } else if (lt > dt_recursive_ && lt > l_unroll) {
         /* cut into time */
-        const int m = log2_floor((unsigned int)lt/l_unroll);
-        const int halflt = l_unroll * pow2(m);
+        const unsigned int m = log2_floor((unsigned int)lt/l_unroll);
+        const unsigned int halflt = l_unroll * pow2(m);
         /* now the bottom half can be thrown to bicut procedure,
          * which involves no log2 / pow2 overhead
          */
@@ -2666,8 +3143,8 @@ inline void Algorithm<N_RANK>::plan_cut(int t0, int t1, Grid_Info<N_RANK> const 
         // base case
         if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
         // if (t1 % l_unroll != 0 || t0 % l_unroll != 0) {
-#if 1 
-            printf("<plan_cut> cond_kernel_[%d] l_unroll = %d, lt(%d, %d)!\n", 
+#ifdef DEBUG_CUT_T_ALIGNMENT 
+            printf("<plan_cut> cond_kernel_[%d] l_unroll = %d, lt(%d, %d)\n", 
                     region_n, l_unroll, t0, t1);
             // print_grid(stdout, t0, t1, grid);
             ++num_cond_kernel_;
@@ -2675,8 +3152,8 @@ inline void Algorithm<N_RANK>::plan_cut(int t0, int t1, Grid_Info<N_RANK> const 
             (*opks_[region_n]).cond_kernel_[0](t0, t1, grid);
         } else {
             assert((t1 - time_shift_) % l_unroll == 0 && (t0 - time_shift_) % l_unroll == 0); 
-#if 1 
-            printf("<plan_cut> kernel_[%d] l_unroll = %d, lt(%d, %d)!\n", 
+#ifdef DEBUG_CUT_T_ALIGNMENT 
+            printf("<plan_cut> kernel_[%d] l_unroll = %d, lt(%d, %d)\n", 
                     region_n, l_unroll, t0, t1);
             // print_grid(stdout, t0, t1, grid);
             ++num_kernel_;
@@ -2726,8 +3203,8 @@ inline void Algorithm<N_RANK>::plan_cut_p(int t0, int t1, Grid_Info<N_RANK> cons
 
     if (lt > l_dt_stop && lt > l_unroll) {
         /* cut into time */
-        const int m = log2_floor((unsigned int)lt/l_unroll);
-        const int halflt = l_unroll * pow2(m);
+        const unsigned int m = log2_floor((unsigned int)lt/l_unroll);
+        const unsigned int halflt = l_unroll * pow2(m);
         l_son_grid = l_father_grid;
         if (call_boundary) {
             plan_bicut_p(t0, t0+halflt, l_son_grid, region_n);
@@ -2755,8 +3232,8 @@ inline void Algorithm<N_RANK>::plan_cut_p(int t0, int t1, Grid_Info<N_RANK> cons
     if (call_boundary) {
         if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
         // if (t1 % l_unroll != 0 || t0 % l_unroll != 0) {
-#if 1 
-            printf("<plan_cut_p> cond_bkernel_[%d], l_unroll = %d, lt(%d, %d)!\n", 
+#ifdef DEBUG_CUT_T_ALIGNMENT 
+            printf("<plan_cut_p> cond_bkernel_[%d], l_unroll = %d, lt(%d, %d)\n", 
                     region_n, l_unroll, t0, t1);
             // print_grid(stdout, t0, t1, l_father_grid);
             ++num_cond_bkernel_;
@@ -2764,8 +3241,8 @@ inline void Algorithm<N_RANK>::plan_cut_p(int t0, int t1, Grid_Info<N_RANK> cons
             (*opks_[region_n]).cond_bkernel_[0](t0, t1, l_father_grid);
         } else {
             assert((t1 - time_shift_) % l_unroll == 0 && (t0 - time_shift_) % l_unroll == 0); 
-#if 1 
-            printf("<plan_cut_p> bkernel_[%d] l_unroll = %d, lt(%d, %d)!\n", 
+#ifdef DEBUG_CUT_T_ALIGNMENT 
+            printf("<plan_cut_p> bkernel_[%d] l_unroll = %d, lt(%d, %d)\n", 
                     region_n, l_unroll, t0, t1);
             // print_grid(stdout, t0, t1, l_father_grid);
             ++num_bkernel_;
@@ -2775,8 +3252,8 @@ inline void Algorithm<N_RANK>::plan_cut_p(int t0, int t1, Grid_Info<N_RANK> cons
     } else {
         if ((t1 - time_shift_) % l_unroll != 0 || (t0 - time_shift_) % l_unroll != 0) {
         // if (t1 % l_unroll != 0 || t0 % l_unroll != 0) {
-#if 1
-            printf("<plan_bicut_p> cond_kernel_[%d] l_unroll = %d, lt(%d, %d)!\n", 
+#ifdef DEBUG_CUT_T_ALIGNMENT 
+            printf("<plan_cut_p> cond_kernel_[%d] l_unroll = %d, lt(%d, %d)\n", 
                     region_n, l_unroll, t0, t1);
             // print_grid(stdout, t0, t1, l_father_grid);
             ++num_cond_kernel_;
@@ -2784,8 +3261,8 @@ inline void Algorithm<N_RANK>::plan_cut_p(int t0, int t1, Grid_Info<N_RANK> cons
             (*opks_[region_n]).cond_kernel_[0](t0, t1, l_father_grid);
         } else {
             assert((t1 - time_shift_) % l_unroll == 0 && (t0 - time_shift_) % l_unroll == 0); 
-#if 1
-            printf("<plan_bicut_p> kernel_[%d] l_unroll = %d, lt(%d, %d)!\n", 
+#ifdef DEBUG_CUT_T_ALIGNMENT 
+            printf("<plan_cut_p> kernel_[%d] l_unroll = %d, lt(%d, %d)\n", 
                     region_n, l_unroll, t0, t1);
             // print_grid(stdout, t0, t1, l_father_grid);
             ++num_kernel_;
@@ -2796,7 +3273,9 @@ inline void Algorithm<N_RANK>::plan_cut_p(int t0, int t1, Grid_Info<N_RANK> cons
     return;
 }
 
-
+#ifdef DEBUG_CUT_T_ALIGNMENT
+#undef DEBUG_CUT_T_ALIGNMENT
+#endif
 /************************************************************************************
  * Run the Plan for irregular stencil computation                                   *
  ************************************************************************************/
