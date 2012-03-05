@@ -598,7 +598,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     char cpp_filename[strlen(gen_kernel_fname) + 10], so_filename[strlen(gen_kernel_fname) + 10];
     sprintf(cpp_filename, "%s.cpp", gen_kernel_fname);
     sprintf(so_filename, "%s.so", gen_kernel_fname);
-#if 1 
+#if 0 
     /* This branch is for debugging purpose */
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #else

@@ -82,7 +82,7 @@ struct Pochoir_Base_Kernel {
     // typedef std::function<void (int, int, const Grid_Info<N_RANK> &)> T_Kernel;
     // virtual T_Kernel & Get_Kernel (void) = 0;
     virtual Pochoir_Shape<N_RANK> * Get_Shape() = 0;
-    virtual void operator()(int t0, int t1, Grid_Info<N_RANK> const & grid) const = 0;
+    virtual inline void operator()(int t0, int t1, Grid_Info<N_RANK> const & grid) const = 0;
     virtual int Get_Shape_Size() = 0;
 };
 
@@ -126,7 +126,7 @@ struct Pochoir_Obase_Kernel : public Pochoir_Base_Kernel<N_RANK> {
     Pochoir_Shape<N_RANK> * Get_Shape() { return shape_; }
     int Get_Shape_Size() { return shape_size_; }
     // F & Get_Kernel (void) { return kernel_; }
-    void operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const {
+    inline void operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const {
         kernel_(t0, t1, grid);
     }
     ~Pochoir_Obase_Kernel() { }

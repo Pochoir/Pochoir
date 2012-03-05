@@ -127,6 +127,12 @@ static inline bool select(bool b, bool x, bool y) {
 static inline int select(bool b, int x, int y) {
     return (x&(-b)) | (y&-(!b));
 }
+static inline unsigned int log_2_floor(unsigned long a) {
+    return 63-__builtin_clzl(a);
+}
+static inline unsigned int log_2_floor(unsigned int a) {
+    return 31-__builtin_clz(a);
+}
 
 typedef int T_dim;
 typedef int T_index;

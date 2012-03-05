@@ -807,7 +807,7 @@ pShowFuncObjectHeader l_name l_stencil l_mtiles =
                    l_stencilName ++ mkParen l_stencilInputName ++ ", " ++
                    (intercalate ", " $ 
                         zipWith (++) l_arrayList (map mkParen l_arrayInputList)) ++ " {} " ++
-                   breakline ++ "void operator() (int " ++ 
+                   breakline ++ "inline void operator() (int " ++ 
                    l_t_begin ++ ", int " ++ l_t_end ++ ", " ++ 
                    " Grid_Info <" ++ show l_rank ++ "> const & grid) {"
     in  l_header

@@ -546,7 +546,10 @@ struct Algorithm {
     void set_slope(int const slope[]);
     void set_pts(Vector_Info<Pochoir_Guard<N_RANK> *> & _pgs);
     void set_opks(Pochoir_Combined_Obase_Kernel<N_RANK> ** _opks);
-    void set_unroll(int _lcm_unroll) { lcm_unroll_ = _lcm_unroll; }
+    void set_unroll(int _lcm_unroll) { 
+        lcm_unroll_ = _lcm_unroll; 
+        dt_recursive_boundary_ = _lcm_unroll; 
+    }
     void set_time_shift(int _time_shift) { time_shift_ = _time_shift; }
 
     Vector_Info< Homogeneity > & get_color_vector(void) { return (*homogeneity_vector_); }

@@ -56,14 +56,14 @@ public:
     T get_val() { return val_; }
     Pochoir_Proxy<T> & operator= (T const & rhs) {
         (*ref_) = rhs;
-        val_ = rhs;
+        // val_ = rhs;
         return (*this);
     }
 
     Pochoir_Proxy<T> & operator= (Pochoir_Proxy<T> & rhs) {
         T const & l_rhs = T(rhs);
         (*ref_) = l_rhs;
-        val_ = l_rhs;
+        // val_ = l_rhs;
         return (*this);
     }
 private:
