@@ -511,6 +511,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
     algor.set_time_shift(time_shift_);
+    /* we unroll at least twice in out-most loop to promote performance */
+    lcm_unroll_ = (lcm_unroll_ > 1) ? lcm_unroll_ : 2;
     algor.set_unroll(lcm_unroll_);
 #ifdef DEBUG
     printf("lcm_unroll_ = %d\n", lcm_unroll_);
@@ -606,14 +608,14 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     char cpp_filename[strlen(gen_kernel_fname) + 10], so_filename[strlen(gen_kernel_fname) + 10];
     sprintf(cpp_filename, "%s.cpp", gen_kernel_fname);
     sprintf(so_filename, "%s.so", gen_kernel_fname);
-#if 1 
+#if 0 
     /* This branch is for debugging purpose */
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
 #else
     /* This branch is for best performance */
-    // sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
-    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
-    // sprintf(cmd, "g++-cilk -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
+    // sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O2 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
+    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O2 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
+    // sprintf(cmd, "g++-cilk -o %s -shared -nostartfiles -fPIC -O2 -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
 #endif
 
     LOG_ARGS(INF, "%s\n", cmd);
@@ -653,6 +655,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
     algor.set_time_shift(time_shift_);
+    /* we unroll at least twice in out-most loop to promote performance */
+    lcm_unroll_ = (lcm_unroll_ > 1) ? lcm_unroll_ : 2;
     algor.set_unroll(lcm_unroll_);
 #ifdef DEBUG
     printf("lcm_unroll_ = %d\n", lcm_unroll_);
@@ -749,8 +753,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
 #if 0
     sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #else
-    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O3 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
-    // sprintf(cmd, "g++-cilk -o %s -shared -nostartfiles -fPIC -O3 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
+    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O2 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
+    // sprintf(cmd, "g++-cilk -o %s -shared -nostartfiles -fPIC -O2 -std=c++0x -I${POCHOIR_LIB_PATH} %s\0", so_filename, cpp_filename);
 #endif
 
     LOG_ARGS(INF, "%s\n", cmd);

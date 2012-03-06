@@ -52,13 +52,13 @@ void check_result(int t, int i, double a, double b)
         max_b = b > max_b ? b : max_b;
     //    printf("a(%d, %d) == b(%d, %d) == %f : passed!\n", t, i, t, i, a);
     } else {
-        max_a = a > max_a ? a : max_a;
-        max_b = b > max_b ? b : max_b;
         if (l_diff > max_diff) {
             max_diff = l_diff;
             diff_a = a; diff_b = b;
         }
     }
+        max_a = a > max_a ? a : max_a;
+        max_b = b > max_b ? b : max_b;
 }
 
 Pochoir_Boundary_1D(periodic_1D, arr, t, i)
@@ -166,7 +166,7 @@ int main(int argc, char * argv[])
 
     /* initialization */
     for (int i = 0; i < N; ++i) {
-        auto tmp = 1.0 * (rand() % BASE);
+        auto tmp = 1.0 * ((double)rand() / BASE);
         a(0, i) = tmp;
         b(0, i) = tmp;
         a(1, i) = 0;

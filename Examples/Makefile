@@ -7,7 +7,7 @@ ICC = icpc
 # segmentation fault sometimes.
 # OPT_FLAGS = -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -ipo -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH}
 # OPT_FLAGS for icpc
-OPT_FLAGS = -DCHECK_SHAPE -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x 
+OPT_FLAGS = -DCHECK_SHAPE -rdynamic -ldl -O2 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x 
 # OPT_FLAGS for g++-cilk
 # OPT_FLAGS = -rdynamic -ldl -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -std=c++0x -I${POCHOIR_LIB_PATH}
 # OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -std=c++0x -I${POCHOIR_LIB_PATH}
@@ -50,8 +50,8 @@ heat_NP_zero : tb_heat_2D_NP_zero.cpp
 
 heat_P : tb_heat_2D_P.cpp
 #   Phase-II compilation
-	${CC} -o heat_2D_P ${OPT_FLAGS} -all-cond-tile-pointer tb_heat_2D_P.cpp
-#	${ICC} -o heat_2D_P_gdb ${ICC_DEBUG_FLAGS} tb_heat_2D_P_pochoir.cpp
+	${CC} -o heat_2D_P ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_heat_2D_P.cpp
+	${ICC} -o heat_2D_P_gdb ${ICC_DEBUG_FLAGS} tb_heat_2D_P_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_2D_P_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_P.cpp
 
@@ -73,7 +73,7 @@ animwave_irregular : tb_animwave_irregular.cpp tb_animwave_irregular_pochoir.cpp
 
 diamond : tb_diamond.cpp # tb_diamond_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o diamond ${OPT_FLAGS} -all-cond-tile-pointer-overlap tb_diamond.cpp
+	${CC} -o diamond ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_diamond.cpp
 	${ICC} -o diamond_gdb ${ICC_DEBUG_FLAGS} tb_diamond_pochoir.cpp
 #	${CC} -o diamond ${POCHOIR_DEBUG_FLAGS} -split-macro-shadow tb_diamond.cpp
 #	${ICC} -o diamond ${OPT_FLAGS} tb_diamond_pochoir.cpp
@@ -151,7 +151,7 @@ overlap_tile_2D : tb_overlap_tile_2D.cpp # tb_overlap_tile_2D_pochoir.cpp
 
 overlap_tile_3D : tb_overlap_tile_3D.cpp # tb_overlap_tile_3D_pochoir.cpp 
 #   Phase-II compilation
-	${CC} -o overlap_tile_3D ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_overlap_tile_3D.cpp
+	${CC} -o overlap_tile_3D ${OPT_FLAGS} -all-cond-tile-pointer-overlap tb_overlap_tile_3D.cpp
 	${ICC} -o overlap_tile_3D_gdb ${ICC_DEBUG_FLAGS} tb_overlap_tile_3D_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o overlap_tile_3D ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_3D.cpp 

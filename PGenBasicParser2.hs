@@ -70,8 +70,9 @@ pRegLambdaTerm l_mode l_rank l_stencil (g, t) =
         l_pochoir_id = sName l_stencil
         l_guard_name = pGetOverlapGuardName g
         l_unroll = foldr lcm 1 $ map (head . tSizes) t
+        l_unroll' = if l_unroll == 1 then 2 else l_unroll
     in  pTab ++ l_pochoir_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guard_name ++
-        ", " ++ show l_unroll ++ ", " ++ l_run_kernel ++ ");" ++ breakline
+        ", " ++ show l_unroll' ++ ", " ++ l_run_kernel ++ ");" ++ breakline
 
 pDestroyLambdaTerm :: PMode -> Int -> String -> PStencil -> (PGuard, [PTile]) -> String
 pDestroyLambdaTerm l_mode l_rank l_str l_stencil (g, t) =

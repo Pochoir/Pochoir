@@ -52,13 +52,13 @@ void check_result(int t, int i, int j, double a, double b)
     //    printf("a(%d, %d, %d) == b(%d, %d, %d) == %f : passed!\n", t, i, j, t, i, j, a);
     } else {
         // printf("a(%d, %d, %d) = %f, b(%d, %d, %d) = %f : FAILED!\n", t, i, j, a, t, i, j, b);
-        max_a = a > max_a ? a : max_a;
-        max_b = b > max_b ? b : max_b;
         if (l_diff > max_diff) {
             max_diff = l_diff;
             diff_a = a; diff_b = b;
         }
     }
+        max_a = a > max_a ? a : max_a;
+        max_b = b > max_b ? b : max_b;
 }
 
 Pochoir_Boundary_2D(periodic_2D, arr, t, i, j)
@@ -75,8 +75,8 @@ Pochoir_Boundary_2D(aperiodic_2D, arr, t, i, j)
     return 0;
 Pochoir_Boundary_End
 
-#define N 65
-#define T 65
+#define N 665
+#define T 65 
 
 int main(int argc, char * argv[])
 {
@@ -464,7 +464,7 @@ int main(int argc, char * argv[])
     /* initialization */
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-            auto tmp = 1.0 * (rand() % BASE);
+            auto tmp = 1.0 * ((double)rand() / BASE);
             a(0, i, j) = tmp;
             b(0, i, j) = tmp;
             a(1, i, j) = 0;

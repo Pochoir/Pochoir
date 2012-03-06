@@ -966,12 +966,13 @@ pShowUnrollTimeTileOverlapKernels l_showSingleKernel l_bound l_mode l_name l_ste
         l_tail = pShowFuncObjectTail l_name l_rank
 -------------------------------------------------------------------------------------------
         l_unroll = foldr lcm 1 $ map (length . mtTerms) l_mtiles
+        l_unroll' = if l_unroll == 1 then 2 else l_unroll
         l_tileOp_all_null = pIsTileOpNull $ foldr1 foldTileOp $ map kfTileOp l_kernel_funcs
         l_unfold_kernels = 
             if l_tileOp_all_null
                then breakline ++ (mkComment "tile_op all PNULL") ++ breakline
                else pShowUnrollTimeTileOverlapKernelOnT 
-                        l_showSingleKernel l_bound l_mode l_stencil l_mtiles (0, l_unroll)
+                        l_showSingleKernel l_bound l_mode l_stencil l_mtiles (0, l_unroll')
         l_def_mod_lu = if l_bound then pDefPMODLU else ""
         l_undef_mod_lu = if l_bound then pUndefPMODLU else ""
     in  breakline ++ l_def_mod_lu ++

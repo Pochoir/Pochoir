@@ -2956,7 +2956,7 @@ inline void Algorithm<N_RANK>::plan_space_cut_p(int t0, int t1, Grid_Info<N_RANK
     } /* end for (curr_dep < N_RANK+1) */
 }
 
-#define DEBUG_CUT_T_ALIGNMENT 
+#undef DEBUG_CUT_T_ALIGNMENT 
 /* This is the version for interior region cut! */
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::plan_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)

@@ -40,6 +40,7 @@
 #define TOLERANCE (1e-6)
 
 static double max_diff = 0;
+static double diff_a = 0, diff_b = 0;
 static double max_a = 0, max_b = 0;
 
 void check_result(int t, int i, double a, double b)
@@ -50,9 +51,11 @@ void check_result(int t, int i, double a, double b)
     } else {
         if (l_diff > max_diff) {
             max_diff = l_diff;
-            max_a = a; max_b = b;
+            diff_a = a; diff_b = b;
         }
     }
+    max_a = (a > max_a) ? a : max_a;
+    max_b = (b > max_b) ? b : max_b;
 }
 
 Pochoir_Boundary_1D(periodic_1D, arr, t, i)
@@ -298,11 +301,11 @@ int main(int argc, char * argv[])
 
     /* initialization */
     for (int i = 0; i < N; ++i) {
-        auto tmp = 1.0 * (rand() % BASE);
+        auto tmp = 1.0 * ((double)rand() / BASE);
         a(0, i) = tmp;
         b(0, i) = tmp;
-        a(1, i) = tmp;
-        b(1, i) = tmp;
+        a(1, i) = 0;
+        b(1, i) = 0;
     }
 
     Pochoir_Plan<1> & l_plan = overlap.Gen_Plan(T);
@@ -453,7 +456,8 @@ int main(int argc, char * argv[])
     for (int i = 0; i < N; ++i) {
         check_result(t, i, a(t, i), b(t, i));
     } 
-    printf("max_diff = %f, when a = %f, b = %f\n", max_diff, max_a, max_b);
+    printf("max_diff = %f, when a = %f, b = %f\n", max_diff, diff_a, diff_b);
+    printf("max_a = %f, max_b = %f\n", max_a, max_b);
 
     return 0;
 }
