@@ -27,14 +27,14 @@
  */
 #include <cstdio>
 #include <cstddef>
-// #include <iostream>
+#include <iostream>
 #include <cstdlib>
 #include <sys/time.h>
 #include <cmath>
 
 #include <pochoir.hpp>
 
-// using namespace std;
+using namespace std;
 #define APP_DEBUG 0
 #define TIMES 1
 #define TOLERANCE (1e-6)
@@ -47,8 +47,6 @@ void check_result(int t, int i, int j, double a, double b)
 {
     double l_diff = pabs(a, b);
     if (l_diff < TOLERANCE) {
-        max_a = a > max_a ? a : max_a;
-        max_b = b > max_b ? b : max_b;
     //    printf("a(%d, %d, %d) == b(%d, %d, %d) == %f : passed!\n", t, i, j, t, i, j, a);
     } else {
         // printf("a(%d, %d, %d) = %f, b(%d, %d, %d) = %f : FAILED!\n", t, i, j, a, t, i, j, b);
@@ -80,7 +78,7 @@ Pochoir_Boundary_End
 
 int main(int argc, char * argv[])
 {
-    const int BASE = 1024798;
+    const int BASE = 1024798000;
     int t;
     struct timeval start, end;
     double min_tdiff = INF;
