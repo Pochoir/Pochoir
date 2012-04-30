@@ -395,7 +395,13 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f) {
 //     fprintf(stderr, "Call shorter_duo_sim_obase_bicut\n");
 #pragma isat marker M2_begin
    // algor.sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
+#if 1
+    printf("shorter_duo_sim_obase_bicut!\n");
     algor.shorter_duo_sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
+#else
+    printf("stevenj!\n");
+    algor.stevenj(0+time_shift_, timestep+time_shift_, logic_grid_, f);
+#endif
     // algor.duo_sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
 #pragma isat marker M2_end
 #if STAT
@@ -430,8 +436,13 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #else
 //    fprintf(stderr, "Call sim_obase_bicut_P\n");
 #pragma isat marker M2_begin
-    // algor.sim_obase_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+#if 1
+    printf("shorter_duo_sim_obase_bicut_p!\n");
     algor.shorter_duo_sim_obase_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+#else
+    printf("stevenj_p!\n");
+    algor.stevenj_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+#endif
 #pragma isat marker M2_end
 #if STAT
     for (int i = 1; i < SUPPORT_RANK; ++i) {
