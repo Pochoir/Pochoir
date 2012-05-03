@@ -711,7 +711,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
         white_clone = new Homogeneity(0);
     /* sort the color vector according to the member 'measure_' */
     l_color_vector.sort();
-    l_color_vector.set_size(0);
+    l_color_vector.set_size(55);
     /* make the 'rec_level' of white_clone to be 0, so it won't be eliminated out */
     l_color_vector.push_back_unique(*white_clone, 0);
     l_plan->change_region_n(l_color_vector);
