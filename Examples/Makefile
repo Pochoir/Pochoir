@@ -272,4 +272,4 @@ tb_3dfd : tb_3dfd.cpp
 #	${CC} -o tb_3dfd_pochoir ${POCHOIR_DEBUG_FLAGS} tb_3dfd.cpp
 
 clean: 
-	rm -f *.o *.i *_pochoir *_pochoir.cpp *.out
+	rm -f *.o *.i *_pochoir *_pochoir.cpp *.out *.dat *.so *_gen_kernel.cpp

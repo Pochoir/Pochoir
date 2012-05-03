@@ -30,8 +30,7 @@
  * to reference to the member, since the dot operator '.' is non-overload-able in C++
  */
 template<typename T>
-class Pochoir_Proxy
-{
+class Pochoir_Proxy {
 public:
     explicit Pochoir_Proxy(T * v) : ref_(v) { 
         val_ = *v;

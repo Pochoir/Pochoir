@@ -240,12 +240,12 @@ pParseCPPComment :: GenParser Char ParserState String
 pParseCPPComment =
         do try (string "/*")
            str <- manyTill anyChar (try $ string "*/")
-           -- return ("/* comment */")
-           return ("/*" ++ str ++ "*/")
+           return ("/* comment */")
+           -- return ("/*" ++ str ++ "*/")
     <|> do try (string "//")
            str <- manyTill anyChar (try $ eol)
-           -- return ("// comment\n")
-           return ("//" ++ str ++ "\n")
+           return ("// comment\n")
+           -- return ("//" ++ str ++ "\n")
 
 pParsePochoirAutoKernelFunc :: GenParser Char ParserState String
 pParsePochoirAutoKernelFunc =

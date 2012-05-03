@@ -473,6 +473,7 @@ int main(int argc, char * argv[])
     Pochoir_Plan<2> & l_plan = leap_frog.Gen_Plan(T);
     sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat", N, T);
     leap_frog.Store_Plan(pochoir_plan_file_name, l_plan);
+    leap_frog.Store_Plan(pochoir_plan_file_name, l_plan);
     // Pochoir_Plan<2> & ll_plan = leap_frog.Load_Plan(pochoir_plan_file_name);
     min_tdiff = INF;
     for (int times = 0; times < TIMES; ++times) {
@@ -729,6 +730,7 @@ int main(int argc, char * argv[])
     printf("max_diff = %f, when a = %f, b = %f\n", max_diff, diff_a, diff_b);
     printf("max_a = %f, max_b = %f\n", max_a, max_b);
 
+    printf("max diff = %f\n", comp_diff);
     return 0;
 }
 

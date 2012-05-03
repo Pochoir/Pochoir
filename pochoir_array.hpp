@@ -447,7 +447,7 @@ class Pochoir_Array {
             if (set_boundary) 
                 return Pochoir_Proxy<T>(bv_(*this, _idx_t, _idxs...));
 			int l_idx = cal_addr(_idxs ...) + (_idx_t % toggle_) * total_size_;
-            return Pochoir_Proxy<T>(data_ + l_idx);
+            return Pochoir_Proxy<T>(&((*view_)[l_idx]));
 		}
 
         /* set()/get() pair to set/get boundary value in user supplied bvalue function */
@@ -488,7 +488,7 @@ class Pochoir_Array {
             if (set_boundary)
                 return Pochoir_Proxy<T>(bv_(*this, _idx_t, _idxs ...));
 			int l_idx = cal_addr(_idxs ...) + (_idx_t % toggle_) * total_size_;
-            return Pochoir_Proxy<T>(data_ + l_idx);
+            return Pochoir_Proxy<T>(&((*view_)[l_idx]));
 		}
 
 		/* size_info is of type int[] */
