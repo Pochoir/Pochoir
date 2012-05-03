@@ -37,7 +37,7 @@
 #include <fstream>
 #include <functional>
 #include <vector>
-#include <boost/type_traits.hpp> /* to decide if a typename T is a pointer? */
+// #include <boost/type_traits.hpp> /* to decide if a typename T is a pointer? */
 #include "pochoir_errmsg.hpp"
 #include "pochoir_dloader.hpp"
 
@@ -508,15 +508,19 @@ struct Vector_Info {
     T_measure * measure_;
     int pointer_, size_;
 
+#if 0
     typedef boost::integral_constant<bool, ::boost::is_pointer<T>::value> region_type_;
     typedef boost::integral_constant<bool, ::boost::is_pointer<T_measure>::value> measure_type_;
+#endif
 
     template <typename TT>
-    inline TT * setup_region(int _size, const boost::false_type&) {
+    // inline TT * setup_region(int _size, const boost::false_type&) {
+    inline TT * setup_region(int _size) {
         /* set up the region which is a value, rather than a pointer */
         TT * l_tt = new TT[_size];
         return l_tt;
     }
+#if 0
     template <typename TT>
     inline TT * setup_region(int _size, const boost::true_type&) {
         /* set up the region which is a pointer 
@@ -529,12 +533,15 @@ struct Vector_Info {
         }
         return l_tt;
     }
+#endif
     template <typename TT>
-    inline int release_region(TT * _region, int _size, bool _is_basic_type, const boost::false_type&) {
+    // inline int release_region(TT * _region, int _size, bool _is_basic_type, const boost::false_type&) {
+    inline int release_region(TT * _region, int _size, bool _is_basic_type) {
         /* release region containing only values */
         del_arr(_region);
         return 0;
     }
+#if 0
     template <typename TT>
     inline int release_region(TT * _region, int _size, bool _is_basic_type, const boost::true_type&) {
         /* release region containing pointers: 
@@ -544,9 +551,15 @@ struct Vector_Info {
         del_arr(_region);
         return 0;
     }
+#endif
     Vector_Info() {
+#if 0
         region_ = setup_region<T>(VECTOR_SIZE, region_type_());
         measure_ = setup_region<T_measure>(VECTOR_SIZE, measure_type_());
+#else
+        region_ = setup_region<T>(VECTOR_SIZE);
+        measure_ = setup_region<T_measure>(VECTOR_SIZE);
+#endif
         for (int i = 0; i < VECTOR_SIZE; ++i)
             measure_[i] = 0;
         pointer_ = 0; size_ = VECTOR_SIZE;
@@ -555,8 +568,13 @@ struct Vector_Info {
 #endif
     }
     Vector_Info(int size) {
+#if 0
         region_ = setup_region<T>(size, region_type_());
         measure_ = setup_region<T_measure>(size, measure_type_());
+#else
+        region_ = setup_region<T>(size);
+        measure_ = setup_region<T_measure>(size);
+#endif
         for (int i = 0; i < size; ++i)
             measure_[i] = 0;
         pointer_ = 0; size_ = size;
@@ -566,8 +584,13 @@ struct Vector_Info {
     }
     Vector_Info(Vector_Info<T> const & rhs) {
         int l_rhs_size = rhs.size();
+#if 0
         region_ = setup_region<T>(l_rhs_size, region_type_());
         measure_ = setup_region<T_measure>(l_rhs_size, measure_type_());
+#else
+        region_ = setup_region<T>(l_rhs_size);
+        measure_ = setup_region<T_measure>(l_rhs_size);
+#endif
         size_ = l_rhs_size;
         for (int i = 0; i < l_rhs_size; ++i) {
             region_[i] = rhs[i];
@@ -580,8 +603,13 @@ struct Vector_Info {
         /* how to write a destructor if the region_[] is an array of function objects? 
          */
         LOG(0, "Call destructor of Vector_Info"); 
+#if 0
         release_region<T>(region_, pointer_, is_basic_data_type<T>(), region_type_());
         release_region<T_measure>(measure_, pointer_, is_basic_data_type<T_measure>(), measure_type_());
+#else
+        release_region<T>(region_, pointer_, is_basic_data_type<T>());
+        release_region<T_measure>(measure_, pointer_, is_basic_data_type<T_measure>());
+#endif
         pointer_ = size_ = 0;
     } 
     inline void sort(void) {
@@ -622,8 +650,13 @@ struct Vector_Info {
 #if DEBUG
             printf("realloc memory size = %d -> %d!\n", size_, 2*size_);
 #endif
+#if 0
             T * l_region = setup_region<T>(2 * size_, region_type_());
             T_measure * l_measure = setup_region<T_measure>(2 * size_, measure_type_());
+#else
+            T * l_region = setup_region<T>(2 * size_);
+            T_measure * l_measure = setup_region<T_measure>(2 * size_);
+#endif
             if (l_region != NULL && l_measure != NULL) {
                 for (int i = 0; i < size_; ++i) {
                     l_region[i] = region_[i];
@@ -674,15 +707,26 @@ struct Vector_Info {
 #if DEBUG
             LOG_ARGS("realloc memory size = %d -> %d!\n", size_, 2 * size_);
 #endif
+#if 0
             T * l_region = setup_region<T>(2 * size_, region_type_());
             T_measure * l_measure = setup_region<T_measure>(2 * size_, measure_type_());
+#else
+            T * l_region = setup_region<T>(2 * size_);
+            T_measure * l_measure = setup_region<T_measure>(2 * size_);
+
+#endif
             if (l_region != NULL && l_measure != NULL) {
                 for (int i = 0; i < size_; ++i) {
                     l_region[i] = region_[i];
                     l_measure[i] = measure_[i];
                 }
+#if 0
                 release_region(region_, pointer_, is_basic_data_type<T>(), region_type_());
                 release_region(measure_, pointer_, is_basic_data_type<T_measure>(), measure_type_());
+#else
+                release_region(region_, pointer_, is_basic_data_type<T>());
+                release_region(measure_, pointer_, is_basic_data_type<T_measure>());
+#endif
                 region_ = l_region;
                 measure_ = l_measure;
                 region_[pointer_] = ele;

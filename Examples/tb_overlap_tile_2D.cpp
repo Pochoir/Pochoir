@@ -70,8 +70,8 @@ Pochoir_Boundary_1D(aperiodic_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
 
-#define N 20
-#define T 10
+#define N 200
+#define T 100
 
 int main(int argc, char * argv[])
 {
