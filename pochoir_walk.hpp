@@ -434,7 +434,7 @@ struct Algorithm {
      * - walk_ncores_boundary
      */
     inline void set_thres(int arr_type_size) {
-#if DEBUG
+#if 0
         dt_recursive_ = 1;
         dx_recursive_[0] = 1;
         for (int i = N_RANK-1; i >= 1; --i)
@@ -474,6 +474,18 @@ struct Algorithm {
     inline void shorter_duo_sim_obase_space_cut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
     template <typename F, typename BF>
     inline void shorter_duo_sim_obase_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+    template <typename F>
+    inline void stevenj_space_cut(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+    template <typename F, typename BF>
+    inline void stevenj_space_cut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+    template <typename F>
+    inline void stevenj_bicut(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+    template <typename F, typename BF>
+    inline void stevenj_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+    template <typename F>
+    inline void stevenj(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+    template <typename F, typename BF>
+    inline void stevenj_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
 
     /* followings are the sim cut of both top and bottom bar */
     template <typename F>

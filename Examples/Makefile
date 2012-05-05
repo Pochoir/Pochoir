@@ -24,9 +24,9 @@ heat_NP_zero : tb_heat_2D_NP_zero.cpp
 
 heat_P : tb_heat_2D_P.cpp
 #   Phase-II compilation
-#	${CC} -o tb_heat_2D_P_pochoir ${OPT_FLAGS} tb_heat_2D_P.cpp
+	${CC} -o heat_2D_P ${OPT_FLAGS} tb_heat_2D_P.cpp
 #	Phase-I compilation with debugging aid
-	${CC} -o tb_heat_2D_P_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_P.cpp
+#	${CC} -o heat_2D_P ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_P.cpp
 
 heat_3D_NP : tb_heat_3D_NP.cpp
 #   Phase-II compilation
