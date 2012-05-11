@@ -28,98 +28,44 @@
 #pragma GCC system_header
 
 // Predefined symbols and macros -*- C++ -*-
-#pragma GCC system_header
+namespace std
+{
+  typedef unsigned long 	size_t;
+  typedef long	ptrdiff_t;
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-typedef long ptrdiff_t;
-
-typedef unsigned long	size_t;
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
-
-  using ::ptrdiff_t;
-  using ::size_t;
-
+  typedef decltype(nullptr)	nullptr_t;
 }
 
-/* Define ISO C stdio on top of C++ iostreams.
-   Copyright (C) 1991, 1994-2007, 2008, 2009 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
 
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-/*
- *	ISO C99 Standard: 7.19 Input/output	<stdio.h>
- */
-
-
-
+// Defined if inline namespaces are used for versioning.
 extern "C" {
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
+///////////////////////////////////////////////////////////////////////////////
+typedef unsigned long size_t;
 
 
-/* stddef.h standard header */
+/* Wide character type.
+   Locale-writers should change this as necessary to
+   be big enough to hold unique values not between 0 and 127,
+   and not (wchar_t) -1, for each defined multibyte character.  */
 
-		/* macros */
-		/* type definitions */
+/* Define this type if we are doing the whole job,
+   or if we want this type in particular.  */
 
 
+/*  In 4.3bsd-net2, leave these undefined to indicate that size_t, etc.
+    are already defined.  */
+/*  BSD/OS 3.1 and FreeBSD [23].x require the MACHINE_ANSI_H check here.  */
+/*  NetBSD 5 requires the I386_ANSI_H and X86_64_ANSI_H checks here.  */
 
+
+/* A null pointer constant.  */
 
 
 
-/*#endif*/ /* _STDDEF */
+
+
+
 
 /* bits/types.h -- definitions of __*_t types underlying *_t types.
    Copyright (C) 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
@@ -312,7 +258,7 @@ typedef struct _IO_FILE __FILE;
 
 
 
-/* Copyright (C) 1991-1995,1997-2006,2007,2009 Free Software Foundation, Inc.
+/* Copyright (C) 1991-1995,1997-2006,2007,2009,2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Per Bothner <bothner@cygnus.com>.
 
@@ -347,59 +293,7 @@ typedef struct _IO_FILE __FILE;
 
 /* Define types for libio in terms of the standard internal type names.  */
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-/* Copyright (C) 1995-2008, 2009 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
-
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-/*
- *      ISO C99 Standard: 7.24
- *	Extended multibyte and wide character utilities	<wchar.h>
- */
-
-
-
-
-/* Conversion state information.  */
+///////////////////////////////////////////////////////////////////////////////
 typedef struct
 {
   int __count;
@@ -415,7 +309,7 @@ typedef struct
    defined.  */
 
 
-/* Undefined all __need_* constants in case we are included to get those
+/* Undefine all __need_* constants in case we are included to get those
    constants but the whole file was already read.  */
 typedef struct
 {
@@ -676,6 +570,11 @@ extern void _IO_free_backup_area (_IO_FILE *) throw ();
 
 typedef __gnuc_va_list va_list;
 
+typedef __off_t off_t;
+typedef __off64_t off64_t;
+
+typedef __ssize_t ssize_t;
+
 /* The type of the second argument to `fgetpos' and `fsetpos'.  */
 
 typedef _G_fpos_t fpos_t;
@@ -702,7 +601,7 @@ typedef _G_fpos64_t fpos64_t;
 /* Get the values:
    L_tmpnam	How long an array of chars must be to be passed to `tmpnam'.
    TMP_MAX	The minimum number of unique filenames generated by tmpnam
-   		(and tempnam when it uses tmpnam's name space),
+		(and tempnam when it uses tmpnam's name space),
 		or tempnam (the two are separate).
    L_ctermid	How long an array to pass to `ctermid'.
    L_cuserid	How long an array to pass to `cuserid'.
@@ -752,7 +651,7 @@ extern int renameat (int __oldfd, __const char *__old, int __newfd,
 
 /* Create a temporary file and open it read/write.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern FILE *tmpfile (void) ;
 
@@ -1115,33 +1014,33 @@ extern __ssize_t getline (char **__restrict __lineptr,
 
 /* Write a string to STREAM.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern int fputs (__const char *__restrict __s, FILE *__restrict __stream);
 
 /* Write a string, followed by a newline, to stdout.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern int puts (__const char *__s);
 
 
 /* Push a character back onto the input buffer of STREAM.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern int ungetc (int __c, FILE *__stream);
 
 
 /* Read chunks of generic data from STREAM.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern size_t fread (void *__restrict __ptr, size_t __size,
 		     size_t __n, FILE *__restrict __stream) ;
 /* Write chunks of generic data to STREAM.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern size_t fwrite (__const void *__restrict __ptr, size_t __size,
 		      size_t __n, FILE *__restrict __s);
@@ -1337,8 +1236,8 @@ extern void funlockfile (FILE *__stream) throw ();
 
 
 // Get rid of those macros defined in <stdio.h> in lieu of real functions.
-namespace std __attribute__ ((__visibility__ ("default"))) {
-
+namespace std
+{
   using ::FILE;
   using ::fpos_t;
 
@@ -1383,77 +1282,62 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   using ::vfprintf;
   using ::vprintf;
   using ::vsprintf;
-
-}
-
-
-
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
-
+} // namespace
+namespace __gnu_cxx
+{
 
   using ::snprintf;
   using ::vfscanf;
   using ::vscanf;
   using ::vsnprintf;
   using ::vsscanf;
-
-}
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
-
+} // namespace __gnu_cxx
+namespace std
+{
   using ::__gnu_cxx::snprintf;
   using ::__gnu_cxx::vfscanf;
   using ::__gnu_cxx::vscanf;
   using ::__gnu_cxx::vsnprintf;
   using ::__gnu_cxx::vsscanf;
-
-}
-
-
-// TR1 cstdio -*- C++ -*-
-namespace std
-{
-
-
-  using std::snprintf;
-  using std::vsnprintf;
-
-  using std::vfscanf;
-  using std::vscanf;
-  using std::vsscanf;
-
-
-}
-
-// -*- C++ -*- forwarding header.
+} // namespace std
 #pragma GCC system_header
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
+///////////////////////////////////////////////////////////////////////////////
+typedef long ptrdiff_t;
 
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
+/* If this symbol has done its job, get rid of it.  */
 
 
-/* stddef.h standard header */
+/* Unsigned type of `sizeof' something.  */
 
-		/* macros */
-		/* type definitions */
-
-
+/* Define this type if we are doing the whole job,
+   or if we want this type in particular.  */
 
 
+/* Wide character type.
+   Locale-writers should change this as necessary to
+   be big enough to hold unique values not between 0 and 127,
+   and not (wchar_t) -1, for each defined multibyte character.  */
+
+/* Define this type if we are doing the whole job,
+   or if we want this type in particular.  */
 
 
-/*#endif*/ /* _STDDEF */
+/*  In 4.3bsd-net2, leave these undefined to indicate that size_t, etc.
+    are already defined.  */
+/*  BSD/OS 3.1 and FreeBSD [23].x require the MACHINE_ANSI_H check here.  */
+/*  NetBSD 5 requires the I386_ANSI_H and X86_64_ANSI_H checks here.  */
+
+
+/* A null pointer constant.  */
+
+
+
+/* Offset of member MEMBER in a struct of type TYPE. */
+
+
+
+
 
 // Standard iostream objects -*- C++ -*-
 #pragma GCC system_header
@@ -1471,10 +1355,18 @@ namespace std
 #pragma GCC system_header
 
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   template<typename _Alloc>
     class allocator;
+
+  /**
+   *  @defgroup strings Strings
+   *
+   *  @{
+  */
 
   template<class _CharT>
     struct char_traits;
@@ -1485,60 +1377,23 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
   template<> struct char_traits<char>;
 
-  typedef basic_string<char>    string;
+  typedef basic_string<char>    string;   /// A string of @c char
+template<> struct char_traits<wchar_t>;
 
-  template<> struct char_traits<wchar_t>;
-
-  typedef basic_string<wchar_t> wstring;
-
-
-  template<> struct char_traits<char16_t>;
+  typedef basic_string<wchar_t> wstring;   /// A string of @c wchar_t
+template<> struct char_traits<char16_t>;
   template<> struct char_traits<char32_t>;
 
-  typedef basic_string<char16_t> u16string;
-  typedef basic_string<char32_t> u32string;
-
-
-}
-
-// Position types -*- C++ -*-
+  typedef basic_string<char16_t> u16string; /// A string of @c char16_t
+typedef basic_string<char32_t> u32string; /// A string of @c char32_t
+} // namespace
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
 #pragma GCC system_header
 
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-
-/* Copyright (C) 1995-2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -1627,41 +1482,32 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 /* Get size_t, wchar_t, wint_t and NULL from <stddef.h>.  */
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
+///////////////////////////////////////////////////////////////////////////////
 typedef unsigned int wint_t;
 
+/*  In 4.3bsd-net2, leave these undefined to indicate that size_t, etc.
+    are already defined.  */
+/*  BSD/OS 3.1 and FreeBSD [23].x require the MACHINE_ANSI_H check here.  */
+/*  NetBSD 5 requires the I386_ANSI_H and X86_64_ANSI_H checks here.  */
 
 
-/*#endif*/ /* _STDDEF */
+/* A null pointer constant.  */
 
-/* Tell the caller that we provide correct C++ prototypes.  */
+
+
+/* Offset of member MEMBER in a struct of type TYPE. */
+
+
+
+
+
 
 /* We try to get wint_t from <stddef.h>, but not all GCC versions define it
    there.  So define it ourselves if it remains undefined.  */
 /* Work around problems with the <stddef.h> file which doesn't put
    wint_t in the std namespace.  */
+
+/* Tell the caller that we provide correct C++ prototypes.  */
 
 
 
@@ -1729,7 +1575,7 @@ extern int wcsncasecmp (__const wchar_t *__s1, __const wchar_t *__s2,
 /* Similar to the two functions above but take the information from
    the provided locale and not the global locale.  */
 /* Definition of locale datatype.
-   Copyright (C) 1997,2000,2002,2009 Free Software Foundation, Inc.
+   Copyright (C) 1997,2000,2002,2009,2010 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -1756,7 +1602,7 @@ extern int wcsncasecmp (__const wchar_t *__s1, __const wchar_t *__s2,
 typedef struct __locale_struct
 {
   /* Note: LC_ALL is not a valid index into this array.  */
-  struct locale_data *__locales[13]; /* 13 = __LC_LAST. */
+  struct __locale_data *__locales[13]; /* 13 = __LC_LAST. */
 
   /* To increase the speed of this solution we add some special members.  */
   const unsigned short int *__ctype_b;
@@ -1810,7 +1656,7 @@ extern wchar_t *wcsdup (__const wchar_t *__s) throw () __attribute__ ((__malloc_
 extern "C++" wchar_t *wcschr (wchar_t *__wcs, wchar_t __wc)
      throw () __asm ("wcschr") __attribute__ ((__pure__));
 extern "C++" __const wchar_t *wcschr (__const wchar_t *__wcs, wchar_t __wc)
-     throw () __asm ("wcschr")  __attribute__ ((__pure__));
+     throw () __asm ("wcschr") __attribute__ ((__pure__));
 /* Find the last occurrence of WC in WCS.  */
 extern "C++" wchar_t *wcsrchr (wchar_t *__wcs, wchar_t __wc)
      throw () __asm ("wcsrchr") __attribute__ ((__pure__));
@@ -1875,8 +1721,7 @@ extern "C++" __const wchar_t *wmemchr (__const wchar_t *__s, wchar_t __c,
      throw () __asm ("wmemchr") __attribute__ ((__pure__));
 
 /* Compare N wide characters of S1 and S2.  */
-extern int wmemcmp (__const wchar_t *__restrict __s1,
-		    __const wchar_t *__restrict __s2, size_t __n)
+extern int wmemcmp (__const wchar_t *__s1, __const wchar_t *__s2, size_t __n)
      throw () __attribute__ ((__pure__));
 
 /* Copy N wide characters of SRC to DEST.  */
@@ -2077,11 +1922,13 @@ extern long double wcstold_l (__const wchar_t *__restrict __nptr,
 
 /* Copy SRC to DEST, returning the address of the terminating L'\0' in
    DEST.  */
-extern wchar_t *wcpcpy (wchar_t *__dest, __const wchar_t *__src) throw ();
+extern wchar_t *wcpcpy (wchar_t *__restrict __dest,
+			__const wchar_t *__restrict __src) throw ();
 
 /* Copy no more than N characters of SRC to DEST, returning the address of
    the last character written into DEST.  */
-extern wchar_t *wcpncpy (wchar_t *__dest, __const wchar_t *__src, size_t __n)
+extern wchar_t *wcpncpy (wchar_t *__restrict __dest,
+			 __const wchar_t *__restrict __src, size_t __n)
      throw ();
 
 
@@ -2209,7 +2056,7 @@ extern wint_t putwc (wchar_t __wc, __FILE *__stream);
 
 /* Write a character to stdout.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern wint_t putwchar (wchar_t __wc);
 
@@ -2217,14 +2064,14 @@ extern wint_t putwchar (wchar_t __wc);
 /* Get a newline-terminated wide character string of finite length
    from STREAM.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern wchar_t *fgetws (wchar_t *__restrict __ws, int __n,
 			__FILE *__restrict __stream);
 
 /* Write a string to STREAM.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern int fputws (__const wchar_t *__restrict __ws,
 		   __FILE *__restrict __stream);
@@ -2232,7 +2079,7 @@ extern int fputws (__const wchar_t *__restrict __ws,
 
 /* Push a character back onto the input buffer of STREAM.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern wint_t ungetwc (wint_t __wc, __FILE *__stream);
 
@@ -2325,19 +2172,18 @@ extern size_t wcsftime_l (wchar_t *__restrict __s, size_t __maxsize,
 
 
 
-/* Undefined all __need_* constants in case we are included to get those
+/* Undefine all __need_* constants in case we are included to get those
    constants but the whole file was already read.  */
 
 
 // Need to do a bit of trickery here with mbstate_t as char_traits
-namespace std __attribute__ ((__visibility__ ("default"))) {
-
+namespace std
+{
   using ::mbstate_t;
+} // namespace std
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-}
-
-// Get rid of those macros defined in <wchar.h> in lieu of real functions.
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   using ::wint_t;
 
@@ -2399,33 +2245,22 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   using ::wmemchr;
 
 
-}
 
-
-
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
-
+} // namespace
+namespace __gnu_cxx
+{
   using ::wcstold;
   using ::wcstoll;
   using ::wcstoull;
-
-}
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
-
+} // namespace __gnu_cxx
+namespace std
+{
   using ::__gnu_cxx::wcstold;
   using ::__gnu_cxx::wcstoll;
   using ::__gnu_cxx::wcstoull;
-
-}
-
-
-
-// TR1 cwchar -*- C++ -*-
+} // namespace
 namespace std
 {
-
-
   using std::wcstof;
   using std::vfwscanf;
   using std::vswscanf;
@@ -2434,14 +2269,10 @@ namespace std
   using std::wcstold;
   using std::wcstoll;
   using std::wcstoull;
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-
-}
-
-
-
-// XXX If <stdint.h> is really needed, make sure to define the macros
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // The types streamoff, streampos and wstreampos and the class
 typedef long          streamoff;
@@ -2538,10 +2369,41 @@ typedef fpos<mbstate_t> u16streampos;
   /// File position for char32_t streams.
 typedef fpos<mbstate_t> u32streampos;
 
-}
+
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+  /**
+   *  @defgroup io I/O
+   *
+   *  Nearly all of the I/O classes are parameterized on the type of
+   *  characters they read and write.  (The major exception is ios_base at
+   *  the top of the hierarchy.)  This is a change from pre-Standard
+   *  streams, which were not templates.
+   *
+   *  For ease of use and compatibility, all of the basic_* I/O-related
+   *  classes are given typedef names for both of the builtin character
+   *  widths (wide and narrow).  The typedefs are the same as the
+   *  pre-Standard names, for example:
+   *
+   *  @code
+   *     typedef basic_ifstream<char>  ifstream;
+   *  @endcode
+   *
+   *  Because properly forward-declaring these classes can be difficult, you
+   *  should not do it yourself.  Instead, include the &lt;iosfwd&gt;
+   *  header, which contains only declarations of all the I/O classes as
+   *  well as the typedefs.  Trying to forward-declare the typedefs
+   *  themselves (e.g., <code>class ostream;</code>) is not valid ISO C++.
+   *
+   *  For more specific declarations, see
+   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch24.html
+   *
+   *  @{
+  */
+  class ios_base;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
     class basic_ios;
@@ -2592,72 +2454,96 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
     class ostreambuf_iterator;
 
-  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-class ios_base; 
 
-  /** 
-   *  @defgroup io I/O
-   *
-   *  Nearly all of the I/O classes are parameterized on the type of
-   *  characters they read and write.  (The major exception is ios_base at
-   *  the top of the hierarchy.)  This is a change from pre-Standard
-   *  streams, which were not templates.
-   *
-   *  For ease of use and compatibility, all of the basic_* I/O-related
-   *  classes are given typedef names for both of the builtin character
-   *  widths (wide and narrow).  The typedefs are the same as the
-   *  pre-Standard names, for example:
-   *
-   *  @code
-   *     typedef basic_ifstream<char>  ifstream;
-   *  @endcode
-   *
-   *  Because properly forward-declaring these classes can be difficult, you
-   *  should not do it yourself.  Instead, include the &lt;iosfwd&gt;
-   *  header, which contains only declarations of all the I/O classes as
-   *  well as the typedefs.  Trying to forward-declare the typedefs
-   *  themselves (e.g., "class ostream;") is not valid ISO C++.
-   *
-   *  For more specific declarations, see
-   *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch24.html
-   *
-   *  @{
-  */
-  typedef basic_ios<char> 		ios;		///< @isiosfwd
-typedef basic_streambuf<char> 	streambuf;	///< @isiosfwd
-typedef basic_istream<char> 		istream;	///< @isiosfwd
-typedef basic_ostream<char> 		ostream;	///< @isiosfwd
-typedef basic_iostream<char> 		iostream;	///< @isiosfwd
-typedef basic_stringbuf<char> 	stringbuf;	///< @isiosfwd
-typedef basic_istringstream<char> 	istringstream;	///< @isiosfwd
-typedef basic_ostringstream<char> 	ostringstream;	///< @isiosfwd
-typedef basic_stringstream<char> 	stringstream;	///< @isiosfwd
-typedef basic_filebuf<char> 		filebuf;	///< @isiosfwd
-typedef basic_ifstream<char> 		ifstream;	///< @isiosfwd
-typedef basic_ofstream<char> 		ofstream;	///< @isiosfwd
-typedef basic_fstream<char> 		fstream;	///< @isiosfwd
-typedef basic_ios<wchar_t> 		wios;		///< @isiosfwd
-typedef basic_streambuf<wchar_t> 	wstreambuf;	///< @isiosfwd
-typedef basic_istream<wchar_t> 	wistream;	///< @isiosfwd
-typedef basic_ostream<wchar_t> 	wostream;	///< @isiosfwd
-typedef basic_iostream<wchar_t> 	wiostream;	///< @isiosfwd
-typedef basic_stringbuf<wchar_t> 	wstringbuf;	///< @isiosfwd
-typedef basic_istringstream<wchar_t> 	wistringstream;	///< @isiosfwd
-typedef basic_ostringstream<wchar_t> 	wostringstream;	///< @isiosfwd
-typedef basic_stringstream<wchar_t> 	wstringstream;	///< @isiosfwd
-typedef basic_filebuf<wchar_t> 	wfilebuf;	///< @isiosfwd
-typedef basic_ifstream<wchar_t> 	wifstream;	///< @isiosfwd
-typedef basic_ofstream<wchar_t> 	wofstream;	///< @isiosfwd
-typedef basic_fstream<wchar_t> 	wfstream;	///< @isiosfwd
-}
+  /// Base class for @c char streams.
+typedef basic_ios<char> 		ios; 
 
-// Exception Handling support header for -*- C++ -*-
+  /// Base class for @c char buffers.
+typedef basic_streambuf<char> 	streambuf;
+
+  /// Base class for @c char input streams.
+typedef basic_istream<char> 		istream;
+
+  /// Base class for @c char output streams.
+typedef basic_ostream<char> 		ostream;
+
+  /// Base class for @c char mixed input and output streams.
+typedef basic_iostream<char> 		iostream;
+
+  /// Class for @c char memory buffers.
+typedef basic_stringbuf<char> 	stringbuf;
+
+  /// Class for @c char input memory streams.
+typedef basic_istringstream<char> 	istringstream;
+
+  /// Class for @c char output memory streams.
+typedef basic_ostringstream<char> 	ostringstream;
+
+  /// Class for @c char mixed input and output memory streams.
+typedef basic_stringstream<char> 	stringstream;
+
+  /// Class for @c char file buffers.
+typedef basic_filebuf<char> 		filebuf;
+
+  /// Class for @c char input file streams.
+typedef basic_ifstream<char> 		ifstream;
+
+  /// Class for @c char output file streams.
+typedef basic_ofstream<char> 		ofstream;
+
+  /// Class for @c char mixed input and output file streams.
+typedef basic_fstream<char> 		fstream;
+
+  /// Base class for @c wchar_t streams.
+typedef basic_ios<wchar_t> 		wios;
+
+  /// Base class for @c wchar_t buffers.
+typedef basic_streambuf<wchar_t> 	wstreambuf;
+
+  /// Base class for @c wchar_t input streams.
+typedef basic_istream<wchar_t> 	wistream;
+
+  /// Base class for @c wchar_t output streams.
+typedef basic_ostream<wchar_t> 	wostream;
+
+  /// Base class for @c wchar_t mixed input and output streams.
+typedef basic_iostream<wchar_t> 	wiostream;
+
+  /// Class for @c wchar_t memory buffers.
+typedef basic_stringbuf<wchar_t> 	wstringbuf;
+
+  /// Class for @c wchar_t input memory streams.
+typedef basic_istringstream<wchar_t> 	wistringstream;
+
+  /// Class for @c wchar_t output memory streams.
+typedef basic_ostringstream<wchar_t> 	wostringstream;
+
+  /// Class for @c wchar_t mixed input and output memory streams.
+typedef basic_stringstream<wchar_t> 	wstringstream;
+
+  /// Class for @c wchar_t file buffers.
+typedef basic_filebuf<wchar_t> 	wfilebuf;
+
+  /// Class for @c wchar_t input file streams.
+typedef basic_ifstream<wchar_t> 	wifstream;
+
+  /// Class for @c wchar_t output file streams.
+typedef basic_ofstream<wchar_t> 	wofstream;
+
+  /// Class for @c wchar_t mixed input and output file streams.
+typedef basic_fstream<wchar_t> 	wfstream;
+  /** @}  */
+
+
+} // namespace
+#pragma GCC system_header
+
 #pragma GCC visibility push(default)
 
 
 extern "C++" {
 
-namespace std 
+namespace std
 {
   /**
    * @defgroup exceptions Exceptions
@@ -2675,7 +2561,7 @@ namespace std
    *  your own %exception classes, or use a different hierarchy, or to
    *  throw non-class data (e.g., fundamental types).
    */
-  class exception 
+  class exception
   {
   public:
     exception() throw() { }
@@ -2688,7 +2574,7 @@ namespace std
 
   /** If an %exception is thrown which is not listed in a function's
    *  %exception specification, one of these may be thrown.  */
-  class bad_exception : public exception 
+  class bad_exception : public exception
   {
   public:
     bad_exception() throw() { }
@@ -2711,7 +2597,7 @@ terminate_handler set_terminate(terminate_handler) throw();
 
   /** The runtime will call this function if %exception handling must be
    *  abandoned for any reason.  It can also be called by the user.  */
-  void terminate() __attribute__ ((__noreturn__));
+  void terminate() throw() __attribute__ ((__noreturn__));
 
   /// Takes a new handler function as an argument, returns the old function.
 unexpected_handler set_unexpected(unexpected_handler) throw();
@@ -2720,26 +2606,29 @@ unexpected_handler set_unexpected(unexpected_handler) throw();
    *  violates the function's %exception specification.  */
   void unexpected() __attribute__ ((__noreturn__));
 
-  /** [18.6.4]/1:  "Returns true after completing evaluation of a
+  /** [18.6.4]/1:  'Returns true after completing evaluation of a
    *  throw-expression until either completing initialization of the
    *  exception-declaration in the matching handler or entering @c unexpected()
    *  due to the throw; or after entering @c terminate() for any reason
    *  other than an explicit call to @c terminate().  [Note: This includes
-   *  stack unwinding [15.2].  end note]"
+   *  stack unwinding [15.2].  end note]'
    *
-   *  2:  "When @c uncaught_exception() is true, throwing an %exception can
-   *  result in a call of @c terminate() (15.5.1)."
+   *  2: 'When @c uncaught_exception() is true, throwing an
+   *  %exception can result in a call of @c terminate()
+   *  (15.5.1).'
    */
-  bool uncaught_exception() throw();
+  bool uncaught_exception() throw() __attribute__ ((__pure__));
 
   // @} group exceptions
 } // namespace std
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
+namespace __gnu_cxx
+{
 
-  /** 
+
+  /**
    *  @brief A replacement for the standard terminate_handler which
    *  prints more information about the terminating exception (if any)
-   *  on stderr.  
+   *  on stderr.
    *
    *  @ingroup exceptions
    *
@@ -2754,8 +2643,8 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
    */
   void __verbose_terminate_handler();
 
-}
-  
+
+} // namespace
 } // extern "C++"
 #pragma GCC visibility pop
 
@@ -2771,40 +2660,28 @@ namespace std
    * @addtogroup exceptions
    * @{
    */
-
-  // Hide the free operators from other types
-namespace __exception_ptr
+  namespace __exception_ptr
   {
-    /**
-     * @brief An opaque pointer to an arbitrary exception.
-     */
     class exception_ptr;
   }
 
   using __exception_ptr::exception_ptr;
 
-  /** Obtain an %exception_ptr to the currently handled exception. If there
+  /** Obtain an exception_ptr to the currently handled exception. If there
    *  is none, or the currently handled exception is foreign, return the null
    *  value.
    */
   exception_ptr current_exception() throw();
 
-  /// Throw the object pointed to by the %exception_ptr.
+  /// Throw the object pointed to by the exception_ptr.
 void rethrow_exception(exception_ptr) __attribute__ ((__noreturn__));
-
-  /// Obtain an %exception_ptr pointing to a copy of the supplied object.
-template<typename _Ex>
-    exception_ptr 
-    copy_exception(_Ex __ex) throw();
 
   namespace __exception_ptr
   {
-    bool 
-    operator==(const exception_ptr&, const exception_ptr&) throw();
-
-    bool 
-    operator!=(const exception_ptr&, const exception_ptr&) throw();
-
+    /**
+     *  @brief An opaque pointer to an arbitrary exception.
+     *  @ingroup exceptions
+     */
     class exception_ptr
     {
       void* _M_exception_object;
@@ -2814,9 +2691,7 @@ template<typename _Ex>
       void _M_addref() throw();
       void _M_release() throw();
 
-      void *_M_get() const throw();
-
-      void _M_safe_bool_dummy();
+      void *_M_get() const throw() __attribute__ ((__pure__));
 
       friend exception_ptr std::current_exception() throw();
       friend void std::rethrow_exception(exception_ptr);
@@ -2824,12 +2699,11 @@ template<typename _Ex>
     public:
       exception_ptr() throw();
 
-      typedef void (exception_ptr::*__safe_bool)();
-
-      // For construction from nullptr or 0.
-exception_ptr(__safe_bool) throw();
-
       exception_ptr(const exception_ptr&) throw();
+
+      exception_ptr(nullptr_t) throw()
+      : _M_exception_object(0)
+      { }
 
       exception_ptr(exception_ptr&& __o) throw()
       : _M_exception_object(__o._M_exception_object)
@@ -2851,12 +2725,28 @@ exception_ptr(__safe_bool) throw();
       swap(exception_ptr&) throw();
 
 
-      friend bool 
-      operator==(const exception_ptr&, const exception_ptr&) throw();
+      explicit operator bool() const
+      { return _M_exception_object; }
 
-      const type_info*
-      __cxa_exception_type() const throw();
+      friend bool 
+      operator==(const exception_ptr&, const exception_ptr&) throw() 
+      __attribute__ ((__pure__));
+
+      const class type_info*
+      __cxa_exception_type() const throw() __attribute__ ((__pure__));
     };
+
+    bool 
+    operator==(const exception_ptr&, const exception_ptr&) throw() 
+    __attribute__ ((__pure__));
+
+    bool 
+    operator!=(const exception_ptr&, const exception_ptr&) throw() 
+    __attribute__ ((__pure__));
+
+    inline void
+    swap(exception_ptr& __lhs, exception_ptr& __rhs)
+    { __lhs.swap(__rhs); }
 
   } // namespace __exception_ptr
 template<typename _Ex>
@@ -2869,9 +2759,135 @@ template<typename _Ex>
 	}
       catch(...)
 	{
-	  return current_exception ();
+	  return current_exception();
 	}
     }
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+template<typename _Ex>
+    exception_ptr 
+    make_exception_ptr(_Ex __ex) throw()
+    { return std::copy_exception<_Ex>(__ex); }
+
+  // @} group exceptions
+} // namespace std
+} // extern "C++"
+#pragma GCC visibility pop
+
+// Nested Exception support header (nested_exception class) for -*- C++ -*-
+#pragma GCC visibility push(default)
+
+
+
+
+extern "C++" {
+
+namespace std
+{
+  /**
+   * @addtogroup exceptions
+   * @{
+   */
+
+  /// Exception class with exception_ptr data member.
+class nested_exception
+  {
+    exception_ptr _M_ptr;
+
+  public:
+    nested_exception() throw() : _M_ptr(current_exception()) { }
+
+    nested_exception(const nested_exception&) = default;
+
+    nested_exception& operator=(const nested_exception&) = default;
+
+    virtual ~nested_exception();
+
+    void
+    rethrow_nested() const __attribute__ ((__noreturn__))
+    { rethrow_exception(_M_ptr); }
+
+    exception_ptr
+    nested_ptr() const
+    { return _M_ptr; }
+  };
+
+  template<typename _Except>
+    struct _Nested_exception : public _Except, public nested_exception
+    {
+      explicit _Nested_exception(_Except&& __ex)
+      : _Except(static_cast<_Except&&>(__ex))
+      { }
+    };
+
+  template<typename _Ex>
+    struct __get_nested_helper
+    {
+      static const nested_exception*
+      _S_get(const _Ex& __ex)
+      { return dynamic_cast<const nested_exception*>(&__ex); }
+    };
+
+  template<typename _Ex>
+    struct __get_nested_helper<_Ex*>
+    {
+      static const nested_exception*
+      _S_get(const _Ex* __ex)
+      { return dynamic_cast<const nested_exception*>(__ex); }
+    };
+
+  template<typename _Ex>
+    inline const nested_exception*
+    __get_nested_exception(const _Ex& __ex)
+    { return __get_nested_helper<_Ex>::_S_get(__ex); }
+
+  template<typename _Ex>
+    void
+    __throw_with_nested(_Ex&&, const nested_exception* = 0)
+    __attribute__ ((__noreturn__));
+
+  template<typename _Ex>
+    void
+    __throw_with_nested(_Ex&&, ...) __attribute__ ((__noreturn__));
+
+  // This function should never be called, but is needed to avoid a warning
+template<typename _Ex>
+    inline void
+    __throw_with_nested(_Ex&& __ex, const nested_exception*)
+    { throw __ex; }
+
+  template<typename _Ex>
+    inline void
+    __throw_with_nested(_Ex&& __ex, ...)
+    { throw _Nested_exception<_Ex>(static_cast<_Ex&&>(__ex)); }
+  
+  template<typename _Ex>
+    void
+    throw_with_nested(_Ex __ex) __attribute__ ((__noreturn__));
+
+  /// If @p __ex is derived from nested_exception, @p __ex. 
+template<typename _Ex>
+    inline void
+    throw_with_nested(_Ex __ex)
+    {
+      if (__get_nested_exception(__ex))
+        throw __ex;
+      __throw_with_nested(static_cast<_Ex&&>(__ex), &__ex);
+    }
+
+  /// If @p __ex is derived from nested_exception, @p __ex.rethrow_nested().
+template<typename _Ex>
+    inline void
+    rethrow_if_nested(const _Ex& __ex)
+    {
+      if (const nested_exception* __nested = __get_nested_exception(__ex))
+        __nested->rethrow_nested();
+    }
+
+  /// Overload, See N2619
+inline void
+  rethrow_if_nested(const nested_exception& __ex)
+  { __ex.rethrow_nested(); }
 
   // @} group exceptions
 } // namespace std
@@ -2883,37 +2899,9 @@ template<typename _Ex>
 #pragma GCC system_header
 
 // Core algorithmic facilities -*- C++ -*-
-#pragma GCC system_header
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-// Function-Based Exception Support -*- C++ -*-
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // Helper for exception objects in <except>
 void
@@ -2965,21 +2953,31 @@ void
   void
   __throw_system_error(int) __attribute__((__noreturn__));
 
-}
+  void
+  __throw_future_error(int) __attribute__((__noreturn__));
 
-// The  -*- C++ -*- type traits classes for internal use in libstdc++
+  // Helpers for exception objects in <functional>
+void
+  __throw_bad_function_call() __attribute__((__noreturn__));
+
+
+} // namespace
 #pragma GCC system_header
 
 
 //
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
+namespace __gnu_cxx __attribute__ ((__visibility__ ("default")))
+{
+
 
   template<typename _Iterator, typename _Container>
     class __normal_iterator;
 
-}
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   struct __true_type { };
   struct __false_type { };
@@ -3291,13 +3289,14 @@ template<typename _Tp>
       typedef __true_type __type;
     };
 
-}
 
-// -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
 
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
+namespace __gnu_cxx __attribute__ ((__visibility__ ("default")))
+{
+
 
   // Define a nested type if some predicate holds.
 template<bool, typename>
@@ -3422,53 +3421,58 @@ template<typename _Tp, bool = std::__is_integer<_Tp>::__value>
     struct __promote
     { typedef double __type; };
 
-  template<typename _Tp>
+  // No nested __type member for non-integer non-floating point types,
+template<typename _Tp>
     struct __promote<_Tp, false>
-    { typedef _Tp __type; };
+    { };
 
-  template<typename _Tp, typename _Up>
+  template<>
+    struct __promote<long double>
+    { typedef long double __type; };
+
+  template<>
+    struct __promote<double>
+    { typedef double __type; };
+
+  template<>
+    struct __promote<float>
+    { typedef float __type; };
+
+  template<typename _Tp, typename _Up,
+           typename _Tp2 = typename __promote<_Tp>::__type,
+           typename _Up2 = typename __promote<_Up>::__type>
     struct __promote_2
     {
-    private:
-      typedef typename __promote<_Tp>::__type __type1;
-      typedef typename __promote<_Up>::__type __type2;
-
-    public:
-      typedef __typeof__(__type1() + __type2()) __type;
+      typedef __typeof__(_Tp2() + _Up2()) __type;
     };
 
-  template<typename _Tp, typename _Up, typename _Vp>
+  template<typename _Tp, typename _Up, typename _Vp,
+           typename _Tp2 = typename __promote<_Tp>::__type,
+           typename _Up2 = typename __promote<_Up>::__type,
+           typename _Vp2 = typename __promote<_Vp>::__type>
     struct __promote_3
     {
-    private:
-      typedef typename __promote<_Tp>::__type __type1;
-      typedef typename __promote<_Up>::__type __type2;
-      typedef typename __promote<_Vp>::__type __type3;
-
-    public:
-      typedef __typeof__(__type1() + __type2() + __type3()) __type;
+      typedef __typeof__(_Tp2() + _Up2() + _Vp2()) __type;
     };
 
-  template<typename _Tp, typename _Up, typename _Vp, typename _Wp>
+  template<typename _Tp, typename _Up, typename _Vp, typename _Wp,
+           typename _Tp2 = typename __promote<_Tp>::__type,
+           typename _Up2 = typename __promote<_Up>::__type,
+           typename _Vp2 = typename __promote<_Vp>::__type,
+           typename _Wp2 = typename __promote<_Wp>::__type>
     struct __promote_4
     {
-    private:
-      typedef typename __promote<_Tp>::__type __type1;
-      typedef typename __promote<_Up>::__type __type2;
-      typedef typename __promote<_Vp>::__type __type3;
-      typedef typename __promote<_Wp>::__type __type4;
-
-    public:
-      typedef __typeof__(__type1() + __type2() + __type3() + __type4()) __type;
+      typedef __typeof__(_Tp2() + _Up2() + _Vp2() + _Wp2()) __type;
     };
 
-}
 
-// -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
 
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
+namespace __gnu_cxx __attribute__ ((__visibility__ ("default")))
+{
+
 
   // Compile time constants for builtin types.
 template<typename _Value>
@@ -3504,7 +3508,7 @@ static const bool __is_signed = ((_Value)(-1) < 0);
     struct __numeric_traits_floating
     {
       // Only floating point types. See N1822. 
-static const int __max_digits10 = (2 + (std::__are_same<_Value, float> ::__value ? 24 : std::__are_same<_Value, double> ::__value ? 53 : 64) * 3010 / 10000);
+static const int __max_digits10 = (2 + (std::__are_same<_Value, float> ::__value ? 24 : std::__are_same<_Value, double> ::__value ? 53 : 64) * 643L / 2136);
 
       // See above comment...
 static const bool __is_signed = true;
@@ -3531,94 +3535,40 @@ static const bool __is_signed = true;
 				__numeric_traits_floating<_Value> >::__type
     { };
 
-}
 
-
-// Pair implementation -*- C++ -*-
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-// Concept-checking control -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
 
 // All places in libstdc++-v3 where these are used, or /might/ be used, or
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
+
+  // Used, in C++03 mode too, by allocators, etc.
+template<typename _Tp>
+    inline _Tp*
+    __addressof(_Tp& __r)
+    {
+      return reinterpret_cast<_Tp*>
+	(&const_cast<char&>(reinterpret_cast<const volatile char&>(__r)));
+    }
+
+
+} // namespace
 #pragma GCC system_header
 
 
 
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-
-// TR1 type_traits -*- C++ -*-
-namespace std
+namespace std __attribute__ ((__visibility__ ("default")))
 {
 
 
   /**
-   * @defgroup metaprogramming Type Traits
-   * @ingroup utilities
-   *
-   * Compile time type transformation and information.
+   * @addtogroup metaprogramming
    * @{
    */
-
-  // For use in __is_convertible_simple.
-struct __sfinae_types
+  struct __sfinae_types
   {
     typedef char __one;
     typedef struct { char __arr[2]; } __two;
@@ -3628,13 +3578,14 @@ struct __sfinae_types
 
 
 
-  // helper classes [4.3].
+  // helper classes.
 template<typename _Tp, _Tp __v>
     struct integral_constant
     {
-      static const _Tp                      value = __v;
+      static constexpr _Tp                  value = __v;
       typedef _Tp                           value_type;
       typedef integral_constant<_Tp, __v>   type;
+      constexpr operator value_type() { return value; }
     };
   
   /// typedef for true_type
@@ -3644,7 +3595,7 @@ typedef integral_constant<bool, true>     true_type;
 typedef integral_constant<bool, false>    false_type;
 
   template<typename _Tp, _Tp __v>
-    const _Tp integral_constant<_Tp, __v>::value;
+    constexpr _Tp integral_constant<_Tp, __v>::value;
 
   /// remove_cv
 template<typename>
@@ -3655,7 +3606,7 @@ template<typename>
     : public false_type { };
   template< > struct __is_void_helper<void> : public integral_constant<bool, true> { };
 
-  // primary type categories [4.5.1].
+  // primary type categories.
 template<typename _Tp>
     struct is_void
     : public integral_constant<bool, (__is_void_helper<typename
@@ -3806,7 +3757,19 @@ template<typename>
     struct is_function<_Res(_ArgTypes......) const volatile>
     : public true_type { };
 
-  // composite type traits [4.5.2].
+  template<typename>
+    struct __is_nullptr_t_helper
+    : public false_type { };
+  template< > struct __is_nullptr_t_helper<std::nullptr_t> : public integral_constant<bool, true> { };
+
+  // __is_nullptr_t (extension).
+template<typename _Tp>
+    struct __is_nullptr_t
+    : public integral_constant<bool, (__is_nullptr_t_helper<typename
+				      remove_cv<_Tp>::type>::value)>
+    { };
+
+  // composite type traits.
 template<typename _Tp>
     struct is_arithmetic
     : public integral_constant<bool, (is_integral<_Tp>::value
@@ -3838,7 +3801,8 @@ template<typename _Tp>
     : public integral_constant<bool, (is_arithmetic<_Tp>::value
 				      || is_enum<_Tp>::value
 				      || is_pointer<_Tp>::value
-				      || is_member_pointer<_Tp>::value)>
+				      || is_member_pointer<_Tp>::value
+				      || __is_nullptr_t<_Tp>::value)>
     { };
 
   /// is_compound
@@ -3858,7 +3822,7 @@ template<typename _Tp>
 				      typename remove_cv<_Tp>::type>::value)>
     { };
 
-  // type properties [4.5.3].
+  // type properties.
 template<typename>
     struct is_const
     : public false_type { };
@@ -3990,7 +3954,7 @@ template<typename _Tp>
       add_const<typename add_volatile<_Tp>::type>::type     type;
     };
 
-  // array modifications [4.7.3].
+  // array modifications.
 template<typename _Tp>
     struct remove_extent
     { typedef _Tp     type; };
@@ -4016,7 +3980,7 @@ template<typename _Tp>
     struct remove_all_extents<_Tp[]>
     { typedef typename remove_all_extents<_Tp>::type     type; };
 
-  // pointer modifications [4.7.4].
+  // pointer modifications.
 template<typename _Tp, typename>
     struct __remove_pointer_helper
     { typedef _Tp     type; };
@@ -4038,16 +4002,6 @@ template<typename _Tp>
 template<typename _Tp>
     struct add_pointer
     { typedef typename remove_reference<_Tp>::type*     type; };
-
-
-  // @} group metaprogramming
-}
-
-namespace std
-{
-  /** @addtogroup metaprogramming
-   * @{
-   */
 
   // Primary classification traits.
 template<typename>
@@ -4135,7 +4089,7 @@ template<typename _Tp,
 
   template<typename _Tp>
     struct __is_signed_helper<_Tp, true, false>
-    : public integral_constant<bool, _Tp(-1) < _Tp(0)>
+    : public integral_constant<bool, static_cast<bool>(_Tp(-1) < _Tp(0))>
     { };
 
   /// is_signed
@@ -4153,8 +4107,88 @@ template<typename _Tp>
 
   // Member introspection.
 template<typename _Tp>
+    struct is_trivial
+    : public integral_constant<bool, __is_trivial(_Tp)>
+    { };
+
+  /// is_standard_layout
+template<typename _Tp>
+    struct is_standard_layout
+    : public integral_constant<bool, __is_standard_layout(_Tp)>
+    { };
+
+  /// is_pod
+template<typename _Tp>
     struct is_pod
     : public integral_constant<bool, __is_pod(_Tp)>
+    { };
+
+  /// is_literal_type
+template<typename _Tp>
+    struct is_literal_type
+    : public integral_constant<bool, __is_literal_type(_Tp)>
+    { };
+
+  template<typename _Tp>
+    typename add_rvalue_reference<_Tp>::type declval() noexcept;
+
+  template<typename _Tp, typename... _Args>
+    class __is_constructible_helper
+    : public __sfinae_types
+    {
+      template<typename _Tp1, typename... _Args1>
+        static decltype(_Tp1(declval<_Args1>()...), __one()) __test(int);
+
+      template<typename, typename...>
+        static __two __test(...);
+
+    public:
+      static const bool __value = sizeof(__test<_Tp, _Args...>(0)) == 1;
+    };
+
+  template<typename _Tp, typename _Arg>
+    class __is_constructible_helper<_Tp, _Arg>
+    : public __sfinae_types
+    {
+      template<typename _Tp1, typename _Arg1>
+        static decltype(static_cast<_Tp1>(declval<_Arg1>()), __one())
+	__test(int);
+
+      template<typename, typename>
+        static __two __test(...);
+
+    public:
+      static const bool __value = sizeof(__test<_Tp, _Arg>(0)) == 1;
+    };
+
+  /// is_constructible
+template<typename _Tp, typename... _Args>
+    struct is_constructible
+    : public integral_constant<bool,
+			       __is_constructible_helper<_Tp,
+							 _Args...>::__value>
+    { };
+
+  template<bool, typename _Tp, typename... _Args>
+    struct __is_nt_constructible_helper
+    { static const bool __value = false; };
+
+  template<typename _Tp, typename... _Args>
+    struct __is_nt_constructible_helper<true, _Tp, _Args...>
+    { static const bool __value = noexcept(_Tp(declval<_Args>()...)); };
+
+  template<typename _Tp, typename _Arg>
+    struct __is_nt_constructible_helper<true, _Tp, _Arg>
+    {
+      static const bool __value = noexcept(static_cast<_Tp>(declval<_Arg>()));
+    };
+
+  /// is_nothrow_constructible
+template<typename _Tp, typename... _Args>
+    struct is_nothrow_constructible
+    : public integral_constant<bool,
+	  __is_nt_constructible_helper<is_constructible<_Tp, _Args...>::value,
+				       _Tp, _Args...>::__value>
     { };
 
   /// has_trivial_default_constructor
@@ -4169,9 +4203,9 @@ template<typename _Tp>
     : public integral_constant<bool, __has_trivial_copy(_Tp)>
     { };
 
-  /// has_trivial_assign
+  /// has_trivial_copy_assign
 template<typename _Tp>
-    struct has_trivial_assign
+    struct has_trivial_copy_assign
     : public integral_constant<bool, __has_trivial_assign(_Tp)>
     { };
 
@@ -4193,68 +4227,53 @@ template<typename _Tp>
     : public integral_constant<bool, __has_nothrow_copy(_Tp)>
     { };
 
-  /// has_nothrow_assign
+  /// has_nothrow_copy_assign
 template<typename _Tp>
-    struct has_nothrow_assign
+    struct has_nothrow_copy_assign
     : public integral_constant<bool, __has_nothrow_assign(_Tp)>
     { };
 
-  /// is_base_of
+  // Relationships between types.
 template<typename _Base, typename _Derived>
     struct is_base_of
     : public integral_constant<bool, __is_base_of(_Base, _Derived)>
     { };
 
-  // Relationships between types.
-template<typename _From, typename _To>
-    struct __is_convertible_simple
-    : public __sfinae_types
-    {
-    private:
-      static __one __test(_To);
-      static __two __test(...);
-      static _From __makeFrom();
-    
-    public:
-      static const bool __value = sizeof(__test(__makeFrom())) == 1;
-    };
-
-  template<typename _Tp>
-    struct __is_int_or_cref
-    {
-      typedef typename remove_reference<_Tp>::type __rr_Tp;
-      static const bool __value = (is_integral<_Tp>::value
-				   || (is_integral<__rr_Tp>::value
-				       && is_const<__rr_Tp>::value
-				       && !is_volatile<__rr_Tp>::value));
-    };
-
   template<typename _From, typename _To,
-	   bool = (is_void<_From>::value || is_void<_To>::value
-		   || is_function<_To>::value || is_array<_To>::value
-		   // This special case is here only to avoid warnings.
-|| (is_floating_point<typename
-		       remove_reference<_From>::type>::value
-		       && __is_int_or_cref<_To>::__value))>
+	   bool = (is_void<_From>::value || is_function<_To>::value
+		   || is_array<_To>::value)>
     struct __is_convertible_helper
-    {
-      // "An imaginary lvalue of type From...".
-static const bool __value = (__is_convertible_simple<typename
-				   add_lvalue_reference<_From>::type,
-				   _To>::__value);
-    };
+    { static const bool __value = is_void<_To>::value; };
 
   template<typename _From, typename _To>
-    struct __is_convertible_helper<_From, _To, true>
-    { static const bool __value = (is_void<_To>::value
-				   || (__is_int_or_cref<_To>::__value
-				       && !is_void<_From>::value)); };
+    class __is_convertible_helper<_From, _To, false>
+    : public __sfinae_types
+    {
+      template<typename _To1>
+        static void __test_aux(_To1);
 
-  // XXX FIXME
+      template<typename _From1, typename _To1>
+        static decltype(__test_aux<_To1>(std::declval<_From1>()), __one())
+	__test(int);
+
+      template<typename, typename>
+        static __two __test(...);
+
+    public:
+      static const bool __value = sizeof(__test<_From, _To>(0)) == 1;
+    };
+
+  /// is_convertible
 template<typename _From, typename _To>
     struct is_convertible
     : public integral_constant<bool,
 			       __is_convertible_helper<_From, _To>::__value>
+    { };
+
+  /// is_explicitly_convertible
+template<typename _From, typename _To>
+    struct is_explicitly_convertible
+    : public is_constructible<_To, _From>
     { };
 
   template<std::size_t _Len>
@@ -4332,13 +4351,41 @@ template<typename _Up>
 
   /// decay
 template<typename _Tp> 
-    struct decay 
+    class decay 
     { 
-    private:
       typedef typename remove_reference<_Tp>::type __remove_type;
 
     public:
       typedef typename __decay_selector<__remove_type>::__type type;
+    };
+
+  template<typename _Tp>
+    class reference_wrapper;
+
+  // Helper which adds a reference to a type when given a reference_wrapper
+template<typename _Tp>
+    struct __strip_reference_wrapper
+    {
+      typedef _Tp __type;
+    };
+
+  template<typename _Tp>
+    struct __strip_reference_wrapper<reference_wrapper<_Tp> >
+    {
+      typedef _Tp& __type;
+    };
+
+  template<typename _Tp>
+    struct __strip_reference_wrapper<const reference_wrapper<_Tp> >
+    {
+      typedef _Tp& __type;
+    };
+
+  template<typename _Tp>
+    struct __decay_and_strip
+    {
+      typedef typename __strip_reference_wrapper<
+	typename decay<_Tp>::type>::__type __type;
     };
 
 
@@ -4365,9 +4412,8 @@ template<typename _Unqualified, bool _IsConst, bool _IsVol>
   template<typename _Qualified, typename _Unqualified,
 	   bool _IsConst = is_const<_Qualified>::value,
 	   bool _IsVol = is_volatile<_Qualified>::value>
-    struct __match_cv_qualifiers
+    class __match_cv_qualifiers
     {
-    private:
       typedef __cv_selector<_Unqualified, _IsConst, _IsVol> __match;
 
     public:
@@ -4409,12 +4455,11 @@ template<typename _Tp>
 template<typename _Tp, 
 	   bool _IsInt = is_integral<_Tp>::value,
 	   bool _IsEnum = is_enum<_Tp>::value>
-    struct __make_unsigned_selector;
-  
+    class __make_unsigned_selector;
+
   template<typename _Tp>
-    struct __make_unsigned_selector<_Tp, true, false>
+    class __make_unsigned_selector<_Tp, true, false>
     {
-    private:
       typedef __make_unsigned<typename remove_cv<_Tp>::type> __unsignedt;
       typedef typename __unsignedt::__type __unsigned_type;
       typedef __match_cv_qualifiers<_Tp, __unsigned_type> __cv_unsigned;
@@ -4424,9 +4469,8 @@ template<typename _Tp,
     };
 
   template<typename _Tp>
-    struct __make_unsigned_selector<_Tp, false, true>
+    class __make_unsigned_selector<_Tp, false, true>
     {
-    private:
       // With -fshort-enums, an enum may be as small as a char.
 typedef unsigned char __smallest;
       static const bool __b0 = sizeof(_Tp) <= sizeof(__smallest);
@@ -4485,12 +4529,11 @@ template<typename _Tp>
 template<typename _Tp, 
 	   bool _IsInt = is_integral<_Tp>::value,
 	   bool _IsEnum = is_enum<_Tp>::value>
-    struct __make_signed_selector;
-  
+    class __make_signed_selector;
+
   template<typename _Tp>
-    struct __make_signed_selector<_Tp, true, false>
+    class __make_signed_selector<_Tp, true, false>
     {
-    private:
       typedef __make_signed<typename remove_cv<_Tp>::type> __signedt;
       typedef typename __signedt::__type __signed_type;
       typedef __match_cv_qualifiers<_Tp, __signed_type> __cv_signed;
@@ -4500,9 +4543,8 @@ template<typename _Tp,
     };
 
   template<typename _Tp>
-    struct __make_signed_selector<_Tp, false, true>
+    class __make_signed_selector<_Tp, false, true>
     {
-    private:
       // With -fshort-enums, an enum may be as small as a char.
 typedef signed char __smallest;
       static const bool __b0 = sizeof(_Tp) <= sizeof(__smallest);
@@ -4532,26 +4574,11 @@ template<typename... _Tp>
 
   template<typename _Tp>
     struct common_type<_Tp>
-    {
-      static_assert(sizeof(_Tp) > 0, "must be complete type");
-      typedef _Tp type;
-    };
+    { typedef _Tp type; };
 
   template<typename _Tp, typename _Up>
-    class common_type<_Tp, _Up>
-    {
-      static_assert(sizeof(_Tp) > 0, "must be complete type");
-      static_assert(sizeof(_Up) > 0, "must be complete type");
-
-      static _Tp&& __t();
-      static _Up&& __u();
-
-      // HACK: Prevents optimization of ?: in the decltype
-static bool __true_or_false();
-
-    public:
-      typedef decltype(__true_or_false() ? __t() : __u()) type;
-    };
+    struct common_type<_Tp, _Up>
+    { typedef decltype(true ? declval<_Tp>() : declval<_Up>()) type; };
 
   template<typename _Tp, typename _Up, typename... _Vp>
     struct common_type<_Tp, _Up, _Vp...>
@@ -4560,40 +4587,170 @@ static bool __true_or_false();
         common_type<typename common_type<_Tp, _Up>::type, _Vp...>::type type;
     };
 
-  // @} group metaprogramming
-}
-
-
-
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
-
-  // 20.2.2, forward/move
+  /// declval
 template<typename _Tp>
-    struct identity
+    struct __declval_protector
     {
-      typedef _Tp type;
+      static const bool __stop = false;
+      static typename add_rvalue_reference<_Tp>::type __delegate();
     };
 
   template<typename _Tp>
-    inline _Tp&&
-    forward(typename std::identity<_Tp>::type&& __t)
-    { return __t; }
+    inline typename add_rvalue_reference<_Tp>::type
+    declval() noexcept
+    {
+      static_assert(__declval_protector<_Tp>::__stop,
+		    "declval() must not be used!");
+      return __declval_protector<_Tp>::__delegate();
+    }
 
+  /// result_of
+template<typename _Signature>
+    class result_of;
+
+  template<typename _MemPtr, typename _Arg>
+    struct _Result_of_memobj;
+
+  template<typename _Res, typename _Class, typename _Arg>
+    struct _Result_of_memobj<_Res _Class::*, _Arg>
+    {
+    private:
+      typedef _Res _Class::* _Func;
+
+      template<typename _Tp>
+	static _Tp _S_get(const _Class&);
+      template<typename _Tp>
+	static decltype(*std::declval<_Tp>()) _S_get(...);
+        
+    public:
+      typedef
+        decltype(_S_get<_Arg>(std::declval<_Arg>()).*std::declval<_Func>())
+        __type;
+    };
+
+  template<typename _MemPtr, typename _Arg, typename... _ArgTypes>
+    struct _Result_of_memfun;
+
+  template<typename _Res, typename _Class, typename _Arg, typename... _Args>
+    struct _Result_of_memfun<_Res _Class::*, _Arg, _Args...>
+    {
+    private:
+      typedef _Res _Class::* _Func;
+
+      template<typename _Tp>
+	static _Tp _S_get(const _Class&);
+      template<typename _Tp>
+	static decltype(*std::declval<_Tp>()) _S_get(...);
+        
+    public:
+      typedef
+        decltype((_S_get<_Arg>(std::declval<_Arg>()).*std::declval<_Func>())
+            (std::declval<_Args>()...) )
+        __type;
+    };
+
+  template<bool, bool, typename _Functor, typename... _ArgTypes>
+    struct _Result_of_impl;
+
+  template<typename _Functor, typename... _ArgTypes>
+    struct _Result_of_impl<false, false, _Functor, _ArgTypes...>
+    {
+      typedef
+        decltype( std::declval<_Functor>()(std::declval<_ArgTypes>()...) )
+        __type;
+    };
+
+  template<typename _MemPtr, typename _Arg>
+    struct _Result_of_impl<true, false, _MemPtr, _Arg>
+    : _Result_of_memobj<typename remove_reference<_MemPtr>::type, _Arg>
+    {
+      typedef typename _Result_of_memobj<
+	typename remove_reference<_MemPtr>::type, _Arg>::__type
+	__type;
+    };
+
+  template<typename _MemPtr, typename _Arg, typename... _ArgTypes>
+    struct _Result_of_impl<false, true, _MemPtr, _Arg, _ArgTypes...>
+    : _Result_of_memfun<typename remove_reference<_MemPtr>::type, _Arg,
+                        _ArgTypes...>
+    {
+      typedef typename _Result_of_memfun<
+	typename remove_reference<_MemPtr>::type, _Arg, _ArgTypes...>::__type
+	__type;
+    };
+
+  template<typename _Functor, typename... _ArgTypes>
+    struct result_of<_Functor(_ArgTypes...)>
+    : _Result_of_impl<is_member_object_pointer<
+                        typename remove_reference<_Functor>::type >::value,
+                      is_member_function_pointer<
+			typename remove_reference<_Functor>::type >::value,
+		      _Functor, _ArgTypes...>
+    {
+      typedef typename _Result_of_impl<
+	is_member_object_pointer<
+	  typename remove_reference<_Functor>::type >::value,
+        is_member_function_pointer<
+	  typename remove_reference<_Functor>::type >::value,
+       	_Functor, _ArgTypes...>::__type
+	type;
+    };
+
+  /**
+   *  Use SFINAE to determine if the type _Tp has a publicly-accessible
+   *  member type _NTYPE.
+   */
+
+
+  // @} group metaprogramming
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
+  
+  /// forward (as per N3143)
+template<typename _Tp>
+    inline _Tp&&
+    forward(typename std::remove_reference<_Tp>::type& __t) 
+    { return static_cast<_Tp&&>(__t); }
+
+  template<typename _Tp>
+    inline _Tp&&
+    forward(typename std::remove_reference<_Tp>::type&& __t) 
+    {
+      static_assert(!std::is_lvalue_reference<_Tp>::value, "template argument"
+		    " substituting _Tp is an lvalue reference type");
+      return static_cast<_Tp&&>(__t);
+    }
+
+  /**
+   *  @brief Move a value.
+   *  @ingroup mutating_algorithms
+   *  @param  __t  A thing of arbitrary type.
+   *  @return Same, moved.
+  */
   template<typename _Tp>
     inline typename std::remove_reference<_Tp>::type&&
     move(_Tp&& __t)
-    { return __t; }
+    { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
 
-}
+  /// declval, from type_traits.
+template<typename _Tp>
+    inline _Tp*
+    addressof(_Tp& __r)
+    { return std::__addressof(__r); }
 
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   /**
    *  @brief Swaps two values.
-   *  @param  a  A thing of arbitrary type.
-   *  @param  b  Another thing of arbitrary type.
+   *  @ingroup mutating_algorithms
+   *  @param  __a  A thing of arbitrary type.
+   *  @param  __b  Another thing of arbitrary type.
    *  @return   Nothing.
   */
   template<typename _Tp>
@@ -4615,64 +4772,103 @@ template<typename _Tp, size_t _Nm>
 	swap(__a[__n], __b[__n]);
     }
 
-}
 
-                       // std::swap
-namespace std __attribute__ ((__visibility__ ("default"))) {
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-  /// pair holds two objects of arbitrary type.
+
+  /// piecewise_construct_t
+struct piecewise_construct_t { };
+
+  /// piecewise_construct
+constexpr piecewise_construct_t piecewise_construct = piecewise_construct_t();
+
+  // Forward declarations.
+template<typename...>
+    class tuple;
+
+  template<int...>
+    struct _Index_tuple;
+
+  /// Struct holding two objects of arbitrary type.
 template<class _T1, class _T2>
     struct pair
     {
-      typedef _T1 first_type;    ///<  @c first_type is the first bound type
-typedef _T2 second_type;   ///<  @c second_type is the second bound type
-_T1 first;                 ///< @c first is a copy of the first object
-_T2 second;                ///< @c second is a copy of the second object
-pair()
+      typedef _T1 first_type;    /// @c first_type is the first bound type
+typedef _T2 second_type;   /// @c second_type is the second bound type
+_T1 first;                 /// @c first is a copy of the first object
+_T2 second;                /// @c second is a copy of the second object
+constexpr pair()
       : first(), second() { }
 
       /** Two objects may be passed to a @c pair constructor to be copied.  */
-      pair(const _T1& __a, const _T2& __b)
+      constexpr pair(const _T1& __a, const _T2& __b)
       : first(__a), second(__b) { }
-
-      template<class _U1, class _U2>
-        pair(_U1&& __x, _U2&& __y)
-	: first(std::forward<_U1>(__x)),
-	  second(std::forward<_U2>(__y)) { }
-
-      pair(pair&& __p)
-      : first(std::move(__p.first)),
-	second(std::move(__p.second)) { }
 
       /** There is also a templated copy ctor for the @c pair class itself.  */
       template<class _U1, class _U2>
-        pair(const pair<_U1, _U2>& __p)
-	: first(__p.first),
-	  second(__p.second) { }
+	constexpr pair(const pair<_U1, _U2>& __p)
+	: first(__p.first), second(__p.second) { }
+
+      constexpr pair(const pair&) = default;
+
+      // Implicit.
+template<class _U1, class = typename
+	       std::enable_if<std::is_convertible<_U1, _T1>::value>::type>
+	pair(_U1&& __x, const _T2& __y)
+	: first(std::forward<_U1>(__x)), second(__y) { }
+
+      template<class _U2, class = typename
+	       std::enable_if<std::is_convertible<_U2, _T2>::value>::type>
+	pair(const _T1& __x, _U2&& __y)
+	: first(__x), second(std::forward<_U2>(__y)) { }
+
+      template<class _U1, class _U2, class = typename
+	       std::enable_if<std::is_convertible<_U1, _T1>::value
+			      && std::is_convertible<_U2, _T2>::value>::type>
+	pair(_U1&& __x, _U2&& __y)
+	: first(std::forward<_U1>(__x)), second(std::forward<_U2>(__y)) { }
 
       template<class _U1, class _U2>
-        pair(pair<_U1, _U2>&& __p)
-	: first(std::move(__p.first)),
-	  second(std::move(__p.second)) { }
+	pair(pair<_U1, _U2>&& __p)
+	: first(std::forward<_U1>(__p.first)),
+	  second(std::forward<_U2>(__p.second)) { }
 
-      // http://gcc.gnu.org/ml/libstdc++/2007-08/msg00052.html
-template<class _U1, class _Arg0, class... _Args>
-        pair(_U1&& __x, _Arg0&& __arg0, _Args&&... __args)
-	: first(std::forward<_U1>(__x)),
-	  second(std::forward<_Arg0>(__arg0),
-		 std::forward<_Args>(__args)...) { }
+      template<class... _Args1, class... _Args2>
+	pair(piecewise_construct_t,
+	     tuple<_Args1...> __first, tuple<_Args2...> __second)
+	: first(__cons<first_type>(std::move(__first))),
+	  second(__cons<second_type>(std::move(__second))) { }
+
+      pair&
+      operator=(const pair& __p)
+      {
+	first = __p.first;
+	second = __p.second;
+	return *this;
+      }
 
       pair&
       operator=(pair&& __p)
-      { 
+      {
 	first = std::move(__p.first);
 	second = std::move(__p.second);
 	return *this;
       }
 
       template<class _U1, class _U2>
-        pair&
-        operator=(pair<_U1, _U2>&& __p)
+	pair&
+	operator=(const pair<_U1, _U2>& __p)
+	{
+	  first = __p.first;
+	  second = __p.second;
+	  return *this;
+	}
+
+      template<class _U1, class _U2>
+	pair&
+	operator=(pair<_U1, _U2>&& __p)
 	{
 	  first = std::move(__p.first);
 	  second = std::move(__p.second);
@@ -4680,48 +4876,57 @@ template<class _U1, class _Arg0, class... _Args>
 	}
 
       void
-      swap(pair&& __p)
+      swap(pair& __p)
       {
 	using std::swap;
 	swap(first, __p.first);
-	swap(second, __p.second);	
+	swap(second, __p.second);
       }
+
+    private:
+      template<typename _Tp, typename... _Args>
+	static _Tp
+	__cons(tuple<_Args...>&&);
+
+      template<typename _Tp, typename... _Args, int... _Indexes>
+	static _Tp
+	__do_cons(tuple<_Args...>&&, const _Index_tuple<_Indexes...>&);
     };
 
   /// Two pairs of the same type are equal iff their members are equal.
 template<class _T1, class _T2>
-    inline bool
+    inline constexpr bool
     operator==(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return __x.first == __y.first && __x.second == __y.second; }
 
   /// <http://gcc.gnu.org/onlinedocs/libstdc++/manual/utilities.html>
 template<class _T1, class _T2>
-    inline bool
+    inline constexpr bool
     operator<(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return __x.first < __y.first
 	     || (!(__y.first < __x.first) && __x.second < __y.second); }
 
   /// Uses @c operator== to find the result.
 template<class _T1, class _T2>
-    inline bool
+    inline constexpr bool
     operator!=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return !(__x == __y); }
 
   /// Uses @c operator< to find the result.
 template<class _T1, class _T2>
-    inline bool
+    inline constexpr bool
     operator>(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return __y < __x; }
 
   /// Uses @c operator< to find the result.
 template<class _T1, class _T2>
-    inline bool
+    inline constexpr bool
     operator<=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return !(__y < __x); }
 
   /// Uses @c operator< to find the result.
 template<class _T1, class _T2>
-    inline bool
+    inline constexpr bool
     operator>=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
     { return !(__x < __y); }
 
@@ -4729,16 +4934,6 @@ template<class _T1, class _T2>
 template<class _T1, class _T2>
     inline void
     swap(pair<_T1, _T2>& __x, pair<_T1, _T2>& __y)
-    { __x.swap(__y); }
-
-  template<class _T1, class _T2>
-    inline void
-    swap(pair<_T1, _T2>&& __x, pair<_T1, _T2>& __y)
-    { __x.swap(__y); }
-
-  template<class _T1, class _T2>
-    inline void
-    swap(pair<_T1, _T2>& __x, pair<_T1, _T2>&& __y)
     { __x.swap(__y); }
 
   /**
@@ -4752,114 +4947,47 @@ template<class _T1, class _T2>
    *  the LWG by default.
    */
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
-template<typename _Tp>
-    class reference_wrapper;
-
-  // Helper which adds a reference to a type when given a reference_wrapper
-template<typename _Tp>
-    struct __strip_reference_wrapper
-    {
-      typedef _Tp __type;
-    };
-
-  template<typename _Tp>
-    struct __strip_reference_wrapper<reference_wrapper<_Tp> >
-    {
-      typedef _Tp& __type;
-    };
-
-  template<typename _Tp>
-    struct __strip_reference_wrapper<const reference_wrapper<_Tp> >
-    {
-      typedef _Tp& __type;
-    };
-
-  template<typename _Tp>
-    struct __decay_and_strip
-    {
-      typedef typename __strip_reference_wrapper<
-	typename decay<_Tp>::type>::__type __type;
-    };
-
-  // NB: DR 706.
 template<class _T1, class _T2>
     inline pair<typename __decay_and_strip<_T1>::__type,
 		typename __decay_and_strip<_T2>::__type>
     make_pair(_T1&& __x, _T2&& __y)
     {
-      return pair<typename __decay_and_strip<_T1>::__type,
-	          typename __decay_and_strip<_T2>::__type>
-	(std::forward<_T1>(__x), std::forward<_T2>(__y));
+      typedef typename __decay_and_strip<_T1>::__type __ds_type1;
+      typedef typename __decay_and_strip<_T2>::__type __ds_type2;
+      typedef pair<__ds_type1, __ds_type2> 	      __pair_type;
+      return __pair_type(std::forward<_T1>(__x), std::forward<_T2>(__y));
     }
 
-}
 
-// Types used in iterator implementation -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
 
 
-/* stddef.h standard header */
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   /**
    *  @defgroup iterators Iterators
-   *  These are empty types, used to distinguish different iterators.  The
-   *  distinction is not made by what they contain, but simply by what they
-   *  are.  Different underlying algorithms can then be used based on the
-   *  different operations supported by different iterator types.
+   *  Abstractions for uniform iterating through various underlying types.
   */
   //@{ 
 struct input_iterator_tag { };
+
   ///  Marking output iterators.
 struct output_iterator_tag { };
+
   /// Forward iterators support a superset of input iterator operations.
 struct forward_iterator_tag : public input_iterator_tag { };
+
   /// Bidirectional iterators support a superset of forward iterator
 struct bidirectional_iterator_tag : public forward_iterator_tag { };
-  /// Random-access iterators support a superset of bidirectional iterator
+
+  /// Random-access iterators support a superset of bidirectional
 struct random_access_iterator_tag : public bidirectional_iterator_tag { };
-
-
-  /**
-   *  @brief  Common %iterator class.
-   *
-   *  This class does nothing but define nested typedefs.  %Iterator classes
-   *  can inherit from this class to save some work.  The typedefs are then
-   *  used in specializations and overloading.
-   *
-   *  In particular, there are no default implementations of requirements
-   *  such as @c operator++ and the like.  (How could there be?)
-  */
-  template<typename _Category, typename _Tp, typename _Distance = ptrdiff_t,
+  //@}
+template<typename _Category, typename _Tp, typename _Distance = ptrdiff_t,
            typename _Pointer = _Tp*, typename _Reference = _Tp&>
     struct iterator
     {
@@ -4876,13 +5004,22 @@ typedef _Reference reference;
     };
 
   /**
+   *  @brief  Traits class for iterators.
+   *
    *  This class does nothing but define nested typedefs.  The general
-   *  version simply "forwards" the nested typedefs from the Iterator
+   *  version simply @a forwards the nested typedefs from the Iterator
    *  argument.  Specialized versions for pointers and pointers-to-const
    *  provide tighter, more correct semantics.
   */
+
+template<typename _Tp> class __has_iterator_category_helper : __sfinae_types { template<typename _Up> struct _Wrap_type { }; template<typename _Up> static __one __test(_Wrap_type<typename _Up::iterator_category> *); template<typename _Up> static __two __test(...); public: static const bool value = sizeof(__test<_Tp>(0)) == 1; }; template<typename _Tp> struct __has_iterator_category : integral_constant<bool, __has_iterator_category_helper <typename remove_cv<_Tp> ::type> ::value> { };
+
+  template<typename _Iterator,
+	   bool = __has_iterator_category<_Iterator>::value>
+    struct __iterator_traits { };
+
   template<typename _Iterator>
-    struct iterator_traits
+    struct __iterator_traits<_Iterator, true>
     {
       typedef typename _Iterator::iterator_category iterator_category;
       typedef typename _Iterator::value_type        value_type;
@@ -4891,7 +5028,12 @@ typedef _Reference reference;
       typedef typename _Iterator::reference         reference;
     };
 
-  template<typename _Tp>
+  template<typename _Iterator>
+    struct iterator_traits
+    : public __iterator_traits<_Iterator> { };
+
+  /// Partial specialization for pointer types.
+template<typename _Tp>
     struct iterator_traits<_Tp*>
     {
       typedef random_access_iterator_tag iterator_category;
@@ -4901,7 +5043,8 @@ typedef _Reference reference;
       typedef _Tp&                        reference;
     };
 
-  template<typename _Tp>
+  /// Partial specialization for const pointer types.
+template<typename _Tp>
     struct iterator_traits<const _Tp*>
     {
       typedef random_access_iterator_tag iterator_category;
@@ -4921,13 +5064,30 @@ typedef _Reference reference;
     { return typename iterator_traits<_Iter>::iterator_category(); }
 
   //@}
-}
+template<typename _Iterator, bool _HasBase>
+    struct _Iter_base
+    {
+      typedef _Iterator iterator_type;
+      static iterator_type _S_base(_Iterator __it)
+      { return __it; }
+    };
+
+  template<typename _Iterator>
+    struct _Iter_base<_Iterator, true>
+    {
+      typedef typename _Iterator::iterator_type iterator_type;
+      static iterator_type _S_base(_Iterator __it)
+      { return __it.base(); }
+    };
 
 
-// Functions used by iterators -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   template<typename _InputIterator>
     inline typename iterator_traits<_InputIterator>::difference_type
@@ -5009,7 +5169,7 @@ __i += __n;
   /**
    *  @brief A generalization of pointer arithmetic.
    *  @param  i  An input iterator.
-   *  @param  n  The "delta" by which to change @p i.
+   *  @param  n  The @a delta by which to change @p i.
    *  @return  Nothing.
    *
    *  This increments @p i by @p n.  For bidirectional and random access
@@ -5027,17 +5187,18 @@ typename iterator_traits<_InputIterator>::difference_type __d = __n;
       std::__advance(__i, __d, std::__iterator_category(__i));
     }
 
-  template<typename _InputIterator>
-    inline _InputIterator 
-    next(_InputIterator __x, typename
-	 iterator_traits<_InputIterator>::difference_type __n = 1)
+
+  template<typename _ForwardIterator>
+    inline _ForwardIterator
+    next(_ForwardIterator __x, typename
+	 iterator_traits<_ForwardIterator>::difference_type __n = 1)
     {
       std::advance(__x, __n);
       return __x;
     }
 
   template<typename _BidirectionalIterator>
-    inline _BidirectionalIterator 
+    inline _BidirectionalIterator
     prev(_BidirectionalIterator __x, typename
 	 iterator_traits<_BidirectionalIterator>::difference_type __n = 1) 
     {
@@ -5045,10 +5206,17 @@ typename iterator_traits<_InputIterator>::difference_type __d = __n;
       return __x;
     }
 
-}
 
-// Iterators -*- C++ -*-
-namespace std __attribute__ ((__visibility__ ("default"))) {
+
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
+
+  /**
+   * @addtogroup iterators
+   * @{
+   */
 
   // 24.4.1 Reverse iterators
 template<typename _Iterator>
@@ -5062,14 +5230,14 @@ template<typename _Iterator>
     protected:
       _Iterator current;
 
-    public:
-      typedef _Iterator					       iterator_type;
-      typedef typename iterator_traits<_Iterator>::difference_type
-							       difference_type;
-      typedef typename iterator_traits<_Iterator>::reference   reference;
-      typedef typename iterator_traits<_Iterator>::pointer     pointer;
+      typedef iterator_traits<_Iterator>		__traits_type;
 
     public:
+      typedef _Iterator					iterator_type;
+      typedef typename __traits_type::difference_type	difference_type;
+      typedef typename __traits_type::pointer		pointer;
+      typedef typename __traits_type::reference		reference;
+
       /**
        *  The default constructor default-initializes member @p current.
        *  If it is a pointer, that means it is zero-initialized.
@@ -5342,13 +5510,13 @@ explicit
        *                 reference-to-const T for container<T>.
        *  @return  This %iterator, for chained operations.
        *
-       *  This kind of %iterator doesn't really have a "position" in the
+       *  This kind of %iterator doesn't really have a @a position in the
        *  container (you can think of the position as being permanently at
        *  the end, if you like).  Assigning a value to the %iterator will
        *  always append the value to the end of the container.
       */
       back_insert_iterator&
-      operator=(typename _Container::const_reference __value)
+      operator=(const typename _Container::value_type& __value)
       {
 	container->push_back(__value);
 	return *this;
@@ -5366,12 +5534,12 @@ back_insert_iterator&
       operator*()
       { return *this; }
 
-      /// Simply returns *this.  (This %iterator does not "move".)
+      /// Simply returns *this.  (This %iterator does not @a move.)
 back_insert_iterator&
       operator++()
       { return *this; }
 
-      /// Simply returns *this.  (This %iterator does not "move".)
+      /// Simply returns *this.  (This %iterator does not @a move.)
 back_insert_iterator
       operator++(int)
       { return *this; }
@@ -5423,13 +5591,13 @@ explicit front_insert_iterator(_Container& __x) : container(&__x) { }
        *                 reference-to-const T for container<T>.
        *  @return  This %iterator, for chained operations.
        *
-       *  This kind of %iterator doesn't really have a "position" in the
+       *  This kind of %iterator doesn't really have a @a position in the
        *  container (you can think of the position as being permanently at
        *  the front, if you like).  Assigning a value to the %iterator will
        *  always prepend the value to the front of the container.
       */
       front_insert_iterator&
-      operator=(typename _Container::const_reference __value)
+      operator=(const typename _Container::value_type& __value)
       {
 	container->push_front(__value);
 	return *this;
@@ -5447,12 +5615,12 @@ front_insert_iterator&
       operator*()
       { return *this; }
 
-      /// Simply returns *this.  (This %iterator does not "move".)
+      /// Simply returns *this.  (This %iterator does not @a move.)
 front_insert_iterator&
       operator++()
       { return *this; }
 
-      /// Simply returns *this.  (This %iterator does not "move".)
+      /// Simply returns *this.  (This %iterator does not @a move.)
 front_insert_iterator
       operator++(int)
       { return *this; }
@@ -5531,7 +5699,7 @@ typedef _Container          container_type;
        *  @endcode
       */
       insert_iterator&
-      operator=(typename _Container::const_reference __value)
+      operator=(const typename _Container::value_type& __value)
       {
 	iter = container->insert(iter, __value);
 	++iter;
@@ -5551,12 +5719,12 @@ insert_iterator&
       operator*()
       { return *this; }
 
-      /// Simply returns *this.  (This %iterator does not "move".)
+      /// Simply returns *this.  (This %iterator does not @a move.)
 insert_iterator&
       operator++()
       { return *this; }
 
-      /// Simply returns *this.  (This %iterator does not "move".)
+      /// Simply returns *this.  (This %iterator does not @a move.)
 insert_iterator&
       operator++(int)
       { return *this; }
@@ -5581,11 +5749,13 @@ insert_iterator&
 					 typename _Container::iterator(__i));
     }
 
-}
+  // @} group iterators
+} // namespace
+namespace __gnu_cxx __attribute__ ((__visibility__ ("default")))
+{
 
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
-  // This iterator adapter is 'normal' in the sense that it does not
+  // This iterator adapter is @a normal in the sense that it does not
 using std::iterator_traits;
   using std::iterator;
   template<typename _Iterator, typename _Container>
@@ -5594,17 +5764,17 @@ using std::iterator_traits;
     protected:
       _Iterator _M_current;
 
-    public:
-      typedef _Iterator					     iterator_type;
-      typedef typename iterator_traits<_Iterator>::iterator_category
-                                                             iterator_category;
-      typedef typename iterator_traits<_Iterator>::value_type  value_type;
-      typedef typename iterator_traits<_Iterator>::difference_type
-                                                             difference_type;
-      typedef typename iterator_traits<_Iterator>::reference reference;
-      typedef typename iterator_traits<_Iterator>::pointer   pointer;
+      typedef iterator_traits<_Iterator>		__traits_type;
 
-      __normal_iterator() : _M_current(_Iterator()) { }
+    public:
+      typedef _Iterator					iterator_type;
+      typedef typename __traits_type::iterator_category iterator_category;
+      typedef typename __traits_type::value_type  	value_type;
+      typedef typename __traits_type::difference_type 	difference_type;
+      typedef typename __traits_type::reference 	reference;
+      typedef typename __traits_type::pointer   	pointer;
+
+      constexpr __normal_iterator() : _M_current(_Iterator()) { }
 
       explicit
       __normal_iterator(const _Iterator& __i) : _M_current(__i) { }
@@ -5770,10 +5940,16 @@ inline auto
 	      __n, const __normal_iterator<_Iterator, _Container>& __i)
     { return __normal_iterator<_Iterator, _Container>(__i.base() + __n); }
 
-}
+
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+  /**
+   * @addtogroup iterators
+   * @{
+   */
 
   // 24.4.3  Move iterators
 template<typename _Iterator>
@@ -5782,18 +5958,17 @@ template<typename _Iterator>
     protected:
       _Iterator _M_current;
 
-    public:
-      typedef _Iterator                                        iterator_type;
-      typedef typename iterator_traits<_Iterator>::difference_type
-                                                               difference_type;
-      // NB: DR 680.
-typedef _Iterator                                        pointer;
-      typedef typename iterator_traits<_Iterator>::value_type  value_type;
-      typedef typename iterator_traits<_Iterator>::iterator_category
-                                                               iterator_category;
-      typedef value_type&&                                     reference;
+      typedef iterator_traits<_Iterator>		__traits_type;
 
     public:
+      typedef _Iterator					iterator_type;
+      typedef typename __traits_type::iterator_category iterator_category;
+      typedef typename __traits_type::value_type  	value_type;
+      typedef typename __traits_type::difference_type	difference_type;
+      // NB: DR 680.
+typedef _Iterator					pointer;
+      typedef value_type&&				reference;
+
       move_iterator()
       : _M_current() { }
 
@@ -5811,7 +5986,7 @@ typedef _Iterator                                        pointer;
 
       reference
       operator*() const
-      { return *_M_current; }
+      { return std::move(*_M_current); }
 
       pointer
       operator->() const
@@ -5871,13 +6046,20 @@ typedef _Iterator                                        pointer;
 
       reference
       operator[](difference_type __n) const
-      { return _M_current[__n]; }
+      { return std::move(_M_current[__n]); }
     };
 
-  template<typename _IteratorL, typename _IteratorR>
+  // Note: See __normal_iterator operators note from Gaby to understand
+template<typename _IteratorL, typename _IteratorR>
     inline bool
     operator==(const move_iterator<_IteratorL>& __x,
 	       const move_iterator<_IteratorR>& __y)
+    { return __x.base() == __y.base(); }
+
+  template<typename _Iterator>
+    inline bool
+    operator==(const move_iterator<_Iterator>& __x,
+	       const move_iterator<_Iterator>& __y)
     { return __x.base() == __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
@@ -5886,10 +6068,22 @@ typedef _Iterator                                        pointer;
 	       const move_iterator<_IteratorR>& __y)
     { return !(__x == __y); }
 
+  template<typename _Iterator>
+    inline bool
+    operator!=(const move_iterator<_Iterator>& __x,
+	       const move_iterator<_Iterator>& __y)
+    { return !(__x == __y); }
+
   template<typename _IteratorL, typename _IteratorR>
     inline bool
     operator<(const move_iterator<_IteratorL>& __x,
 	      const move_iterator<_IteratorR>& __y)
+    { return __x.base() < __y.base(); }
+
+  template<typename _Iterator>
+    inline bool
+    operator<(const move_iterator<_Iterator>& __x,
+	      const move_iterator<_Iterator>& __y)
     { return __x.base() < __y.base(); }
 
   template<typename _IteratorL, typename _IteratorR>
@@ -5898,10 +6092,22 @@ typedef _Iterator                                        pointer;
 	       const move_iterator<_IteratorR>& __y)
     { return !(__y < __x); }
 
+  template<typename _Iterator>
+    inline bool
+    operator<=(const move_iterator<_Iterator>& __x,
+	       const move_iterator<_Iterator>& __y)
+    { return !(__y < __x); }
+
   template<typename _IteratorL, typename _IteratorR>
     inline bool
     operator>(const move_iterator<_IteratorL>& __x,
 	      const move_iterator<_IteratorR>& __y)
+    { return __y < __x; }
+
+  template<typename _Iterator>
+    inline bool
+    operator>(const move_iterator<_Iterator>& __x,
+	      const move_iterator<_Iterator>& __y)
     { return __y < __x; }
 
   template<typename _IteratorL, typename _IteratorR>
@@ -5910,11 +6116,24 @@ typedef _Iterator                                        pointer;
 	       const move_iterator<_IteratorR>& __y)
     { return !(__x < __y); }
 
+  template<typename _Iterator>
+    inline bool
+    operator>=(const move_iterator<_Iterator>& __x,
+	       const move_iterator<_Iterator>& __y)
+    { return !(__x < __y); }
+
   // DR 685.
 template<typename _IteratorL, typename _IteratorR>
     inline auto
     operator-(const move_iterator<_IteratorL>& __x,
 	      const move_iterator<_IteratorR>& __y)
+    -> decltype(__x.base() - __y.base())
+    { return __x.base() - __y.base(); }
+
+  template<typename _Iterator>
+    inline auto
+    operator-(const move_iterator<_Iterator>& __x,
+	      const move_iterator<_Iterator>& __y)
     -> decltype(__x.base() - __y.base())
     { return __x.base() - __y.base(); }
 
@@ -5929,11 +6148,9 @@ template<typename _IteratorL, typename _IteratorR>
     make_move_iterator(const _Iterator& __i)
     { return move_iterator<_Iterator>(__i); }
 
-}
-
-
-// Debugging support implementation -*- C++ -*-
-namespace std 
+  // @} group iterators
+} // namespace
+namespace std
 { 
   namespace __debug { } 
 }
@@ -5950,7 +6167,9 @@ namespace __gnu_debug
 
 
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   // See http://gcc.gnu.org/ml/libstdc++/2004-08/msg00167.html: in a
 template<bool _BoolType>
@@ -6118,42 +6337,27 @@ if (__comp(__a, __b))
       return __a;
     }
 
-
   // If _Iterator is a __normal_iterator return its base (a plain pointer,
-template<typename _Iterator,
-	   bool _IsNormal = __is_normal_iterator<_Iterator>::__value>
-    struct __niter_base
-    {
-      static _Iterator
-      __b(_Iterator __it)
-      { return __it; }
-    };
+template<typename _Iterator>
+    struct _Niter_base
+    : _Iter_base<_Iterator, __is_normal_iterator<_Iterator>::__value>
+    { };
 
   template<typename _Iterator>
-    struct __niter_base<_Iterator, true>
-    {
-      static typename _Iterator::iterator_type
-      __b(_Iterator __it)
-      { return __it.base(); }
-    };
+    inline typename _Niter_base<_Iterator>::iterator_type
+    __niter_base(_Iterator __it)
+    { return std::_Niter_base<_Iterator>::_S_base(__it); }
 
   // Likewise, for move_iterator.
-template<typename _Iterator,
-	   bool _IsMove = __is_move_iterator<_Iterator>::__value>
-    struct __miter_base
-    {
-      static _Iterator
-      __b(_Iterator __it)
-      { return __it; }
-    };
+template<typename _Iterator>
+    struct _Miter_base
+    : _Iter_base<_Iterator, __is_move_iterator<_Iterator>::__value>
+    { };
 
   template<typename _Iterator>
-    struct __miter_base<_Iterator, true>
-    {
-      static typename _Iterator::iterator_type
-      __b(_Iterator __it)
-      { return __it.base(); }
-    };
+    inline typename _Miter_base<_Iterator>::iterator_type
+    __miter_base(_Iterator __it)
+    { return std::_Miter_base<_Iterator>::_S_base(__it); }
 
   // All of these auxiliary structs serve two purposes.  (1) Replace
 template<bool, bool, typename>
@@ -6225,9 +6429,10 @@ template<bool, bool, typename>
         static _Tp*
         __copy_m(const _Tp* __first, const _Tp* __last, _Tp* __result)
         {
-	  __builtin_memmove(__result, __first,
-			    sizeof(_Tp) * (__last - __first));
-	  return __result + (__last - __first);
+	  const ptrdiff_t _Num = __last - __first;
+	  if (_Num)
+	    __builtin_memmove(__result, __first, sizeof(_Tp) * _Num);
+	  return __result + _Num;
 	}
     };
 
@@ -6238,7 +6443,7 @@ template<bool, bool, typename>
       typedef typename iterator_traits<_II>::value_type _ValueTypeI;
       typedef typename iterator_traits<_OI>::value_type _ValueTypeO;
       typedef typename iterator_traits<_II>::iterator_category _Category;
-      const bool __simple = (__is_pod(_ValueTypeI)
+      const bool __simple = (__is_trivial(_ValueTypeI)
 	                     && __is_pointer<_II>::__value
 	                     && __is_pointer<_OI>::__value
 			     && __are_same<_ValueTypeI, _ValueTypeO>::__value);
@@ -6279,10 +6484,9 @@ template<typename _CharT>
     inline _OI
     __copy_move_a2(_II __first, _II __last, _OI __result)
     {
-      return _OI(std::__copy_move_a<_IsMove>
-		 (std::__niter_base<_II>::__b(__first),
-		  std::__niter_base<_II>::__b(__last),
-		  std::__niter_base<_OI>::__b(__result)));
+      return _OI(std::__copy_move_a<_IsMove>(std::__niter_base(__first),
+					     std::__niter_base(__last),
+					     std::__niter_base(__result)));
     }
 
   /**
@@ -6310,8 +6514,8 @@ template<typename _CharT>
 ;
 
       return (std::__copy_move_a2<__is_move_iterator<_II>::__value>
-	      (std::__miter_base<_II>::__b(__first),
-	       std::__miter_base<_II>::__b(__last), __result));
+	      (std::__miter_base(__first), std::__miter_base(__last),
+	       __result));
     }
 
   /**
@@ -6338,9 +6542,8 @@ template<typename _CharT>
       // concept requirements
 ;
 
-      return (std::__copy_move_a2<true>
-	      (std::__miter_base<_II>::__b(__first),
-	       std::__miter_base<_II>::__b(__last), __result));
+      return std::__copy_move_a2<true>(std::__miter_base(__first),
+				       std::__miter_base(__last), __result);
     }
 
 
@@ -6406,7 +6609,8 @@ template<typename _CharT>
         __copy_move_b(const _Tp* __first, const _Tp* __last, _Tp* __result)
         {
 	  const ptrdiff_t _Num = __last - __first;
-	  __builtin_memmove(__result - _Num, __first, sizeof(_Tp) * _Num);
+	  if (_Num)
+	    __builtin_memmove(__result - _Num, __first, sizeof(_Tp) * _Num);
 	  return __result - _Num;
 	}
     };
@@ -6418,7 +6622,7 @@ template<typename _CharT>
       typedef typename iterator_traits<_BI1>::value_type _ValueType1;
       typedef typename iterator_traits<_BI2>::value_type _ValueType2;
       typedef typename iterator_traits<_BI1>::iterator_category _Category;
-      const bool __simple = (__is_pod(_ValueType1)
+      const bool __simple = (__is_trivial(_ValueType1)
 	                     && __is_pointer<_BI1>::__value
 	                     && __is_pointer<_BI2>::__value
 			     && __are_same<_ValueType1, _ValueType2>::__value);
@@ -6434,9 +6638,8 @@ template<typename _CharT>
     __copy_move_backward_a2(_BI1 __first, _BI1 __last, _BI2 __result)
     {
       return _BI2(std::__copy_move_backward_a<_IsMove>
-		  (std::__niter_base<_BI1>::__b(__first),
-		   std::__niter_base<_BI1>::__b(__last),
-		   std::__niter_base<_BI2>::__b(__result)));
+		  (std::__niter_base(__first), std::__niter_base(__last),
+		   std::__niter_base(__result)));
     }
 
   /**
@@ -6465,8 +6668,8 @@ template<typename _CharT>
 ;
 
       return (std::__copy_move_backward_a2<__is_move_iterator<_BI1>::__value>
-	      (std::__miter_base<_BI1>::__b(__first),
-	       std::__miter_base<_BI1>::__b(__last), __result));
+	      (std::__miter_base(__first), std::__miter_base(__last),
+	       __result));
     }
 
   /**
@@ -6484,7 +6687,7 @@ template<typename _CharT>
    *  loop count will be known (and therefore a candidate for compiler
    *  optimizations such as unrolling).
    *
-   *  Result may not be in the range [first,last).  Use move instead.  Note
+   *  Result may not be in the range (first,last].  Use move instead.  Note
    *  that the start of the output range may overlap [first,last).
   */
   template<typename _BI1, typename _BI2>
@@ -6494,9 +6697,9 @@ template<typename _CharT>
       // concept requirements
 ;
 
-      return (std::__copy_move_backward_a2<true>
-	      (std::__miter_base<_BI1>::__b(__first),
-	       std::__miter_base<_BI1>::__b(__last), __result));
+      return std::__copy_move_backward_a2<true>(std::__miter_base(__first),
+						std::__miter_base(__last),
+						__result);
     }
 
 
@@ -6551,8 +6754,8 @@ template<typename _Tp>
       // concept requirements
 ;
 
-      std::__fill_a(std::__niter_base<_ForwardIterator>::__b(__first),
-		    std::__niter_base<_ForwardIterator>::__b(__last), __value);
+      std::__fill_a(std::__niter_base(__first), std::__niter_base(__last),
+		    __value);
     }
 
   template<typename _OutputIterator, typename _Size, typename _Tp>
@@ -6560,7 +6763,8 @@ template<typename _Tp>
     __gnu_cxx::__enable_if<!__is_scalar<_Tp>::__value, _OutputIterator>::__type
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
-      for (; __n > 0; --__n, ++__first)
+      for (__decltype(__n + 0) __niter = __n;
+	   __niter > 0; --__niter, ++__first)
 	*__first = __value;
       return __first;
     }
@@ -6571,7 +6775,8 @@ template<typename _Tp>
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
       const _Tp __tmp = __value;
-      for (; __n > 0; --__n, ++__first)
+      for (__decltype(__n + 0) __niter = __n;
+	   __niter > 0; --__niter, ++__first)
 	*__first = __tmp;
       return __first;
     }
@@ -6596,14 +6801,16 @@ template<typename _Tp>
    *  This function fills a range with copies of the same value.  For char
    *  types filling contiguous areas of memory, this becomes an inline call
    *  to @c memset or @ wmemset.
+   *
+   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
+   *  DR 865. More algorithms that throw away information
   */
   template<typename _OI, typename _Size, typename _Tp>
     inline _OI
     fill_n(_OI __first, _Size __n, const _Tp& __value)
     {
       // concept requirements
-return _OI(std::__fill_n_a(std::__niter_base<_OI>::__b(__first),
-				 __n, __value));
+return _OI(std::__fill_n_a(std::__niter_base(__first), __n, __value));
     }
 
   template<bool _BoolType>
@@ -6746,9 +6953,75 @@ return _OI(std::__fill_n_a(std::__niter_base<_OI>::__b(__first),
 							    __first2, __last2);
     }
 
-}
+  /**
+   *  @brief Finds the first position in which @a val could be inserted
+   *         without changing the ordering.
+   *  @param  first   An iterator.
+   *  @param  last    Another iterator.
+   *  @param  val     The search term.
+   *  @return         An iterator pointing to the first element <em>not less
+   *                  than</em> @a val, or end() if every element is less than 
+   *                  @a val.
+   *  @ingroup binary_search_algorithms
+  */
+  template<typename _ForwardIterator, typename _Tp>
+    _ForwardIterator
+    lower_bound(_ForwardIterator __first, _ForwardIterator __last,
+		const _Tp& __val)
+    {
+      typedef typename iterator_traits<_ForwardIterator>::value_type
+	_ValueType;
+      typedef typename iterator_traits<_ForwardIterator>::difference_type
+	_DistanceType;
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+      // concept requirements
+;
+
+      _DistanceType __len = std::distance(__first, __last);
+
+      while (__len > 0)
+	{
+	  _DistanceType __half = __len >> 1;
+	  _ForwardIterator __middle = __first;
+	  std::advance(__middle, __half);
+	  if (*__middle < __val)
+	    {
+	      __first = __middle;
+	      ++__first;
+	      __len = __len - __half - 1;
+	    }
+	  else
+	    __len = __half;
+	}
+      return __first;
+    }
+
+  /// This is a helper function for the sort routines and for random.tcc.
+template<typename _Size>
+    inline _Size
+    __lg(_Size __n)
+    {
+      _Size __k;
+      for (__k = 0; __n != 0; __n >>= 1)
+	++__k;
+      return __k - 1;
+    }
+
+  inline int
+  __lg(int __n)
+  { return sizeof(int) * 8  - 1 - __builtin_clz(__n); }
+
+  inline long
+  __lg(long __n)
+  { return sizeof(long) * 8 - 1 - __builtin_clzl(__n); }
+
+  inline long long
+  __lg(long long __n)
+  { return sizeof(long long) * 8 - 1 - __builtin_clzll(__n); }
+
+
+
+
 
   /**
    *  @brief Tests a range for element-wise equality.
@@ -6769,9 +7042,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       // concept requirements
 ;
 
-      return std::__equal_aux(std::__niter_base<_II1>::__b(__first1),
-			      std::__niter_base<_II1>::__b(__last1),
-			      std::__niter_base<_II2>::__b(__first2));
+      return std::__equal_aux(std::__niter_base(__first1),
+			      std::__niter_base(__last1),
+			      std::__niter_base(__first2));
     }
 
   /**
@@ -6804,7 +7077,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
     }
 
   /**
-   *  @brief Performs "dictionary" comparison on ranges.
+   *  @brief Performs @b dictionary comparison on ranges.
    *  @ingroup sorting_algorithms
    *  @param  first1  An input iterator.
    *  @param  last1   An input iterator.
@@ -6812,9 +7085,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    *  @param  last2   An input iterator.
    *  @return   A boolean true or false.
    *
-   *  "Returns true if the sequence of elements defined by the range
+   *  <em>Returns true if the sequence of elements defined by the range
    *  [first1,last1) is lexicographically less than the sequence of elements
-   *  defined by the range [first2,last2).  Returns false otherwise."
+   *  defined by the range [first2,last2).  Returns false otherwise.</em>
    *  (Quoted from [25.3.8]/1.)  If the iterators are all character pointers,
    *  then this is an inline call to @c memcmp.
   */
@@ -6833,15 +7106,14 @@ typedef typename iterator_traits<_II1>::value_type _ValueType1;
       ;
       ;
 
-      return std::__lexicographical_compare_aux
-	(std::__niter_base<_II1>::__b(__first1),
-	 std::__niter_base<_II1>::__b(__last1),
-	 std::__niter_base<_II2>::__b(__first2),
-	 std::__niter_base<_II2>::__b(__last2));
+      return std::__lexicographical_compare_aux(std::__niter_base(__first1),
+						std::__niter_base(__last1),
+						std::__niter_base(__first2),
+						std::__niter_base(__last2));
     }
 
   /**
-   *  @brief Performs "dictionary" comparison on ranges.
+   *  @brief Performs @b dictionary comparison on ranges.
    *  @ingroup sorting_algorithms
    *  @param  first1  An input iterator.
    *  @param  last1   An input iterator.
@@ -6940,43 +7212,12 @@ typedef typename iterator_traits<_II1>::value_type _ValueType1;
       return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
     }
 
-}
 
-// NB: This file is included within many other C++ includes, as a way
+} // namespace std
 #pragma GCC system_header
 
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-
-/* Copyright (C) 1995-2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -7000,12 +7241,13 @@ typedef typename iterator_traits<_II1>::value_type _ValueType1;
  */
 
 
-/* Undefined all __need_* constants in case we are included to get those
+/* Undefine all __need_* constants in case we are included to get those
    constants but the whole file was already read.  */
 
 
+namespace __gnu_cxx __attribute__ ((__visibility__ ("default")))
+{
 
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
   /**
    *  @brief  Mapping from character type to associated types.
@@ -7039,7 +7281,7 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
    *  namespace __gnu_cxx may be.
    *
    *  See http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt05ch13s03.html
-   *  for advice on how to make use of this class for "unusual" character
+   *  for advice on how to make use of this class for @a unusual character
    *  types. Also, check out include/ext/pod_char_traits.h.  
    */
   template<typename _CharT>
@@ -7055,11 +7297,11 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool
+      static constexpr bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool
+      static constexpr bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
@@ -7081,23 +7323,23 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
       static char_type*
       assign(char_type* __s, std::size_t __n, char_type __a);
 
-      static char_type
+      static constexpr char_type
       to_char_type(const int_type& __c)
       { return static_cast<char_type>(__c); }
 
-      static int_type
+      static constexpr int_type
       to_int_type(const char_type& __c)
       { return static_cast<int_type>(__c); }
 
-      static bool
+      static constexpr bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type
+      static constexpr int_type
       eof()
-      { return static_cast<int_type>((-1)); }
+      { return static_cast<int_type>(-1); }
 
-      static int_type
+      static constexpr int_type
       not_eof(const int_type& __c)
       { return !eq_int_type(__c, eof()) ? __c : to_int_type(char_type()); }
     };
@@ -7166,9 +7408,11 @@ std::fill_n(__s, __n, __a);
       return __s;
     }
 
-}
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   // 21.1
 template<class _CharT>
@@ -7190,11 +7434,11 @@ template<>
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool
+      static constexpr bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool
+      static constexpr bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
@@ -7222,24 +7466,24 @@ template<>
       assign(char_type* __s, size_t __n, char_type __a)
       { return static_cast<char_type*>(__builtin_memset(__s, __a, __n)); }
 
-      static char_type
+      static constexpr char_type
       to_char_type(const int_type& __c)
       { return static_cast<char_type>(__c); }
 
       // To keep both the byte 0xff and the eof symbol 0xffffffff
-static int_type
+static constexpr int_type
       to_int_type(const char_type& __c)
       { return static_cast<int_type>(static_cast<unsigned char>(__c)); }
 
-      static bool
+      static constexpr bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type
+      static constexpr int_type
       eof()
-      { return static_cast<int_type>((-1)); }
+      { return static_cast<int_type>(-1); }
 
-      static int_type
+      static constexpr int_type
       not_eof(const int_type& __c)
       { return (__c == eof()) ? 0 : __c; }
   };
@@ -7259,11 +7503,11 @@ template<>
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool
+      static constexpr bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool
+      static constexpr bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
@@ -7291,33 +7535,30 @@ template<>
       assign(char_type* __s, size_t __n, char_type __a)
       { return wmemset(__s, __a, __n); }
 
-      static char_type
+      static constexpr char_type
       to_char_type(const int_type& __c)
       { return char_type(__c); }
 
-      static int_type
+      static constexpr int_type
       to_int_type(const char_type& __c)
       { return int_type(__c); }
 
-      static bool
+      static constexpr bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type
+      static constexpr int_type
       eof()
       { return static_cast<int_type>((0xffffffffu)); }
 
-      static int_type
+      static constexpr int_type
       not_eof(const int_type& __c)
       { return eq_int_type(__c, eof()) ? 0 : __c; }
   };
 
-}
 
-
-// <cstdint> -*- C++ -*-
+} // namespace
 #pragma GCC system_header
-
 
 
 
@@ -7432,11 +7673,9 @@ typedef unsigned long int	uintmax_t;
 
 
 
-// TR1 cstdint -*- C++ -*-
+
 namespace std
 {
-
-
   using ::int8_t;
   using ::int16_t;
   using ::int32_t;
@@ -7472,13 +7711,10 @@ namespace std
 
   using ::uintmax_t;
   using ::uintptr_t;
+} // namespace std
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-
-}
-
-
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   template<>
     struct char_traits<char16_t>
@@ -7493,11 +7729,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool
+      static constexpr bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool
+      static constexpr bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
@@ -7552,23 +7788,23 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	return __s;
       }
 
-      static char_type
+      static constexpr char_type
       to_char_type(const int_type& __c)
       { return char_type(__c); }
 
-      static int_type
+      static constexpr int_type
       to_int_type(const char_type& __c)
       { return int_type(__c); }
 
-      static bool
+      static constexpr bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type
+      static constexpr int_type
       eof()
       { return static_cast<int_type>(-1); }
 
-      static int_type
+      static constexpr int_type
       not_eof(const int_type& __c)
       { return eq_int_type(__c, eof()) ? 0 : __c; }
     };
@@ -7586,11 +7822,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
       assign(char_type& __c1, const char_type& __c2)
       { __c1 = __c2; }
 
-      static bool
+      static constexpr bool
       eq(const char_type& __c1, const char_type& __c2)
       { return __c1 == __c2; }
 
-      static bool
+      static constexpr bool
       lt(const char_type& __c1, const char_type& __c2)
       { return __c1 < __c2; }
 
@@ -7645,32 +7881,29 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	return __s;
       }
 
-      static char_type
+      static constexpr char_type
       to_char_type(const int_type& __c)
       { return char_type(__c); }
 
-      static int_type
+      static constexpr int_type
       to_int_type(const char_type& __c)
       { return int_type(__c); }
 
-      static bool
+      static constexpr bool
       eq_int_type(const int_type& __c1, const int_type& __c2)
       { return __c1 == __c2; }
 
-      static int_type
+      static constexpr int_type
       eof()
       { return static_cast<int_type>(-1); }
 
-      static int_type
+      static constexpr int_type
       not_eof(const int_type& __c)
       { return eq_int_type(__c, eof()) ? 0 : __c; }
     };
 
-}
 
-
-
-// Locale support -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
 // Wrapper for underlying C-language localization -*- C++ -*-
@@ -7703,53 +7936,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-/* Definition of locale category symbol values.
-   Copyright (C) 2001 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
-
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-
-
+///////////////////////////////////////////////////////////////////////////////
 enum
 {
   __LC_CTYPE = 0,
@@ -7896,54 +8083,23 @@ extern __locale_t uselocale (__locale_t __dataset) throw ();
 
 
 // Get rid of those macros defined in <locale.h> in lieu of real functions.
-namespace std __attribute__ ((__visibility__ ("default"))) {
-
+namespace std
+{
   using ::lconv;
   using ::setlocale;
   using ::localeconv;
+} // namespace std
+namespace __gnu_cxx __attribute__ ((__visibility__ ("default")))
+{
 
-}
-
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-
-
-
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
   extern "C" __typeof(uselocale) __uselocale;
 
-}
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   typedef __locale_t		__c_locale;
 
@@ -7967,13 +8123,12 @@ inline int
     return __ret;
   }
 
-}
 
-// -*- C++ -*- forwarding header.
+} // namespace
 #pragma GCC system_header
 
-/* Copyright (C) 1991,92,93,95,96,97,98,99,2001,2002,2004,2007,2008,2009
-   	Free Software Foundation, Inc.
+/* Copyright (C) 1991,92,93,95,96,97,98,99,2001,2002,2004,2007,2008,2009,2011
+	Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -8049,7 +8204,7 @@ extern "C" {
 
 /* Conversion interfaces.  */
 /* Macros to swap the order of bytes in integer values.
-   Copyright (C) 1997, 1998, 2000, 2002, 2003, 2007, 2008
+   Copyright (C) 1997, 1998, 2000, 2002, 2003, 2007, 2008, 2010, 2011
    Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -8129,6 +8284,7 @@ extern __const __int32_t **__ctype_tolower_loc (void)
      throw () __attribute__ ((__const));
 extern __const __int32_t **__ctype_toupper_loc (void)
      throw () __attribute__ ((__const));
+
 
 
 
@@ -8243,8 +8399,8 @@ extern int toupper_l (int __c, __locale_t __l) throw ();
 
 
 // Get rid of those macros defined in <ctype.h> in lieu of real functions.
-namespace std __attribute__ ((__visibility__ ("default"))) {
-
+namespace std
+{
   using ::isalnum;
   using ::isalpha;
   using ::iscntrl;
@@ -8258,22 +8414,20 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   using ::isxdigit;
   using ::tolower;
   using ::toupper;
-
-}
-
-// TR1 cctype -*- C++ -*-
+} // namespace std
 namespace std
+{
+  using ::isblank;
+} // namespace std
+namespace std __attribute__ ((__visibility__ ("default")))
 {
 
 
-  using ::isblank;
-
-
-}
-
-
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
+  /** 
+   *  @defgroup locales Locales
+   *
+   *  Classes and functions for internationalization and localization.
+   */
 
   // 22.1.1 Locale
 class locale;
@@ -8402,9 +8556,8 @@ class messages_base;
   template<typename _CharT>
     class messages_byname;
 
-}
 
-// Iostreams base classes -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
 // Support for atomic operations -*- C++ -*-
@@ -8481,16 +8634,16 @@ class messages_base;
    All functions returning int should return zero on success or the error
    number.  If the operation is not supported, -1 is returned.
 
-   If the following are also defined, you should 
+   If the following are also defined, you should
      #define __GTHREADS_CXX0X 1
-   to enable the c++0x thread library. 
- 
+   to enable the c++0x thread library.
+
    Types:
      __gthread_t
      __gthread_time_t
 
    Interface:
-     int __gthread_create (__gthread_t *thread, void *(*func) (void*), 
+     int __gthread_create (__gthread_t *thread, void *(*func) (void*),
                            void *args);
      int __gthread_join (__gthread_t thread, void **value_ptr);
      int __gthread_detach (__gthread_t thread);
@@ -8502,9 +8655,9 @@ class messages_base;
                                     const __gthread_time_t *abs_timeout);
      int __gthread_recursive_mutex_timedlock (__gthread_recursive_mutex_t *m,
                                           const __gthread_time_t *abs_time);
-     
+
      int __gthread_cond_signal (__gthread_cond_t *cond);
-     int __gthread_cond_timedwait (__gthread_cond_t *cond, 
+     int __gthread_cond_timedwait (__gthread_cond_t *cond,
                                    __gthread_mutex_t *mutex,
                                    const __gthread_time_t *abs_timeout);
      int __gthread_cond_timedwait_recursive (__gthread_cond_t *cond,
@@ -8517,14 +8670,18 @@ class messages_base;
      POSIX/Unix95 threads with -D_PTHREADS95
      DCE threads with -D_DCE_THREADS
      Solaris/UI threads with -D_SOLARIS_THREADS
-   
+
 */
 
 /* Check first for thread specific defines.  */
+/* The pe-coff weak support isn't fully compatible to ELF's weak.
+   For static libraries it might would work, but as we need to deal
+   with shared versions too, we disable it for mingw-targets.  */
+
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
 /* Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-   2008, 2009 Free Software Foundation, Inc.
+   2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -8554,7 +8711,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Some implementations of <pthread.h> require this to be defined.  */
 
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
    Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -8575,7 +8732,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 
 /* Definitions for POSIX 1003.1b-1993 (aka POSIX.4) scheduling interface.
-   Copyright (C) 1996,1997,1999,2001-2004,2007 Free Software Foundation, Inc.
+   Copyright (C) 1996,1997,1999,2001-2004,2007,2010
+   Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -8597,56 +8755,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Get type definitions.  */
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-/* Copyright (C) 1991-2003,2006,2009 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
-
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-/*
- *	ISO C99 Standard: 7.23 Date and time	<time.h>
- */
-
-
+///////////////////////////////////////////////////////////////////////////////
+typedef __time_t time_t;
 
 
 
@@ -8668,10 +8778,13 @@ struct timespec
 
 
 
+typedef __pid_t pid_t;
+
+
 /* Get system specific constant and data structure definitions.  */
 /* Definitions of constants and data structure for POSIX 1003.1b-1993
    scheduling interface.
-   Copyright (C) 1996-1999,2001-2003,2005,2006,2007,2008,2009
+   Copyright (C) 1996-1999,2001-2003,2005,2006,2007,2008,2009,2011
    Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -8695,6 +8808,7 @@ struct timespec
 
 /* Scheduling algorithms.  */
 
+
 /* Cloning flags.  */
 
 /* The official definition.  */
@@ -8714,6 +8828,10 @@ extern int unshare (int __flags) throw ();
 
 /* Get index of currently used CPU.  */
 extern int sched_getcpu (void) throw ();
+
+/* Switch process to namespace of type NSTYPE indicated by FD.  */
+extern int setns (int __fd, int __nstype) throw ();
+
 
 }
 
@@ -8802,7 +8920,7 @@ extern int sched_getaffinity (__pid_t __pid, size_t __cpusetsize,
 
 }
 
-/* Copyright (C) 1991-2003,2006,2009 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2003,2006,2009,2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -8830,37 +8948,36 @@ extern "C" {
 
 
 /* Get size_t and NULL from <stddef.h>.  */
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
+///////////////////////////////////////////////////////////////////////////////
+struct timeval
+  {
+    __time_t tv_sec;		/* Seconds.  */
+    __suseconds_t tv_usec;	/* Microseconds.  */
+  };
 
 
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
+/* ISO/IEC 9899:1990 7.12.1: <time.h>
+   The macro `CLOCKS_PER_SEC' is the number per second of the value
+   returned by the `clock' function. */
+/* CAE XSH, Issue 4, Version 2: <time.h>
+   The value of CLOCKS_PER_SEC is required to be 1 million on all
+   XSI-conformant systems. */
 
 
-/*#endif*/ /* _STDDEF */
+/* Identifier for system-wide realtime clock.  */
+/* Monotonic system-wide clock.  */
+/* High-resolution timer from the CPU.  */
+/* Thread-specific CPU-time clock.  */
+/* Monotonic system-wide clock, not adjusted for frequency scaling.  */
+/* Identifier for system-wide realtime clock, updated only on ticks.  */
+/* Monotonic system-wide clock, updated only on ticks.  */
+/* Monotonic system-wide clock that includes time spent in suspension.  */
+/* Like CLOCK_REALTIME but also wakes suspended system.  */
+/* Like CLOCK_BOOTTIME but also wakes suspended system.  */
 
-/* This defines CLOCKS_PER_SEC, which is the number of processor clock
-   ticks per second.  */
-/* System-dependent timing definitions.  Generic version.
-   Copyright (C) 1996,1997,1999-2002,2003 Free Software Foundation, Inc.
+/* Flag to indicate time is absolute.  */
+
+/* Copyright (C) 1995-1997,1999,2007,2009,2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -8878,25 +8995,59 @@ extern "C" {
    Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
    02111-1307 USA.  */
 
-/*
- * Never include this file directly; use <time.h> instead.
- */
+
+/* These definitions from linux/timex.h as of 2.6.30.  */
+
+struct timex
+{
+  unsigned int modes;	/* mode selector */
+  long int offset;	/* time offset (usec) */
+  long int freq;	/* frequency offset (scaled ppm) */
+  long int maxerror;	/* maximum error (usec) */
+  long int esterror;	/* estimated error (usec) */
+  int status;		/* clock command/status */
+  long int constant;	/* pll time constant */
+  long int precision;	/* clock precision (usec) (read only) */
+  long int tolerance;	/* clock frequency tolerance (ppm) (read only) */
+  struct timeval time;	/* (read only) */
+  long int tick;	/* (modified) usecs between clock ticks */
+
+  long int ppsfreq;	/* pps frequency (scaled ppm) (ro) */
+  long int jitter;	/* pps jitter (us) (ro) */
+  int shift;		/* interval duration (s) (shift) (ro) */
+  long int stabil;	/* pps stability (scaled ppm) (ro) */
+  long int jitcnt;	/* jitter limit exceeded (ro) */
+  long int calcnt;	/* calibration intervals (ro) */
+  long int errcnt;	/* calibration errors (ro) */
+  long int stbcnt;	/* stability limit exceeded (ro) */
+
+  int tai;		/* TAI offset (ro) */
+
+  /* ??? */
+  int  :32; int  :32; int  :32; int  :32;
+  int  :32; int  :32; int  :32; int  :32;
+  int  :32; int  :32; int  :32;
+};
+
+/* Mode codes (timex.mode) */
+
+/* xntp 3.4 compatibility names */
 
 
-/* ISO/IEC 9899:1990 7.12.1: <time.h>
-   The macro `CLOCKS_PER_SEC' is the number per second of the value
-   returned by the `clock' function. */
-/* CAE XSH, Issue 4, Version 2: <time.h>
-   The value of CLOCKS_PER_SEC is required to be 1 million on all
-   XSI-conformant systems. */
+/* Status codes (timex.status) */
 
 
-/* Identifier for system-wide realtime clock.  */
-/* Monotonic system-wide clock.  */
-/* High-resolution timer from the CPU.  */
-/* Thread-specific CPU-time clock.  */
 
-/* Flag to indicate time is absolute.  */
+
+/* Read-only bits */
+
+
+extern "C" {
+
+/* Tune a POSIX clock.  */
+extern int clock_adjtime (__clockid_t __clock_id, struct timex *__utx) throw ();
+
+}
 
 
 
@@ -8909,14 +9060,6 @@ extern "C" {
 /* Returned by `clock'.  */
 typedef __clock_t clock_t;
 
-
-
-
-
-
-
-/* Returned by `time'.  */
-typedef __time_t time_t;
 
 
 
@@ -8968,7 +9111,6 @@ struct itimerspec
 struct sigevent;
 
 
-typedef __pid_t pid_t;
 
 
 
@@ -9153,7 +9295,7 @@ extern int timer_getoverrun (timer_t __timerid) throw ();
      6  memory allication failed (not enough memory available),
      7  there is no line in the template that matches the input,
      8  invalid input specification Example: February 31 or a time is
-        specified that can not be represented in a time_t (representing
+	specified that can not be represented in a time_t (representing
 	the time in seconds since 00:00:00 UTC, January 1, 1970) */
 extern int getdate_err;
 
@@ -9162,7 +9304,7 @@ extern int getdate_err;
    the environment variable DATEMSK are used.  In case of an error
    `getdate_err' is set.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern struct tm *getdate (__const char *__string);
 
@@ -9182,80 +9324,6 @@ extern int getdate_r (__const char *__restrict __string,
 }
 
 
-
-/* Copyright (C) 1991-2003, 2004, 2007, 2009 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
-
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-/*
- *	ISO C99 Standard: 7.14 Signal handling <signal.h>
- */
-
-
-
-
-extern "C" {
-
-/* __sig_atomic_t, __sigset_t, and related definitions.  Linux version.
-   Copyright (C) 1991, 1992, 1994, 1996, 1997, 2007
-   Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
-
-   The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Lesser General Public
-   License as published by the Free Software Foundation; either
-   version 2.1 of the License, or (at your option) any later version.
-
-   The GNU C Library is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Lesser General Public License for more details.
-
-   You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
-
-
-typedef int __sig_atomic_t;
-
-/* A `sigset_t' has a bit for each signal.  */
-
-typedef struct
-  {
-    unsigned long int __val[(1024 / (8 * sizeof (unsigned long int)))];
-  } __sigset_t;
-
-
-
-/* We only want to define these functions if <signal.h> was actually
-   included; otherwise we were included just to define the types.  Since we
-   are namespace-clean, it wouldn't hurt to define extra macros.  But
-   trouble can be caused by functions being defined (e.g., any global
-   register vars declared later will cause compilation errors).  */
-
-
-/* An integral type that can be modified atomically, without the
-   possibility of a signal arriving in the middle of the operation.  */
-
-typedef __sigset_t sigset_t;
-
-
-}
 
 /* Copyright (C) 2002,2003,2004,2005,2006,2007 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
@@ -9764,6 +9832,16 @@ extern int pthread_setschedprio (pthread_t __target_thread, int __prio)
      throw ();
 
 
+/* Get thread name visible in the kernel and its interfaces.  */
+extern int pthread_getname_np (pthread_t __target_thread, char *__buf,
+			       size_t __buflen)
+     throw () __attribute__ ((__nonnull__ (2)));
+
+/* Set thread name visible in the kernel and its interfaces.  */
+extern int pthread_setname_np (pthread_t __target_thread, __const char *__name)
+     throw () __attribute__ ((__nonnull__ (2)));
+
+
 /* Determine level of concurrency.  */
 extern int pthread_getconcurrency (void) throw ();
 
@@ -9912,8 +9990,8 @@ extern int pthread_mutex_lock (pthread_mutex_t *__mutex)
 
 /* Wait until lock becomes available, or specified time passes. */
 extern int pthread_mutex_timedlock (pthread_mutex_t *__restrict __mutex,
-                                    __const struct timespec *__restrict
-                                    __abstime) throw () __attribute__ ((__nonnull__ (1, 2)));
+				    __const struct timespec *__restrict
+				    __abstime) throw () __attribute__ ((__nonnull__ (1, 2)));
 
 /* Unlock a mutex.  */
 extern int pthread_mutex_unlock (pthread_mutex_t *__mutex)
@@ -9935,7 +10013,7 @@ extern int pthread_mutex_setprioceiling (pthread_mutex_t *__restrict __mutex,
 
 
 /* Declare the state protected by MUTEX as consistent.  */
-extern int pthread_mutex_consistent_np (pthread_mutex_t *__mutex)
+extern int pthread_mutex_consistent (pthread_mutex_t *__mutex)
      throw () __attribute__ ((__nonnull__ (1)));
 extern int pthread_mutex_consistent_np (pthread_mutex_t *__mutex)
      throw () __attribute__ ((__nonnull__ (1)));
@@ -10142,13 +10220,13 @@ extern int pthread_condattr_destroy (pthread_condattr_t *__attr)
 
 /* Get the process-shared flag of the condition variable attribute ATTR.  */
 extern int pthread_condattr_getpshared (__const pthread_condattr_t *
-                                        __restrict __attr,
-                                        int *__restrict __pshared)
+					__restrict __attr,
+					int *__restrict __pshared)
      throw () __attribute__ ((__nonnull__ (1, 2)));
 
 /* Set the process-shared flag of the condition variable attribute ATTR.  */
 extern int pthread_condattr_setpshared (pthread_condattr_t *__attr,
-                                        int __pshared) throw () __attribute__ ((__nonnull__ (1)));
+					int __pshared) throw () __attribute__ ((__nonnull__ (1)));
 
 /* Get the clock selected for the conditon variable attribute ATTR.  */
 extern int pthread_condattr_getclock (__const pthread_condattr_t *
@@ -10220,7 +10298,7 @@ extern int pthread_barrierattr_getpshared (__const pthread_barrierattr_t *
 
 /* Set the process-shared flag of the barrier attribute ATTR.  */
 extern int pthread_barrierattr_setpshared (pthread_barrierattr_t *__attr,
-                                           int __pshared)
+					   int __pshared)
      throw () __attribute__ ((__nonnull__ (1)));
 
 
@@ -10272,7 +10350,7 @@ extern int pthread_atfork (void (*__prepare) (void),
 
 }
 
-/* Copyright (C) 1991-2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2009, 2010, 2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -10614,43 +10692,12 @@ extern "C" {
 /* All functions that are not declared anywhere else.  */
 
 
-typedef __ssize_t ssize_t;
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-/* The Single Unix specification says that some more types are
-   available here.  */
+///////////////////////////////////////////////////////////////////////////////
 typedef __gid_t gid_t;
 
 typedef __uid_t uid_t;
 
-typedef __off_t off_t;
-typedef __off64_t off64_t;
 
 typedef __useconds_t useconds_t;
 
@@ -10859,44 +10906,44 @@ extern char **environ;
 /* Replace the current process, executing PATH with arguments ARGV and
    environment ENVP.  ARGV and ENVP are terminated by NULL pointers.  */
 extern int execve (__const char *__path, char *__const __argv[],
-		   char *__const __envp[]) throw () __attribute__ ((__nonnull__ (1)));
+		   char *__const __envp[]) throw () __attribute__ ((__nonnull__ (1, 2)));
 
 /* Execute the file FD refers to, overlaying the running program image.
    ARGV and ENVP are passed to the new program, as for `execve'.  */
 extern int fexecve (int __fd, char *__const __argv[], char *__const __envp[])
-     throw ();
+     throw () __attribute__ ((__nonnull__ (2)));
 
 
 /* Execute PATH with arguments ARGV and environment from `environ'.  */
 extern int execv (__const char *__path, char *__const __argv[])
-     throw () __attribute__ ((__nonnull__ (1)));
+     throw () __attribute__ ((__nonnull__ (1, 2)));
 
 /* Execute PATH with all arguments after PATH until a NULL pointer,
    and the argument after that for environment.  */
 extern int execle (__const char *__path, __const char *__arg, ...)
-     throw () __attribute__ ((__nonnull__ (1)));
+     throw () __attribute__ ((__nonnull__ (1, 2)));
 
 /* Execute PATH with all arguments after PATH until
    a NULL pointer and environment from `environ'.  */
 extern int execl (__const char *__path, __const char *__arg, ...)
-     throw () __attribute__ ((__nonnull__ (1)));
+     throw () __attribute__ ((__nonnull__ (1, 2)));
 
 /* Execute FILE, searching in the `PATH' environment variable if it contains
    no slashes, with arguments ARGV and environment from `environ'.  */
 extern int execvp (__const char *__file, char *__const __argv[])
-     throw () __attribute__ ((__nonnull__ (1)));
+     throw () __attribute__ ((__nonnull__ (1, 2)));
 
 /* Execute FILE, searching in the `PATH' environment variable if
    it contains no slashes, with all arguments after FILE until a
    NULL pointer and environment from `environ'.  */
 extern int execlp (__const char *__file, __const char *__arg, ...)
-     throw () __attribute__ ((__nonnull__ (1)));
+     throw () __attribute__ ((__nonnull__ (1, 2)));
 
 /* Execute FILE, searching in the `PATH' environment variable if it contains
    no slashes, with arguments ARGV and environment from `environ'.  */
 extern int execvpe (__const char *__file, char *__const __argv[],
 		    char *__const __envp[])
-     throw () __attribute__ ((__nonnull__ (1)));
+     throw () __attribute__ ((__nonnull__ (1, 2)));
 
 
 /* Add INC to priority of the current process.  */
@@ -10911,7 +10958,7 @@ extern void _exit (int __status) __attribute__ ((__noreturn__));
    the `_SC_*' symbols for the NAME argument to `sysconf';
    and the `_CS_*' symbols for the NAME argument to `confstr'.  */
 /* `sysconf', `pathconf', and `confstr' NAME values.  Generic version.
-   Copyright (C) 1993,1995-1998,2000,2001,2003,2004,2007,2009
+   Copyright (C) 1993,1995-1998,2000,2001,2003,2004,2007,2009,2010
    Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -11275,7 +11322,10 @@ enum
     _CS_POSIX_V7_LPBIG_OFFBIG_CFLAGS,
     _CS_POSIX_V7_LPBIG_OFFBIG_LDFLAGS,
     _CS_POSIX_V7_LPBIG_OFFBIG_LIBS,
-    _CS_POSIX_V7_LPBIG_OFFBIG_LINTFLAGS
+    _CS_POSIX_V7_LPBIG_OFFBIG_LINTFLAGS,
+
+    _CS_V6_ENV,
+    _CS_V7_ENV
   };
 
 /* Get file-specific configuration information about PATH.  */
@@ -11483,14 +11533,14 @@ extern int tcsetpgrp (int __fd, __pid_t __pgrp_id) throw ();
 
 /* Return the login name of the user.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern char *getlogin (void);
 /* Return at most NAME_LEN characters of the login name of the user in NAME.
    If it cannot be determined or some other error occurred, return the error
    code.  Otherwise return 0.
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern int getlogin_r (char *__name, size_t __name_len) __attribute__ ((__nonnull__ (1)));
 
@@ -11502,7 +11552,7 @@ extern int setlogin (__const char *__name) throw () __attribute__ ((__nonnull__ 
    arguments in ARGV (ARGC of them, minus the program name) for
    options given in OPTS.  */
 /* Declarations for getopt.
-   Copyright (C) 1989-1994,1996-1999,2001,2003,2004,2009
+   Copyright (C) 1989-1994,1996-1999,2001,2003,2004,2009,2010
    Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -11683,6 +11733,11 @@ extern char *getpass (__const char *__prompt) __attribute__ ((__nonnull__ (1)));
 extern int fsync (int __fd);
 
 
+/* Make all changes done to all files on the file system associated
+   with FD actually appear on disk.  */
+extern int syncfs (int __fd) throw ();
+
+
 
 /* Return identifier for the current host.  */
 extern long int gethostid (void);
@@ -11699,6 +11754,8 @@ extern int getpagesize (void)  throw () __attribute__ ((__const__));
 /* Return the maximum number of file descriptors
    the current process could possibly have.  */
 extern int getdtablesize (void) throw ();
+
+
 
 
 /* Truncate FILE to LENGTH bytes.  */
@@ -11775,7 +11832,7 @@ extern char *crypt (__const char *__key, __const char *__salt)
 
 /* Encrypt data in BLOCK in place if EDFLAG is zero; otherwise decrypt
    block in place.  */
-extern void encrypt (char *__block, int __edflag) throw () __attribute__ ((__nonnull__ (1)));
+extern void encrypt (char *__libc_block, int __edflag) throw () __attribute__ ((__nonnull__ (1)));
 
 
 /* Swab pairs bytes in the first N bytes of the area pointed to by
@@ -11864,8 +11921,9 @@ static __typeof(pthread_mutexattr_destroy) __gthrw_pthread_mutexattr_destroy __a
 static inline int
 __gthread_active_p (void)
 {
-  static void *const __gthread_active_ptr 
-    = __extension__ (void *) &__gthrw_pthread_cancel;
+  static void *const __gthread_active_ptr
+    = __extension__ (void *) &
+__gthrw_pthread_cancel;
   return __gthread_active_ptr != 0;
 }
 
@@ -11876,7 +11934,7 @@ static inline int
 __gthread_create (__gthread_t *__threadid, void *(*__func) (void*),
 		  void *__args)
 {
-  return __gthrw_pthread_create (__threadid, (__null), __func, __args);
+  return __gthrw_pthread_create (__threadid, __null, __func, __args);
 }
 
 static inline int
@@ -12070,7 +12128,9 @@ __gthread_cond_destroy (__gthread_cond_t* __cond)
 typedef int _Atomic_word;
 
 // Define these two macros using the appropriate memory barrier for the target.
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
+namespace __gnu_cxx __attribute__ ((__visibility__ ("default")))
+{
+
 
   // Functions for portable atomic access.
 static inline _Atomic_word 
@@ -12113,9 +12173,8 @@ static inline _Atomic_word
       __atomic_add_single(__mem, __val);
   }
 
-}
 
-// Even if the CPU doesn't need a memory barrier, we need to ensure
+} // namespace
 #pragma GCC system_header
 
 // Components for manipulating sequences of characters -*- C++ -*-
@@ -12123,33 +12182,6 @@ static inline _Atomic_word
 
 // Allocators -*- C++ -*-
 #pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
 
 
 #pragma GCC visibility push(default)
@@ -12208,7 +12240,9 @@ inline void  operator delete[](void*, void*) throw() { }
 #pragma GCC visibility pop
 
 
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
+namespace __gnu_cxx __attribute__ ((__visibility__ ("default")))
+{
+
 
   using std::size_t;
   using std::ptrdiff_t;
@@ -12247,16 +12281,16 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
       ~new_allocator() throw() { }
 
       pointer
-      address(reference __x) const { return &__x; }
+      address(reference __x) const { return std::__addressof(__x); }
 
       const_pointer
-      address(const_reference __x) const { return &__x; }
+      address(const_reference __x) const { return std::__addressof(__x); }
 
       // NB: __n is permitted to be 0.  The C++ standard says nothing
 pointer
       allocate(size_type __n, const void* = 0)
       { 
-	if (__builtin_expect(__n > this->max_size(), false))
+	if (__n > this->max_size())
 	  std::__throw_bad_alloc();
 
 	return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
@@ -12295,11 +12329,11 @@ void
     operator!=(const new_allocator<_Tp>&, const new_allocator<_Tp>&)
     { return false; }
 
-}
 
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   /**
    * @defgroup allocators Allocators
@@ -12328,7 +12362,7 @@ template<>
     };
 
   /**
-   * @brief  The "standard" allocator, as per [20.4].
+   * @brief  The @a standard allocator, as per [20.4].
    * @ingroup allocators
    *
    *  Further details:
@@ -12421,12 +12455,58 @@ template<typename _Alloc, bool = __is_empty(_Alloc)>
       { return __one != __two; }
     };
 
-}
+  // A very basic implementation for now.  In general we have to wait for
+template<typename _Tp,
+	   bool = __has_trivial_copy(typename _Tp::value_type)>
+    struct __shrink_to_fit
+    { static void _S_do_it(_Tp&) { } };
 
-// Helpers for ostream inserters -*- C++ -*-
+  template<typename _Tp>
+    struct __shrink_to_fit<_Tp, true>
+    {
+      static void
+      _S_do_it(_Tp& __v)
+      {
+	try
+	  { _Tp(__v).swap(__v); }
+	catch(...) { }
+      }
+    };
+
+
+  /// [allocator.tag]
+struct allocator_arg_t { };
+
+  constexpr allocator_arg_t allocator_arg = allocator_arg_t();
+
+template<typename _Tp> class __has_allocator_type_helper : __sfinae_types { template<typename _Up> struct _Wrap_type { }; template<typename _Up> static __one __test(_Wrap_type<typename _Up::allocator_type> *); template<typename _Up> static __two __test(...); public: static const bool value = sizeof(__test<_Tp>(0)) == 1; }; template<typename _Tp> struct __has_allocator_type : integral_constant<bool, __has_allocator_type_helper <typename remove_cv<_Tp> ::type> ::value> { };
+
+  template<typename _Tp, typename _Alloc,
+	   bool = __has_allocator_type<_Tp>::value>
+    struct __uses_allocator_helper
+    : public false_type { };
+
+  template<typename _Tp, typename _Alloc>
+    struct __uses_allocator_helper<_Tp, _Alloc, true>
+    : public integral_constant<bool, is_convertible<_Alloc,
+				     typename _Tp::allocator_type>::value>
+    { };
+
+  /// [allocator.uses.trait]
+template<typename _Tp, typename _Alloc>
+    struct uses_allocator
+    : public integral_constant<bool,
+			       __uses_allocator_helper<_Tp, _Alloc>::value>
+    { };
+
+
+
+} // namespace std
 #pragma GCC system_header
 
-// cxxabi.h subset for inclusion by other library headers -*- C++ -*-
+// cxxabi.h subset for cancellation -*- C++ -*-
+#pragma GCC system_header
+
 #pragma GCC visibility push(default)
 
 namespace __cxxabiv1
@@ -12441,14 +12521,18 @@ namespace __cxxabiv1
   class __forced_unwind
   {
     virtual ~__forced_unwind() throw();
-    virtual void __pure_dummy() = 0; // prevent catch by value
-};
+
+    // Prevent catch by value.
+virtual void __pure_dummy() = 0; 
+  };
 }
 
 #pragma GCC visibility pop
 
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   template<typename _CharT, typename _Traits>
     inline void
@@ -12529,18 +12613,22 @@ extern template ostream& __ostream_insert(ostream&, const char*, streamsize);
   extern template wostream& __ostream_insert(wostream&, const wchar_t*,
 					     streamsize);
 
-}
 
-// Functor implementations -*- C++ -*-
-namespace std __attribute__ ((__visibility__ ("default"))) {
+} // namespace std
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   // 20.3.1 base classes
 template<typename _Arg, typename _Result>
     struct unary_function
     {
-      typedef _Arg argument_type;   ///< @c argument_type is the type of the
-typedef _Result result_type;  ///< @c result_type is the return type
-};
+      /// @c argument_type is the type of the argument
+typedef _Arg 	argument_type;   
+
+      /// @c result_type is the return type
+typedef _Result 	result_type;  
+    };
 
   /**
    *  This is one of the @link functors functor base classes@endlink.
@@ -12548,10 +12636,15 @@ typedef _Result result_type;  ///< @c result_type is the return type
   template<typename _Arg1, typename _Arg2, typename _Result>
     struct binary_function
     {
-      typedef _Arg1 first_argument_type;   ///< the type of the first argument
-typedef _Arg2 second_argument_type;  ///< the type of the second argument
-typedef _Result result_type;         ///< type of the return type
-};
+      /// @c first_argument_type is the type of the first argument
+typedef _Arg1 	first_argument_type; 
+
+      /// @c second_argument_type is the type of the second argument
+typedef _Arg2 	second_argument_type;
+
+      /// @c result_type is the return type
+typedef _Result 	result_type;
+    };
   /** @}  */
 
   // 20.3.2 arithmetic
@@ -12841,6 +12934,16 @@ template<typename _Arg1, typename _Arg2, typename _Result>
       const typename _Pair::first_type&
       operator()(const _Pair& __x) const
       { return __x.first; }
+
+      template<typename _Pair2>
+        typename _Pair2::first_type&
+        operator()(_Pair2& __x) const
+        { return __x.first; }
+
+      template<typename _Pair2>
+        const typename _Pair2::first_type&
+        operator()(const _Pair2& __x) const
+        { return __x.first; }
     };
 
   template<typename _Pair>
@@ -13035,10 +13138,11 @@ template<typename _Ret, typename _Tp>
 
   /** @}  */
 
-}
 
-// Functor implementations -*- C++ -*-
-namespace std __attribute__ ((__visibility__ ("default"))) {
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   // 20.3.6 binders
 template<typename _Operation>
@@ -13109,44 +13213,83 @@ template<typename _Operation, typename _Tp>
     } 
   /** @}  */
 
-}
+
+} // namespace
+#pragma GCC system_header
 
 
-// Components for manipulating sequences of characters -*- C++ -*-
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
+
+  /**
+   *  @brief  Return an iterator pointing to the first element of
+   *          the container.
+   *  @param  cont  Container.
+   */
+  template<class _Container>
+    inline auto
+    begin(_Container& __cont) -> decltype(__cont.begin())
+    { return __cont.begin(); }
+
+  /**
+   *  @brief  Return an iterator pointing to the first element of
+   *          the const container.
+   *  @param  cont  Container.
+   */
+  template<class _Container>
+    inline auto
+    begin(const _Container& __cont) -> decltype(__cont.begin())
+    { return __cont.begin(); }
+
+  /**
+   *  @brief  Return an iterator pointing to one past the last element of
+   *          the container.
+   *  @param  cont  Container.
+   */
+  template<class _Container>
+    inline auto
+    end(_Container& __cont) -> decltype(__cont.end())
+    { return __cont.end(); }
+
+  /**
+   *  @brief  Return an iterator pointing to one past the last element of
+   *          the const container.
+   *  @param  cont  Container.
+   */
+  template<class _Container>
+    inline auto
+    end(const _Container& __cont) -> decltype(__cont.end())
+    { return __cont.end(); }
+
+  /**
+   *  @brief  Return an iterator pointing to the first element of the array.
+   *  @param  arr  Array.
+   */
+  template<class _Tp, size_t _Nm>
+    inline _Tp*
+    begin(_Tp (&__arr)[_Nm])
+    { return __arr; }
+
+  /**
+   *  @brief  Return an iterator pointing to one past the last element
+   *          of the array.
+   *  @param  arr  Array.
+   */
+  template<class _Tp, size_t _Nm>
+    inline _Tp*
+    end(_Tp (&__arr)[_Nm])
+    { return __arr + _Nm; }
+
+
+} // namespace
 #pragma GCC system_header
 
 // std::initializer_list support -*- C++ -*-
-#pragma GCC visibility push(default)
-
-// -*- C++ -*- forwarding header.
 #pragma GCC system_header
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
 
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
+#pragma GCC visibility push(default)
 
 
 namespace std
@@ -13155,46 +13298,77 @@ namespace std
 template<class _E>
     class initializer_list
     {
-      const _E* __array;
-      size_t __len;
+    public:
+      typedef _E 		value_type;
+      typedef const _E& 	reference;
+      typedef const _E& 	const_reference;
+      typedef size_t 		size_type;
+      typedef const _E* 	iterator;
+      typedef const _E* 	const_iterator;
+
+    private:
+      iterator			_M_array;
+      size_type			_M_len;
 
       // The compiler can call a private constructor.
-initializer_list(const _E* __a, size_t __l)
-      : __array(__a), __len(__l) { }
+constexpr initializer_list(const_iterator __a, size_type __l)
+      : _M_array(__a), _M_len(__l) { }
 
     public:
-      initializer_list()
-      : __array((__null)), __len(0) { }
+      constexpr initializer_list() : _M_array(0), _M_len(0) { }
 
       // Number of elements.
-size_t size() const
-      { return __len; }
+constexpr size_type
+      size() { return _M_len; }
 
       // First element.
-const _E* begin() const
-      { return __array; }
+constexpr const_iterator
+      begin() { return _M_array; }
 
       // One past the last element.
-const _E* end() const
-      { return begin() + size(); }
+constexpr const_iterator
+      end() { return begin() + size(); }
   };
+
+  /**
+   *  @brief  Return an iterator pointing to the first element of
+   *          the initilizer_list.
+   *  @param  il  Initializer list.
+   */
+  template<class _Tp>
+    constexpr const _Tp*
+    begin(initializer_list<_Tp> __ils)
+    { return __ils.begin(); }
+
+  /**
+   *  @brief  Return an iterator pointing to one past the last element
+   *          of the initilizer_list.
+   *  @param  il  Initializer list.
+   */
+  template<class _Tp>
+    constexpr const _Tp*
+    end(initializer_list<_Tp> __ils)
+    { return __ils.end(); }
 }
 
 #pragma GCC visibility pop
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   /**
    *  @class basic_string basic_string.h <string>
    *  @brief  Managing sequences of characters and character-like objects.
    *
+   *  @ingroup strings
    *  @ingroup sequences
    *
    *  Meets the requirements of a <a href="tables.html#65">container</a>, a
    *  <a href="tables.html#66">reversible container</a>, and a
    *  <a href="tables.html#67">sequence</a>.  Of the
    *  <a href="tables.html#68">optional sequence requirements</a>, only
-   *  @c push_back, @c at, and array access are supported.
+   *  @c push_back, @c at, and @c %array access are supported.
    *
    *  @doctodo
    *
@@ -13218,20 +13392,20 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    *
    *  This approach has the enormous advantage that a string object
    *  requires only one allocation.  All the ugliness is confined
-   *  within a single pair of inline functions, which each compile to
-   *  a single "add" instruction: _Rep::_M_data(), and
+   *  within a single %pair of inline functions, which each compile to
+   *  a single @a add instruction: _Rep::_M_data(), and
    *  string::_M_rep(); and the allocation function which gets a
    *  block of raw bytes and with room enough and constructs a _Rep
    *  object at the front.
    *
-   *  The reason you want _M_data pointing to the character array and
+   *  The reason you want _M_data pointing to the character %array and
    *  not the _Rep is so that the debugger can see the string
    *  contents. (Probably we should add a non-inline member to get
    *  the _Rep for the debugger to use, so users can check the actual
    *  string length.)
    *
    *  Note that the _Rep object is a POD so that you can have a
-   *  static "empty string" _Rep object already "constructed" before
+   *  static <em>empty string</em> _Rep object already @a constructed before
    *  static constructors have run.  The reference-count encoding is
    *  chosen so that a 0 indicates one reference, so you never try to
    *  destroy the empty-string _Rep object.
@@ -13309,12 +13483,15 @@ void* __p = reinterpret_cast<void*>(&_S_empty_rep_storage);
 
 	void
 	_M_set_length_and_sharable(size_type __n)
-	{ 
-	  this->_M_set_sharable();  // One reference.
+	{
+	  if (__builtin_expect(this != &_S_empty_rep(), false))
+	    {
+	      this->_M_set_sharable();  // One reference.
 this->_M_length = __n;
-	  traits_type::assign(this->_M_refdata()[__n], _S_terminal);
-	  // grrr. (per 21.3.4)
+	      traits_type::assign(this->_M_refdata()[__n], _S_terminal);
+	      // grrr. (per 21.3.4)
 }
+	}
 
 	_CharT*
 	_M_refdata() throw()
@@ -13335,9 +13512,16 @@ static _Rep*
 	_M_dispose(const _Alloc& __a)
 	{
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
-	    if (__gnu_cxx::__exchange_and_add_dispatch(&this->_M_refcount,
-						       -1) <= 0)
-	      _M_destroy(__a);
+	    {
+	      // Be race-detector-friendly.  For more info see bits/c++config.
+;
+	      if (__gnu_cxx::__exchange_and_add_dispatch(&this->_M_refcount,
+							 -1) <= 0)
+		{
+		  ;
+		  _M_destroy(__a);
+		}
+	    }
 	}  // XXX MT
 void
 	_M_destroy(const _Alloc&) throw();
@@ -13507,8 +13691,8 @@ template<class _Iterator>
 
     public:
       // Construct/copy/destroy:
-inline
-      basic_string();
+basic_string()
+      : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
 
       /**
        *  @brief  Construct an empty string using allocator @a a.
@@ -13537,13 +13721,13 @@ basic_string(const basic_string& __str);
 		   size_type __n, const _Alloc& __a);
 
       /**
-       *  @brief  Construct string initialized by a character array.
-       *  @param  s  Source character array.
+       *  @brief  Construct string initialized by a character %array.
+       *  @param  s  Source character %array.
        *  @param  n  Number of characters to copy.
        *  @param  a  Allocator to use (default is default allocator).
        *
-       *  NB: @a s must have at least @a n characters, '\\0' has no special
-       *  meaning.
+       *  NB: @a s must have at least @a n characters, &apos;\\0&apos;
+       *  has no special meaning.
        */
       basic_string(const _CharT* __s, size_type __n,
 		   const _Alloc& __a = _Alloc());
@@ -13562,7 +13746,20 @@ basic_string(const basic_string& __str);
       basic_string(size_type __n, _CharT __c, const _Alloc& __a = _Alloc());
 
       /**
-       *  @brief  Construct string from an initializer list.
+       *  @brief  Move construct string.
+       *  @param  str  Source string.
+       *
+       *  The newly-created string contains the exact contents of @a str.
+       *  @a str is a valid, but unspecified string.
+       **/
+      basic_string(basic_string&& __str)
+      : _M_dataplus(__str._M_dataplus)
+      {
+	__str._M_data(_S_empty_rep()._M_refdata());
+      }
+
+      /**
+       *  @brief  Construct string from an initializer %list.
        *  @param  l  std::initializer_list of characters.
        *  @param  a  Allocator to use (default is default allocator).
        */
@@ -13615,13 +13812,28 @@ basic_string(const basic_string& __str);
       }
 
       /**
-       *  @brief  Set value to string constructed from initializer list.
+       *  @brief  Move assign the value of @a str to this string.
+       *  @param  str  Source string.
+       *
+       *  The contents of @a str are moved into this string (without copying).
+       *  @a str is a valid, but unspecified string.
+       **/
+      basic_string&
+      operator=(basic_string&& __str)
+      {
+	// NB: DR 1204.
+this->swap(__str);
+	return *this;
+      }
+
+      /**
+       *  @brief  Set value to string constructed from initializer %list.
        *  @param  l  std::initializer_list.
        */
       basic_string&
       operator=(initializer_list<_CharT> __l)
       {
-	this->assign (__l.begin(), __l.end());
+	this->assign(__l.begin(), __l.size());
 	return *this;
       }
 
@@ -13696,6 +13908,40 @@ iterator
       rend() const
       { return const_reverse_iterator(this->begin()); }
 
+      /**
+       *  Returns a read-only (constant) iterator that points to the first
+       *  character in the %string.
+       */
+      const_iterator
+      cbegin() const
+      { return const_iterator(this->_M_data()); }
+
+      /**
+       *  Returns a read-only (constant) iterator that points one past the
+       *  last character in the %string.
+       */
+      const_iterator
+      cend() const
+      { return const_iterator(this->_M_data() + this->size()); }
+
+      /**
+       *  Returns a read-only (constant) reverse iterator that points
+       *  to the last character in the %string.  Iteration is done in
+       *  reverse element order.
+       */
+      const_reverse_iterator
+      crbegin() const
+      { return const_reverse_iterator(this->end()); }
+
+      /**
+       *  Returns a read-only (constant) reverse iterator that points
+       *  to one before the first character in the %string.  Iteration
+       *  is done in reverse element order.
+       */
+      const_reverse_iterator
+      crend() const
+      { return const_reverse_iterator(this->begin()); }
+
     public:
       // Capacity:
 size_type
@@ -13707,7 +13953,7 @@ size_type
       length() const
       { return _M_rep()->_M_length; }
 
-      /// Returns the size() of the largest possible %string.
+      ///  Returns the size() of the largest possible %string.
 size_type
       max_size() const
       { return _Rep::_S_max_size; }
@@ -13720,7 +13966,7 @@ size_type
        *  This function will %resize the %string to the specified
        *  number of characters.  If the number is smaller than the
        *  %string's current size the %string is truncated, otherwise
-       *  the %string is extended and new elements are set to @a c.
+       *  the %string is extended and new elements are %set to @a c.
        */
       void
       resize(size_type __n, _CharT __c);
@@ -13738,6 +13984,16 @@ size_type
       void
       resize(size_type __n)
       { this->resize(__n, _CharT()); }
+
+      ///  A non-binding request to reduce capacity() to size().
+void
+      shrink_to_fit()
+      {
+	try
+	  { reserve(0); }
+	catch(...)
+	  { }
+      }
 
       /**
        *  Returns the total number of characters that the %string can hold
@@ -13775,7 +14031,8 @@ size_type
       { _M_mutate(0, this->size(), 0); }
 
       /**
-       *  Returns true if the %string is empty.  Equivalent to *this == "".
+       *  Returns true if the %string is empty.  Equivalent to 
+       *  <code>*this == ""</code>.
        */
       bool
       empty() const
@@ -13827,6 +14084,38 @@ const_reference
 	  __throw_out_of_range(("basic_string::at"));
 	return _M_data()[__n];
       }
+
+      /**
+       *  Returns a read/write reference to the data at the first
+       *  element of the %string.
+       */
+      reference
+      front()
+      { return operator[](0); }
+
+      /**
+       *  Returns a read-only (constant) reference to the data at the first
+       *  element of the %string.
+       */
+      const_reference
+      front() const
+      { return operator[](0); }
+
+      /**
+       *  Returns a read/write reference to the data at the last
+       *  element of the %string.
+       */
+      reference
+      back()
+      { return operator[](this->size() - 1); }
+
+      /**
+       *  Returns a read-only (constant) reference to the data at the
+       *  last element of the %string.
+       */
+      const_reference
+      back() const
+      { return operator[](this->size() - 1); }
 
       /**
        *  @brief  Provides access to the data contained in the %string.
@@ -13881,7 +14170,7 @@ basic_string&
        */
       basic_string&
       operator+=(initializer_list<_CharT> __l)
-      { return this->append(__l.begin(), __l.end()); }
+      { return this->append(__l.begin(), __l.size()); }
 
       /**
        *  @brief  Append a string to this string.
@@ -13945,7 +14234,7 @@ basic_string&
        */
       basic_string&
       append(initializer_list<_CharT> __l)
-      { return this->append(__l.begin(), __l.end()); }
+      { return this->append(__l.begin(), __l.size()); }
 
       /**
        *  @brief  Append a range of characters.
@@ -13981,6 +14270,21 @@ basic_string&
        */
       basic_string&
       assign(const basic_string& __str);
+
+      /**
+       *  @brief  Set value to contents of another string.
+       *  @param  str  Source string to use.
+       *  @return  Reference to this string.
+       *
+       *  This function sets this string to the exact contents of @a str.
+       *  @a str is a valid, but unspecified string.
+       */
+      basic_string&
+      assign(basic_string&& __str)
+      {
+	this->swap(__str);
+	return *this;
+      }
 
       /**
        *  @brief  Set value to a substring of a string.
@@ -14062,7 +14366,7 @@ basic_string&
        */
       basic_string&
       assign(initializer_list<_CharT> __l)
-      { return this->assign(__l.begin(), __l.end()); }
+      { return this->assign(__l.begin(), __l.size()); }
 
       /**
        *  @brief  Insert multiple characters.
@@ -14104,7 +14408,10 @@ basic_string&
        */
       void
       insert(iterator __p, initializer_list<_CharT> __l)
-      { this->insert(__p, __l.begin(), __l.end()); }
+      {
+	;
+	this->insert(__p - _M_ibegin(), __l.begin(), __l.size());
+      }
 
       /**
        *  @brief  Insert value of a string.
@@ -14280,15 +14587,8 @@ basic_string&
        *  The value of the string doesn't change if an error is thrown.
       */
       iterator
-      erase(iterator __first, iterator __last)
-      {
-	;
-        const size_type __pos = __first - _M_ibegin();
-	_M_mutate(__pos, __last - __first, size_type(0));
-	_M_rep()->_M_set_leaked();
-	return iterator(_M_data() + __pos);
-      }
-
+      erase(iterator __first, iterator __last);
+ 
       /**
        *  @brief  Replace characters with value from another string.
        *  @param pos  Index of first character to replace.
@@ -14365,10 +14665,10 @@ basic_string&
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
        *  Removes the characters in the range [pos,pos + n1) from this string.
-       *  In place, the first @a n characters of @a s are inserted.  If @a
-       *  pos is beyond end of string, out_of_range is thrown.  If the length
-       *  of result exceeds max_size(), length_error is thrown.  The value of
-       *  the string doesn't change if an error is thrown.
+       *  In place, the characters of @a s are inserted.  If @a pos is beyond
+       *  end of string, out_of_range is thrown.  If the length of result
+       *  exceeds max_size(), length_error is thrown.  The value of the string
+       *  doesn't change if an error is thrown.
       */
       basic_string&
       replace(size_type __pos, size_type __n1, const _CharT* __s)
@@ -14593,7 +14893,12 @@ template<class _Integer>
         static _CharT*
         _S_construct_aux(_Integer __beg, _Integer __end,
 			 const _Alloc& __a, __true_type)
-        { return _S_construct(static_cast<size_type>(__beg), __end, __a); }
+        { return _S_construct_aux_2(static_cast<size_type>(__beg),
+				    __end, __a); }
+
+      static _CharT*
+      _S_construct_aux_2(size_type __req, _CharT __c, const _Alloc& __a)
+      { return _S_construct(__req, __c, __a); }
 
       template<class _InIterator>
         static _CharT*
@@ -14629,7 +14934,7 @@ template<class _FwdIterator>
        *  @throw  std::out_of_range  If pos > size().
        *
        *  Copies up to @a n characters starting at @a pos into the C string @a
-       *  s.  If @a pos is greater than size(), out_of_range is thrown.
+       *  s.  If @a pos is %greater than size(), out_of_range is thrown.
       */
       size_type
       copy(_CharT* __s, size_type __n, size_type __pos = 0) const;
@@ -15132,10 +15437,10 @@ int
       compare(size_type __pos, size_type __n1, const _CharT* __s) const;
 
       /**
-       *  @brief  Compare substring against a character array.
+       *  @brief  Compare substring against a character %array.
        *  @param pos1  Index of first character of substring.
        *  @param n1  Number of characters in substring.
-       *  @param s  character array to compare against.
+       *  @param s  character %array to compare against.
        *  @param n2  Number of characters of s.
        *  @return  Integer < 0, 0, or > 0.
        *
@@ -15150,18 +15455,13 @@ int
        *  result of the comparison is nonzero returns it, otherwise the shorter
        *  one is ordered first.
        *
-       *  NB: s must have at least n2 characters, '\\0' has no special
-       *  meaning.
+       *  NB: s must have at least n2 characters, &apos;\\0&apos; has
+       *  no special meaning.
       */
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s,
 	      size_type __n2) const;
   };
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    inline basic_string<_CharT, _Traits, _Alloc>::
-    basic_string()
-    : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
 
   // operator+
 template<typename _CharT, typename _Traits, typename _Alloc>
@@ -15227,6 +15527,54 @@ template<typename _CharT, typename _Traits, typename _Alloc>
       __str.append(__size_type(1), __rhs);
       return __str;
     }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
+	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
+    { return std::move(__lhs.append(__rhs)); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
+	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
+    { return std::move(__rhs.insert(0, __lhs)); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
+	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
+    {
+      const auto __size = __lhs.size() + __rhs.size();
+      const bool __cond = (__size > __lhs.capacity()
+			   && __size <= __rhs.capacity());
+      return __cond ? std::move(__rhs.insert(0, __lhs))
+	            : std::move(__lhs.append(__rhs));
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(const _CharT* __lhs,
+	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
+    { return std::move(__rhs.insert(0, __lhs)); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(_CharT __lhs,
+	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
+    { return std::move(__rhs.insert(0, 1, __lhs)); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
+	      const _CharT* __rhs)
+    { return std::move(__lhs.append(__rhs)); }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
+    operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
+	      _CharT __rhs)
+    { return std::move(__lhs.append(1, __rhs)); }
 
   // operator ==
 template<typename _CharT, typename _Traits, typename _Alloc>
@@ -15498,11 +15846,12 @@ return __ostream_insert(__os, __str.data(), __str.size());
    *  @param str  Buffer to store into.
    *  @return  Reference to the input stream.
    *
-   *  Stores characters from is into @a str until '\n' is found, the end of
-   *  the stream is encountered, or str.max_size() is reached.  If is.width()
-   *  is non-zero, that is the limit on the number of characters stored into
-   *  @a str.  Any previous contents of @a str are erased.  If end of line was
-   *  encountered, it is extracted but not stored into @a str.
+   *  Stores characters from is into @a str until &apos;\n&apos; is
+   *  found, the end of the stream is encountered, or str.max_size()
+   *  is reached.  If is.width() is non-zero, that is the limit on the
+   *  number of characters stored into @a str.  Any previous contents
+   *  of @a str are erased.  If end of line was encountered, it is
+   *  extracted but not stored into @a str.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
     inline basic_istream<_CharT, _Traits>&
@@ -15520,79 +15869,17 @@ return __ostream_insert(__os, __str.data(), __str.size());
     getline(basic_istream<wchar_t>& __in, basic_string<wchar_t>& __str,
 	    wchar_t __delim);
 
-}
 
-
-// String Conversions -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
 // -*- C++ -*- forwarding header.
 #pragma GCC system_header
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
 
 
 
-
-
-
-/*#endif*/ /* _STDDEF */
-
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-
-
-
-/* Copyright (C) 1991-2007, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2007, 2009, 2010, 2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -15617,33 +15904,7 @@ return __ostream_insert(__os, __str.data(), __str.size());
 
 
 /* Get size_t, wchar_t and NULL from <stddef.h>.  */
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
+///////////////////////////////////////////////////////////////////////////////
 extern "C" {
 
 
@@ -15924,8 +16185,7 @@ extern long int a64l (__const char *__s)
      throw () __attribute__ ((__pure__)) __attribute__ ((__nonnull__ (1))) ;
 
 
-/* Copyright (C) 1991,1992,1994,1995,1996,1997,1998,1999,2000,2001,2002,2006
-   	Free Software Foundation, Inc.
+/* Copyright (C) 1991,1992,1994-2002,2006,2010 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -15986,34 +16246,7 @@ typedef __key_t key_t;
 
 typedef __suseconds_t suseconds_t;
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-/* Old compatibility names for C types.  */
+///////////////////////////////////////////////////////////////////////////////
 typedef unsigned long int ulong;
 typedef unsigned short int ushort;
 typedef unsigned int uint;
@@ -16040,7 +16273,7 @@ typedef int register_t __attribute__ ((__mode__ (__word__)));
 
 /* It also defines `fd_set' and the FD_* macros for `select'.  */
 /* `fd_set' type and related macros, and `select'/`pselect' declarations.
-   Copyright (C) 1996-2003, 2009 Free Software Foundation, Inc.
+   Copyright (C) 1996-2003, 2009, 2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -16065,7 +16298,7 @@ typedef int register_t __attribute__ ((__mode__ (__word__)));
 /* Get definition of needed basic types.  */
 
 /* Get __FD_* definitions.  */
-/* Copyright (C) 1997,1998,1999,2001,2008,2009 Free Software Foundation, Inc.
+/* Copyright (C) 1997-1999,2001,2008,2009,2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -16115,6 +16348,16 @@ typedef int register_t __attribute__ ((__mode__ (__word__)));
    02111-1307 USA.  */
 
 
+typedef int __sig_atomic_t;
+
+/* A `sigset_t' has a bit for each signal.  */
+
+typedef struct
+  {
+    unsigned long int __val[(1024 / (8 * sizeof (unsigned long int)))];
+  } __sigset_t;
+
+
 
 /* We only want to define these functions if <signal.h> was actually
    included; otherwise we were included just to define the types.  Since we
@@ -16123,10 +16366,11 @@ typedef int register_t __attribute__ ((__mode__ (__word__)));
    register vars declared later will cause compilation errors).  */
 
 
+typedef __sigset_t sigset_t;
 
 /* Get definition of timer specification structures.  */
-/* System-dependent timing definitions.  Generic version.
-   Copyright (C) 1996,1997,1999-2002,2003 Free Software Foundation, Inc.
+/* System-dependent timing definitions.  Linux version.
+   Copyright (C) 1996,1997,1999-2003,2010,2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -16150,20 +16394,13 @@ typedef int register_t __attribute__ ((__mode__ (__word__)));
 
 
 
-/* A time value that is accurate to the nearest
-   microsecond but also has a range of years.  */
-struct timeval
-  {
-    __time_t tv_sec;		/* Seconds.  */
-    __suseconds_t tv_usec;	/* Microseconds.  */
-  };
 
 
 
 /* The fd_set member is required to be an array of longs.  */
 typedef long int __fd_mask;
 
-/* Some versions of <linux/posix_types.h> define these macros.  */
+/* Some versions of <linux/posix_types.h> define this macros.  */
 /* It's easier to assume 8-bit bytes than to get CHAR_BIT.  */
 
 /* fd_set for select and pselect.  */
@@ -16212,12 +16449,15 @@ extern int pselect (int __nfds, fd_set *__restrict __readfds,
 		    const struct timespec *__restrict __timeout,
 		    const __sigset_t *__restrict __sigmask);
 
+
+/* Define some inlines helping to catch common problems.  */
+
 }
 
 
 /* BSD defines these symbols, so we follow.  */
 /* Definitions of macros to access `dev_t' values.
-   Copyright (C) 1996, 1997, 1999, 2003, 2004, 2007
+   Copyright (C) 1996, 1997, 1999, 2003, 2004, 2007, 2011
    Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -16241,18 +16481,20 @@ extern int pselect (int __nfds, fd_set *__restrict __readfds,
 /* If the compiler does not know long long it is out of luck.  We are
    not going to hack weird hacks to support the dev_t representation
    they need.  */
+extern "C" {
+
 __extension__
 extern unsigned int gnu_dev_major (unsigned long long int __dev)
-     throw ();
+     throw () __attribute__ ((__const__));
 __extension__
 extern unsigned int gnu_dev_minor (unsigned long long int __dev)
-     throw ();
+     throw () __attribute__ ((__const__));
 __extension__
 extern unsigned long long int gnu_dev_makedev (unsigned int __major,
 					       unsigned int __minor)
-     throw ();
+     throw () __attribute__ ((__const__));
 
-
+}
 
 /* Access the functions with their traditional names.  */
 
@@ -16453,33 +16695,7 @@ extern void cfree (void *__ptr) throw ();
 
 
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
+///////////////////////////////////////////////////////////////////////////////
 extern "C" {
 
 /* Remove any previous definitions.  */
@@ -16554,7 +16770,7 @@ extern int setenv (__const char *__name, __const char *__value, int __replace)
      throw () __attribute__ ((__nonnull__ (2)));
 
 /* Remove the variable NAME from the environment.  */
-extern int unsetenv (__const char *__name) throw ();
+extern int unsetenv (__const char *__name) throw () __attribute__ ((__nonnull__ (1)));
 
 /* The `clearenv' was planned to be added to POSIX.1 but probably
    never made it.  Nevertheless the POSIX.9 standard (POSIX bindings
@@ -16600,7 +16816,7 @@ extern char *mkdtemp (char *__template) throw () __attribute__ ((__nonnull__ (1)
    mkstemp.  But allow the caller to pass additional flags which are
    used in the open call to create the file..
 
-   This function is a possible cancellation points and therefore not
+   This function is a possible cancellation point and therefore not
    marked with __THROW.  */
 extern int mkostemp (char *__template, int __flags) __attribute__ ((__nonnull__ (1))) ;
 extern int mkostemp64 (char *__template, int __flags) __attribute__ ((__nonnull__ (1))) ;
@@ -16829,7 +17045,9 @@ extern int getloadavg (double __loadavg[], int __nelem)
 
 
 // Get rid of those macros defined in <stdlib.h> in lieu of real functions.
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   using ::div_t;
   using ::ldiv_t;
@@ -16869,11 +17087,11 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   inline ldiv_t
   div(long __i, long __j) { return ldiv(__i, __j); }
 
-}
 
+} // namespace
+namespace __gnu_cxx __attribute__ ((__visibility__ ("default")))
+{
 
-
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
 
   using ::lldiv_t;
   using ::_Exit;
@@ -16895,10 +17113,10 @@ namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
   using ::strtof;
   using ::strtold;
 
-}
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
-
+} // namespace __gnu_cxx
+namespace std
+{
   using ::__gnu_cxx::lldiv_t;
   using ::__gnu_cxx::_Exit;
   using ::__gnu_cxx::abs;
@@ -16910,16 +17128,9 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   using ::__gnu_cxx::strtoll;
   using ::__gnu_cxx::strtoull;
   using ::__gnu_cxx::strtold;
-
-}
-
-
-// TR1 cstdlib -*- C++ -*-
+} // namespace std
 namespace std
 {
-
-
-
   // types
 using std::lldiv_t;
 
@@ -16937,48 +17148,11 @@ using std::llabs;
   // overloads
 using std::abs;
   using std::div;
-
-
-
-}
-
-
-
-// -*- C++ -*- forwarding header.
+} // namespace std
 #pragma GCC system_header
 
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-
-/* Copyright (C) 1995-2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 1995-2008, 2009, 2010, 2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -17002,41 +17176,11 @@ using std::abs;
  */
 
 
-/* Undefined all __need_* constants in case we are included to get those
+/* Undefine all __need_* constants in case we are included to get those
    constants but the whole file was already read.  */
 
 // -*- C++ -*- forwarding header.
 #pragma GCC system_header
-
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
 
 
 // The -*- C++ -*- forwarding header.
@@ -17073,7 +17217,7 @@ extern "C" {
 /* Get the error number constants from the system-specific file.
    This file will test __need_Emath and _ERRNO_H.  */
 /* Error constants.  Linux specific version.
-   Copyright (C) 1996, 1997, 1998, 1999, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1996-1999, 2005, 2009 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -17107,11 +17251,13 @@ extern "C" {
 
 
 
+
 /* Linux has no ENOTSUP error code.  */
 
 /* Older Linux versions also had no ECANCELED error code.  */
 
 /* Support for error codes to support robust mutexes was added later, too.  */
+
 
 /* Function to get address of global `errno' variable.  */
 extern int *__errno_location (void) throw () __attribute__ ((__const__));
@@ -17143,7 +17289,9 @@ typedef int error_t;
 
 
 // Adhere to section 17.4.1.2 clause 5 of ISO 14882:1998
-namespace __gnu_cxx __attribute__ ((__visibility__ ("default"))) {
+namespace __gnu_cxx __attribute__ ((__visibility__ ("default")))
+{
+
 
   // Helper for all the sto* functions.
 template<typename _TRet, typename _Ret = _TRet, typename _CharT,
@@ -17196,10 +17344,11 @@ _CharT* __s = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
       return _String(__s, __s + __len);
     }
 
-}
 
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // 21.4 Numeric Conversions [string.conversions].
 inline int
@@ -17242,6 +17391,28 @@ inline float
 
   // NB: (v)snprintf vs sprintf.
 inline string
+  to_string(int __val)
+  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, 4 * sizeof(int),
+					   "%d", __val); }
+
+  inline string
+  to_string(unsigned __val)
+  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
+					   4 * sizeof(unsigned),
+					   "%u", __val); }
+
+  inline string
+  to_string(long __val)
+  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, 4 * sizeof(long),
+					   "%ld", __val); }
+
+  inline string
+  to_string(unsigned long __val)
+  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
+					   4 * sizeof(unsigned long),
+					   "%lu", __val); }
+
+  inline string
   to_string(long long __val)
   { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
 					   4 * sizeof(long long),
@@ -17252,6 +17423,24 @@ inline string
   { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
 					   4 * sizeof(unsigned long long),
 					   "%llu", __val); }
+
+  inline string
+  to_string(float __val)
+  {
+    const int __n = 
+      __gnu_cxx::__numeric_traits<float>::__max_exponent10 + 20;
+    return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, __n,
+					   "%f", __val);
+  }
+
+  inline string
+  to_string(double __val)
+  {
+    const int __n = 
+      __gnu_cxx::__numeric_traits<double>::__max_exponent10 + 20;
+    return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, __n,
+					   "%f", __val);
+  }
 
   inline string
   to_string(long double __val)
@@ -17300,6 +17489,29 @@ inline float
   stold(const wstring& __str, size_t* __idx = 0)
   { return __gnu_cxx::__stoa(&std::wcstold, "stold", __str.c_str(), __idx); }
 
+  // DR 1261.
+inline wstring
+  to_wstring(int __val)
+  { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf, 4 * sizeof(int),
+					    L"%d", __val); }
+
+  inline wstring
+  to_wstring(unsigned __val)
+  { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf,
+					    4 * sizeof(unsigned),
+					    L"%u", __val); }
+
+  inline wstring
+  to_wstring(long __val)
+  { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf, 4 * sizeof(long),
+					    L"%ld", __val); }
+
+  inline wstring
+  to_wstring(unsigned long __val)
+  { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf,
+					    4 * sizeof(unsigned long),
+					    L"%lu", __val); }
+
   inline wstring
   to_wstring(long long __val)
   { return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf,
@@ -17313,6 +17525,24 @@ inline float
 					    L"%llu", __val); }
 
   inline wstring
+  to_wstring(float __val)
+  {
+    const int __n =
+      __gnu_cxx::__numeric_traits<float>::__max_exponent10 + 20;
+    return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf, __n,
+					    L"%f", __val);
+  }
+
+  inline wstring
+  to_wstring(double __val)
+  {
+    const int __n =
+      __gnu_cxx::__numeric_traits<double>::__max_exponent10 + 20;
+    return __gnu_cxx::__to_xstring<wstring>(&std::vswprintf, __n,
+					    L"%f", __val);
+  }
+
+  inline wstring
   to_wstring(long double __val)
   {
     const int __n =
@@ -17321,15 +17551,226 @@ inline float
 					    L"%Lf", __val);
   }
 
-}
 
+} // namespace
+#pragma GCC system_header
 
-
-// Components for manipulating sequences of characters -*- C++ -*-
+// Declarations for hash functions. -*- C++ -*-
 #pragma GCC system_header
 
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std
+{
+
+
+  // Hash function implementation for the nontrivial specialization.
+size_t
+  _Hash_bytes(const void* __ptr, size_t __len, size_t __seed);
+
+  // A similar hash primitive, using the FNV hash algorithm. This
+size_t
+  _Fnv_hash_bytes(const void* __ptr, size_t __len, size_t __seed);
+
+
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
+
+  /** @defgroup hashes Hashes
+   *  @ingroup functors
+   *
+   *   Hashing functors taking a variable type and returning a @c std::size_t.
+   *
+   *  @{
+   */
+
+  template<typename _Result, typename _Arg>
+    struct __hash_base
+    {
+      typedef _Result     result_type;
+      typedef _Arg      argument_type;
+    };
+
+  /// Primary class template hash.
+template<typename _Tp>
+    struct hash : public __hash_base<size_t, _Tp>
+    {
+      size_t
+      operator()(_Tp __val) const;
+    };
+
+  /// Partial specializations for pointer types.
+template<typename _Tp>
+    struct hash<_Tp*> : public __hash_base<size_t, _Tp*>
+    {
+      size_t
+      operator()(_Tp* __p) const
+      { return reinterpret_cast<size_t>(__p); }
+    };
+
+  // Explicit specializations for integer types.
+template< > inline size_t hash<bool> ::operator()(bool __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for char.
+template< > inline size_t hash<char> ::operator()(char __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for signed char.
+template< > inline size_t hash<signed char> ::operator()(signed char __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for unsigned char.
+template< > inline size_t hash<unsigned char> ::operator()(unsigned char __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for wchar_t.
+template< > inline size_t hash<wchar_t> ::operator()(wchar_t __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for char16_t.
+template< > inline size_t hash<char16_t> ::operator()(char16_t __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for char32_t.
+template< > inline size_t hash<char32_t> ::operator()(char32_t __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for short.
+template< > inline size_t hash<short> ::operator()(short __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for int.
+template< > inline size_t hash<int> ::operator()(int __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for long.
+template< > inline size_t hash<long> ::operator()(long __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for long long.
+template< > inline size_t hash<long long> ::operator()(long long __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for unsigned short.
+template< > inline size_t hash<unsigned short> ::operator()(unsigned short __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for unsigned int.
+template< > inline size_t hash<unsigned int> ::operator()(unsigned int __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for unsigned long.
+template< > inline size_t hash<unsigned long> ::operator()(unsigned long __val) const { return static_cast<size_t>(__val); };
+
+  /// Explicit specialization for unsigned long long.
+template< > inline size_t hash<unsigned long long> ::operator()(unsigned long long __val) const { return static_cast<size_t>(__val); };
+
+
+  struct _Hash_impl
+  {
+    static size_t
+    hash(const void* __ptr, size_t __clength,
+	 size_t __seed = static_cast<size_t>(0xc70f6907UL))
+    { return _Hash_bytes(__ptr, __clength, __seed); }
+
+    template<typename _Tp>
+      static size_t
+      hash(const _Tp& __val)
+      { return hash(&__val, sizeof(__val)); }
+
+    template<typename _Tp>
+      static size_t
+      __hash_combine(const _Tp& __val, size_t __hash)
+      { return hash(&__val, sizeof(__val), __hash); }
+  };
+
+  struct _Fnv_hash_impl
+  {
+    static size_t
+    hash(const void* __ptr, size_t __clength,
+	 size_t __seed = static_cast<size_t>(2166136261UL))
+    { return _Fnv_hash_bytes(__ptr, __clength, __seed); }
+
+    template<typename _Tp>
+      static size_t
+      hash(const _Tp& __val)
+      { return hash(&__val, sizeof(__val)); }
+
+    template<typename _Tp>
+      static size_t
+      __hash_combine(const _Tp& __val, size_t __hash)
+      { return hash(&__val, sizeof(__val), __hash); }
+  };
+
+  /// Specialization for float.
+template<>
+    inline size_t
+    hash<float>::operator()(float __val) const
+    {
+      // 0 and -0 both hash to zero.
+return __val != 0.0f ? std::_Hash_impl::hash(__val) : 0;
+    }
+
+  /// Specialization for double.
+template<>
+    inline size_t
+    hash<double>::operator()(double __val) const
+    {
+      // 0 and -0 both hash to zero.
+return __val != 0.0 ? std::_Hash_impl::hash(__val) : 0;
+    }
+
+  /// Specialization for long double.
+template<>
+    __attribute__ ((__pure__)) size_t
+    hash<long double>::operator()(long double __val) const;
+
+  // @} group hashes
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
+
+  // DR 1182.
+template<>
+    struct hash<string>
+    : public __hash_base<size_t, string>
+    {
+      size_t
+      operator()(const string& __s) const
+      { return std::_Hash_impl::hash(__s.data(), __s.length()); }
+    };
+
+  /// std::hash specialization for wstring.
+template<>
+    struct hash<wstring>
+    : public __hash_base<size_t, wstring>
+    {
+      size_t
+      operator()(const wstring& __s) const
+      { return std::_Hash_impl::hash(__s.data(),
+                                     __s.length() * sizeof(wchar_t)); }
+    };
+
+  /// std::hash specialization for u16string.
+template<>
+    struct hash<u16string>
+    : public __hash_base<size_t, u16string>
+    {
+      size_t
+      operator()(const u16string& __s) const
+      { return std::_Hash_impl::hash(__s.data(),
+                                     __s.length() * sizeof(char16_t)); }
+    };
+
+  /// std::hash specialization for u32string.
+template<>
+    struct hash<u32string>
+    : public __hash_base<size_t, u32string>
+    {
+      size_t
+      operator()(const u32string& __s) const
+      { return std::_Hash_impl::hash(__s.data(),
+                                     __s.length() * sizeof(char32_t)); }
+    };
+
+
+} // namespace
+#pragma GCC system_header
+
+
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     const typename basic_string<_CharT, _Traits, _Alloc>::size_type
@@ -17407,9 +17848,8 @@ _Rep* __another = _Rep::_S_create(__len + 1, __len, __a);
 	if (__beg == __end && __a == _Alloc())
 	  return _S_empty_rep()._M_refdata();
 	// NB: Not required, but considered best practice.
-if (__builtin_expect(__gnu_cxx::__is_null_pointer(__beg)
-			     && __beg != __end, 0))
-	  __throw_logic_error(("basic_string::_S_construct NULL not valid"));
+if (__gnu_cxx::__is_null_pointer(__beg) && __beg != __end)
+	  __throw_logic_error(("basic_string::_S_construct null not valid"));
 
 	const size_type __dnew = static_cast<size_type>(std::distance(__beg,
 								      __end));
@@ -17658,6 +18098,26 @@ const size_type __off = __s - _M_data();
              }
            return *this;
          }
+     }
+
+   template<typename _CharT, typename _Traits, typename _Alloc>
+     typename basic_string<_CharT, _Traits, _Alloc>::iterator
+     basic_string<_CharT, _Traits, _Alloc>::
+     erase(iterator __first, iterator __last)
+     {
+       ;
+
+       // NB: This isn't just an optimization (bail out early when
+const size_type __size = __last - __first;
+       if (__size)
+	 {
+	   const size_type __pos = __first - _M_ibegin();
+	   _M_mutate(__pos, __size, size_type(0));
+	   _M_rep()->_M_set_leaked();
+	   return iterator(_M_data() + __pos);
+	 }
+       else
+	 return __first;
      }
 
    template<typename _CharT, typename _Traits, typename _Alloc>
@@ -18364,11 +18824,11 @@ extern template class basic_string<char>;
     basic_istream<wchar_t>&
     getline(basic_istream<wchar_t>&, wstring&);
 
-}
 
+} // namespace std
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // 22.1.1 Class locale
 class locale
@@ -18511,7 +18971,7 @@ string
      *		 copies, or have the same name.  False otherwise.
     */
     bool
-    operator==(const locale& __other) const throw ();
+    operator==(const locale& __other) const throw();
 
     /**
      *  @brief  Locale inequality.
@@ -18520,7 +18980,7 @@ string
      *  @return  ! (*this == other)
     */
     bool
-    operator!=(const locale& __other) const throw ()
+    operator!=(const locale& __other) const throw()
     { return !(this->operator==(__other)); }
 
     /**
@@ -18548,7 +19008,7 @@ static locale
     global(const locale&);
 
     /**
-     *  @brief  Return reference to the "C" locale.
+     *  @brief  Return reference to the C locale.
     */
     static const locale&
     classic();
@@ -18578,7 +19038,7 @@ enum { _S_categories_size = 6 + 6 };
     _S_initialize();
 
     static void
-    _S_initialize_once();
+    _S_initialize_once() throw();
 
     static category
     _S_normalize_category(category);
@@ -18631,17 +19091,20 @@ virtual
 		       __c_locale __old = 0);
 
     static __c_locale
-    _S_clone_c_locale(__c_locale& __cloc);
+    _S_clone_c_locale(__c_locale& __cloc) throw();
 
     static void
     _S_destroy_c_locale(__c_locale& __cloc);
+
+    static __c_locale
+    _S_lc_ctype_c_locale(__c_locale __cloc, const char* __s);
 
     // Returns data from the underlying "C" library data for the
 static __c_locale
     _S_get_c_locale();
 
-    static const char*
-    _S_get_c_name();
+    __attribute__ ((__const__)) static const char*
+    _S_get_c_name() throw();
 
   private:
     void
@@ -18651,8 +19114,11 @@ static __c_locale
     void
     _M_remove_reference() const throw()
     {
+      // Be race-detector-friendly.  For more info see bits/c++config.
+;
       if (__gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1) == 1)
 	{
+          ;
 	  try
 	    { delete this; }
 	  catch(...)
@@ -18679,7 +19145,7 @@ class locale::id
 
     template<typename _Facet>
       friend bool
-      has_facet(const locale&) throw ();
+      has_facet(const locale&) throw();
 
     // NB: There is no accessor for _M_index because it may be used
 mutable size_t		_M_index;
@@ -18695,7 +19161,7 @@ public:
 id() { }
 
     size_t
-    _M_id() const;
+    _M_id() const throw();
   };
 
 
@@ -18740,8 +19206,11 @@ _Atomic_word			_M_refcount;
     void
     _M_remove_reference() throw()
     {
+      // Be race-detector-friendly.  For more info see bits/c++config.
+;
       if (__gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1) == 1)
 	{
+          ;
 	  try
 	    { delete this; }
 	  catch(...)
@@ -18870,7 +19339,7 @@ static locale::id			id;
        *  This is a constructor for use by the library itself to set up new
        *  locales.
        *
-       *  @param cloc  The "C" locale.
+       *  @param cloc  The C locale.
        *  @param refs  Passed to the base facet class.
       */
       explicit
@@ -18900,7 +19369,7 @@ static locale::id			id;
        *
        *  This function is a wrapper for strxfrm functionality.  It takes the
        *  input string and returns a modified string that can be directly
-       *  compared to other transformed strings.  In the "C" locale, this
+       *  compared to other transformed strings.  In the C locale, this
        *  function just returns a copy of the input string.  In some other
        *  locales, it may replace two chars with one, change a char for
        *  another, etc.  It does so by returning collate::do_transform().
@@ -18929,10 +19398,10 @@ static locale::id			id;
 
       // Used to abstract out _CharT bits in virtual member functions, below.
 int
-      _M_compare(const _CharT*, const _CharT*) const;
+      _M_compare(const _CharT*, const _CharT*) const throw();
 
       size_t
-      _M_transform(_CharT*, const _CharT*, size_t) const;
+      _M_transform(_CharT*, const _CharT*, size_t) const throw();
 
   protected:
       /// Destructor.
@@ -18991,19 +19460,19 @@ virtual
   // Specializations.
 template<>
     int
-    collate<char>::_M_compare(const char*, const char*) const;
+    collate<char>::_M_compare(const char*, const char*) const throw();
 
   template<>
     size_t
-    collate<char>::_M_transform(char*, const char*, size_t) const;
+    collate<char>::_M_transform(char*, const char*, size_t) const throw();
 
   template<>
     int
-    collate<wchar_t>::_M_compare(const wchar_t*, const wchar_t*) const;
+    collate<wchar_t>::_M_compare(const wchar_t*, const wchar_t*) const throw();
 
   template<>
     size_t
-    collate<wchar_t>::_M_transform(wchar_t*, const wchar_t*, size_t) const;
+    collate<wchar_t>::_M_transform(wchar_t*, const wchar_t*, size_t) const throw();
 
   /// class collate_byname [22.2.4.2].
 template<typename _CharT>
@@ -19031,12 +19500,13 @@ explicit
       ~collate_byname() { }
     };
 
-}
 
-// Locale support -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   template<typename _Facet>
     locale::
@@ -19111,13 +19581,13 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   // Generic version does nothing.
 template<typename _CharT>
     int
-    collate<_CharT>::_M_compare(const _CharT*, const _CharT*) const
+    collate<_CharT>::_M_compare(const _CharT*, const _CharT*) const throw ()
     { return 0; }
 
   // Generic version does nothing.
 template<typename _CharT>
     size_t
-    collate<_CharT>::_M_transform(_CharT*, const _CharT*, size_t) const
+    collate<_CharT>::_M_transform(_CharT*, const _CharT*, size_t) const throw ()
     { return 0; }
 
   template<typename _CharT>
@@ -19246,12 +19716,11 @@ extern template class collate<char>;
     bool
     has_facet<collate<wchar_t> >(const locale&);
 
-}
 
+} // namespace std
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // The following definitions of bitmask types are enums, not ints,
 enum _Ios_Fmtflags 
@@ -19277,33 +19746,33 @@ enum _Ios_Fmtflags
       _S_ios_fmtflags_end = 1L << 16 
     };
 
-  inline _Ios_Fmtflags
+  inline constexpr _Ios_Fmtflags
   operator&(_Ios_Fmtflags __a, _Ios_Fmtflags __b)
   { return _Ios_Fmtflags(static_cast<int>(__a) & static_cast<int>(__b)); }
 
-  inline _Ios_Fmtflags
+  inline constexpr _Ios_Fmtflags
   operator|(_Ios_Fmtflags __a, _Ios_Fmtflags __b)
   { return _Ios_Fmtflags(static_cast<int>(__a) | static_cast<int>(__b)); }
 
-  inline _Ios_Fmtflags
+  inline constexpr _Ios_Fmtflags
   operator^(_Ios_Fmtflags __a, _Ios_Fmtflags __b)
   { return _Ios_Fmtflags(static_cast<int>(__a) ^ static_cast<int>(__b)); }
 
-  inline _Ios_Fmtflags&
+  inline constexpr _Ios_Fmtflags
+  operator~(_Ios_Fmtflags __a)
+  { return _Ios_Fmtflags(~static_cast<int>(__a)); }
+
+  inline const _Ios_Fmtflags&
   operator|=(_Ios_Fmtflags& __a, _Ios_Fmtflags __b)
   { return __a = __a | __b; }
 
-  inline _Ios_Fmtflags&
+  inline const _Ios_Fmtflags&
   operator&=(_Ios_Fmtflags& __a, _Ios_Fmtflags __b)
   { return __a = __a & __b; }
 
-  inline _Ios_Fmtflags&
+  inline const _Ios_Fmtflags&
   operator^=(_Ios_Fmtflags& __a, _Ios_Fmtflags __b)
   { return __a = __a ^ __b; }
-
-  inline _Ios_Fmtflags
-  operator~(_Ios_Fmtflags __a)
-  { return _Ios_Fmtflags(~static_cast<int>(__a)); }
 
 
   enum _Ios_Openmode 
@@ -19317,33 +19786,33 @@ enum _Ios_Fmtflags
       _S_ios_openmode_end = 1L << 16 
     };
 
-  inline _Ios_Openmode
+  inline constexpr _Ios_Openmode
   operator&(_Ios_Openmode __a, _Ios_Openmode __b)
   { return _Ios_Openmode(static_cast<int>(__a) & static_cast<int>(__b)); }
 
-  inline _Ios_Openmode
+  inline constexpr _Ios_Openmode
   operator|(_Ios_Openmode __a, _Ios_Openmode __b)
   { return _Ios_Openmode(static_cast<int>(__a) | static_cast<int>(__b)); }
 
-  inline _Ios_Openmode
+  inline constexpr _Ios_Openmode
   operator^(_Ios_Openmode __a, _Ios_Openmode __b)
   { return _Ios_Openmode(static_cast<int>(__a) ^ static_cast<int>(__b)); }
 
-  inline _Ios_Openmode&
+  inline constexpr _Ios_Openmode
+  operator~(_Ios_Openmode __a)
+  { return _Ios_Openmode(~static_cast<int>(__a)); }
+
+  inline const _Ios_Openmode&
   operator|=(_Ios_Openmode& __a, _Ios_Openmode __b)
   { return __a = __a | __b; }
 
-  inline _Ios_Openmode&
+  inline const _Ios_Openmode&
   operator&=(_Ios_Openmode& __a, _Ios_Openmode __b)
   { return __a = __a & __b; }
 
-  inline _Ios_Openmode&
+  inline const _Ios_Openmode&
   operator^=(_Ios_Openmode& __a, _Ios_Openmode __b)
   { return __a = __a ^ __b; }
-
-  inline _Ios_Openmode
-  operator~(_Ios_Openmode __a)
-  { return _Ios_Openmode(~static_cast<int>(__a)); }
 
 
   enum _Ios_Iostate
@@ -19355,33 +19824,34 @@ enum _Ios_Fmtflags
       _S_ios_iostate_end = 1L << 16 
     };
 
-  inline _Ios_Iostate
+  inline constexpr _Ios_Iostate
   operator&(_Ios_Iostate __a, _Ios_Iostate __b)
   { return _Ios_Iostate(static_cast<int>(__a) & static_cast<int>(__b)); }
 
-  inline _Ios_Iostate
+  inline constexpr _Ios_Iostate
   operator|(_Ios_Iostate __a, _Ios_Iostate __b)
   { return _Ios_Iostate(static_cast<int>(__a) | static_cast<int>(__b)); }
 
-  inline _Ios_Iostate
+  inline constexpr _Ios_Iostate
   operator^(_Ios_Iostate __a, _Ios_Iostate __b)
   { return _Ios_Iostate(static_cast<int>(__a) ^ static_cast<int>(__b)); }
 
-  inline _Ios_Iostate&
+  inline constexpr _Ios_Iostate
+  operator~(_Ios_Iostate __a)
+  { return _Ios_Iostate(~static_cast<int>(__a)); }
+
+  inline const _Ios_Iostate&
   operator|=(_Ios_Iostate& __a, _Ios_Iostate __b)
   { return __a = __a | __b; }
 
-  inline _Ios_Iostate&
+  inline const _Ios_Iostate&
   operator&=(_Ios_Iostate& __a, _Ios_Iostate __b)
   { return __a = __a & __b; }
 
-  inline _Ios_Iostate&
+  inline const  _Ios_Iostate&
   operator^=(_Ios_Iostate& __a, _Ios_Iostate __b)
   { return __a = __a ^ __b; }
 
-  inline _Ios_Iostate
-  operator~(_Ios_Iostate __a)
-  { return _Ios_Iostate(~static_cast<int>(__a)); }
 
   enum _Ios_Seekdir 
     { 
@@ -19567,13 +20037,13 @@ enum event
     register_callback(event_callback __fn, int __index);
 
   protected:
-    //@{
-streamsize		_M_precision;
+    streamsize		_M_precision;
     streamsize		_M_width;
     fmtflags		_M_flags;
     iostate		_M_exception;
     iostate		_M_streambuf_state;
-    //@}
+
+    // 27.4.2.6  Members for callbacks
 struct _Callback_list
     {
       // Data Members
@@ -19591,7 +20061,16 @@ _Callback_list(ios_base::event_callback __fn, int __index,
       // 0 => OK to delete.
 int
       _M_remove_reference() 
-      { return __gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1); }
+      {
+        // Be race-detector-friendly.  For more info see bits/c++config.
+;
+        int __res = __gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1);
+        if (__res == 0)
+          {
+            ;
+          }
+        return __res;
+      }
     };
 
      _Callback_list*	_M_callbacks;
@@ -19600,7 +20079,7 @@ int
     _M_call_callbacks(event __ev) throw();
 
     void
-    _M_dispose_callbacks(void);
+    _M_dispose_callbacks(void) throw();
 
     // 27.4.2.5  Members for iword/pword storage
 struct _Words
@@ -19628,7 +20107,7 @@ int			_M_word_size;
 locale		_M_ios_locale;
 
     void
-    _M_init();
+    _M_init() throw();
 
   public:
 
@@ -19713,7 +20192,7 @@ fmtflags
      *  @brief  Flags access.
      *  @return  The precision to generate on certain output operations.
      *
-     *  Be careful if you try to give a definition of "precision" here; see
+     *  Be careful if you try to give a definition of @a precision here; see
      *  DR 189.
     */
     streamsize
@@ -19737,7 +20216,7 @@ fmtflags
      *  @brief  Flags access.
      *  @return  The minimum field width to generate on output operations.
      *
-     *  "Minimum field width" refers to the number of characters.
+     *  <em>Minimum field width</em> refers to the number of characters.
     */
     streamsize
     width() const
@@ -19762,7 +20241,7 @@ static bool
 
     // [27.4.2.3] ios_base locale functions
 locale
-    imbue(const locale& __loc);
+    imbue(const locale& __loc) throw();
 
     /**
      *  @brief  Locale access
@@ -19837,7 +20316,7 @@ static int
 virtual ~ios_base();
 
   protected:
-    ios_base();
+    ios_base() throw ();
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
 private:
@@ -20023,15 +20502,14 @@ inline ios_base&
     return __base;
   }
 
-}
 
-
-
-// Stream buffer classes -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   template<typename _CharT, typename _Traits>
     streamsize
@@ -20040,6 +20518,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
   /**
    *  @brief  The actual work of input and output (interface).
+   *  @ingroup io
    *
    *  This is a base class.  Derived stream buffers each control a
    *  pair of character sequences:  one for input, and one for output.
@@ -20067,7 +20546,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    *     represents, at any moment, a (sub)sequence of characters from the
    *     sequence.  Operations performed on a sequence alter the values
    *     stored in these pointers, perform reads and writes directly to or
-   *     from associated sequences, and alter "the stream position" and
+   *     from associated sequences, and alter <em>the stream position</em> and
    *     conversion state as needed to maintain this subsequence relationship.
    *     The three pointers are:
    *     - the <em>beginning pointer</em>, or lowest element address in the
@@ -20300,10 +20779,10 @@ int_type
        *  @brief  Moving backwards in the input stream.
        *  @return  The previous character, if possible.
        *
-       *  If a putback position is available, this function decrements the
-       *  input pointer and returns that character.  Otherwise, calls and
-       *  returns pbackfail().  The effect is to "unget" the last character
-       *  "gotten".
+       *  If a putback position is available, this function decrements
+       *  the input pointer and returns that character.  Otherwise,
+       *  calls and returns pbackfail().  The effect is to @a unget
+       *  the last character @a gotten.
       */
       int_type 
       sungetc()
@@ -20461,7 +20940,7 @@ virtual basic_streambuf<char_type,_Traits>*
        *  @return  -1 on failure.
        *
        *  Each derived class provides its own appropriate behavior,
-       *  including the definition of "failure".
+       *  including the definition of @a failure.
        *  @note  Base class version does nothing, returns zero.
       */
       virtual int 
@@ -20493,7 +20972,7 @@ virtual streamsize
        *
        *  Informally, this function is called when the input buffer is
        *  exhausted (or does not exist, as buffering need not actually be
-       *  done).  If a buffer exists, it is "refilled".  In either case, the
+       *  done).  If a buffer exists, it is @a refilled.  In either case, the
        *  next available character is returned, or @c traits::eof() to
        *  indicate a null pending sequence.
        *
@@ -20549,11 +21028,12 @@ virtual streamsize
        *  @return  eof() to indicate failure, something else (usually
        *           @a c, or not_eof())
        *
-       *  Informally, this function is called when the output buffer is full
-       *  (or does not exist, as buffering need not actually be done).  If a
-       *  buffer exists, it is "consumed", with "some effect" on the
-       *  controlled sequence.  (Typically, the buffer is written out to the
-       *  sequence verbatim.)  In either case, the character @a c is also
+       *  Informally, this function is called when the output buffer
+       *  is full (or does not exist, as buffering need not actually
+       *  be done).  If a buffer exists, it is @a consumed, with
+       *  <em>some effect</em> on the controlled sequence.
+       *  (Typically, the buffer is written out to the sequence
+       *  verbatim.)  In either case, the character @a c is also
        *  written out, if @a c is not @c eof().
        *
        *  For a formal definition of this function, see a good text
@@ -20587,6 +21067,13 @@ public:
 	  this->uflow();
       }
 
+      // Also used by specializations for char and wchar_t in src.
+void 
+      __safe_gbump(streamsize __n) { _M_in_cur += __n; }
+
+      void
+      __safe_pbump(streamsize __n) { _M_out_cur += __n; }
+
     private:
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
 basic_streambuf(const __streambuf_type& __sb)
@@ -20610,12 +21097,13 @@ template<>
     __copy_streambufs_eof(basic_streambuf<wchar_t>* __sbin,
 			  basic_streambuf<wchar_t>* __sbout, bool& __ineof);
 
-}
 
-// Stream buffer classes -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   template<typename _CharT, typename _Traits>
     streamsize
@@ -20633,7 +21121,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	      traits_type::copy(__s, this->gptr(), __len);
 	      __ret += __len;
 	      __s += __len;
-	      this->gbump(__len);
+	      this->__safe_gbump(__len);
 	    }
 
 	  if (__ret < __n)
@@ -20667,7 +21155,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 	      traits_type::copy(this->pptr(), __s, __len);
 	      __ret += __len;
 	      __s += __len;
-	      this->pbump(__len);
+	      this->__safe_pbump(__len);
 	    }
 
 	  if (__ret < __n)
@@ -20739,10 +21227,8 @@ extern template class basic_streambuf<char>;
     __copy_streambufs_eof(basic_streambuf<wchar_t>*,
 			  basic_streambuf<wchar_t>*, bool&);
 
-}
 
-
-// Iostreams base classes -*- C++ -*-
+} // namespace std
 #pragma GCC system_header
 
 // Locale support -*- C++ -*-
@@ -20752,7 +21238,9 @@ extern template class basic_streambuf<char>;
 #pragma GCC system_header
 
 
-/* Copyright (C) 1996-2002,2005,2007,2008,2009 Free Software Foundation, Inc.
+
+
+/* Copyright (C) 1996-2002,2005,2007-2009,2010 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -20778,33 +21266,33 @@ extern template class basic_streambuf<char>;
 
 
 
-/* Get wint_t from <stddef.h>.  */
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
+/* Get wint_t from <wchar.h>.  */
+/* Copyright (C) 1995-2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
 
 /*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
+ *      ISO C99 Standard: 7.24
+ *	Extended multibyte and wide character utilities	<wchar.h>
  */
 
 
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
+/* Undefine all __need_* constants in case we are included to get those
+   constants but the whole file was already read.  */
 
 /* Constant expression of type `wint_t' whose value does not correspond
    to any member of the extended character set.  */
@@ -20953,7 +21441,7 @@ extern wint_t towupper (wint_t __wc) throw ();
 
 
 /* The remaining definitions and declarations must not appear in the
-   <wcsmbs.h> header.  */
+   <wchar.h> header.  */
 
 /*
  * Extensible wide-character mapping functions: 7.15.3.2.
@@ -21063,8 +21551,8 @@ extern wint_t towctrans_l (wint_t __wc, wctrans_t __desc,
 
 
 // Get rid of those macros defined in <wctype.h> in lieu of real functions.
-namespace std __attribute__ ((__visibility__ ("default"))) {
-
+namespace std
+{
   using ::wctrans_t;
   using ::wctype_t;
   using ::wint_t;
@@ -21087,27 +21575,18 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   using ::towupper;
   using ::wctrans;
   using ::wctype;
-
-}
-
-
-// TR1 cwctype -*- C++ -*-
+} // namespace
 namespace std
 {
-
-
   using std::iswblank;
-
-
-}
-
-
-// -*- C++ -*- forwarding header.
+} // namespace
 #pragma GCC system_header
 
 
 // Locale support -*- C++ -*-
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   /// @brief  Base class for ctype.
 struct ctype_base
@@ -21116,7 +21595,7 @@ struct ctype_base
 typedef const int* 		__to_type;
 
     // NB: Offsets into ctype<char>::_M_table force a particular size
-typedef unsigned short 	mask;   
+typedef unsigned short 	mask;
     static const mask upper    	= _ISupper;
     static const mask lower 	= _ISlower;
     static const mask alpha 	= _ISalpha;
@@ -21130,13 +21609,20 @@ typedef unsigned short 	mask;
     static const mask alnum 	= _ISalpha | _ISdigit;
   };
 
-}
-// Streambuf iterators
+
+} // namespace
 #pragma GCC system_header
 
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
      
+  /**
+   * @addtogroup iterators
+   * @{
+   */
+
   // 24.5.3 Template class istreambuf_iterator
 template<typename _CharT, typename _Traits>
     class istreambuf_iterator
@@ -21176,7 +21662,7 @@ mutable streambuf_type*	_M_sbuf;
 
     public:
       ///  Construct end of input stream iterator.
-istreambuf_iterator() throw()
+constexpr istreambuf_iterator() throw()
       : _M_sbuf(0), _M_c(traits_type::eof()) { }
 
       ///  Construct start of input stream iterator.
@@ -21401,7 +21887,7 @@ template<typename _CharT>
 	      if (__n > 1)
 		{
 		  traits_type::copy(__result, __sb->gptr(), __n);
-		  __sb->gbump(__n);
+		  __sb->__safe_gbump(__n);
 		  __result += __n;
 		  __c = __sb->underflow();
 		}
@@ -21441,7 +21927,7 @@ template<typename _CharT>
 							__n, __val);
 		  if (__p)
 		    __n = __p - __sb->gptr();
-		  __sb->gbump(__n);
+		  __sb->__safe_gbump(__n);
 		  __c = __sb->sgetc();
 		}
 	      else
@@ -21456,32 +21942,33 @@ template<typename _CharT>
       return __first;
     }
 
-}
+// @} group iterators
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // NB: Don't instantiate required wchar_t facets if no wchar_t support.
-template<typename _Tv>
+template<typename _Tp>
     void
-    __convert_to_v(const char* __in, _Tv& __out, ios_base::iostate& __err,
-		   const __c_locale& __cloc);
+    __convert_to_v(const char*, _Tp&, ios_base::iostate&,
+		   const __c_locale&) throw();
 
   // Explicit specializations for required types.
 template<>
     void
     __convert_to_v(const char*, float&, ios_base::iostate&,
-		   const __c_locale&);
+		   const __c_locale&) throw();
 
   template<>
     void
     __convert_to_v(const char*, double&, ios_base::iostate&,
-		   const __c_locale&);
+		   const __c_locale&) throw();
 
   template<>
     void
     __convert_to_v(const char*, long double&, ios_base::iostate&,
-		   const __c_locale&);
+		   const __c_locale&) throw();
 
   // NB: __pad is a struct, rather than a function, so it can be
 template<typename _CharT, typename _Traits>
@@ -21964,8 +22451,25 @@ typedef _CharT char_type;
 		char __dfault, char* __dest) const = 0;
     };
 
-  // NB: Generic, mostly useless implementation.
-template<typename _CharT>
+  /**
+   *  @brief  Primary class template ctype facet.
+   *  @ingroup locales
+   *
+   *  This template class defines classification and conversion functions for
+   *  character sets.  It wraps cctype functionality.  Ctype gets used by
+   *  streams for many I/O operations.
+   *
+   *  This template provides the protected virtual functions the developer
+   *  will have to replace in a derived class or specialization to make a
+   *  working facet.  The public functions that access them are defined in
+   *  __ctype_abstract_base, to allow for implementation flexibility.  See
+   *  ctype<wchar_t> for an example.  The functions are documented in
+   *  __ctype_abstract_base.
+   *
+   *  Note: implementations are provided for all the protected virtual
+   *  functions, but will likely not be useful.
+  */
+  template<typename _CharT>
     class ctype : public __ctype_abstract_base<_CharT>
     {
     public:
@@ -22025,8 +22529,16 @@ static locale::id			id;
   template<typename _CharT>
     locale::id ctype<_CharT>::id;
 
-  // 22.2.1.3  ctype<char> specialization.
-template<>
+  /**
+   *  @brief  The ctype<char> specialization.
+   *  @ingroup locales
+   *
+   *  This class defines classification and conversion functions for
+   *  the char type.  It gets used by char streams for many I/O
+   *  operations.  The char specialization provides a number of
+   *  optimizations as well.
+  */
+  template<>
     class ctype<char> : public locale::facet, public ctype_base
     {
     public:
@@ -22509,8 +23021,18 @@ static const mask*
       void _M_widen_init() const;
     };
 
-  // 22.2.1.3  ctype<wchar_t> specialization
-template<>
+  /**
+   *  @brief  The ctype<wchar_t> specialization.
+   *  @ingroup locales
+   *
+   *  This class defines classification and conversion functions for the
+   *  wchar_t type.  It gets used by wchar_t streams for many I/O operations.
+   *  The wchar_t specialization provides a number of optimizations as well.
+   *
+   *  ctype<wchar_t> inherits its public methods from
+   *  __ctype_abstract_base<wchar_t>.
+  */
+  template<>
     class ctype<wchar_t> : public __ctype_abstract_base<wchar_t>
     {
     public:
@@ -22557,7 +23079,7 @@ static locale::id		id;
 
     protected:
       __wmask_type
-      _M_convert_to_wmask(const mask __m) const;
+      _M_convert_to_wmask(const mask __m) const throw();
 
       /// Destructor
 virtual
@@ -22795,7 +23317,7 @@ virtual
 
       // For use at construction time only.
 void
-      _M_initialize_ctype();
+      _M_initialize_ctype() throw();
     };
 
   /// class ctype_byname [22.2.1.2].
@@ -22838,10 +23360,11 @@ template<>
       ~ctype_byname();
     };
 
-}
 
-// Include host and configuration specific ctype inlines.
-namespace std __attribute__ ((__visibility__ ("default"))) {
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   bool
   ctype<char>::
@@ -22861,7 +23384,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   ctype<char>::
   scan_is(mask __m, const char* __low, const char* __high) const
   {
-    while (__low < __high 
+    while (__low < __high
 	   && !(_M_table[static_cast<unsigned char>(*__low)] & __m))
       ++__low;
     return __low;
@@ -22871,15 +23394,17 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
   ctype<char>::
   scan_not(mask __m, const char* __low, const char* __high) const
   {
-    while (__low < __high 
+    while (__low < __high
 	   && (_M_table[static_cast<unsigned char>(*__low)] & __m) != 0)
       ++__low;
     return __low;
   }
 
-}
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   // 22.2.2  The numeric category.
 class __num_base
@@ -22921,7 +23446,7 @@ static const char* _S_atoms_in;
 
     // num_put
 static void
-    _S_format_float(const ios_base& __io, char* __fptr, char __mod);
+    _S_format_float(const ios_base& __io, char* __fptr, char __mod) throw();
   };
 
   template<typename _CharT>
@@ -22945,12 +23470,13 @@ _CharT				_M_atoms_in[__num_base::_S_iend];
 
       bool				_M_allocated;
 
-      __numpunct_cache(size_t __refs = 0) : facet(__refs),
-      _M_grouping((__null)), _M_grouping_size(0), _M_use_grouping(false),
-      _M_truename((__null)), _M_truename_size(0), _M_falsename((__null)),
-      _M_falsename_size(0), _M_decimal_point(_CharT()),
-      _M_thousands_sep(_CharT()), _M_allocated(false)
-      { }
+      __numpunct_cache(size_t __refs = 0)
+      : facet(__refs), _M_grouping(0), _M_grouping_size(0),
+	_M_use_grouping(false),
+	_M_truename(0), _M_truename_size(0), _M_falsename(0),
+	_M_falsename_size(0), _M_decimal_point(_CharT()),
+	_M_thousands_sep(_CharT()), _M_allocated(false)
+        { }
 
       ~__numpunct_cache();
 
@@ -22977,7 +23503,8 @@ _CharT				_M_atoms_in[__num_base::_S_iend];
     }
 
   /**
-   *  @brief  Numpunct facet.
+   *  @brief  Primary class template numpunct.
+   *  @ingroup locales
    *
    *  This facet stores several pieces of information related to printing and
    *  scanning numbers, such as the decimal point character.  It takes a
@@ -23012,7 +23539,8 @@ static locale::id			id;
        *  @param  refs  Refcount to pass to the base class.
        */
       explicit
-      numpunct(size_t __refs = 0) : facet(__refs), _M_data((__null))
+      numpunct(size_t __refs = 0)
+      : facet(__refs), _M_data(0)
       { _M_initialize_numpunct(); }
 
       /**
@@ -23035,12 +23563,12 @@ static locale::id			id;
        *  This is a constructor for use by the library itself to set up new
        *  locales.
        *
-       *  @param  cloc  The "C" locale.
+       *  @param  cloc  The C locale.
        *  @param  refs  Refcount to pass to the base class.
        */
       explicit
       numpunct(__c_locale __cloc, size_t __refs = 0)
-      : facet(__refs), _M_data((__null))
+      : facet(__refs), _M_data(0)
       { _M_initialize_numpunct(__cloc); }
 
       /**
@@ -23196,7 +23724,7 @@ virtual
 
       // For use at construction time only.
 void
-      _M_initialize_numpunct(__c_locale __cloc = (__null));
+      _M_initialize_numpunct(__c_locale __cloc = 0);
     };
 
   template<typename _CharT>
@@ -23246,7 +23774,8 @@ template<typename _CharT>
 
 
   /**
-   *  @brief  Facet for parsing number strings.
+   *  @brief  Primary class template num_get.
+   *  @ingroup locales
    *
    *  This facet encapsulates the code to parse and return a number
    *  from a string.  It is used by the istream numeric extraction
@@ -23466,7 +23995,8 @@ virtual iter_type
 
 
   /**
-   *  @brief  Facet for converting numbers to strings.
+   *  @brief  Primary class template num_put.
+   *  @ingroup locales
    *
    *  This facet encapsulates the code to convert a number to a string.  It is
    *  used by the ostream numeric insertion operators.
@@ -23696,12 +24226,13 @@ template<typename _CharT>
     tolower(_CharT __c, const locale& __loc)
     { return use_facet<ctype<_CharT> >(__loc).tolower(__c); }
 
-}
 
-// Locale support -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   // Routine to access a cache for the facet.  If the cache didn't
 template<typename _Facet>
@@ -23722,7 +24253,7 @@ template<typename _CharT>
 	const locale::facet** __caches = __loc._M_impl->_M_caches;
 	if (!__caches[__i])
 	  {
-	    __numpunct_cache<_CharT>* __tmp = (__null);
+	    __numpunct_cache<_CharT>* __tmp = 0;
 	    try
 	      {
 		__tmp = new __numpunct_cache<_CharT>;
@@ -23747,39 +24278,54 @@ template<typename _CharT>
 
       const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
 
-      _M_grouping_size = __np.grouping().size();
-      char* __grouping = new char[_M_grouping_size];
-      __np.grouping().copy(__grouping, _M_grouping_size);
-      _M_grouping = __grouping;
-      _M_use_grouping = (_M_grouping_size
-			 && static_cast<signed char>(_M_grouping[0]) > 0
-			 && (_M_grouping[0]
-			     != __gnu_cxx::__numeric_traits<char>::__max));
+      char* __grouping = 0;
+      _CharT* __truename = 0;
+      _CharT* __falsename = 0;
+      try
+	{
+	  _M_grouping_size = __np.grouping().size();
+	  __grouping = new char[_M_grouping_size];
+	  __np.grouping().copy(__grouping, _M_grouping_size);
+	  _M_grouping = __grouping;
+	  _M_use_grouping = (_M_grouping_size
+			     && static_cast<signed char>(_M_grouping[0]) > 0
+			     && (_M_grouping[0]
+				 != __gnu_cxx::__numeric_traits<char>::__max));
 
-      _M_truename_size = __np.truename().size();
-      _CharT* __truename = new _CharT[_M_truename_size];
-      __np.truename().copy(__truename, _M_truename_size);
-      _M_truename = __truename;
+	  _M_truename_size = __np.truename().size();
+	  __truename = new _CharT[_M_truename_size];
+	  __np.truename().copy(__truename, _M_truename_size);
+	  _M_truename = __truename;
 
-      _M_falsename_size = __np.falsename().size();
-      _CharT* __falsename = new _CharT[_M_falsename_size];
-      __np.falsename().copy(__falsename, _M_falsename_size);
-      _M_falsename = __falsename;
+	  _M_falsename_size = __np.falsename().size();
+	  __falsename = new _CharT[_M_falsename_size];
+	  __np.falsename().copy(__falsename, _M_falsename_size);
+	  _M_falsename = __falsename;
 
-      _M_decimal_point = __np.decimal_point();
-      _M_thousands_sep = __np.thousands_sep();
+	  _M_decimal_point = __np.decimal_point();
+	  _M_thousands_sep = __np.thousands_sep();
 
-      const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
-      __ct.widen(__num_base::_S_atoms_out,
-		 __num_base::_S_atoms_out + __num_base::_S_oend, _M_atoms_out);
-      __ct.widen(__num_base::_S_atoms_in,
-		 __num_base::_S_atoms_in + __num_base::_S_iend, _M_atoms_in);
+	  const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
+	  __ct.widen(__num_base::_S_atoms_out,
+		     __num_base::_S_atoms_out
+		     + __num_base::_S_oend, _M_atoms_out);
+	  __ct.widen(__num_base::_S_atoms_in,
+		     __num_base::_S_atoms_in
+		     + __num_base::_S_iend, _M_atoms_in);
+	}
+      catch(...)
+	{
+	  delete [] __grouping;
+	  delete [] __truename;
+	  delete [] __falsename;
+	  throw;
+	}
     }
 
   // Used by both numeric and monetary facets.
-bool
+__attribute__ ((__pure__)) bool
   __verify_grouping(const char* __grouping, size_t __grouping_size,
-		    const string& __grouping_tmp);
+		    const string& __grouping_tmp) throw ();
 
 
 
@@ -24904,11 +25450,11 @@ extern template class numpunct<char>;
     bool
     has_facet<num_get<wchar_t> >(const locale&);
 
-}
 
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   template<typename _Facet>
     inline const _Facet&
@@ -25170,7 +25716,7 @@ basic_ostream<_CharT, _Traits>*
       copyfmt(const basic_ios& __rhs);
 
       /**
-       *  @brief  Retrieves the "empty" character.
+       *  @brief  Retrieves the @a empty character.
        *  @return  The current fill character.
        *
        *  It defaults to a space (' ') in the current locale.
@@ -25187,7 +25733,7 @@ basic_ostream<_CharT, _Traits>*
       }
 
       /**
-       *  @brief  Sets a new "empty" character.
+       *  @brief  Sets a new @a empty character.
        *  @param  ch  The new character.
        *  @return  The previous fill character.
        *
@@ -25267,12 +25813,13 @@ basic_ios()
       _M_cache_locale(const locale& __loc);
     };
 
-}
 
-// basic_ios member functions -*- C++ -*-
+} // namespace
 #pragma GCC system_header
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   template<typename _CharT, typename _Traits>
     void
@@ -25400,12 +25947,11 @@ extern template class basic_ios<char>;
 
   extern template class basic_ios<wchar_t>;
 
-}
 
+} // namespace std
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   // [27.6.2.1] Template class basic_ostream
 template<typename _CharT, typename _Traits>
@@ -25625,13 +26171,13 @@ pos_type
    *  @brief  Performs setup work for output streams.
    *
    *  Objects of this class are created before all of the standard
-   *  inserters are run.  It is responsible for "exception-safe prefix and
-   *  suffix operations." 
+   *  inserters are run.  It is responsible for <em>exception-safe prefix and
+   *  suffix operations</em>.
   */
   template <typename _CharT, typename _Traits>
     class basic_ostream<_CharT, _Traits>::sentry
     {
-      // Data Members:
+      // Data Members.
 bool 				_M_ok;
       basic_ostream<_CharT, _Traits>& 	_M_os;
       
@@ -25645,7 +26191,7 @@ bool 				_M_ok;
        *  is called to synchronize the output sequences.
        *
        *  If the stream state is still good, then the sentry state becomes
-       *  true ("okay").
+       *  true (@a okay).
       */
       explicit
       sentry(basic_ostream<_CharT, _Traits>& __os);
@@ -25675,6 +26221,7 @@ if (_M_os.rdbuf() && _M_os.rdbuf()->pubsync() == -1)
        *  For ease of use, sentries may be converted to booleans.  The
        *  return value is that of the sentry state (true == okay).
       */
+      explicit
       operator bool() const
       { return _M_ok; }
     };
@@ -25755,7 +26302,7 @@ template<typename _CharT, typename _Traits>
   /**
    *  @brief  Write a null character into the output sequence.
    *
-   *  "Null character" is @c CharT() by definition.  For CharT of @c char,
+   *  <em>Null character</em> is @c CharT() by definition.  For CharT of @c char,
    *  this correctly writes the ASCII @c NUL character string terminator.
   */
   template<typename _CharT, typename _Traits>
@@ -25773,13 +26320,20 @@ template<typename _CharT, typename _Traits>
     flush(basic_ostream<_CharT, _Traits>& __os)
     { return __os.flush(); }
 
-}
+  // [27.7.2.9] Rvalue stream insertion
+template<typename _CharT, typename _Traits, typename _Tp>
+    inline basic_ostream<_CharT, _Traits>&
+    operator<<(basic_ostream<_CharT, _Traits>&& __os, const _Tp& __x)
+    { return (__os << __x); }
 
-// ostream classes -*- C++ -*-
+
+} // namespace
 #pragma GCC system_header
 
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>::sentry::
@@ -25805,7 +26359,7 @@ if (__os.tie() && __os.good())
 	sentry __cerb(*this);
 	if (__cerb)
 	  {
-	    ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	    ios_base::iostate __err = ios_base::goodbit;
 	    try
 	      {
 		const __num_put_type& __np = __check_facet(this->_M_num_put);
@@ -25856,7 +26410,7 @@ const ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
     basic_ostream<_CharT, _Traits>::
     operator<<(__streambuf_type* __sbin)
     {
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this);
       if (__cerb && __sbin)
 	{
@@ -25889,7 +26443,7 @@ const ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
 sentry __cerb(*this);
       if (__cerb)
 	{
-	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  ios_base::iostate __err = ios_base::goodbit;
 	  try
 	    {
 	      const int_type __put = this->rdbuf()->sputc(__c);
@@ -25937,7 +26491,7 @@ sentry __cerb(*this);
     flush()
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+ios_base::iostate __err = ios_base::goodbit;
       try
 	{
 	  if (this->rdbuf() && this->rdbuf()->pubsync() == -1)
@@ -25981,7 +26535,7 @@ ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
     basic_ostream<_CharT, _Traits>::
     seekp(pos_type __pos)
     {
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       try
 	{
 	  if (!this->fail())
@@ -26012,7 +26566,7 @@ if (__p == pos_type(off_type(-1)))
     basic_ostream<_CharT, _Traits>::
     seekp(off_type __off, ios_base::seekdir __dir)
     {
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       try
 	{
 	  if (!this->fail())
@@ -26113,14 +26667,14 @@ extern template class basic_ostream<char>;
   extern template wostream& wostream::_M_insert(long double);
   extern template wostream& wostream::_M_insert(const void*);
 
-}
 
-
-// Input streams -*- C++ -*-
+} // namespace std
 #pragma GCC system_header
 
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   // [27.6.1.1] Template class basic_istream
 template<typename _CharT, typename _Traits>
@@ -26333,7 +26887,7 @@ int_type
        *  @param  n  Maximum number of characters to store in @a s.
        *  @return  *this
        *
-       *  Returns @c get(s,n,widen('\n')).
+       *  Returns @c get(s,n,widen(&apos;\\n&apos;)).
       */
       __istream_type& 
       get(char_type* __s, streamsize __n)
@@ -26366,7 +26920,7 @@ int_type
        *  @param  sb  A streambuf in which to store data.
        *  @return  *this
        *
-       *  Returns @c get(sb,widen('\n')).
+       *  Returns @c get(sb,widen(&apos;\\n&apos;)).
       */
       __istream_type&
       get(__streambuf_type& __sb)
@@ -26406,7 +26960,7 @@ int_type
        *  @param  n  Maximum number of characters to extract.
        *  @return  *this
        *
-       *  Returns @c getline(s,n,widen('\n')).
+       *  Returns @c getline(s,n,widen(&apos;\\n&apos;)).
       */
       __istream_type& 
       getline(char_type* __s, streamsize __n)
@@ -26499,8 +27053,9 @@ int_type
        *  If @c rdbuf() is null or if @c sputbackc() fails, sets badbit in
        *  the error state.
        *
-       *  @note  Since no characters are extracted, the next call to
-       *         @c gcount() will return 0, as required by DR 60.
+       *  @note  This function first clears eofbit.  Since no characters
+       *         are extracted, the next call to @c gcount() will return 0,
+       *         as required by DR 60.
       */
       __istream_type& 
       putback(char_type __c);
@@ -26514,8 +27069,9 @@ int_type
        *  If @c rdbuf() is null or if @c sungetc() fails, sets badbit in
        *  the error state.
        *
-       *  @note  Since no characters are extracted, the next call to
-       *         @c gcount() will return 0, as required by DR 60.
+       *  @note  This function first clears eofbit.  Since no characters
+       *         are extracted, the next call to @c gcount() will return 0,
+       *         as required by DR 60.
       */
       __istream_type& 
       unget();
@@ -26547,9 +27103,10 @@ int_type
        *
        *  @note  This function does not count the number of characters
        *         extracted, if any, and therefore does not affect the next
-       *         call to @c gcount().
+       *         call to @c gcount().  At variance with putback, unget and
+       *         seekg, eofbit is not cleared first.
       */
-      pos_type 
+      pos_type
       tellg();
 
       /**
@@ -26560,11 +27117,11 @@ int_type
        *  If @c fail() is not true, calls @c rdbuf()->pubseekpos(pos).  If
        *  that function fails, sets failbit.
        *
-       *  @note  This function does not count the number of characters
-       *         extracted, if any, and therefore does not affect the next
-       *         call to @c gcount().
+       *  @note  This function first clears eofbit.  It does not count the
+       *         number of characters extracted, if any, and therefore does
+       *         not affect the next call to @c gcount().
       */
-      __istream_type& 
+      __istream_type&
       seekg(pos_type);
 
       /**
@@ -26576,9 +27133,9 @@ int_type
        *  If @c fail() is not true, calls @c rdbuf()->pubseekoff(off,dir).
        *  If that function fails, sets failbit.
        *
-       *  @note  This function does not count the number of characters
-       *         extracted, if any, and therefore does not affect the next
-       *         call to @c gcount().
+       *  @note  This function first clears eofbit.  It does not count the
+       *         number of characters extracted, if any, and therefore does
+       *         not affect the next call to @c gcount().
       */
       __istream_type& 
       seekg(off_type, ios_base::seekdir);
@@ -26628,13 +27185,16 @@ template<>
    *  @brief  Performs setup work for input streams.
    *
    *  Objects of this class are created before all of the standard
-   *  extractors are run.  It is responsible for "exception-safe prefix and
-   *  suffix operations," although only prefix actions are currently required
-   *  by the standard. 
+   *  extractors are run.  It is responsible for <em>exception-safe
+   *  prefix and suffix operations,</em> although only prefix actions
+   *  are currently required by the standard.
   */
   template<typename _CharT, typename _Traits>
     class basic_istream<_CharT, _Traits>::sentry
     {
+      // Data Members.
+bool _M_ok;
+
     public:
       /// Easy access to dependant types.
 typedef _Traits 					traits_type;
@@ -26649,8 +27209,9 @@ typedef _Traits 					traits_type;
        *  @param  noskipws  Whether to consume whitespace or not.
        *
        *  If the stream state is good (@a is.good() is true), then the
-       *  following actions are performed, otherwise the sentry state is
-       *  false ("not okay") and failbit is set in the stream state.
+       *  following actions are performed, otherwise the sentry state
+       *  is false (<em>not okay</em>) and failbit is set in the
+       *  stream state.
        *
        *  The sentry's preparatory actions are:
        *
@@ -26662,7 +27223,7 @@ typedef _Traits 					traits_type;
        *     used to determine whether each character is whitespace.
        *
        *  If the stream state is still good, then the sentry state becomes
-       *  true ("okay").
+       *  true (@a okay).
       */
       explicit
       sentry(basic_istream<_CharT, _Traits>& __is, bool __noskipws = false);
@@ -26674,11 +27235,9 @@ typedef _Traits 					traits_type;
        *  For ease of use, sentries may be converted to booleans.  The
        *  return value is that of the sentry state (true == okay).
       */
+      explicit
       operator bool() const
       { return _M_ok; }
-
-    private:
-      bool _M_ok;
     };
 
   // [27.6.1.2.3] character extraction templates
@@ -26758,19 +27317,26 @@ template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>& 
     ws(basic_istream<_CharT, _Traits>& __is);
 
-}
+  // [27.7.1.6] Rvalue stream extraction
+template<typename _CharT, typename _Traits, typename _Tp>
+    inline basic_istream<_CharT, _Traits>&
+    operator>>(basic_istream<_CharT, _Traits>&& __is, _Tp& __x)
+    { return (__is >> __x); }
 
-// istream classes -*- C++ -*-
+
+} // namespace
 #pragma GCC system_header
 
 
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
+
 
   template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>::sentry::
     sentry(basic_istream<_CharT, _Traits>& __in, bool __noskip) : _M_ok(false)
     {
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       if (__in.good())
 	{
 	  if (__in.tie())
@@ -26811,7 +27377,7 @@ if (traits_type::eq_int_type(__c, __eof))
 	sentry __cerb(*this, false);
 	if (__cerb)
 	  {
-	    ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	    ios_base::iostate __err = ios_base::goodbit;
 	    try
 	      {
 		const __num_get_type& __ng = __check_facet(this->_M_num_get);
@@ -26819,7 +27385,7 @@ if (traits_type::eq_int_type(__c, __eof))
 	      }
 	    catch(__cxxabiv1::__forced_unwind&)
 	      {
-		this->_M_setstate(ios_base::badbit);		
+		this->_M_setstate(ios_base::badbit);
 		throw;
 	      }
 	    catch(...)
@@ -26836,34 +27402,82 @@ if (traits_type::eq_int_type(__c, __eof))
     operator>>(short& __n)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-long __l;
-      _M_extract(__l);
-      if (!this->fail())
+sentry __cerb(*this, false);
+      if (__cerb)
 	{
-	  if (__gnu_cxx::__numeric_traits<short>::__min <= __l
-	      && __l <= __gnu_cxx::__numeric_traits<short>::__max)
-	    __n = short(__l);
-	  else
-	    this->setstate(ios_base::failbit);
+	  ios_base::iostate __err = ios_base::goodbit;
+	  try
+	    {
+	      long __l;
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __l);
+
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+if (__l < __gnu_cxx::__numeric_traits<short>::__min)
+		{
+		  __err |= ios_base::failbit;
+		  __n = __gnu_cxx::__numeric_traits<short>::__min;
+		}
+	      else if (__l > __gnu_cxx::__numeric_traits<short>::__max)
+		{
+		  __err |= ios_base::failbit;
+		  __n = __gnu_cxx::__numeric_traits<short>::__max;
+		}
+	      else
+		__n = short(__l);
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      throw;
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
-    
+
   template<typename _CharT, typename _Traits>
     basic_istream<_CharT, _Traits>&
     basic_istream<_CharT, _Traits>::
     operator>>(int& __n)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-long __l;
-      _M_extract(__l);
-      if (!this->fail())
+sentry __cerb(*this, false);
+      if (__cerb)
 	{
-	  if (__gnu_cxx::__numeric_traits<int>::__min <= __l
-	      && __l <= __gnu_cxx::__numeric_traits<int>::__max)
-	    __n = int(__l);
-	  else
-	    this->setstate(ios_base::failbit);
+	  ios_base::iostate __err = ios_base::goodbit;
+	  try
+	    {
+	      long __l;
+	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+	      __ng.get(*this, 0, *this, __err, __l);
+
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+if (__l < __gnu_cxx::__numeric_traits<int>::__min)
+		{
+		  __err |= ios_base::failbit;
+		  __n = __gnu_cxx::__numeric_traits<int>::__min;
+		}
+	      else if (__l > __gnu_cxx::__numeric_traits<int>::__max)
+		{
+		  __err |= ios_base::failbit;	      
+		  __n = __gnu_cxx::__numeric_traits<int>::__max;
+		}
+	      else
+		__n = int(__l);
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      throw;
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(__err);
 	}
       return *this;
     }
@@ -26873,7 +27487,7 @@ long __l;
     basic_istream<_CharT, _Traits>::
     operator>>(__streambuf_type* __sbout)
     {
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, false);
       if (__cerb && __sbout)
 	{
@@ -26908,7 +27522,7 @@ long __l;
       const int_type __eof = traits_type::eof();
       int_type __c = __eof;
       _M_gcount = 0;
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, true);
       if (__cerb)
 	{
@@ -26942,7 +27556,7 @@ if (!traits_type::eq_int_type(__c, __eof))
     get(char_type& __c)
     {
       _M_gcount = 0;
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, true);
       if (__cerb)
 	{
@@ -26979,7 +27593,7 @@ if (!traits_type::eq_int_type(__cb, traits_type::eof()))
     get(char_type* __s, streamsize __n, char_type __delim)
     {
       _M_gcount = 0;
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, true);
       if (__cerb)
 	{
@@ -27025,7 +27639,7 @@ if (__n > 0)
     get(__streambuf_type& __sb, char_type __delim)
     {
       _M_gcount = 0;
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, true);
       if (__cerb)
 	{
@@ -27069,7 +27683,7 @@ if (__n > 0)
     getline(char_type* __s, streamsize __n, char_type __delim)
     {
       _M_gcount = 0;
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       sentry __cerb(*this, true);
       if (__cerb)
         {
@@ -27129,7 +27743,7 @@ template<typename _CharT, typename _Traits>
       sentry __cerb(*this, true);
       if (__cerb)
 	{
-	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  ios_base::iostate __err = ios_base::goodbit;
 	  try
 	    {
 	      const int_type __eof = traits_type::eof();
@@ -27162,7 +27776,7 @@ template<typename _CharT, typename _Traits>
       sentry __cerb(*this, true);
       if (__cerb && __n > 0)
         {
-          ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+          ios_base::iostate __err = ios_base::goodbit;
           try
             {
               const int_type __eof = traits_type::eof();
@@ -27218,7 +27832,7 @@ bool __large_ignore = false;
       sentry __cerb(*this, true);
       if (__cerb && __n > 0)
         {
-          ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+          ios_base::iostate __err = ios_base::goodbit;
           try
             {
               const int_type __eof = traits_type::eof();
@@ -27284,7 +27898,7 @@ bool __large_ignore = false;
       sentry __cerb(*this, true);
       if (__cerb)
 	{
-	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  ios_base::iostate __err = ios_base::goodbit;
 	  try
 	    {
 	      __c = this->rdbuf()->sgetc();
@@ -27313,7 +27927,7 @@ bool __large_ignore = false;
       sentry __cerb(*this, true);
       if (__cerb)
 	{
-	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  ios_base::iostate __err = ios_base::goodbit;
 	  try
 	    {
 	      _M_gcount = this->rdbuf()->sgetn(__s, __n);
@@ -27342,7 +27956,7 @@ bool __large_ignore = false;
       sentry __cerb(*this, true);
       if (__cerb)
 	{
-	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  ios_base::iostate __err = ios_base::goodbit;
 	  try
 	    {
 	      // Cannot compare int_type with streamsize generically.
@@ -27372,10 +27986,12 @@ const streamsize __num = this->rdbuf()->in_avail();
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
 _M_gcount = 0;
+      // Clear eofbit per N3168.
+this->clear(this->rdstate() & ~ios_base::eofbit);
       sentry __cerb(*this, true);
       if (__cerb)
 	{
-	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  ios_base::iostate __err = ios_base::goodbit;
 	  try
 	    {
 	      const int_type __eof = traits_type::eof();
@@ -27404,10 +28020,12 @@ _M_gcount = 0;
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
 _M_gcount = 0;
+      // Clear eofbit per N3168.
+this->clear(this->rdstate() & ~ios_base::eofbit);
       sentry __cerb(*this, true);
       if (__cerb)
 	{
-	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  ios_base::iostate __err = ios_base::goodbit;
 	  try
 	    {
 	      const int_type __eof = traits_type::eof();
@@ -27439,7 +28057,7 @@ int __ret = -1;
       sentry __cerb(*this, true);
       if (__cerb)
 	{
-	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  ios_base::iostate __err = ios_base::goodbit;
 	  try
 	    {
 	      __streambuf_type* __sb = this->rdbuf();
@@ -27471,19 +28089,23 @@ int __ret = -1;
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
 pos_type __ret = pos_type(-1);
-      try
+      sentry __cerb(*this, true);
+      if (__cerb)
 	{
-	  if (!this->fail())
-	    __ret = this->rdbuf()->pubseekoff(0, ios_base::cur,
-					      ios_base::in);
+	  try
+	    {
+	      if (!this->fail())
+		__ret = this->rdbuf()->pubseekoff(0, ios_base::cur,
+						  ios_base::in);
+	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      throw;
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
 	}
-      catch(__cxxabiv1::__forced_unwind&)
-	{
-	  this->_M_setstate(ios_base::badbit);
-	  throw;
-	}
-      catch(...)
-	{ this->_M_setstate(ios_base::badbit); }
       return __ret;
     }
 
@@ -27493,29 +28115,34 @@ pos_type __ret = pos_type(-1);
     seekg(pos_type __pos)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-      try
+this->clear(this->rdstate() & ~ios_base::eofbit);
+      sentry __cerb(*this, true);
+      if (__cerb)
 	{
-	  if (!this->fail())
+	  ios_base::iostate __err = ios_base::goodbit;
+	  try
 	    {
-	      // 136.  seekp, seekg setting wrong streams?
+	      if (!this->fail())
+		{
+		  // 136.  seekp, seekg setting wrong streams?
 const pos_type __p = this->rdbuf()->pubseekpos(__pos,
-							     ios_base::in);
-	      
-	      // 129.  Need error indication from seekp() and seekg()
+								 ios_base::in);
+		  
+		  // 129.  Need error indication from seekp() and seekg()
 if (__p == pos_type(off_type(-1)))
-		__err |= ios_base::failbit;
+		    __err |= ios_base::failbit;
+		}
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      throw;
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(__err);
 	}
-      catch(__cxxabiv1::__forced_unwind&)
-	{
-	  this->_M_setstate(ios_base::badbit);
-	  throw;
-	}
-      catch(...)
-	{ this->_M_setstate(ios_base::badbit); }
-      if (__err)
-	this->setstate(__err);
       return *this;
     }
 
@@ -27525,29 +28152,34 @@ if (__p == pos_type(off_type(-1)))
     seekg(off_type __off, ios_base::seekdir __dir)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-      try
+this->clear(this->rdstate() & ~ios_base::eofbit);
+      sentry __cerb(*this, true);
+      if (__cerb)
 	{
-	  if (!this->fail())
+	  ios_base::iostate __err = ios_base::goodbit;
+	  try
 	    {
-	      // 136.  seekp, seekg setting wrong streams?
+	      if (!this->fail())
+		{
+		  // 136.  seekp, seekg setting wrong streams?
 const pos_type __p = this->rdbuf()->pubseekoff(__off, __dir,
-							     ios_base::in);
+								 ios_base::in);
 	      
-	      // 129.  Need error indication from seekp() and seekg()
+		  // 129.  Need error indication from seekp() and seekg()
 if (__p == pos_type(off_type(-1)))
-		__err |= ios_base::failbit;
+		    __err |= ios_base::failbit;
+		}
 	    }
+	  catch(__cxxabiv1::__forced_unwind&)
+	    {
+	      this->_M_setstate(ios_base::badbit);
+	      throw;
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(__err);
 	}
-      catch(__cxxabiv1::__forced_unwind&)
-	{
-	  this->_M_setstate(ios_base::badbit);
-	  throw;
-	}
-      catch(...)
-	{ this->_M_setstate(ios_base::badbit); }
-      if (__err)
-	this->setstate(__err);
       return *this;
     }
 
@@ -27562,7 +28194,7 @@ template<typename _CharT, typename _Traits>
       typename __istream_type::sentry __cerb(__in, false);
       if (__cerb)
 	{
-	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  ios_base::iostate __err = ios_base::goodbit;
 	  try
 	    {
 	      const __int_type __cb = __in.rdbuf()->sbumpc();
@@ -27595,7 +28227,7 @@ template<typename _CharT, typename _Traits>
       typedef ctype<_CharT>				__ctype_type;
 
       streamsize __extracted = 0;
-      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      ios_base::iostate __err = ios_base::goodbit;
       typename __istream_type::sentry __cerb(__in, false);
       if (__cerb)
 	{
@@ -27710,11 +28342,11 @@ extern template class basic_istream<char>;
 
   extern template class basic_iostream<wchar_t>;
 
-}
 
+} // namespace std
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-
-namespace std __attribute__ ((__visibility__ ("default"))) {
 
   /**
    *  @name Standard Stream Objects
@@ -27724,55 +28356,25 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
    *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch24.html
    *  and the @link iosfwd I/O forward declarations @endlink
    *
-   *  They are required by default to cooperate with the global C library's
-   *  @c FILE streams, and to be available during program startup and
-   *  termination.  For more information, see the HOWTO linked to above.
+   *  They are required by default to cooperate with the global C
+   *  library's @c FILE streams, and to be available during program
+   *  startup and termination. For more information, see the HOWTO
+   *  linked to above.
   */
   //@{
-extern istream cin;		///< Linked to standard input
-extern ostream cout;		///< Linked to standard output
-extern ostream cerr;		///< Linked to standard error (unbuffered)
-extern ostream clog;		///< Linked to standard error (buffered)
-extern wistream wcin;		///< Linked to standard input
-extern wostream wcout;	///< Linked to standard output
-extern wostream wcerr;	///< Linked to standard error (unbuffered)
-extern wostream wclog;	///< Linked to standard error (buffered)
+extern istream cin;		/// Linked to standard input
+extern ostream cout;		/// Linked to standard output
+extern ostream cerr;		/// Linked to standard error (unbuffered)
+extern ostream clog;		/// Linked to standard error (buffered)
+extern wistream wcin;		/// Linked to standard input
+extern wostream wcout;	/// Linked to standard output
+extern wostream wcerr;	/// Linked to standard error (unbuffered)
+extern wostream wclog;	/// Linked to standard error (buffered)
 static ios_base::Init __ioinit;
 
-}
 
-// -*- C++ -*- forwarding header.
+} // namespace
 #pragma GCC system_header
-
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
 
 
 /* Copyright (C) 1991-1994,1996-2003,2005,2006,2009
@@ -27796,8 +28398,8 @@ static ios_base::Init __ioinit;
 
 
 
-/* System-dependent timing definitions.  Generic version.
-   Copyright (C) 1996,1997,1999-2002,2003 Free Software Foundation, Inc.
+/* System-dependent timing definitions.  Linux version.
+   Copyright (C) 1996,1997,1999-2003,2010,2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -27818,6 +28420,7 @@ static ios_base::Init __ioinit;
 /*
  * Never include this file directly; use <time.h> instead.
  */
+
 
 
 
@@ -27928,7 +28531,7 @@ extern int futimesat (int __fd, __const char *__file,
 /* file: math.h */
 
 /*
-** Copyright  (C) 1985-2010 Intel Corporation. All rights reserved.
+** Copyright  (C) 1985-2012 Intel Corporation. All rights reserved.
 **
 ** The information and source code contained herein is the exclusive property
 ** of Intel Corporation and may not be disclosed, examined, or reproduced in
@@ -27940,7 +28543,7 @@ extern int futimesat (int __fd, __const char *__file,
 /* Include_next should be before guard macros in order to at last reach system header */
 
 /* Declarations for math functions.
-   Copyright (C) 1991-1993, 1995-1999, 2001, 2002, 2004, 2006, 2009
+   Copyright (C) 1991-1993, 1995-1999, 2001, 2002, 2004, 2006, 2009, 2011
    Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -28091,7 +28694,7 @@ extern "C" {
 
 
 /* Get general and ISO C99 specific information.  */
-/* Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+/* Copyright (C) 2001, 2004, 2010 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -28122,6 +28725,11 @@ typedef double double_t;	/* `double' expressions are evaluated
 
 /* The values returned by `ilogb' for 0 and NaN respectively.  */
 
+/* The GCC 4.6 compiler will define __FP_FAST_FMA{,F,L} if the fma{,f,l}
+   builtins are supported.  */
+
+
+
 
 /* The file <bits/mathcalls.h> contains the prototypes for all the
    actual math functions.  These macros are used for those prototypes,
@@ -28130,7 +28738,7 @@ typedef double double_t;	/* `double' expressions are evaluated
 
 
 /* Prototype declarations for math functions; helper file for <math.h>.
-   Copyright (C) 1996-2002, 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 1996-2002, 2003, 2006, 2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -28236,7 +28844,8 @@ extern double log (double __x) throw (); extern double __log (double __x) throw 
 extern double log10 (double __x) throw (); extern double __log10 (double __x) throw ();
 
 /* Break VALUE into integral and fractional parts.  */
-extern double modf (double __x, double *__iptr) throw (); extern double __modf (double __x, double *__iptr) throw ();
+extern double modf (double __x, double *__iptr) throw (); extern double __modf (double __x, double *__iptr) throw ()
+     __attribute__ ((__nonnull__ (2)));
 
 
 /* A function missing in all standards: compute exponent to base ten.  */
@@ -28455,7 +29064,7 @@ extern double scalb (double __x, double __n) throw (); extern double __scalb (do
    instead of `double' and appending f to each function name.  */
 
 /* Prototype declarations for math functions; helper file for <math.h>.
-   Copyright (C) 1996-2002, 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 1996-2002, 2003, 2006, 2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -28561,7 +29170,8 @@ extern float logf (float __x) throw (); extern float __logf (float __x) throw ()
 extern float log10f (float __x) throw (); extern float __log10f (float __x) throw ();
 
 /* Break VALUE into integral and fractional parts.  */
-extern float modff (float __x, float *__iptr) throw (); extern float __modff (float __x, float *__iptr) throw ();
+extern float modff (float __x, float *__iptr) throw (); extern float __modff (float __x, float *__iptr) throw ()
+     __attribute__ ((__nonnull__ (2)));
 
 
 /* A function missing in all standards: compute exponent to base ten.  */
@@ -28778,8 +29388,9 @@ extern float scalbf (float __x, float __n) throw (); extern float __scalbf (floa
 
 /* Include the file of declarations again, this time using `long double'
    instead of `double' and appending l to each function name.  */
+
 /* Prototype declarations for math functions; helper file for <math.h>.
-   Copyright (C) 1996-2002, 2003, 2006 Free Software Foundation, Inc.
+   Copyright (C) 1996-2002, 2003, 2006, 2011 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -28885,7 +29496,8 @@ extern long double logl (long double __x) throw (); extern long double __logl (l
 extern long double log10l (long double __x) throw (); extern long double __log10l (long double __x) throw ();
 
 /* Break VALUE into integral and fractional parts.  */
-extern long double modfl (long double __x, long double *__iptr) throw (); extern long double __modfl (long double __x, long double *__iptr) throw ();
+extern long double modfl (long double __x, long double *__iptr) throw (); extern long double __modfl (long double __x, long double *__iptr) throw ()
+     __attribute__ ((__nonnull__ (2)));
 
 
 /* A function missing in all standards: compute exponent to base ten.  */
@@ -29161,7 +29773,7 @@ enum
 /* Return nonzero value if X is a NaN.  We could use `fpclassify' but
    we already have this functions `__isnan' and it is faster.  */
 
-/* Return nonzero value is X is positive or negative infinity.  */
+/* Return nonzero value if X is positive or negative infinity.  */
 
 /* Bitmasks for the math_errhandling macro.  */
 
@@ -29228,6 +29840,9 @@ extern int matherr (struct __exception *__exc) throw ();
    undef/redefine as appropriate for the specific GCC version in use.  */
 
 /* Get machine-dependent inline versions (if there are any).  */
+
+/* Define special entry points to use when the compiler got told to
+   only expect finite results.  */
 
 /* If we've still got undefined comparison macros, provide defaults.  */
 
@@ -29344,7 +29959,6 @@ extern int __signbitf     ( float              __x ) throw();
 extern int __signbit      ( double             __x ) throw();
 extern int __signbitd     ( double             __x ) throw();
 extern int __signbitl     ( long double            __x ) throw();
-
 
 
 
@@ -29472,6 +30086,7 @@ extern void      sinhcoshl( long double __x, long double *__psinh, long double *
 
 
 
+
 /* Logarithmic functions */
 
 
@@ -29493,11 +30108,16 @@ extern long double   invsqrtl( long double __x );
 /* Error and gamma functions */
 
 
+extern double    cdfnorm( double __x );
+extern float     cdfnormf( float __x );
 extern double    cdfnorminv( double __x );
 extern float     cdfnorminvf( float __x );
+
 extern double    erfinv( double __x );
 extern float     erfinvf( float __x );
 extern long double   erfinvl( long double __x );
+extern double    erfcinv( double __x );
+extern float     erfcinvf( float __x );
 
 extern double    gamma_r( double __x, int *__signgam );
 extern float     gammaf_r( float __x, int *__signgam );
@@ -29616,20 +30236,9 @@ extern _LIB_VERSION_TYPE  _LIB_VERSIONIMF;
 
 
 // Get rid of those macros defined in <math.h> in lieu of real functions.
-namespace std __attribute__ ((__visibility__ ("default"))) {
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
-  // Forward declaration of a helper function.  This really should be
-template<typename _Tp>
-    _Tp __cmath_power(_Tp, unsigned int);
-
-  template<typename _Tp>
-    inline _Tp
-    __pow_helper(_Tp __x, int __n)
-    {
-      return __n < 0
-        ? _Tp(1)/__cmath_power(__x, -__n)
-        : __cmath_power(__x, __n);
-    }
 
   inline double
   abs(double __x)
@@ -29642,6 +30251,12 @@ template<typename _Tp>
   inline long double
   abs(long double __x)
   { return __builtin_fabsl(__x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value, 
+					   double>::__type
+    abs(_Tp __x)
+    { return __builtin_fabs(__x); }
 
   using ::acos;
 
@@ -29703,10 +30318,7 @@ template<typename _Tp>
 
   template<typename _Tp, typename _Up>
     inline
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
+    typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     atan2(_Tp __y, _Up __x)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
@@ -29906,10 +30518,7 @@ template<typename _Tp>
 
   template<typename _Tp, typename _Up>
     inline
-    typename __gnu_cxx::__promote_2<
-    typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value
-				    && __is_arithmetic<_Up>::__value,
-				    _Tp>::__type, _Up>::__type
+    typename __gnu_cxx::__promote_2<_Tp, _Up>::__type
     pow(_Tp __x, _Up __y)
     {
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
@@ -29996,150 +30605,260 @@ template<typename _Tp>
     tanh(_Tp __x)
     { return __builtin_tanh(__x); }
 
-}
 
-
-// These are possible macros imported from C99-land.
-namespace std __attribute__ ((__visibility__ ("default"))) {
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
-					   int>::__type
-    fpclassify(_Tp __f)
-    {
-      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
-				  FP_SUBNORMAL, FP_ZERO, __type(__f));
-    }
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
-					   int>::__type
-    isfinite(_Tp __f)
-    {
-      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_isfinite(__type(__f));
-    }
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
-					   int>::__type
-    isinf(_Tp __f)
-    {
-      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_isinf(__type(__f));
-    }
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
-					   int>::__type
-    isnan(_Tp __f)
-    {
-      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_isnan(__type(__f));
-    }
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
-					   int>::__type
-    isnormal(_Tp __f)
-    {
-      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_isnormal(__type(__f));
-    }
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
-					   int>::__type
-    signbit(_Tp __f)
-    {
-      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_signbit(__type(__f));
-    }
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
-					   int>::__type
-    isgreater(_Tp __f1, _Tp __f2)
-    {
-      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_isgreater(__type(__f1), __type(__f2));
-    }
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
-					   int>::__type
-    isgreaterequal(_Tp __f1, _Tp __f2)
-    {
-      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_isgreaterequal(__type(__f1), __type(__f2));
-    }
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
-					   int>::__type
-    isless(_Tp __f1, _Tp __f2)
-    {
-      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_isless(__type(__f1), __type(__f2));
-    }
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
-					   int>::__type
-    islessequal(_Tp __f1, _Tp __f2)
-    {
-      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_islessequal(__type(__f1), __type(__f2));
-    }
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
-					   int>::__type
-    islessgreater(_Tp __f1, _Tp __f2)
-    {
-      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_islessgreater(__type(__f1), __type(__f2));
-    }
-
-  template<typename _Tp>
-    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
-					   int>::__type
-    isunordered(_Tp __f1, _Tp __f2)
-    {
-      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
-      return __builtin_isunordered(__type(__f1), __type(__f2));
-    }
-
-}
-
-
-// -*- C++ -*- C math library.
-namespace std __attribute__ ((__visibility__ ("default"))) {
-
-  template<typename _Tp>
-    inline _Tp
-    __cmath_power(_Tp __x, unsigned int __n)
-    {
-      _Tp __y = __n % 2 ? __x : _Tp(1);
-
-      while (__n >>= 1)
-        {
-          __x = __x * __x;
-          if (__n % 2)
-            __y = __y * __x;
-        }
-
-      return __y;
-    }
-
-}
-
-
-// TR1 cmath -*- C++ -*-
-namespace std
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
 {
 
+
+  inline int
+  fpclassify(float __x)
+  { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				FP_SUBNORMAL, FP_ZERO, __x); }
+
+  inline int
+  fpclassify(double __x)
+  { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				FP_SUBNORMAL, FP_ZERO, __x); }
+
+  inline int
+  fpclassify(long double __x)
+  { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				FP_SUBNORMAL, FP_ZERO, __x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   int>::__type
+    fpclassify(_Tp __x)
+    { return __x != 0 ? FP_NORMAL : FP_ZERO; }
+
+  inline bool
+  isfinite(float __x)
+  { return __builtin_isfinite(__x); }
+
+  inline bool
+  isfinite(double __x)
+  { return __builtin_isfinite(__x); }
+
+  inline bool
+  isfinite(long double __x)
+  { return __builtin_isfinite(__x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   bool>::__type
+    isfinite(_Tp __x)
+    { return true; }
+
+  inline bool
+  isinf(float __x)
+  { return __builtin_isinf(__x); }
+
+  inline bool
+  isinf(double __x)
+  { return __builtin_isinf(__x); }
+
+  inline bool
+  isinf(long double __x)
+  { return __builtin_isinf(__x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   bool>::__type
+    isinf(_Tp __x)
+    { return false; }
+
+  inline bool
+  isnan(float __x)
+  { return __builtin_isnan(__x); }
+
+  inline bool
+  isnan(double __x)
+  { return __builtin_isnan(__x); }
+
+  inline bool
+  isnan(long double __x)
+  { return __builtin_isnan(__x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   bool>::__type
+    isnan(_Tp __x)
+    { return false; }
+
+  inline bool
+  isnormal(float __x)
+  { return __builtin_isnormal(__x); }
+
+  inline bool
+  isnormal(double __x)
+  { return __builtin_isnormal(__x); }
+
+  inline bool
+  isnormal(long double __x)
+  { return __builtin_isnormal(__x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   bool>::__type
+    isnormal(_Tp __x)
+    { return __x != 0 ? true : false; }
+
+  inline bool
+  signbit(float __x)
+  { return __builtin_signbit(__x); }
+
+  inline bool
+  signbit(double __x)
+  { return __builtin_signbit(__x); }
+
+  inline bool
+  signbit(long double __x)
+  { return __builtin_signbit(__x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   bool>::__type
+    signbit(_Tp __x)
+    { return __x < 0 ? true : false; }
+
+  inline bool
+  isgreater(float __x, float __y)
+  { return __builtin_isgreater(__x, __y); }
+
+  inline bool
+  isgreater(double __x, double __y)
+  { return __builtin_isgreater(__x, __y); }
+
+  inline bool
+  isgreater(long double __x, long double __y)
+  { return __builtin_isgreater(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename
+    __gnu_cxx::__enable_if<(__is_arithmetic<_Tp>::__value
+			    && __is_arithmetic<_Up>::__value), bool>::__type
+    isgreater(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return __builtin_isgreater(__type(__x), __type(__y));
+    }
+
+  inline bool
+  isgreaterequal(float __x, float __y)
+  { return __builtin_isgreaterequal(__x, __y); }
+
+  inline bool
+  isgreaterequal(double __x, double __y)
+  { return __builtin_isgreaterequal(__x, __y); }
+
+  inline bool
+  isgreaterequal(long double __x, long double __y)
+  { return __builtin_isgreaterequal(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename
+    __gnu_cxx::__enable_if<(__is_arithmetic<_Tp>::__value
+			    && __is_arithmetic<_Up>::__value), bool>::__type
+    isgreaterequal(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return __builtin_isgreaterequal(__type(__x), __type(__y));
+    }
+
+  inline bool
+  isless(float __x, float __y)
+  { return __builtin_isless(__x, __y); }
+
+  inline bool
+  isless(double __x, double __y)
+  { return __builtin_isless(__x, __y); }
+
+  inline bool
+  isless(long double __x, long double __y)
+  { return __builtin_isless(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename
+    __gnu_cxx::__enable_if<(__is_arithmetic<_Tp>::__value
+			    && __is_arithmetic<_Up>::__value), bool>::__type
+    isless(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return __builtin_isless(__type(__x), __type(__y));
+    }
+
+  inline bool
+  islessequal(float __x, float __y)
+  { return __builtin_islessequal(__x, __y); }
+
+  inline bool
+  islessequal(double __x, double __y)
+  { return __builtin_islessequal(__x, __y); }
+
+  inline bool
+  islessequal(long double __x, long double __y)
+  { return __builtin_islessequal(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename
+    __gnu_cxx::__enable_if<(__is_arithmetic<_Tp>::__value
+			    && __is_arithmetic<_Up>::__value), bool>::__type
+    islessequal(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return __builtin_islessequal(__type(__x), __type(__y));
+    }
+
+  inline bool
+  islessgreater(float __x, float __y)
+  { return __builtin_islessgreater(__x, __y); }
+
+  inline bool
+  islessgreater(double __x, double __y)
+  { return __builtin_islessgreater(__x, __y); }
+
+  inline bool
+  islessgreater(long double __x, long double __y)
+  { return __builtin_islessgreater(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename
+    __gnu_cxx::__enable_if<(__is_arithmetic<_Tp>::__value
+			    && __is_arithmetic<_Up>::__value), bool>::__type
+    islessgreater(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return __builtin_islessgreater(__type(__x), __type(__y));
+    }
+
+  inline bool
+  isunordered(float __x, float __y)
+  { return __builtin_isunordered(__x, __y); }
+
+  inline bool
+  isunordered(double __x, double __y)
+  { return __builtin_isunordered(__x, __y); }
+
+  inline bool
+  isunordered(long double __x, long double __y)
+  { return __builtin_isunordered(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename
+    __gnu_cxx::__enable_if<(__is_arithmetic<_Tp>::__value
+			    && __is_arithmetic<_Up>::__value), bool>::__type
+    isunordered(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return __builtin_isunordered(__type(__x), __type(__y));
+    }
+
+
+
+} // namespace
+namespace std __attribute__ ((__visibility__ ("default")))
+{
 
 
   // types
@@ -30287,30 +31006,8 @@ using ::acosh;
   using ::truncf;
   using ::truncl;
 
-
-
-  /// Function template definitions [8.16.3].
-using std::signbit;
-  
-  using std::fpclassify;
-
-  using std::isfinite;
-  using std::isinf;
-  using std::isnan;
-  using std::isnormal;
-
-  using std::isgreater;
-  using std::isgreaterequal;
-  using std::isless;
-  using std::islessequal;
-  using std::islessgreater;
-  using std::isunordered;
-
-
-  /// Additional overloads [8.16.4].
-using std::acos;
-
-  inline float
+  /// Additional overloads.
+inline float
   acosh(float __x)
   { return __builtin_acoshf(__x); }
 
@@ -30325,8 +31022,6 @@ using std::acos;
       typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
       return acosh(__type(__x));
     }
-
-  using std::asin;
 
   inline float
   asinh(float __x)
@@ -30343,9 +31038,6 @@ using std::acos;
       typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
       return asinh(__type(__x));
     }
-
-  using std::atan;
-  using std::atan2;
 
   inline float
   atanh(float __x)
@@ -30379,8 +31071,6 @@ using std::acos;
       return cbrt(__type(__x));
     }
 
-  using std::ceil;
-
   inline float
   copysign(float __x, float __y)
   { return __builtin_copysignf(__x, __y); }
@@ -30396,9 +31086,6 @@ using std::acos;
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
       return copysign(__type(__x), __type(__y));
     }
-
-  using std::cos;
-  using std::cosh;  
 
   inline float
   erf(float __x)
@@ -30432,8 +31119,6 @@ using std::acos;
       return erfc(__type(__x));
     }
 
-  using std::exp;
-
   inline float
   exp2(float __x)
   { return __builtin_exp2f(__x); }
@@ -30466,8 +31151,6 @@ using std::acos;
       return expm1(__type(__x));
     }
 
-  using std::fabs;
-
   inline float
   fdim(float __x, float __y)
   { return __builtin_fdimf(__x, __y); }
@@ -30483,8 +31166,6 @@ using std::acos;
       typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
       return fdim(__type(__x), __type(__y));
     }
-
-  using std::floor;
 
   inline float
   fma(float __x, float __y, float __z)
@@ -30534,9 +31215,6 @@ using std::acos;
       return fmin(__type(__x), __type(__y));
     }
 
-  using std::fmod;
-  using std::frexp;
-
   inline float
   hypot(float __x, float __y)
   { return __builtin_hypotf(__x, __y); }
@@ -30568,8 +31246,6 @@ using std::acos;
       typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
       return ilogb(__type(__x));
     }
-
-  using std::ldexp;
 
   inline float
   lgamma(float __x)
@@ -30618,9 +31294,6 @@ using std::acos;
       typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
       return llround(__type(__x));
     }
-
-  using std::log;
-  using std::log10;
 
   inline float
   log1p(float __x)
@@ -30751,8 +31424,7 @@ inline float
       return nexttoward(__type(__x), __y);
     }
 
-  // DR 550. What should the return type of pow(float,int) be?
-inline float
+  inline float
   remainder(float __x, float __y)
   { return __builtin_remainderf(__x, __y); }
 
@@ -30848,12 +31520,6 @@ inline float
       return scalbn(__type(__x), __ex);
     }
 
-  using std::sin;
-  using std::sinh;
-  using std::sqrt;
-  using std::tan;
-  using std::tanh;
-
   inline float
   tgamma(float __x)
   { return __builtin_tgammaf(__x); }
@@ -30887,94 +31553,8 @@ inline float
     }
 
 
-
-}
-
-
-/*
- **********************************************************************************
- *  Copyright (C) 2010-2011  Massachusetts Institute of Technology
- *  Copyright (C) 2010-2011  Yuan Tang <yuantang@csail.mit.edu>
- * 		                     Charles E. Leiserson <cel@mit.edu>
- * 	 
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- *   Suggestsions:                  yuantang@csail.mit.edu
- *   Bugs:                          yuantang@csail.mit.edu
- *
- *********************************************************************************
- */
-
-
-/*
- **********************************************************************************
- *  Copyright (C) 2010-2011  Massachusetts Institute of Technology
- *  Copyright (C) 2010-2011  Yuan Tang <yuantang@csail.mit.edu>
- * 		                     Charles E. Leiserson <cel@mit.edu>
- * 	 
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- *   Suggestsions:                  yuantang@csail.mit.edu
- *   Bugs:                          yuantang@csail.mit.edu
- *
- *********************************************************************************
- */
-
-
-// -*- C++ -*- forwarding header.
+} // namespace
 #pragma GCC system_header
-
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
 
 
 // -*- C++ -*- C forwarding header.
@@ -30983,7 +31563,7 @@ inline float
 /* file: math.h */
 
 /*
-** Copyright  (C) 1985-2010 Intel Corporation. All rights reserved.
+** Copyright  (C) 1985-2012 Intel Corporation. All rights reserved.
 **
 ** The information and source code contained herein is the exclusive property
 ** of Intel Corporation and may not be disclosed, examined, or reproduced in
@@ -30998,36 +31578,6 @@ inline float
 
 // -*- C++ -*- forwarding header.
 #pragma GCC system_header
-
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
 
 
 
@@ -31229,69 +31779,9 @@ static inline void klein_region(grid_info<2> & grid, grid_info<2> const & initia
 // -*- C++ -*- forwarding header.
 #pragma GCC system_header
 
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
 
 // -*- C++ -*- forwarding header.
 #pragma GCC system_header
-
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
 
 
 // -*- C++ -*- forwarding header.
@@ -31382,14 +31872,22 @@ static inline void klein_region(grid_info<2> & grid, grid_info<2> const & initia
  *
  */
 
-/** @mainpage
+/**
+ * @if public_doc
+ * @mainpage
  * @section intro_sec Introduction
  *
- * In addition to the Cilk Plus keywords, Cilk Plus provides an API to allow users to
- * control.
+ * In addition to the Cilk Plus keywords, Intel Cilk Plus provides an API to
+ * allow users to query and control the Intel Cilk Plus runtime.
+ * @endif
  */
 
-/** @file */
+/**
+ * @file cilk_api.h
+ *
+ * @brief Defines the documented API exposed by the Intel Cilk Plus for use
+ * by applications.
+ */
 
 /**
  * @page API
@@ -31494,53 +31992,61 @@ static inline void klein_region(grid_info<2> & grid, grid_info<2> const & initia
  */
   /* C++ non-debug */
 
-// Try to determine if compiler supports rvalue references.
+// Inlining is always available, but not always the same way.
+extern "C" {
+    struct __cilkrts_worker;
+    typedef struct __cilkrts_worker __cilkrts_worker;
+    typedef struct __cilkrts_worker *__cilkrts_worker_ptr;
+     __cilkrts_worker_ptr __attribute__((nothrow)) __cilkrts_get_tls_worker(void);
+}
+
+                                   
+/** Pedigree information kept in the worker and stack frame */
+typedef struct __cilkrts_pedigree_node
+{
+    /** Rank at start of spawn helper. Saved rank for spawning functions */
+    uint64_t rank;
+                                         
+    /** Link to next in chain */
+    const struct __cilkrts_pedigree_node *parent;
+} __cilkrts_pedigree_node;
+
+
+// -*- C++ -*- forwarding header.
 #pragma GCC system_header
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-
-
+///////////////////////////////////////////////////////////////////////////////
 extern "C" {
 
+/** @brief Return values from __cilkrts_set_param() and __cilkrts_set_param_w() */
+enum {
+    __CILKRTS_SET_PARAM_SUCCESS = 0, /**< Success - parameter set */
+    __CILKRTS_SET_PARAM_UNIMP   = 1, /**< Unimplemented parameter */
+    __CILKRTS_SET_PARAM_XRANGE  = 2, /**< Parameter value out of range */
+    __CILKRTS_SET_PARAM_INVALID = 3, /**< Invalid parameter value */
+    __CILKRTS_SET_PARAM_LATE    = 4  /**< Too late to change parameter value */
+};
+
 /**
- * Set user controllable parameters
+ * @brief Set user controllable parameters
+ *
  * @param param - string specifying parameter to be set
  * @param value - string specifying new value
- * @returns zero on success, nonzero on failure (unrecognized
- * parameter, invalid value, called at the wrong time, or other failure).
+ * @returns One of: __CILKRTS_SET_PARAM_SUCCESS ( = 0),
+ *    __CILKRTS_SET_PARAM_UNIMP, __CILKRTS_SET_PARAM_XRANGE,
+ *    __CILKRTS_SET_PARAM_INVALID, or __CILKRTS_SET_PARAM_LATE.
  *
- * @attention The wide character version __cilkrts_set_param_w() is only available on Windows.
+ * @attention The wide character function __cilkrts_set_param_w() is available
+ * only on Windows.
  *
  * Allowable parameter names:
  *
  * - "nworkers" - number of processors that should run Cilk code.
- *   The value is a string of digits to be parsed by strtol.
+ *   The value is a string of digits to be parsed by strtol.  "nworkers" can
+ *   only be set *before* the runtime has started.  Attempting to set it when
+ *   the runtime is running will return an error code.  You can use
+ *   __cilkrts_end_cilk() to shut down the runtime to change the number of
+ *   workers.
  *
  * - "force reduce" - test reducer callbacks by allocating new views
  *   for every spawn within which a reducer is accessed.  This can
@@ -31551,8 +32057,8 @@ extern "C" {
 
 
 /**
- * Shut down and deallocate all Cilk state.  The runtime will abort
- * if Cilk is still in use by this thread.  Otherwise the runtime
+ * Shut down and deallocate all Cilk state.  The runtime will abort the
+ * application if Cilk is still in use by this thread.  Otherwise the runtime
  * will wait for all other threads using Cilk to exit.
  */
  void __attribute__((nothrow)) __cilkrts_end_cilk(void);
@@ -31573,14 +32079,15 @@ extern "C" {
  */
  int __attribute__((nothrow)) __cilkrts_get_total_workers(void);
 
-/** Return a small integer indicating which Cilk worker the function is
+/**
+ * Return a small integer indicating which Cilk worker the function is
  * currently running on.  Each thread started by the Cilk runtime library
- * (system worker) has a unique worker number in the range 1..P, where P is
- * the valued returned by __cilkrts_get_nworkers().  All threads started by
- * the user or by other libraries (user workers) share the worker number 0.
- * Therefore, the worker number is not unique across multiple user threads.
- * Note that, although no more than P workers typically run at a time, there
- * are P + 1 possible values that can be returned by this function.
+ * (referred to as a system worker) has a unique worker number in the range
+ * 1..P-1, where P is the value returned by __cilkrts_get_nworkers().
+ *
+ * Note that all threads started by the user or by other libraries (referred
+ * to as user workers) share the worker number 0. Therefore, the worker number
+ * is not unique across multiple user threads.
  */
  int __attribute__((nothrow)) __cilkrts_get_worker_number(void);
 
@@ -31595,17 +32102,20 @@ extern "C" {
  void __attribute__((nothrow))
     __cilkrts_metacall(unsigned int tool, unsigned int code, void *data);
 
+
+
 /**
- * Debugging aid for exceptions on Windows.
- *
- * The specified function will be called when a non-C++ exception is caught
- * by the Cilk Plus runtime.  This is illegal since there's no way for the
- * Cilk Plus runtime to know how to unwind the stack across a strand boundary
- * for Structure Exceptions.
- *
- * This function allows an application to do something before the Cilk Plus
- * runtime aborts the application.
+ * Context used by __cilkrts_get_pedigree_info.  Callers should initialize the
+ * data array to NULL, and set the size to sizeof(__cilkrts_pedigree_context_t
+ * before the first call to __cilkrts_get_pedigree_info and should not examine
+ * or modify it after.
  */
+typedef struct
+{
+    std:: size_t size;    /**< Size of the struct in bytes */
+    void *data[3];          /**< Opaque context data */
+} __cilkrts_pedigree_context_t;
+
 
 /**
  * Pedigree API
@@ -31619,51 +32129,127 @@ extern "C" {
  * consider the pedigree context data opaque and should not examine or
  * modify it.
  *
- * Returns:
- *    0 - Success - birthrank is valid
- *   >0 - End of pedigree walk
- *   <0 - Failure - -1: No worker bound to thread,
- *                  -2: Sanity check failed
- *                  -3: Invalid context size
- *                  -4: Internal error - walked off end of chain of frames
+ * @returns  0 - Success - birthrank is valid
+ * @returns >0 - End of pedigree walk
+ * @returns -1 - Failure - No worker bound to thread
+ * @returns -2 - Failure - Sanity check failed,
+ * @returns -3 - Failure - Invalid context size
+ * @returns -4 - Failure - Internal error - walked off end of chain of frames
  */
-
-typedef struct
-{
-    std:: size_t size;
-    void *data[3];
-} __cilkrts_pedigree_context_t;
-
  int __attribute__((nothrow))
 __cilkrts_get_pedigree_info(/* In/Out */ __cilkrts_pedigree_context_t *context,
                             /* Out */    uint64_t *sf_birthrank);
 
+
+ __cilkrts_pedigree_node __attribute__((nothrow))
+__cilkrts_get_pedigree_internal(__cilkrts_worker *w);
+
+/**
+ * Pedigree API
+ *
+ * Returns the current pedigree, in a linked list representation.
+ * This routine returns a copy of the last pedigree node.
+ *
+ * For example, if the current pedigree (in order) is <1, 2, 3, 4>,
+ * then this method returns a node with rank == 4, and whose parent
+ * field points to the node with rank of 3.  In summary, following the
+ * nodes in the chain visits the terms of the pedigree in reverse.
+ * 
+ * The returned node is guaranteed to be valid only until the caller
+ * of this routine has returned.
+ */
+__inline__
+__cilkrts_pedigree_node __cilkrts_get_pedigree(void) 
+{
+    return __cilkrts_get_pedigree_internal(
+         __cilkrts_get_tls_worker());    
+}
+
+/* Internal implementation of __cilkrts_get_worker_rank */
+ int __attribute__((nothrow))
+__cilkrts_get_worker_rank_internal(__cilkrts_worker* w,
+				   uint64_t *rank);
 /**
  * Pedigree API
  *
  * Fetch the rank from the currently executing worker
  *
- * Returns:
- *    0 - Success - rank is valid
- *   <0 - Failure - -1: No worker bound to thread
+ * @returns  0 - Success - rank is valid
+ * @returns <0 - Failure - -1: No worker bound to thread
  */
+__inline__
+int __cilkrts_get_worker_rank(uint64_t *rank) 
+{
+    return __cilkrts_get_worker_rank_internal(
+		__cilkrts_get_tls_worker(),
+		rank);
+}
 
+/* Internal implementation of __cilkrts_bump_worker_rank */
  int __attribute__((nothrow))
-__cilkrts_get_worker_rank(uint64_t *rank);
-
+__cilkrts_bump_worker_rank_internal(__cilkrts_worker* w);
 
 /**
  * Pedigree API
  *
  * Increment the rank of the currently executing worker
  *
- * Returns:
- *    0 - Success - rank was incremented
- *   -1 - Failure - No worker bound to thread
+ * @returns 0 - Success - rank was incremented
+ * @returns-1 - Failure - No worker bound to thread
  */
+__inline__
+int __cilkrts_bump_worker_rank(void)
+{
+    return __cilkrts_bump_worker_rank_internal(
+	        __cilkrts_get_tls_worker());
+}
 
+/* Internal implementation of __cilkrts_bump_worker_rank */
  int __attribute__((nothrow))
-__cilkrts_bump_worker_rank(void);
+__cilkrts_bump_loop_rank_internal(__cilkrts_worker* w);
+
+/**
+ * Pedigree API
+ *
+ * Increment the rank for a cilk_for loop.
+ *
+ * A cilk_for loop is implemented using a divide and conquer recursive
+ * algorithm.  This allows the work of the cilk_for loop to spread optimally
+ * across the available workers.  Unfortunately, this makes the pedigree
+ * for dependent on the grainsize.  Unless overridden by the cilk grainsize
+ * pragma, the grainsize is based on number of workers and the number of
+ * iterations in the loop.
+ *
+ * To fix this, the pedigree is "flattened" in a cilk_for.  A pedigree node is
+ * created for the loop index, and a second node is created for the loop body.
+ * The compiler generates a lambda function from the loop body that is passed
+ * the low and high bounds of the loop indicies it should iterate over.  This
+ * range is the "grain size". When the loop body lambda function is called,
+ * the pedigree rank of the loop index node is initialized to the lower loop
+ * index.
+ *
+ * Eventually, the compiler generated loop body lambda function should
+ * increment the cilk_for rank at the end of each iteration around the
+ * cilk_for loop body. However, this is not currently implemented.
+ *
+ * This function is provided to allow users to increment the cilk_for rank
+ * themselves.  Users should call this function only at the end of a cilk_for
+ * loop body.  Use of this function is not required.  If not used, the
+ * pedigree sequence will change any time the loop's grainsize changes, i.e.,
+ * if the program is run with a different number of workers.
+ *
+ * When the code generated by the compiler for the cilk_for loop body lambda
+ * function "does the right thing" this function will become a noop.
+ *
+ * @returns  0 - Success - rank was incremented
+ * @returns -1 - Failure - No worker bound to thread
+ */
+__inline__
+int __cilkrts_bump_loop_rank(void) 
+{
+    return __cilkrts_bump_loop_rank_internal(
+                __cilkrts_get_tls_worker()); 
+}
 
 }
 
@@ -31744,84 +32330,11 @@ __cilkrts_bump_worker_rank(void);
 // -*- C++ -*- forwarding header.
 #pragma GCC system_header
 
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
 
 // -*- C++ -*- forwarding header.
 #pragma GCC system_header
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-
-
-
-/* Macro to cache-align a declaration.  Argument(s) comprise either a
- * variable or a struct declaration. */
-
-/* The __CILKRTS_STRAND_PURE attribute tells the compiler that the value
- * returned by 'func' for a given argument to 'func' will remain valid until
- * the next strand boundary (spawn or sync) or until the next call to a
- * function with the __CILKRTS_STRAND_STALE attribute using the same function
- * argument.
- */
-
-/*****************************************************************************
- * C runtime interface to the hyperobject subsystem
- *****************************************************************************/
-
+///////////////////////////////////////////////////////////////////////////////
 extern "C" {
 
 /* Callback function signatures.  The 'r' argument always points to the
@@ -32037,8 +32550,8 @@ template <typename A>
 
     /* access the unwrapped object */
     value_type& view() {
-        /* look up reducer in current map */
-        return *static_cast<value_type *>(__cilkrts_hyper_lookup(&base_));
+        // Look up reducer in current map.  IMPORTANT: Even though the
+return *static_cast<value_type *>(__cilkrts_hyper_lookup(&base_));
     }
 
     value_type const& view() const {
@@ -32952,6 +33465,18 @@ void set_slope(int const slope[]);
     inline void shorter_duo_sim_obase_space_cut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
     template <typename F, typename BF>
     inline void shorter_duo_sim_obase_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+    template <typename F>
+    inline void stevenj_space_cut(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+    template <typename F, typename BF>
+    inline void stevenj_space_cut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+    template <typename F>
+    inline void stevenj_bicut(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+    template <typename F, typename BF>
+    inline void stevenj_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+    template <typename F>
+    inline void stevenj(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+    template <typename F, typename BF>
+    inline void stevenj_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
 
     /* followings are the sim cut of both top and bottom bar */
     template <typename F>
@@ -34158,6 +34683,360 @@ if (call_boundary) {
         }
         return;
 }
+
+template <int N_RANK> template <typename F>
+inline void Algorithm<N_RANK>::stevenj_space_cut(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
+{
+    queue_info *l_father;
+    queue_info circular_queue_[2][(power<N_RANK> ::value)];
+    int queue_head_[2], queue_tail_[2], queue_len_[2];
+
+    for (int i = 0; i < 2; ++i) {
+        queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
+    }
+
+    /* set up the initial grid */
+    do { (static_cast<void> (0)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
+    for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
+        const int curr_dep_pointer = (curr_dep & 0x1);
+        while (queue_len_[curr_dep_pointer] > 0) {
+            do { (static_cast<void> (0)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
+            if (l_father->level < 0) {
+                /* spawn all the grids in circular_queue_[curr_dep][] */
+                /* use cilk_spawn to spawn all the sub-grid */
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                if (queue_len_[curr_dep_pointer] == 0)
+                    stevenj_bicut(l_father->t0, l_father->t1, l_father->grid, f);
+                else
+                    _Cilk_spawn stevenj_bicut(l_father->t0, l_father->t1, l_father->grid, f);
+            } else {
+                /* performing a space cut on dimension 'level' */
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                const grid_info<N_RANK> l_father_grid = l_father->grid;
+                const int t0 = l_father->t0, t1 = l_father->t1;
+                const int lt = (t1 - t0);
+                const int level = l_father->level;
+                const int thres = slope_[level] * lt;
+                const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
+                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
+                const bool cut_lb = (lb < tb);
+                const bool can_cut = cut_lb ? (lb >= 2 * thres && lb > dx_recursive_[level]) : (tb >= 2 * thres && lb > dx_recursive_[level]);
+                if (!can_cut) {
+                    /* if we can't cut into this dimension, just directly push 
+                     * it into the circular queue 
+                     */
+                    do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                } else {
+                    /* can_cut! */
+                    if (cut_lb) {
+                        const int mid = (lb/2);
+                        grid_info<N_RANK> l_son_grid = l_father_grid;
+                        const int l_start = (l_father_grid.x0[level]);
+                        const int l_end = (l_father_grid.x1[level]);
+
+                        /* push the middle triangular minizoid (gray) into 
+                         * circular queue of (curr_dep) 
+                         */
+                        l_son_grid.x0[level] = l_start + mid - thres;
+                        l_son_grid.dx0[level] = slope_[level];
+                        l_son_grid.x1[level] = l_start + mid + thres;
+                        l_son_grid.dx1[level] = -slope_[level];
+                        do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+
+                        /* cilk_sync */
+                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                        /* push the left big trapezoid (black)
+                         * into circular queue of (curr_dep + 1)
+                         */
+                        l_son_grid.x0[level] = l_start;
+                        l_son_grid.dx0[level] = l_father_grid.dx0[level];
+                        l_son_grid.x1[level] = l_start + mid - thres;
+                        l_son_grid.dx1[level] = slope_[level];
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+
+                        /* push the right big trapezoid (black)
+                         * into circular queue of (curr_dep + 1)
+                         */
+                        l_son_grid.x0[level] = l_start + mid + thres;
+                        l_son_grid.dx0[level] = -slope_[level];
+                        l_son_grid.x1[level] = l_end;
+                        l_son_grid.dx1[level] = l_father_grid.dx1[level];
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+
+                    } /* end if (cut_lb) */
+                    else {
+                        /* cut_tb */
+                        const int mid = (tb/2);
+                        grid_info<N_RANK> l_son_grid = l_father_grid;
+                        const int l_start = (l_father_grid.x0[level]);
+                        const int l_end = (l_father_grid.x1[level]);
+                        const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+
+                        /* push left black sub-grid into circular queue of (curr_dep) */
+                        l_son_grid.x0[level] = l_start;
+                        l_son_grid.dx0[level] = l_father_grid.dx0[level];
+                        l_son_grid.x1[level] = ul_start + mid;
+                        l_son_grid.dx1[level] = -slope_[level];
+                        do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+
+                        /* push right black sub-grid into circular queue of (curr_dep) */
+                        l_son_grid.x0[level] = ul_start + mid;;
+                        l_son_grid.dx0[level] = slope_[level];
+                        l_son_grid.x1[level] = l_end;
+                        l_son_grid.dx1[level] = l_father_grid.dx1[level];
+                        do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+
+                        /* cilk_sync */
+                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                        /* push the middle gray triangular minizoid into 
+                         * circular queue of (curr_dep + 1)
+                         */
+                        l_son_grid.x0[level] = ul_start + mid;
+                        l_son_grid.dx0[level] = -slope_[level];
+                        l_son_grid.x1[level] = ul_start + mid;
+                        l_son_grid.dx1[level] = slope_[level];
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    } /* end else (cut_tb) */
+                } /* end if (can_cut) */
+            } /* end if (performing a space cut) */
+        } /* end while (queue_len_[curr_dep] > 0) */
+        _Cilk_sync;
+        (static_cast<void> (0));
+    } /* end for (curr_dep < N_RANK+1) */
+}
+
+/* This is for boundary region space cut! , always cutting based on the shorter bar
+ */
+template <int N_RANK> template <typename F, typename BF>
+inline void Algorithm<N_RANK>::stevenj_space_cut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
+{
+    queue_info *l_father;
+    queue_info circular_queue_[2][(power<N_RANK> ::value)];
+    int queue_head_[2], queue_tail_[2], queue_len_[2];
+
+    for (int i = 0; i < 2; ++i) {
+        queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
+    }
+
+    /* set up the initial grid */
+    do { (static_cast<void> (0)); circular_queue_[0][queue_tail_[0]]. level = N_RANK-1; circular_queue_[0][queue_tail_[0]]. t0 = t0; circular_queue_[0][queue_tail_[0]]. t1 = t1; circular_queue_[0][queue_tail_[0]]. grid = grid; ++queue_len_[0]; queue_tail_[0] = (((queue_tail_[0] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[0] + 1))>=((power<N_RANK> ::value))))); } while(0);
+    for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
+        const int curr_dep_pointer = (curr_dep & 0x1);
+        while (queue_len_[curr_dep_pointer] > 0) {
+            do { (static_cast<void> (0)); l_father = &(circular_queue_[curr_dep_pointer][queue_head_[curr_dep_pointer]]); } while(0);
+            if (l_father->level < 0) {
+                /* spawn all the grids in circular_queue_[curr_dep][] */
+                /* use cilk_spawn to spawn all the sub-grid */
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                if (queue_len_[curr_dep_pointer] == 0) {
+                    stevenj_bicut_p(l_father->t0, l_father->t1, l_father->grid, f, bf);
+                } else {
+                    _Cilk_spawn stevenj_bicut_p(l_father->t0, l_father->t1, l_father->grid, f, bf);
+                }
+            } else {
+                /* performing a space cut on dimension 'level' */
+                do { (static_cast<void> (0)); queue_head_[curr_dep_pointer] = (((queue_head_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_head_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); --queue_len_[curr_dep_pointer]; } while(0);
+                grid_info<N_RANK> l_father_grid = l_father->grid;
+                const int t0 = l_father->t0, t1 = l_father->t1;
+                const int lt = (t1 - t0);
+                const int level = l_father->level;
+                const int thres = slope_[level] * lt;
+                const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
+                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
+                const bool cut_lb = (lb < tb);
+                const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
+                const bool can_cut = cut_lb ? (l_touch_boundary ? (lb >= 2 * thres && lb > dx_recursive_boundary_[level]) : (lb >= 2 * thres && lb > dx_recursive_[level])) : (l_touch_boundary ? (tb >= 2 * thres && lb > dx_recursive_boundary_[level]) : (tb >= 2 * thres && lb > dx_recursive_[level]));
+                if (!can_cut) {
+                    /* if we can't cut into this dimension, just directly push
+                     * it into the circular queue
+                    */
+                    do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_father_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                } else {
+                    /* can_cut */
+                    if (cut_lb) {
+                        /* if cutting lb, there's no initial cut! */
+                        (static_cast<void> (0));
+                        const int mid = lb/2;
+                        grid_info<N_RANK> l_son_grid = l_father_grid;
+                        const int l_start = (l_father_grid.x0[level]);
+                        const int l_end = (l_father_grid.x1[level]);
+
+                        /* push the middle gray minizoid
+                         * into circular queue of (curr_dep) 
+                         */
+                        l_son_grid.x0[level] = l_start + mid - thres;
+                        l_son_grid.dx0[level] = slope_[level];
+                        l_son_grid.x1[level] = l_start + mid + thres;
+                        l_son_grid.dx1[level] = -slope_[level];
+                        do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+
+                        /* cilk_sync */
+                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                        /* push one sub-grid into circular queue of (curr_dep + 1)*/
+                        l_son_grid.x0[level] = l_start;
+                        l_son_grid.dx0[level] = l_father_grid.dx0[level];
+                        l_son_grid.x1[level] = l_start + mid - thres;
+                        l_son_grid.dx1[level] = slope_[level];
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+
+                        /* push one sub-grid into circular queue of (curr_dep + 1)*/
+                        l_son_grid.x0[level] = l_start + mid + thres;
+                        l_son_grid.dx0[level] = -slope_[level];
+                        l_son_grid.x1[level] = l_end;
+                        l_son_grid.dx1[level] = l_father_grid.dx1[level];
+                        do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                    } /* end if (cut_lb) */
+                    else { /* cut_tb */
+                        if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
+                            (static_cast<void> (0));
+                            (static_cast<void> (0));
+                            const int mid = tb/2;
+                            grid_info<N_RANK> l_son_grid = l_father_grid;
+                            const int l_start = (l_father_grid.x0[level]);
+                            const int l_end = (l_father_grid.x1[level]);
+                            const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+                            /* merge the big black trapezoids */
+                            l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.dx0[level] = slope_[level];
+                            l_son_grid.x1[level] = l_end + (ul_start - l_start) + mid;
+                            l_son_grid.dx1[level] = -slope_[level];
+                            do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+
+                            /* cilk_sync */
+                            const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                            /* push middle minizoid into circular queue of (curr_dep + 1)*/
+                            l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.dx0[level] = -slope_[level];
+                            l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.dx1[level] = slope_[level];
+                            do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        } else { /* NOT the initial cut! */
+                            const int mid = tb/2;
+                            grid_info<N_RANK> l_son_grid = l_father_grid;
+                            const int l_start = (l_father_grid.x0[level]);
+                            const int l_end = (l_father_grid.x1[level]);
+                            const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+                            /* push one sub-grid into circular queue of (curr_dep) */
+                            l_son_grid.x0[level] = l_start;
+                            l_son_grid.dx0[level] = l_father_grid.dx0[level];
+                            l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.dx1[level] = -slope_[level];
+                            do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+
+                            /* push one sub-grid into circular queue of (curr_dep) */
+                            l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.dx0[level] = slope_[level];
+                            l_son_grid.x1[level] = l_end;
+                            l_son_grid.dx1[level] = l_father_grid.dx1[level];
+                            do { (static_cast<void> (0)); circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. level = level-1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t0 = t0; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. t1 = t1; circular_queue_[curr_dep_pointer][queue_tail_[curr_dep_pointer]]. grid = l_son_grid; ++queue_len_[curr_dep_pointer]; queue_tail_[curr_dep_pointer] = (((queue_tail_[curr_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[curr_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+
+                            /* cilk_sync */
+                            const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                            /* push one sub-grid into circular queue of (curr_dep + 1)*/
+                            l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.dx0[level] = -slope_[level];
+                            l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.dx1[level] = slope_[level];
+                            do { (static_cast<void> (0)); circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. level = level-1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t0 = t0; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. t1 = t1; circular_queue_[next_dep_pointer][queue_tail_[next_dep_pointer]]. grid = l_son_grid; ++queue_len_[next_dep_pointer]; queue_tail_[next_dep_pointer] = (((queue_tail_[next_dep_pointer] + 1)) - (((power<N_RANK> ::value)) & -(((queue_tail_[next_dep_pointer] + 1))>=((power<N_RANK> ::value))))); } while(0);
+                        }                    
+                    } /* end if (cut_tb) */
+                } /* end if (can_cut) */
+            } /* end if (performing a space cut) */
+        } /* end while (queue_len_[curr_dep] > 0) */
+        _Cilk_sync;
+        (static_cast<void> (0));
+    } /* end for (curr_dep < N_RANK+1) */
+}
+
+/* This is the version for interior region cut! */
+template <int N_RANK> template <typename F>
+inline void Algorithm<N_RANK>::stevenj_bicut(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
+{
+    const int lt = 1;
+    bool sim_can_cut = false;
+    grid_info<N_RANK> l_son_grid;
+
+    for (int i = N_RANK-1; i >= 0; --i) {
+        int lb, thres, tb;
+        lb = (grid.x1[i] - grid.x0[i]);
+        tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+        bool cut_lb = (lb < tb);
+        thres = (slope_[i] * lt);
+        sim_can_cut = sim_can_cut || (cut_lb ? (lb >= 2 * thres & lb > dx_recursive_[i]) : (tb >= 2 * thres & lb > dx_recursive_[i]));
+    }
+
+    if (sim_can_cut) {
+        /* cut into space */
+        stevenj_space_cut(t0, t1, grid, f);
+        return;
+    }
+
+    // base case
+f(t0, t1, grid);
+    return;
+}
+
+template <int N_RANK> template <typename F, typename BF>
+inline void Algorithm<N_RANK>::stevenj_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
+{
+    const int lt = 1;
+    bool sim_can_cut = false, call_boundary = false;
+    grid_info<N_RANK> l_father_grid = grid, l_son_grid;
+
+    for (int i = N_RANK-1; i >= 0; --i) {
+        int lb, thres, tb;
+        bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
+        lb = (grid.x1[i] - grid.x0[i]);
+        tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+        thres = (slope_[i] * lt);
+        /* l_father_grid may be mapped to a new region in touch_boundary() */
+        /* for the initial cut, we exclude the begining and end point to minimize
+         * the overhead on boundary
+        */
+        /* lb == phys_length_[i] indicates an initial cut! */
+        bool cut_lb = (lb < tb);
+        sim_can_cut = sim_can_cut || (cut_lb ? (l_touch_boundary ? (lb >= 2 * thres & lb > dx_recursive_boundary_[i]) : (lb >= 2 * thres & lb > dx_recursive_[i])) : (l_touch_boundary ? (tb >= 2 * thres & lb > dx_recursive_boundary_[i]) : (tb > 2 * thres & lb > dx_recursive_[i])));
+        call_boundary |= l_touch_boundary;
+    }
+
+    if (sim_can_cut) {
+        /* cut into space */
+        /* push the first l_father_grid that can be cut into the circular queue */
+        /* boundary cuts! */
+        if (call_boundary) 
+            stevenj_space_cut_p(t0, t1, l_father_grid, f, bf);
+        else
+            stevenj_space_cut(t0, t1, l_father_grid, f);
+        return;
+    } 
+
+    // base case
+if (call_boundary) {
+        base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+    } else {
+        f(t0, t1, l_father_grid);
+    }
+    return;
+}
+
+template <int N_RANK> template <typename F>
+inline void Algorithm<N_RANK>::stevenj(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
+{
+    for (int t = t0; t < t1; ++t) {
+        stevenj_bicut(t, t+1, grid, f);
+    }
+    return;
+}
+
+template <int N_RANK> template <typename F, typename BF>
+inline void Algorithm<N_RANK>::stevenj_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
+{
+    for (int t = t0; t < t1; ++t) {
+        stevenj_bicut_p(t, t+1, grid, f, bf);
+    }
+    return;
+}
+
 
 /* This is the version for boundary region cut! */
 template <int N_RANK> template <typename F, typename BF>
@@ -35453,69 +36332,9 @@ l_son_grid.x0[i] = l_end;
 // #include <iostream>
 #pragma GCC system_header
 
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
 
 // -*- C++ -*- forwarding header.
 #pragma GCC system_header
-
-// -*- C++ -*- forwarding header.
-#pragma GCC system_header
-
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
 
 
 
@@ -35547,34 +36366,7 @@ l_son_grid.x0[i] = l_end;
 // -*- C++ -*- forwarding header.
 #pragma GCC system_header
 
-/**
-***  Copyright (C) 2002-2010 Intel Corporation. All rights reserved.
-***
-*** The information and source code contained herein is the exclusive
-*** property of Intel Corporation and may not be disclosed, examined
-*** or reproduced in whole or in part without explicit written authorization
-*** from the company.
-**/
-
-/*
- * Copyright (c) 1994-2002 by P.J. Plauger.  ALL RIGHTS RESERVED. 
- * Consult your license regarding permissions and restrictions.
- */
-
-
-/* stddef.h standard header */
-
-		/* macros */
-		/* type definitions */
-
-
-
-
-
-
-/*#endif*/ /* _STDDEF */
-
-// -*- C++ -*- forwarding header.
+///////////////////////////////////////////////////////////////////////////////
 #pragma GCC system_header
 
 /* Copyright (C) 1991,1992,1994-2001,2003,2004,2007
@@ -35688,6 +36480,70 @@ class Pochoir_Domain {
 };
 
 
+/*
+ **********************************************************************************
+ *  Copyright (C) 2010-2011  Massachusetts Institute of Technology
+ *  Copyright (C) 2010-2011  Yuan Tang <yuantang@csail.mit.edu>
+ *                           Charles E. Leiserson <cel@mit.edu>
+ *   
+ *   This program is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ *   This helper class 'proxy' was originally written by Dahua Lin@csail.mit.edu
+ *   adapted to Pochoir by Yuan Tang
+ * 
+ *
+ *   Suggestsions:                  yuantang@csail.mit.edu
+ *   Bugs:                          yuantang@csail.mit.edu
+ *
+ ********************************************************************************/
+
+
+/* if the type T is of a struct, the user has to employ the arrow operator '->'
+ * to reference to the member, since the dot operator '.' is non-overload-able in C++
+ */
+template<typename T>
+class Pochoir_Proxy
+{
+public:
+    explicit Pochoir_Proxy(T * v) : ref_(v), val_(*v) { }
+    explicit Pochoir_Proxy(T v) : val_(v), ref_(&val_) { }
+
+    operator T() const { // the implicit conversion makes a proxy just like the value itself
+return (*ref_);
+    }
+    operator T& () {
+        return (*ref_);
+    }
+    T * operator->() {
+        return ref_;
+    }
+
+    Pochoir_Proxy<T> & operator= (T const & rhs) {
+        (*ref_) = rhs;
+        return (*this);
+    }
+
+    Pochoir_Proxy<T> & operator= (Pochoir_Proxy<T> & rhs) {
+        T const & l_rhs = T(rhs);
+        (*ref_) = l_rhs;
+        return (*this);
+    }
+private:
+    T * ref_;
+    T val_;
+};
+
 
 using namespace std;
 
@@ -35765,7 +36621,6 @@ bool allocMemFlag_;
         typedef T (*BValue_6D)(Pochoir_Array<T, 6> &, int, int, int, int, int, int, int);
         typedef T (*BValue_7D)(Pochoir_Array<T, 7> &, int, int, int, int, int, int, int, int);
         typedef T (*BValue_8D)(Pochoir_Array<T, 8> &, int, int, int, int, int, int, int, int, int);
-        T * l_null;
         BValue_1D bv1_;
         BValue_2D bv2_;
         BValue_3D bv3_;
@@ -35784,10 +36639,9 @@ bool allocMemFlag_;
             logic_start_[0] = 0; logic_end_[0] = sz0;
             stride_[0] = 1; 
             total_size_ = sz0;
-            shape_ = (__null);
-            view_ = (__null);
-            bv1_ = (__null); bv2_ = (__null); bv3_ = (__null);
-            l_null = (T*) calloc(1, sizeof(T));
+            shape_ = __null;
+            view_ = __null;
+            bv1_ = __null; bv2_ = __null; bv3_ = __null;
             allocMemFlag_ = false;
 //            view_ = new Storage<T>(TOGGLE * total_size_);
 }
@@ -35798,11 +36652,10 @@ bool allocMemFlag_;
             logic_start_[0] = 0; logic_end_[0] = sz0;
             logic_start_[1] = 0; logic_end_[1] = sz1;
 			stride_[1] = sz0; stride_[0] = 1; 
-            shape_ = (__null);
+            shape_ = __null;
 			total_size_ = phys_size_[0] * phys_size_[1];
-			view_ = (__null);
-            bv1_ = (__null); bv2_ = (__null); bv3_ = (__null);
-            l_null = (T*) calloc(1, sizeof(T));
+			view_ = __null;
+            bv1_ = __null; bv2_ = __null; bv3_ = __null;
             allocMemFlag_ = false;
 //			  view_ = new Storage<T>(TOGGLE * total_size_) ;
 }
@@ -35815,15 +36668,14 @@ bool allocMemFlag_;
             logic_start_[2] = 0; logic_end_[2] = sz2;
 			stride_[0] = 1;  
 			total_size_ = phys_size_[2];
-            shape_ = (__null);
+            shape_ = __null;
 			for (int i = 0; i < 2; ++i) {
 				total_size_ *= phys_size_[i];
 				stride_[i+1] = stride_[i] * phys_size_[i];
 			}
-			view_ = (__null);
+			view_ = __null;
 			/* double the total_size_ because we are using toggle array */
-            bv1_ = (__null); bv2_ = (__null); bv3_ = (__null);
-            l_null = (T*) calloc(1, sizeof(T));
+            bv1_ = __null; bv2_ = __null; bv3_ = __null;
             allocMemFlag_ = false;
 //  		  view_ = new Storage<T>(TOGGLE*total_size_) ;
 }
@@ -35837,15 +36689,14 @@ bool allocMemFlag_;
             logic_start_[3] = 0; logic_end_[3] = sz3;
 			stride_[0] = 1;  
 			total_size_ = phys_size_[3];
-            shape_ = (__null);
+            shape_ = __null;
 			for (int i = 0; i < 3; ++i) {
 				total_size_ *= phys_size_[i];
 				stride_[i+1] = stride_[i] * phys_size_[i];
 			}
-			view_ = (__null);
+			view_ = __null;
 			/* double the total_size_ because we are using toggle array */
-            bv1_ = (__null); bv2_ = (__null); bv3_ = (__null);
-            l_null = (T*) calloc(1, sizeof(T));
+            bv1_ = __null; bv2_ = __null; bv3_ = __null;
             allocMemFlag_ = false;
 //			  view_ = new Storage<T>(TOGGLE*total_size_) ;
 }
@@ -35860,15 +36711,14 @@ bool allocMemFlag_;
             logic_start_[4] = 0; logic_end_[4] = sz4;
 			stride_[0] = 1;  
 			total_size_ = phys_size_[4];
-            shape_ = (__null);
+            shape_ = __null;
 			for (int i = 0; i < 4; ++i) {
 				total_size_ *= phys_size_[i];
 				stride_[i+1] = stride_[i] * phys_size_[i];
 			}
-			view_ = (__null);
+			view_ = __null;
 			/* double the total_size_ because we are using toggle array */
-            bv1_ = (__null); bv2_ = (__null); bv3_ = (__null); bv4_ = (__null);
-            l_null = (T*) calloc(1, sizeof(T));
+            bv1_ = __null; bv2_ = __null; bv3_ = __null; bv4_ = __null;
             allocMemFlag_ = false;
 //			  view_ = new Storage<T>(TOGGLE*total_size_) ;
 }
@@ -35884,15 +36734,14 @@ bool allocMemFlag_;
             logic_start_[5] = 0; logic_end_[5] = sz5;
 			stride_[0] = 1;  
 			total_size_ = phys_size_[5];
-            shape_ = (__null);
+            shape_ = __null;
 			for (int i = 0; i < 5; ++i) {
 				total_size_ *= phys_size_[i];
 				stride_[i+1] = stride_[i] * phys_size_[i];
 			}
-			view_ = (__null);
+			view_ = __null;
 			/* double the total_size_ because we are using toggle array */
-            bv1_ = (__null); bv2_ = (__null); bv3_ = (__null); bv4_ = (__null); bv5_ = (__null);
-            l_null = (T*) calloc(1, sizeof(T));
+            bv1_ = __null; bv2_ = __null; bv3_ = __null; bv4_ = __null; bv5_ = __null;
             allocMemFlag_ = false;
 //			  view_ = new Storage<T>(TOGGLE*total_size_) ;
 }
@@ -35909,15 +36758,14 @@ bool allocMemFlag_;
             logic_start_[6] = 0; logic_end_[6] = sz6;
 			stride_[0] = 1;  
 			total_size_ = phys_size_[6];
-            shape_ = (__null);
+            shape_ = __null;
 			for (int i = 0; i < 6; ++i) {
 				total_size_ *= phys_size_[i];
 				stride_[i+1] = stride_[i] * phys_size_[i];
 			}
-			view_ = (__null);
+			view_ = __null;
 			/* double the total_size_ because we are using toggle array */
-            bv1_ = (__null); bv2_ = (__null); bv3_ = (__null); bv4_ = (__null); bv5_ = (__null); bv6_ = (__null);
-            l_null = (T*) calloc(1, sizeof(T));
+            bv1_ = __null; bv2_ = __null; bv3_ = __null; bv4_ = __null; bv5_ = __null; bv6_ = __null;
             allocMemFlag_ = false;
 //			  view_ = new Storage<T>(TOGGLE*total_size_) ;
 }
@@ -35935,15 +36783,14 @@ bool allocMemFlag_;
             logic_start_[7] = 0; logic_end_[7] = sz7;
 			stride_[0] = 1;  
 			total_size_ = phys_size_[7];
-            shape_ = (__null);
+            shape_ = __null;
 			for (int i = 0; i < 7; ++i) {
 				total_size_ *= phys_size_[i];
 				stride_[i+1] = stride_[i] * phys_size_[i];
 			}
-			view_ = (__null);
+			view_ = __null;
 			/* double the total_size_ because we are using toggle array */
-            bv1_ = (__null); bv2_ = (__null); bv3_ = (__null); bv4_ = (__null); bv5_ = (__null); bv6_ = (__null); bv7_ = (__null);
-            l_null = (T*) calloc(1, sizeof(T));
+            bv1_ = __null; bv2_ = __null; bv3_ = __null; bv4_ = __null; bv5_ = __null; bv6_ = __null; bv7_ = __null;
             allocMemFlag_ = false;
 //			  view_ = new Storage<T>(TOGGLE*total_size_) ;
 }
@@ -35959,7 +36806,7 @@ bool allocMemFlag_;
 				stride_[i] = orig.stride(i);
                 logic_start_[i] = 0; logic_end_[i] = logic_size_[i];
 			}
-			view_ = (__null);
+			view_ = __null;
 			view_ = const_cast<Pochoir_Array<T, N_RANK> &>(orig).view();
 			view_->inc_ref();
             /* We also get the BValue function pointer from orig */
@@ -35972,9 +36819,8 @@ bool allocMemFlag_;
             bv7_ = const_cast<Pochoir_Array<T, N_RANK> &>(orig).bv_7D(); 
             bv8_ = const_cast<Pochoir_Array<T, N_RANK> &>(orig).bv_8D(); 
             data_ = view_->data();
-            l_null = (T*) calloc(1, sizeof(T));
             allocMemFlag_ = true;
-            shape_ = (__null);
+            shape_ = __null;
 		}
 
         /* assignment operator for vector<> */
@@ -35985,7 +36831,7 @@ bool allocMemFlag_;
 				logic_size_[i] = orig.logic_size(i);
 				stride_[i] = orig.stride(i);
 			}
-			view_ = (__null);
+			view_ = __null;
 			view_ = const_cast<Pochoir_Array<T, N_RANK> &>(orig).view();
 			view_->inc_ref();
             /* We also get the BValue function pointer from orig */
@@ -35998,9 +36844,8 @@ bool allocMemFlag_;
             bv7_ = const_cast<Pochoir_Array<T, N_RANK> &>(orig).bv_7D(); 
             bv8_ = const_cast<Pochoir_Array<T, N_RANK> &>(orig).bv_8D(); 
             data_ = view_->data();
-            l_null = (T*) calloc(1, sizeof(T));
             allocMemFlag_ = true;
-            shape_ = (__null);
+            shape_ = __null;
             return *this;
 		}
 
@@ -36008,8 +36853,7 @@ bool allocMemFlag_;
 		~Pochoir_Array() {
 			view_->dec_ref();
             allocMemFlag_ = false;
-            free(l_null);
-            if (shape_ != (__null)) 
+            if (shape_ != __null) 
                 delete[] shape_;
 		}
 
@@ -36029,16 +36873,16 @@ bool allocMemFlag_;
         BValue_8D bv_8D(void) { return bv8_; }
 
         /* guarantee that only one version of boundary function is registered ! */
-        void Register_Boundary(BValue_1D _bv1) { bv1_ = _bv1;  bv2_ = (__null); bv3_ = (__null); bv4_ = (__null); bv5_ = (__null); bv6_ = (__null); bv7_ = (__null); bv8_ = (__null);}
-        void Register_Boundary(BValue_2D _bv2) { bv2_ = _bv2;  bv1_ = (__null); bv3_ = (__null); bv4_ = (__null); bv5_ = (__null); bv6_ = (__null); bv7_ = (__null); bv8_ = (__null);}
-        void Register_Boundary(BValue_3D _bv3) { bv3_ = _bv3;  bv1_ = (__null); bv2_ = (__null); bv4_ = (__null); bv5_ = (__null); bv6_ = (__null); bv7_ = (__null); bv8_ = (__null);}
-        void Register_Boundary(BValue_4D _bv4) { bv4_ = _bv4;  bv1_ = (__null); bv2_ = (__null); bv3_ = (__null); bv5_ = (__null); bv6_ = (__null); bv7_ = (__null); bv8_ = (__null);}
-        void Register_Boundary(BValue_5D _bv5) { bv5_ = _bv5;  bv1_ = (__null); bv2_ = (__null); bv3_ = (__null); bv4_ = (__null); bv6_ = (__null); bv7_ = (__null); bv8_ = (__null);}
-        void Register_Boundary(BValue_6D _bv6) { bv6_ = _bv6;  bv1_ = (__null); bv2_ = (__null); bv3_ = (__null); bv4_ = (__null); bv5_ = (__null); bv7_ = (__null); bv8_ = (__null);}
-        void Register_Boundary(BValue_7D _bv7) { bv7_ = _bv7;  bv1_ = (__null); bv2_ = (__null); bv3_ = (__null); bv4_ = (__null); bv5_ = (__null); bv6_ = (__null); bv8_ = (__null);}
-        void Register_Boundary(BValue_8D _bv8) { bv8_ = _bv8;  bv1_ = (__null); bv2_ = (__null); bv3_ = (__null); bv4_ = (__null); bv5_ = (__null); bv6_ = (__null); bv7_ = (__null);}
+        void Register_Boundary(BValue_1D _bv1) { bv1_ = _bv1;  bv2_ = __null; bv3_ = __null; bv4_ = __null; bv5_ = __null; bv6_ = __null; bv7_ = __null; bv8_ = __null;}
+        void Register_Boundary(BValue_2D _bv2) { bv2_ = _bv2;  bv1_ = __null; bv3_ = __null; bv4_ = __null; bv5_ = __null; bv6_ = __null; bv7_ = __null; bv8_ = __null;}
+        void Register_Boundary(BValue_3D _bv3) { bv3_ = _bv3;  bv1_ = __null; bv2_ = __null; bv4_ = __null; bv5_ = __null; bv6_ = __null; bv7_ = __null; bv8_ = __null;}
+        void Register_Boundary(BValue_4D _bv4) { bv4_ = _bv4;  bv1_ = __null; bv2_ = __null; bv3_ = __null; bv5_ = __null; bv6_ = __null; bv7_ = __null; bv8_ = __null;}
+        void Register_Boundary(BValue_5D _bv5) { bv5_ = _bv5;  bv1_ = __null; bv2_ = __null; bv3_ = __null; bv4_ = __null; bv6_ = __null; bv7_ = __null; bv8_ = __null;}
+        void Register_Boundary(BValue_6D _bv6) { bv6_ = _bv6;  bv1_ = __null; bv2_ = __null; bv3_ = __null; bv4_ = __null; bv5_ = __null; bv7_ = __null; bv8_ = __null;}
+        void Register_Boundary(BValue_7D _bv7) { bv7_ = _bv7;  bv1_ = __null; bv2_ = __null; bv3_ = __null; bv4_ = __null; bv5_ = __null; bv6_ = __null; bv8_ = __null;}
+        void Register_Boundary(BValue_8D _bv8) { bv8_ = _bv8;  bv1_ = __null; bv2_ = __null; bv3_ = __null; bv4_ = __null; bv5_ = __null; bv6_ = __null; bv7_ = __null;}
 
-        void unRegister_Boundary(void) { bv1_ = (__null);  bv2_ = (__null); bv3_ = (__null); bv4_ = (__null); ; bv5_ = (__null); bv6_ = (__null); bv7_ = (__null); bv8_ = (__null)}
+        void unRegister_Boundary(void) { bv1_ = __null;  bv2_ = __null; bv3_ = __null; bv4_ = __null; ; bv5_ = __null; bv6_ = __null; bv7_ = __null; bv8_ = __null}
 
         void Register_Domain(grid_info<N_RANK> initial_grid) {
             for (int i = 0; i < N_RANK; ++i) {
@@ -36070,8 +36914,8 @@ bool allocMemFlag_;
             depth = l_max_time_shift - l_min_time_shift;
             toggle_ = depth + 1;
             for (int i = 0; i < shape_size; ++i) {
-                for (int r = 1; r < N_RANK+1; ++r) {
-                    slope_[N_RANK-r] = ((slope_[N_RANK-r]) > (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))) ? (slope_[N_RANK-r]) : (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))));
+                for (int r = 0; r < N_RANK; ++r) {
+                    slope_[r] = ((slope_[r]) > (abs((int)ceil((float)shape_[i]. shift[r+1]/(l_max_time_shift - shape_[i]. shift[0])))) ? (slope_[r]) : (abs((int)ceil((float)shape_[i]. shift[r+1]/(l_max_time_shift - shape_[i]. shift[0])))));
                     /* array copy from input parameter shape 
                      * NOTE: this copy exclude the time dimension, 
                      * which is not needed in checking the shape !
@@ -36107,8 +36951,8 @@ bool allocMemFlag_;
             depth = l_max_time_shift - l_min_time_shift;
             toggle_ = depth + 1;
             for (int i = 0; i < N_SIZE; ++i) {
-                for (int r = 1; r < N_RANK+1; ++r) {
-                    slope_[N_RANK-r] = ((slope_[N_RANK-r]) > (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))) ? (slope_[N_RANK-r]) : (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))));
+                for (int r = 0; r < N_RANK; ++r) {
+                    slope_[r] = ((slope_[r]) > (abs((int)ceil((float)shape_[i]. shift[r+1]/(l_max_time_shift - shape_[i]. shift[0])))) ? (slope_[r]) : (abs((int)ceil((float)shape_[i]. shift[r+1]/(l_max_time_shift - shape_[i]. shift[0])))));
                 }
             }
             if (!allocMemFlag_) {
@@ -36150,8 +36994,8 @@ bool allocMemFlag_;
             depth = l_max_time_shift - l_min_time_shift;
             toggle_ = depth + 1;
             for (i = 0; i < N_SIZE1+N_SIZE2; ++i) {
-                for (int r = 1; r < N_RANK+1; ++r) {
-                    slope_[N_RANK-r] = ((slope_[N_RANK-r]) > (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))) ? (slope_[N_RANK-r]) : (abs((int)ceil((float)shape_[i]. shift[r]/(l_max_time_shift - shape_[i]. shift[0])))));
+                for (int r = 0; r < N_RANK; ++r) {
+                    slope_[r] = ((slope_[r]) > (abs((int)ceil((float)shape_[i]. shift[r+1]/(l_max_time_shift - shape_[i]. shift[0])))) ? (slope_[r]) : (abs((int)ceil((float)shape_[i]. shift[r+1]/(l_max_time_shift - shape_[i]. shift[0])))));
                 }
             }
             if (!allocMemFlag_) {
@@ -36255,28 +37099,28 @@ bool allocMemFlag_;
             bool l_boundary = check_boundary(_idx);
             bool set_boundary = false;
             T l_bvalue = 0;
-            if (l_boundary && bv1_ != (__null)) {
+            if (l_boundary && bv1_ != __null) {
                 l_bvalue = bv1_(*this, _timestep, _idx[0]);
                 set_boundary = true;
-            } else if (l_boundary && bv2_ != (__null)) {
+            } else if (l_boundary && bv2_ != __null) {
                 l_bvalue = bv2_(*this, _timestep, _idx[1], _idx[0]);
                 set_boundary = true;
-            } else if (l_boundary && bv3_ != (__null)) {
+            } else if (l_boundary && bv3_ != __null) {
                 l_bvalue = bv3_(*this, _timestep, _idx[2], _idx[1], _idx[0]);
                 set_boundary = true;
-            } else if (l_boundary && bv4_ != (__null)) {
+            } else if (l_boundary && bv4_ != __null) {
                 l_bvalue = bv4_(*this, _timestep, _idx[3], _idx[2], _idx[1], _idx[0]);
                 set_boundary = true;
-            } else if (l_boundary && bv5_ != (__null)) {
+            } else if (l_boundary && bv5_ != __null) {
                 l_bvalue = bv5_(*this, _timestep, _idx[4], _idx[3], _idx[2], _idx[1], _idx[0]);
                 set_boundary = true;
-            } else if (l_boundary && bv6_ != (__null)) {
+            } else if (l_boundary && bv6_ != __null) {
                 l_bvalue = bv6_(*this, _timestep, _idx[5], _idx[4], _idx[3], _idx[2], _idx[1], _idx[0]);
                 set_boundary = true;
-            } else if (l_boundary && bv7_ != (__null)) {
+            } else if (l_boundary && bv7_ != __null) {
                 l_bvalue = bv7_(*this, _timestep, _idx[6], _idx[5], _idx[4], _idx[3], _idx[2], _idx[1], _idx[0]);
                 set_boundary = true;
-            } else if (l_boundary && bv8_ != (__null)) {
+            } else if (l_boundary && bv8_ != __null) {
                 l_bvalue = bv8_(*this, _timestep, _idx[7], _idx[6], _idx[5], _idx[4], _idx[3], _idx[2], _idx[1], _idx[0]);
                 set_boundary = true;
             }
@@ -36291,124 +37135,116 @@ bool allocMemFlag_;
          * - this is the uninterior version
          */
 
-		inline T & operator() (int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> operator() (int _idx1, int _idx0) {
             if (!allocMemFlag_) {
                 printf("Pochoir array access error:\n");
                 printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0]);
-            bool set_boundary = (l_boundary && bv1_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv1_ != __null);
             if (set_boundary) 
-                l_bvalue = bv1_(*this, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv1_(*this, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + (_idx1 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & operator() (int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> operator() (int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
                 printf("Pochoir array access error:\n");
                 printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1]);
-            bool set_boundary = (l_boundary && bv2_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv2_ != __null);
             if (set_boundary)
-                l_bvalue = bv2_(*this, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv2_(*this, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + (_idx2 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & operator() (int _idx3, int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> operator() (int _idx3, int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
                 printf("Pochoir array access error:\n");
                 printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2]);
-            bool set_boundary = (l_boundary && bv3_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv3_ != __null);
             if (set_boundary)
-                l_bvalue = bv3_(*this, _idx3, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv3_(*this, _idx3, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + (_idx3 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & operator() (int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> operator() (int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
                 printf("Pochoir array access error:\n");
                 printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3]);
-            bool set_boundary = (l_boundary && bv4_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv4_ != __null);
             if (set_boundary)
-                l_bvalue = bv4_(*this, _idx4, _idx3, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv4_(*this, _idx4, _idx3, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + (_idx4 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & operator() (int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> operator() (int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
                 printf("Pochoir array access error:\n");
                 printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4]);
-            bool set_boundary = (l_boundary && bv5_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv5_ != __null);
             if (set_boundary)
-                l_bvalue = bv5_(*this, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv5_(*this, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + (_idx5 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & operator() (int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> operator() (int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
                 printf("Pochoir array access error:\n");
                 printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5]);
-            bool set_boundary = (l_boundary && bv6_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv6_ != __null);
             if (set_boundary)
-                l_bvalue = bv6_(*this, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv6_(*this, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + (_idx6 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & operator() (int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> operator() (int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
                 printf("Pochoir array access error:\n");
                 printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5] || _idx6 < logic_start_[6] || _idx5 >= logic_end_[6]);
-            bool set_boundary = (l_boundary && bv7_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv7_ != __null);
             if (set_boundary)
-                l_bvalue = bv7_(*this, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv7_(*this, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + (_idx7 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & operator() (int _idx8, int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> operator() (int _idx8, int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             if (!allocMemFlag_) {
                 printf("Pochoir array access error:\n");
                 printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
                 exit(1);
             }
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5] || _idx6 < logic_start_[6] || _idx5 >= logic_end_[6] || _idx7 < logic_start_[7] || _idx5 >= logic_end_[7]);
-            bool set_boundary = (l_boundary && bv8_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv8_ != __null);
             if (set_boundary)
-                l_bvalue = bv8_(*this, _idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv8_(*this, _idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + _idx7 * stride_[7] + (_idx8 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
         /* set()/get() pair to set/get boundary value in user supplied bvalue function */
@@ -36577,84 +37413,76 @@ bool allocMemFlag_;
 			return (*view_)[l_idx];
 		}
 
-		inline T & boundary (int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> boundary (int _idx1, int _idx0) {
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0]);
-            bool set_boundary = (l_boundary && bv1_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv1_ != __null);
             if (set_boundary)
-                l_bvalue = bv1_(*this, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv1_(*this, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + (_idx1 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & boundary (int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> boundary (int _idx2, int _idx1, int _idx0) {
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1]);
-            bool set_boundary = (l_boundary && bv2_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv2_ != __null);
             if (set_boundary)
-                l_bvalue = bv2_(*this, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv2_(*this, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + (_idx2 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & boundary (int _idx3, int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> boundary (int _idx3, int _idx2, int _idx1, int _idx0) {
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2]);
-            bool set_boundary = (l_boundary && bv3_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv3_ != __null);
             if (set_boundary)
-                l_bvalue = bv3_(*this, _idx3, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv3_(*this, _idx3, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + (_idx3 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & boundary (int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> boundary (int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3]);
-            bool set_boundary = (l_boundary && bv4_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv4_ != __null);
             if (set_boundary)
-                l_bvalue = bv4_(*this, _idx4, _idx3, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv4_(*this, _idx4, _idx3, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + (_idx4 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & boundary (int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> boundary (int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4]);
-            bool set_boundary = (l_boundary && bv5_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv5_ != __null);
             if (set_boundary)
-                l_bvalue = bv5_(*this, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv5_(*this, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + (_idx5 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & boundary (int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> boundary (int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5]);
-            bool set_boundary = (l_boundary && bv6_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv6_ != __null);
             if (set_boundary)
-                l_bvalue = bv6_(*this, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv6_(*this, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + (_idx6 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & boundary (int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> boundary (int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5] || _idx6 < logic_start_[6] || _idx5 >= logic_end_[6]);
-            bool set_boundary = (l_boundary && bv7_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv7_ != __null);
             if (set_boundary)
-                l_bvalue = bv7_(*this, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv7_(*this, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + (_idx7 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
-		inline T & boundary (int _idx8, int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
+		inline Pochoir_Proxy<T> boundary (int _idx8, int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
             bool l_boundary = (_idx0 < logic_start_[0] || _idx0 >= logic_end_[0] || _idx1 < logic_start_[1] || _idx1 >= logic_end_[1] || _idx2 < logic_start_[2] || _idx2 >= logic_end_[2] || _idx3 < logic_start_[3] || _idx3 >= logic_end_[3] || _idx4 < logic_start_[4] || _idx4 >= logic_end_[4] || _idx5 < logic_start_[5] || _idx5 >= logic_end_[5] || _idx6 < logic_start_[6] || _idx5 >= logic_end_[6] || _idx7 < logic_start_[7] || _idx5 >= logic_end_[7]);
-            bool set_boundary = (l_boundary && bv8_ != (__null));
-            T & l_bvalue(*l_null);
+            bool set_boundary = (l_boundary && bv8_ != __null);
             if (set_boundary)
-                l_bvalue = bv8_(*this, _idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0);
+                return Pochoir_Proxy<T>(bv8_(*this, _idx8, _idx7, _idx6, _idx5, _idx4, _idx3, _idx2, _idx1, _idx0));
 			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + _idx7 * stride_[7] + (_idx8 % toggle_) * total_size_;
-            return (set_boundary ? l_bvalue : (*view_)[l_idx]);
+            return Pochoir_Proxy<T>(data_ + l_idx);
 		}
 
 		/* size_info is of type int[] */
@@ -36876,8 +37704,8 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
     time_shift_ = 0 - l_min_time_shift;
     toggle_ = depth + 1;
     for (int i = 0; i < N_SIZE; ++i) {
-        for (int r = 1; r < N_RANK+1; ++r) {
-            slope_[N_RANK-r] = ((slope_[N_RANK-r]) > (abs((int)ceil((float)shape[i]. shift[r]/(l_max_time_shift - shape[i]. shift[0])))) ? (slope_[N_RANK-r]) : (abs((int)ceil((float)shape[i]. shift[r]/(l_max_time_shift - shape[i]. shift[0])))));
+        for (int r = 0; r < N_RANK; ++r) {
+            slope_[r] = ((slope_[r]) > (abs((int)ceil((float)shape[i]. shift[r+1]/(l_max_time_shift - shape[i]. shift[0])))) ? (slope_[r]) : (abs((int)ceil((float)shape[i]. shift[r+1]/(l_max_time_shift - shape[i]. shift[0])))));
         }
     }
     regShapeFlag = true;
@@ -37041,7 +37869,8 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f) {
 //     fprintf(stderr, "Call shorter_duo_sim_obase_bicut\n");
 #pragma isat marker M2_begin
    // algor.sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
-algor.shorter_duo_sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
+printf("shorter_duo_sim_obase_bicut!\n");
+    algor.shorter_duo_sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
     // algor.duo_sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
 #pragma isat marker M2_end
 }
@@ -37060,8 +37889,8 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
     checkFlags();
 //    fprintf(stderr, "Call sim_obase_bicut_P\n");
 #pragma isat marker M2_begin
-    // algor.sim_obase_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
-algor.shorter_duo_sim_obase_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+    printf("shorter_duo_sim_obase_bicut_p!\n");
+    algor.shorter_duo_sim_obase_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #pragma isat marker M2_end
 }
 
