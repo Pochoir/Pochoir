@@ -730,7 +730,7 @@ int main(int argc, char * argv[])
     printf("max_diff = %f, when a = %f, b = %f\n", max_diff, diff_a, diff_b);
     printf("max_a = %f, max_b = %f\n", max_a, max_b);
 
-    printf("max diff = %f\n", comp_diff);
+    printf("max diff = %f\n", max_diff);
     return 0;
 }
 
