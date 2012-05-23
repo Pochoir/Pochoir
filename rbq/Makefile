@@ -3,8 +3,8 @@ CXX := icpc
 CFLAGS = -Wall -m64 
 CXXFLAGS := -Wall -m64
 LDFLAGS = -DBUILD_64 -lrt
-CFLAGS_RELEASE = -O3 -DNDEBUG
-CXXFLAGS_RELEASE = -O3 -DNDEBUG
+CFLAGS_RELEASE = -g -O3 -DNDEBUG
+CXXFLAGS_RELEASE = -g -O3 -DNDEBUG
 CFLAGS_DEBUG = -g -DDEBUG -O0
 CXXFLAGS_DEBUG = -g -DDEBUG -O0
 
@@ -17,7 +17,7 @@ CXXFLAGS := $(CXXFLAGS_RELEASE) $(CXXFLAGS)
 endif
 
 TARGET = rbq_simple
-COMMON_HEADERS := ktiming.h rmq_2d_simple.hpp
+COMMON_HEADERS := ktiming.h rmq_2d_and.hpp
 
 OBJS := \
 	ktiming.o \

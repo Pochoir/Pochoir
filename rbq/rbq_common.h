@@ -49,11 +49,21 @@ inline void print_bits(word_type * bits, word_type begin, word_type end,
 }
 
 template <class word_type>
-inline void get_subword(word_type * word1, word_type * word2, int pos,
+inline void merge_subwords(word_type * word1, word_type * word2, int pos,
                         int word_size, word_type * result)
 {
     // extract word1[pos, word_size - 1]  and word2[0, pos - 1]
     *result = *word1 >> pos | *word2 << (word_size - pos) ;
+}
+
+template <class word_type>
+inline word_type get_subword(int begin, int end, word_type word, int word_size)
+{
+	//extract the subword word[begin, end]
+    assert (begin <= end && begin < word_size && end < word_size) ;
+    unsigned int offset = word_size - (end - begin + 1) ;
+    word = word >> begin ;
+    return (word_type) (word << offset) ;
 }
 
 template <class word_type>
