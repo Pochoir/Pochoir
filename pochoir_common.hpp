@@ -66,6 +66,9 @@ static inline int lcm(int a, int b) {
 
 #define ARRAY_LENGTH(x) (int)(sizeof(x)/sizeof(x[0]))
 
+//typedef for rbq
+typedef unsigned long POCHOIR_WORD_TYPE ;
+
 #if 0
 #define cilk_for for
 #define cilk_spawn 
