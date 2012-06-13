@@ -430,6 +430,7 @@ struct Algorithm {
         bool boundarySet, physGridSet, slopeSet, opksSet, ptsSet;
         int lcm_unroll_, time_shift_;
         Pochoir_Combined_Obase_Kernel<N_RANK> ** opks_;
+		int num_kernels ; //number of kernels generated
         int sz_base_data_, sz_sync_data_;
         Spawn_Tree<N_RANK> * tree_;
         Color_Region<N_RANK> * color_region_;
@@ -577,13 +578,28 @@ struct Algorithm {
      * -- This is the version for unroll-t-tile-* modes
      */
     inline void plan_space_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void space_bicut_interior(int t0, int t1, 
+									Grid_Info<N_RANK> const grid);
     inline void plan_space_bicut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void space_bicut_boundary(int t0, int t1, 
+									Grid_Info<N_RANK> const grid);
     inline void plan_space_cut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void space_cut_interior(int t0, int t1, 
+									Grid_Info<N_RANK> const grid);
     inline void plan_space_cut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void space_cut_boundary(int t0, int t1, 
+									Grid_Info<N_RANK> const grid);
     inline void plan_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void bicut_interior(int t0, int t1, Grid_Info<N_RANK> const grid);
     inline void plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void bicut_boundary(int t0, int t1, Grid_Info<N_RANK> const grid);
     inline void plan_cut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void space_time_cut_interior(int t0, int t1, 
+										Grid_Info<N_RANK> const grid);
     inline void plan_cut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
+    inline void space_time_cut_boundary(int t0, int t1, 
+										Grid_Info<N_RANK> const grid);
+
     /* meta functions to run the plan */
     /*******************************************************************************/
     /* meta functions to run the plan 
@@ -677,6 +693,15 @@ struct Algorithm {
 	void print_index(int t, int const idx[]);
 	void print_region(int t, int const head[], int const tail[]);
 #endif
+
+	//Find the homogeneity of the grid
+    inline void find_homogeneity(Grid_Info<N_RANK> const & grid);
+	
+	void set_num_kernels(int num_kernels) 
+	{
+		assert (num_kernels > 0) ;
+		this->num_kernels = num_kernels ;
+	}
 };
 
 template <int N_RANK>
