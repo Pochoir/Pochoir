@@ -325,9 +325,7 @@ struct Color_Region<1> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<1> * > & pgs_;
     Grid_Info<1> & phys_grid_;
-    Color_Region(Vector_Info< Pochoir_Guard<1> * > & _pgs, Grid_Info<1> & _grid) : sz_pgk_(_pgs.size()), pgs_(_pgs), phys_grid_(_grid) { 
-		cout << "sz_pgk_ " << sz_pgk_ << endl ;
-  }
+    Color_Region(Vector_Info< Pochoir_Guard<1> * > & _pgs, Grid_Info<1> & _grid) : sz_pgk_(_pgs.size()), pgs_(_pgs), phys_grid_(_grid) {}
 
     T_color get_color(int t, int i) {
         T_color l_color = 0;
@@ -345,9 +343,6 @@ struct Color_Region<1> {
         int start_i = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         T_color start_color = get_color(t0, start_i);
         T_color l_o = start_color, l_a = start_color;
-		cout << "lgrid.x0 [0] " << l_grid.x0[0] << "l_grid.x1[0] " <<
-			l_grid.x1[0] << endl ;
-		cout << "t0 " << t0 << "t1 " << t1 << endl ;
         for (int t = t0; t < t1; ++t) {
             for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) {
                 const int new_i = pmod_lu(i, phys_grid_.x0[0], phys_grid_.x1[0]);
@@ -368,8 +363,6 @@ struct Color_Region<1> {
         int start_i = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         T_color start_color = get_color(0, start_i);
         T_color l_o = start_color, l_a = start_color;
-		cout << "lgrid.x0 [0] " << l_grid.x0[0] << "l_grid.x1[0] " <<
-			l_grid.x1[0] << endl ;
         for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) 
 		{
         	const int new_i = pmod_lu(i, phys_grid_.x0[0], phys_grid_.x1[0]);
@@ -385,10 +378,7 @@ struct Color_Region<2> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<2> * > & pgs_;
     Grid_Info<2> & phys_grid_;
-    Color_Region(Vector_Info< Pochoir_Guard<2> * > & _pgs, Grid_Info<2> & _grid) : sz_pgk_(_pgs.size()), pgs_(_pgs), phys_grid_(_grid) { 
-		
-		cout << "sz_pgk_ " << sz_pgk_ << endl ;
-	}
+    Color_Region(Vector_Info< Pochoir_Guard<2> * > & _pgs, Grid_Info<2> & _grid) : sz_pgk_(_pgs.size()), pgs_(_pgs), phys_grid_(_grid) {}
 
     T_color get_color(int t, int i, int j) {
         T_color l_color = 0;
@@ -407,9 +397,6 @@ struct Color_Region<2> {
         int start_j = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         T_color start_color = get_color(t0, start_i, start_j);
         T_color l_o = start_color, l_a = start_color;
-		cout << "lgrid.x0 [0] " << l_grid.x0[0] << "l_grid.x1[0] " <<
-			l_grid.x1[0] << endl ;
-		cout << "t0 " << t0 << "t1 " << t1 << endl ;
         for (int t = t0; t < t1; ++t) {
             for (int i = l_grid.x0[1]; i < l_grid.x1[1]; ++i) {
                 const int new_i = pmod_lu(i, phys_grid_.x0[1], phys_grid_.x1[1]);
@@ -435,8 +422,6 @@ struct Color_Region<2> {
         int start_j = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
         T_color start_color = get_color(0, start_i, start_j);
         T_color l_o = start_color, l_a = start_color;
-		cout << "lgrid.x0 [0] " << l_grid.x0[0] << "l_grid.x1[0] " <<
-			l_grid.x1[0] << endl ;
         for (int i = l_grid.x0[1]; i < l_grid.x1[1]; ++i) 
 		{
             const int new_i = pmod_lu(i, phys_grid_.x0[1], phys_grid_.x1[1]);

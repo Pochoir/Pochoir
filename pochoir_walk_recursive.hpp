@@ -2285,8 +2285,6 @@ inline void Algorithm<N_RANK>::gen_plan_cut_p(Node_Info<N_RANK> * parent, int t0
     int l_dt_stop;
     const int l_unroll = lcm_unroll_;
     // int region_n = (*pure_region_)(t0, t1, l_father_grid);
-	cout << "t0 " << t0 << "t1 " << t1 << "time_shift_ " << time_shift_ << endl ;
-	cout << "size homogeneity " << homogeneity_vector_->pointer_  << endl ;
     Homogeneity homo = (*color_region_)(t0-time_shift_, t1-time_shift_, l_father_grid);
     // const bool cross_region = (region_n == CROSS_REGION);
     const bool cross_region = !(homo.is_homogeneous());
@@ -4034,7 +4032,6 @@ inline void Algorithm<N_RANK>::space_time_cut_boundary(int t0, int t1,
 												Grid_Info<N_RANK> const grid)
 {
 	int region_n = num_kernels - 1 ; //use the white kernel
-	//cout << "region_n " << region_n << endl ;
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;
     Grid_Info<N_RANK> l_father_grid = grid, l_son_grid;
