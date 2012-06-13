@@ -544,16 +544,6 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::generate_clones(int timestep,
 	
 	//initialize the rbq pointer
 	//rbq = new rbq_2d<POCHOIR_WORD_TYPE> ()
-	cout << "in generate clones" << endl ;
-	cout << "n_rank " << N_RANK << endl ;
-	for (int i = 0 ; i < N_RANK ; i++)
-	{
-		cout << "x0 [" << i << "] " << phys_grid_.x0 [i] << 
-				" x1 [" << i << "] " << phys_grid_.x1 [i] << 
-				" dx0 [" << i << "] " << phys_grid_.dx0 [i] << 
-				" dx1 [" << i << "] " << phys_grid_.dx1 [i] << endl ;
-	}
-	cout << "time step " << timestep_ << "time shift" << time_shift_ << endl ;
 	algor.find_homogeneity(logic_grid_) ;
 
     char color_vector_fname[FNAME_LENGTH], kernel_info_fname[FNAME_LENGTH];
@@ -561,7 +551,6 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::generate_clones(int timestep,
     sprintf(kernel_info_fname, "%s_kernel_info.cpp", fname);
 
     Vector_Info< Homogeneity > & l_color_vector = algor.get_color_vector();
-	cout << "size of homogeneity  " << l_color_vector.pointer_ << endl ;
     Homogeneity * white_clone = NULL;
 
     if (l_color_vector.size() > 0) {
@@ -1181,8 +1170,7 @@ void Pochoir<N_RANK>::Run_Obase_Unroll_T_without_plan()
     algor.set_unroll(lcm_unroll_);
     algor.set_time_shift(time_shift_);
     if (pmode_ == Pochoir_Obase_Tile) {
-		cout << "obase unroll t no plan mode pochoir_obase_tile " << endl ;
-		cout << "# kernels " << reg_obase_kernels_.pointer_ << endl ;
+		cout << "Not using plans at runtime" << endl ;
         algor.set_opks(reg_obase_kernels_.get_root());
 		algor.set_num_kernels(reg_obase_kernels_.pointer_) ;
     } else {
