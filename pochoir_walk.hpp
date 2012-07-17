@@ -498,7 +498,7 @@ struct Algorithm {
         del_ele(color_region_);
         del_ele(homogeneity_vector_);
 #ifdef COUNT_PROJECTION
-		if (N_RANK == 1)
+		if (N_RANK == 1 && map_1d.size() > 0)
 		{
 			cout << "(N, T, # of projections) " 
 			     << " (" << phys_length_ [0] << "," << num_time_steps << "," <<
@@ -512,7 +512,7 @@ struct Algorithm {
 				cout << pos->first << "," << pos->second << endl ;
 			}*/
 		}
-		else if (N_RANK == 2)
+		else if (N_RANK == 2 && map_2d.size() > 0)
 		{
 			cout << "(N1, N2, T, # of projections) " 
 			     << " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
