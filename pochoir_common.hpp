@@ -92,6 +92,7 @@ typedef unsigned long POCHOIR_WORD_TYPE ;
 #define STAT 0
 #define VECTOR_SIZE 10
 #define FNAME_LENGTH 200
+//#define COUNT_PROJECTION
 
 enum Pochoir_Mode {
     Pochoir_Null,

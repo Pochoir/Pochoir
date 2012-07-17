@@ -1169,6 +1169,7 @@ void Pochoir<N_RANK>::Run_Obase_Unroll_T_without_plan()
     algor.set_thres(arr_type_size_);
     algor.set_unroll(lcm_unroll_);
     algor.set_time_shift(time_shift_);
+    algor.set_time_step(timestep_);
     if (pmode_ == Pochoir_Obase_Tile) {
 		cout << "Not using plans at runtime" << endl ;
         algor.set_opks(reg_obase_kernels_.get_root());
