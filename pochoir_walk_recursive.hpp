@@ -2362,10 +2362,19 @@ inline void Algorithm<N_RANK>::gen_plan_cut_p(Node_Info<N_RANK> * parent, int t0
 /************************************************************************************
  * Run the Plan for irregular stencil computation                                   *
  ************************************************************************************/
+#ifdef COUNT_PROJECTION
+
+#define plan_space_can_cut(_dim) (cut_lb ? (lb >= 2 * thres && tb > dx_recursive_[_dim]) : (tb >= 2 * thres && lb > dx_recursive_[_dim]))
+
+#define plan_space_can_cut_p(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb > dx_recursive_[_dim])) : ((l_touch_boundary) ? (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb > dx_recursive_[_dim])))
+
+#else
+
 #define plan_space_can_cut(_dim) (cut_lb ? (lb >= 2 * thres && tb + l_padding > dx_recursive_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim]))
 
 #define plan_space_can_cut_p(_dim) (cut_lb ? ((l_touch_boundary) ? (lb >= 2 * thres && tb > dx_recursive_boundary_[_dim]) : (lb >= 2 * thres && tb > dx_recursive_[_dim])) : ((l_touch_boundary) ? (tb >= 2 * thres && lb > dx_recursive_boundary_[_dim]) : (tb >= 2 * thres && lb + l_padding > dx_recursive_[_dim])))
 
+#endif
 template <int N_RANK> 
 //inline void Algorithm<N_RANK>::plan_space_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n)
 inline void Algorithm<N_RANK>::space_bicut_interior(int t0, int t1, 
@@ -2374,6 +2383,10 @@ inline void Algorithm<N_RANK>::space_bicut_interior(int t0, int t1,
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
     int queue_head_[2], queue_tail_[2], queue_len_[2];
+
+#ifdef COUNT_PROJECTION
+	print_projection (t0, t1, grid) ;
+#endif
 
     for (int i = 0; i < 2; ++i) {
         queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
@@ -2659,6 +2672,9 @@ inline void Algorithm<N_RANK>::space_bicut_boundary(int t0, int t1,
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
     int queue_head_[2], queue_tail_[2], queue_len_[2];
 
+#ifdef COUNT_PROJECTION
+	print_projection (t0, t1, grid) ;
+#endif
     for (int i = 0; i < 2; ++i) {
         queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
     }
@@ -2985,6 +3001,9 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
     int queue_head_[2], queue_tail_[2], queue_len_[2];
 
+#ifdef COUNT_PROJECTION
+	print_projection (t0, t1, grid) ;
+#endif
     for (int i = 0; i < 2; ++i) {
         queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
     }
@@ -3270,6 +3289,9 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1,
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
     int queue_head_[2], queue_tail_[2], queue_len_[2];
 
+#ifdef COUNT_PROJECTION
+	print_projection (t0, t1, grid) ;
+#endif
     for (int i = 0; i < 2; ++i) {
         queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
     }
@@ -3600,6 +3622,9 @@ inline void Algorithm<N_RANK>::bicut_interior(int t0, int t1,
     bool sim_can_cut = false;
     const int l_unroll = (*opks_[region_n]).unroll_;
 
+#ifdef COUNT_PROJECTION
+	print_projection (t0, t1, grid) ;
+#endif
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
         lb = (grid.x1[i] - grid.x0[i]);
@@ -3712,6 +3737,9 @@ inline void Algorithm<N_RANK>::bicut_boundary(int t0, int t1,
     int l_dt_stop;
     const int l_unroll = (*opks_[region_n]).unroll_;
 
+#ifdef COUNT_PROJECTION
+	print_projection (t0, t1, grid) ;
+#endif
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
@@ -3902,6 +3930,9 @@ inline void Algorithm<N_RANK>::space_time_cut_interior(int t0, int t1,
 	int region_n = num_kernels - 1 ; //use the white clone
     const int l_unroll = (*opks_[region_n]).unroll_;
 
+#ifdef COUNT_PROJECTION
+	print_projection (t0, t1, grid) ;
+#endif
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
         lb = (grid.x1[i] - grid.x0[i]);
@@ -4025,6 +4056,234 @@ inline void Algorithm<N_RANK>::plan_cut(int t0, int t1, Grid_Info<N_RANK> const 
     }  
 }
 
+#ifdef COUNT_PROJECTION
+template <int N_RANK> 
+inline void Algorithm<N_RANK>::print_projection(int t0, int t1, 
+								Grid_Info<N_RANK> const & grid)
+{
+}
+
+
+template <> 
+inline void Algorithm<1>::print_projection(int t0, int t1, 
+								Grid_Info<1> const & grid)
+{
+	int dt = t1 - t0 ;
+	unsigned long qx1 = grid.x0 [0] ;
+	unsigned long qx2 = grid.x1 [0] ;
+	unsigned long qx3 = grid.x0 [0] + grid.dx0 [0] * dt ;
+	unsigned long qx4 = grid.x1 [0] + grid.dx1 [0] * dt ;
+
+	//cout << " t0 " << t0  - 1 << " t1 " << t1 - 1 << " x0 " << qx1 
+	//	<< " x1 " << qx2 << " x2 " << qx3 << " x3 " << qx4
+	//	<< endl  ; 
+
+	assert (qx1 <= qx2) ;
+	assert (qx3 <= qx4) ;
+
+	multimap<unsigned long, unsigned long>::iterator pos ;
+	bool found = false ;
+	//find the bigger base
+	if (qx2 - qx1 > qx4 - qx3)
+	{
+		int x = qx2 - qx1 ;
+		if (x <= 0)
+		{
+			return ;
+		}
+		pos = map_1d.lower_bound(x) ;
+		for ( ; pos != map_1d.upper_bound(x) ; pos++)
+		{
+			assert (pos->first == x) ;
+			if (pos->second == (qx1 % phys_length_[0]))
+			{
+				found = true ;
+				break ;
+			}
+		}
+		if (! found)
+		{
+			//cout << "inserting " << qx2 - qx1 << "," << 
+			//	qx1 % phys_length_[0] << endl ;
+			map_1d.insert(make_pair(x, qx1 % phys_length_[0]));
+		}
+	}
+	else
+	{
+		int x = qx4 - qx3 ;
+		if (x <= 0)
+		{
+			return ;
+		}
+		pos = map_1d.lower_bound(x) ;
+		for ( ; pos != map_1d.upper_bound(x) ; pos++)
+		{
+			assert (pos->first == x) ;
+			if (pos->second == qx3 % (phys_length_[0]))
+			{
+				found = true ;
+				break ;
+			}
+		}
+		if (! found)
+		{
+			//cout << "inserting " << x << ", " << qx3 % phys_length_[0] 
+			//	<< endl ;
+			map_1d.insert(make_pair(x, qx3 % phys_length_[0])) ;
+		}
+	}
+}
+
+template <> 
+inline void Algorithm<2>::print_projection(int t0, int t1, 
+								Grid_Info<2> const & grid)
+{
+	int dt = t1 - t0 ;
+	//x[0] and x[1] are the boundaries of the base of the zoid in x dimension
+	//x[2] and x[3] are the boundaries of the top of the zoid in x dimension
+	//projection_2d p ;
+	projection_2d * p = new projection_2d() ;
+	p->x [0] = grid.x0 [1] ;
+	p->x [1] = grid.x1 [1] ;
+
+	//y[0] and y[1] are the boundaries of the base of the zoid in y dimension
+	//y[2] and y[3] are the boundaries of the top of the zoid in y dimension
+	p->y [0] = grid.x0 [0] ;
+	p->y [1] = grid.x1 [0] ;
+	  
+	if (dt == 1)
+	{
+		//base case
+		p->x [2] = grid.x0 [1] ;
+		p->x [3] = grid.x1 [1] ;
+		p->y [2] = grid.x0 [0] ;
+		p->y [3] = grid.x1 [0] ;
+	}
+	else
+	{ 
+		//find the other end of the zoid
+		p->x [2] = grid.x0 [1] + grid.dx0 [1] * dt ;
+		p->x [3] = grid.x1 [1] + grid.dx1 [1] * dt ;
+		p->y [2] = grid.x0 [0] + grid.dx0 [0] * dt ;
+		p->y [3] = grid.x1 [0] + grid.dx1 [0] * dt ;
+	}
+
+	assert (p->x [0] <= p->x [1] && p->y [0] <= p->y [1]) ;
+	assert (p->x [2] <= p->x [3] && p->y [2] <= p->y [3]) ;
+	/* cout << " (t0, t1) (" << t0  - 1 << "," << t1 - 1 << ") (x0, x1) " << 
+		"(" << p.x [0] << "," << p.x [1] << ") " << " (x2, x3) " << 
+		"(" << p.x [2] << "," << p.x [3] << ") " << " (y0, y1) " <<
+		"(" << p.y [0] << "," << p.y [1] << ")  " << " (y2, y3) " << 
+		"(" << p.y [2] << "," << p.y [3] << ") " << endl ; */
+	//case1 : Base of the zoid contains the top of the zoid.
+	if (p->x [0] <= p->x [2] && p->x [3] <= p->x [1] &&
+		p->y [0] <= p->y [2] && p->y [3] <= p->y [1])
+	{
+		p->type = 'r' ;
+		p->area = (p->x [1] - p->x [0]) * (p->y [1] - p->y [0]) ;
+		p->larger_base = 0 ;
+	}
+	//case 2 : Top of zoid contains base of zoid
+	else if (p->x [2] <= p->x [0] && p->x [1] <= p->x [3] &&
+			 p->y [2] <= p->y [0] && p->y [1] <= p->y [3])
+	{
+		p->type = 'r' ;
+		p->area = (p->x [3] - p->x [2]) * (p->y [3] - p->y [2]) ;
+		p->larger_base = 1 ;
+	}
+	//case 3 : Neither side contains the other side.
+	else  
+	{
+		p->type = 'o' ;
+		int a1 = (p->x [1] - p->x [0]) * (p->y [1] - p->y [0]) ;
+		int a2 = (p->x [3] - p->x [2]) * (p->y [3] - p->y [2]) ;
+		if (a1 > a2)
+		{
+			p->area = a1 ;
+		}
+		else
+		{
+			p->area = a2 ;
+		}
+	}
+	if (p->area <= 0)
+	{
+		return ;
+	}
+	multimap<unsigned long, projection_2d *>::iterator pos ;
+	bool found = false ;
+
+	pos = map_2d.lower_bound(p->area) ;
+	for ( ; pos != map_2d.upper_bound(p->area) ; pos++)
+	{
+		projection_2d * p2 = pos->second ;
+		assert (p->area == p2->area) ;
+		if (p->type == p2->type) // && p->area == p2->area)
+		{
+			if (p->type == 'r')
+			{
+				//projection is rectangle
+				int x0, x1, y0, y1 ;
+				if (p2->larger_base == 0) //bottom base is larger
+				{
+					x0 = p2->x [0] ;
+					x1 = p2->x [1] ;
+					y0 = p2->y [0] ;
+					y1 = p2->y [1] ;
+				}
+				else				//top base is larger
+				{
+					x0 = p2->x [2] ;
+					x1 = p2->x [3] ;
+					y0 = p2->y [2] ;
+					y1 = p2->y [3] ;
+				}
+				if (p->larger_base == 0 &&
+					p->x [0] == x0 && p->x [1] == x1 && p->y [0] == y0 && 
+					p->y [1] == y1)
+				{
+					found = true ;
+				}
+				else if (p->larger_base == 1 &&
+					p->x [2] == x0 && p->x [3] == x1 && p->y [2] == y0 && 
+					p->y [3] == y1)
+				{
+					found = true ;
+				}
+			}
+			else
+			{
+				//projection is octagon
+				if (p2->x [0] == p->x [0] && p2->x [1] == p->x [1] &&
+					p2->x [2] == p->x [2] && p2->x [3] == p->x[3] &&
+					p2->y [0] == p->y [0] && p2->y [1] == p->y [1] && 
+					p2->y [2] == p->y [2] && p2->y [3] == p->y [3])
+				{
+					found = true ;
+				}
+			}
+		}
+		if (found)
+		{
+			break ;
+		}
+	}
+	
+	if (! found)
+	{
+		//cout << "inserting " << p->area << "," << 
+		//			p->type << endl ;
+		map_2d.insert(make_pair(p->area, p));
+	}
+	else
+	{
+		delete p ;
+	}
+}
+
+
+#endif
+
 
 /* Divide and conquer on the space-time grid*/
 template <int N_RANK> 
@@ -4038,6 +4297,9 @@ inline void Algorithm<N_RANK>::space_time_cut_boundary(int t0, int t1,
     int l_dt_stop;
     const int l_unroll = (*opks_[region_n]).unroll_;
 
+#ifdef COUNT_PROJECTION
+	print_projection (t0, t1, grid) ;
+#endif
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
