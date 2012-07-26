@@ -48,6 +48,13 @@ heat_NP_zero : tb_heat_2D_NP_zero.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_heat_2D_NP_zero_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_NP_zero.cpp
 
+heat_2d_p_macro_h : tb_heat_2D_P_macro_h.cpp
+#   Phase-II compilation
+	${CC} -o heat_2d_p_macro_h ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_heat_2D_P_macro_h.cpp
+	${ICC} -o heat_2d_p_macro_h_gdb ${ICC_DEBUG_FLAGS} tb_heat_2D_P_macro_h_pochoir.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o tb_heat_2d_p_macro_h_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_P_macro_h.cpp
+
 heat_2D_P : tb_heat_2D_P.cpp
 #   Phase-II compilation
 	${CC} -o heat_2D_P ${OPT_FLAGS} -unroll-t-tile-pointer-overlap tb_heat_2D_P.cpp
@@ -272,4 +279,4 @@ tb_3dfd : tb_3dfd.cpp
 #	${CC} -o tb_3dfd_pochoir ${POCHOIR_DEBUG_FLAGS} tb_3dfd.cpp
 
 clean: 
-	rm -f *.o *.i *_pochoir *_pochoir.cpp *.out *.dat *.so *_gen_kernel.cpp overlap_tile_2D overlap_tile_3D heat_2D_P heat_1D_NP
+	rm -f *.o *.i *_pochoir *_pochoir.cpp *.out *.dat *.so *_gen_kernel.cpp overlap_tile_2D overlap_tile_3D heat_2D_P heat_1D_NP heat_2d_p_macro_h 
