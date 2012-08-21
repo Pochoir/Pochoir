@@ -25,8 +25,12 @@
 
 module Main where
 
-import System
-import IO hiding (try) -- "try" is also defined in Parsec
+import System.Process
+import System.Environment
+-- import System.IO hiding (try) -- "try" is also defined in Parsec
+import System.IO -- "try" is also defined in Parsec
+import qualified Control.Exception as Control
+import System.Exit
 import Data.List
 import System.Directory 
 import System.Cmd (rawSystem)
@@ -68,7 +72,10 @@ ppopp :: (PMode, Bool, Bool, [String]) -> [(String, String)] -> IO ()
 ppopp (_, _, _, _) [] = return ()
 ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) = 
     do putStrLn ("pochoir called with mode =" ++ show mode)
-       pochoirLibPath <- catch (getEnv "POCHOIR_LIB_PATH")(\e -> return "EnvError")
+--       pochoirLibPath <- Control.catch (getEnv "POCHOIR_LIB_PATH")(\e -> return "EnvError")
+       pochoirLibPath <- Control.catch (getEnv "POCHOIR_LIB_PATH")
+                        (\e -> do let err = show (e::Control.IOException)
+                                  return err)
        whilst (pochoirLibPath == "EnvError") $ do
           putStrLn ("Pochoir environment variable not set:")
           putStrLn ("POCHOIR_LIB_PATH")

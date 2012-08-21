@@ -25,8 +25,12 @@
 
 module Main where
 
-import System
-import IO hiding (try) -- "try" is also defined in Parsec
+import System.Process
+import System.Environment
+import System.IO -- "try" is also defined in Parsec
+import qualified Control.Exception as Control
+import System.Exit
+-- import IO hiding (try) -- "try" is also defined in Parsec
 import Data.List
 import Data.Maybe
 import System.Directory 
