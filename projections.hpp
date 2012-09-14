@@ -648,6 +648,7 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 								const int index)
 {
 	int dt = t1 - t0 ;
+	/*{
 	//x[0] and x[1] are the boundaries of the base of the zoid in x dimension
 	//x[2] and x[3] are the boundaries of the top of the zoid in x dimension
 	//projection_2d p ;
@@ -679,11 +680,13 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 
 	assert (p->x [0] <= p->x [1] && p->y [0] <= p->y [1]) ;
 	assert (p->x [2] <= p->x [3] && p->y [2] <= p->y [3]) ;
-	 cout << " (t0, t1) (" << t0  - 1 << "," << t1 - 1 << ") (x0, x1) " << 
+	*/
+	/* cout << " (t0, t1) (" << t0  - 1 << "," << t1 - 1 << ") (x0, x1) " << 
 		"(" << p->x [0] << "," << p->x [1] << ") " << " (x2, x3) " << 
 		"(" << p->x [2] << "," << p->x [3] << ") " << " (y0, y1) " <<
 		"(" << p->y [0] << "," << p->y [1] << ")  " << " (y2, y3) " << 
-		"(" << p->y [2] << "," << p->y [3] << ") " << endl ; 
+		"(" << p->y [2] << "," << p->y [3] << ") " << endl ; */
+	/*
 	//case1 : Base of the zoid contains the top of the zoid.
 	if (p->x [0] <= p->x [2] && p->x [3] <= p->x [1] &&
 		p->y [0] <= p->y [2] && p->y [3] <= p->y [1])
@@ -780,20 +783,19 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	
 	if (! found)
 	{
-		//cout << "inserting " << p->area << "," << 
-		//			p->type << endl ;
 		map_2d.insert(make_pair(p->area, p));
 	}
 	else
 	{
 		delete p ;
 	}
+	}*/
 	
 	{
 	//x[0] and x[1] are the boundaries of the base of the zoid in x dimension
 	//x[2] and x[3] are the boundaries of the top of the zoid in x dimension
 	//projection_2d p ;
-	projection_2d * p = new projection_2d() ;
+	proj_2d * p = new proj_2d() ;
 	p->x [0] = grid.x0 [1] ;
 	p->x [1] = grid.x1 [1] ;
 
@@ -827,91 +829,60 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 		"(" << p.x [2] << "," << p.x [3] << ") " << " (y0, y1) " <<
 		"(" << p.y [0] << "," << p.y [1] << ")  " << " (y2, y3) " << 
 		"(" << p.y [2] << "," << p.y [3] << ") " << endl ; */
-	int left_x, bottom_y ; 
-	//case1 : Base of the zoid contains the top of the zoid.
+	int ref_point ;
+	//case1 : x dim converges
 	if (p->x [0] <= p->x [2])
 	{
 		assert (p-> x[3] <= p-> x[1]) ;
-		left_x = p-> x [0] ;
-		bottom_y = p-> y [0] ;
+		ref_point = p-> y[0] * phys_length_ [1] + p-> x [0] ;
+		//y dim converges
 		if (p->y [0] <= p->y [2]) 
 		{
 			assert (p->y [3] <= p->y [1]) ;
-			p->type = 'r' ;
-			p->larger_base = 0 ;
+			p->type = 0 ;
+			p->top_right = p-> y[1] * phys_length_ [1] + p-> x [1] ;
 		}
+		//y dim diverges
 		else
 		{
-			assert (p ->y [1] < p->y [3]) ;
-			p->type = 'o' ;
-			p->larger_base = 0 ; //x converging and y diverging 
-			//continue from here
+			assert (p->y [1] < p->y [3]) ;
+			p->type = 1 ;
+			p->octagon_type = 0 ;
 		}
 	}
-	//case 2 : Top of zoid contains base of zoid
-	else if (p->x [2] <= p->x [0] && p->x [1] <= p->x [3] &&
-			 p->y [2] <= p->y [0] && p->y [1] <= p->y [3])
+	//case 2 : x dim diverges
+	else 
 	{
-		p->type = 'r' ;
-		p->area = (p->x [3] - p->x [2]) * (p->y [3] - p->y [2]) ;
-		p->larger_base = 1 ;
-	}
-	//case 3 : Neither side contains the other side.
-	else  
-	{
-		p->type = 'o' ;
-		int a1 = (p->x [1] - p->x [0]) * (p->y [1] - p->y [0]) ;
-		int a2 = (p->x [3] - p->x [2]) * (p->y [3] - p->y [2]) ;
-		if (a1 > a2)
+		assert (p->x [3] > p->x [1]) ;
+		ref_point = p-> y[2] * phys_length_ [1] + p-> x [2] ;
+		//y dim diverges
+		if (p->y [0] >= p->y [2])
 		{
-			p->area = a1 ;
+			assert (p->y [3] >= p->y [1]) ;
+			p->type = 0 ;
+			p->top_right = p-> y[3] * phys_length_ [1] + p-> x [3] ;
 		}
+		//y dim converges
 		else
 		{
-			p->area = a2 ;
+			assert (p->y [3] < p->y [1]) ;
+			p->type = 1 ;
+			p->octagon_type = 1 ;
 		}
 	}
-	if (p->area <= 0)
-	{
-		return ;
-	}
-	multimap<unsigned long, projection_2d *>::iterator pos ;
+	multimap<unsigned long, proj_2d *>::iterator pos ;
 	bool found = false ;
 
-	pos = map_2d.lower_bound(p->area) ;
-	for ( ; pos != map_2d.upper_bound(p->area) ; pos++)
+	pos = m_2d.lower_bound(ref_point) ;
+	for ( ; pos != m_2d.upper_bound(ref_point) ; pos++)
 	{
-		projection_2d * p2 = pos->second ;
-		assert (p->area == p2->area) ;
-		if (p->type == p2->type) // && p->area == p2->area)
+		proj_2d * p2 = pos->second ;
+		if (p->type == p2->type) 
 		{
-			if (p->type == 'r')
+			if (p->type == 0)
 			{
 				//projection is rectangle
-				int x0, x1, y0, y1 ;
-				if (p2->larger_base == 0) //bottom base is larger
-				{
-					x0 = p2->x [0] ;
-					x1 = p2->x [1] ;
-					y0 = p2->y [0] ;
-					y1 = p2->y [1] ;
-				}
-				else				//top base is larger
-				{
-					x0 = p2->x [2] ;
-					x1 = p2->x [3] ;
-					y0 = p2->y [2] ;
-					y1 = p2->y [3] ;
-				}
-				if (p->larger_base == 0 &&
-					p->x [0] == x0 && p->x [1] == x1 && p->y [0] == y0 && 
-					p->y [1] == y1)
-				{
-					found = true ;
-				}
-				else if (p->larger_base == 1 &&
-					p->x [2] == x0 && p->x [3] == x1 && p->y [2] == y0 && 
-					p->y [3] == y1)
+				if (p->top_right == p2->top_right)
 				{
 					found = true ;
 				}
@@ -919,12 +890,25 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 			else
 			{
 				//projection is octagon
-				if (p2->x [0] == p->x [0] && p2->x [1] == p->x [1] &&
-					p2->x [2] == p->x [2] && p2->x [3] == p->x[3] &&
-					p2->y [0] == p->y [0] && p2->y [1] == p->y [1] && 
-					p2->y [2] == p->y [2] && p2->y [3] == p->y [3])
+				if (p->octagon_type == p2->octagon_type)
 				{
-					found = true ;
+					if (p2->x [0] == p->x [0] && p2->x [1] == p->x [1] &&
+						p2->x [2] == p->x [2] && p2->x [3] == p->x[3] &&
+						p2->y [0] == p->y [0] && p2->y [1] == p->y [1] && 
+						p2->y [2] == p->y [2] && p2->y [3] == p->y [3])
+					{
+						found = true ;
+					}
+				}
+				else 
+				{
+					if (p2->x [2] == p->x [0] && p2->x [3] == p->x [1] &&
+						p2->x [0] == p->x [2] && p2->x [1] == p->x[3] &&
+						p2->y [2] == p->y [0] && p2->y [3] == p->y [1] && 
+						p2->y [0] == p->y [2] && p2->y [1] == p->y [3])
+					{
+						found = true ;
+					}
 				}
 			}
 		}
@@ -936,16 +920,13 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	
 	if (! found)
 	{
-		//cout << "inserting " << p->area << "," << 
-		//			p->type << endl ;
-		map_2d.insert(make_pair(p->area, p));
+		m_2d.insert(make_pair(ref_point, p));
 	}
 	else
 	{
 		delete p ;
 	}
-	}*/
-
+	}
 }
 
 template <int N_RANK> 
@@ -957,6 +938,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 	int slope ;
 	for (int i = 0 ; i < N_RANK ; i++)
 	{
+		cout << "dim " << i << " length " << phys_length_ [i] << endl ;
 		if (phys_length_ [i] > W)
 		{
 			W = phys_length_ [i] ;
@@ -967,6 +949,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 	//cout << "ratio " << ratio << endl ;
 	//if (ratio > 1.)
 	//Time cuts are needed if W < 2 * slope * dt
+	/*
 	if (W < 2 * slope * dt)
 	{
 		//compue 2^k where k = ceil(lg (2 * slope * dt / W))
@@ -995,7 +978,8 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 				space_time_cut_boundary(t0, time_shift + h2, grid, 0) ;
 			}
 		}
-	}
+	}*/
 	space_time_cut_boundary(t0, t1, grid, 2) ;
+	//looks like some error in projections in 2d. fix it.
 }
 #endif
