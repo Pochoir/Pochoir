@@ -595,10 +595,11 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 								const int index)
 {
 	int dt = t1 - t0 ;
+	assert (dt >= 1) ;
 	unsigned long qx1 = grid.x0 [0] ;
 	unsigned long qx2 = grid.x1 [0] ;
-	unsigned long qx3 = grid.x0 [0] + grid.dx0 [0] * dt ;
-	unsigned long qx4 = grid.x1 [0] + grid.dx1 [0] * dt ;
+	unsigned long qx3 = grid.x0 [0] + grid.dx0 [0] * (dt - 1) ;
+	unsigned long qx4 = grid.x1 [0] + grid.dx1 [0] * (dt - 1) ;
 
 	//cout << " t0 " << t0  - 1 << " t1 " << t1 - 1 << " x0 " << qx1 
 	//	<< " x1 " << qx2 << " x2 " << qx3 << " x3 " << qx4
@@ -614,16 +615,19 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	//find the bigger base
 	if (qx2 - qx1 > qx4 - qx3)
 	{
-		x = qx2 - qx1 ;
+		//x = qx2 - qx1 ;
+		x = qx2 % phys_length_ [0] ;
 		begin_index = qx1 % phys_length_ [0] ;
 	}
 	else
 	{
-		x = qx4 - qx3 ;
+		//x = qx4 - qx3 ;
+		x = qx4 % phys_length_ [0] ;
 		begin_index = qx3 % phys_length_ [0] ;
 	}
-	if (x <= 0)
+	if (x < 0)
 	{
+		cout << "error : projection length is less than zero " << endl ;
 		return ;
 	}
 	pos = map_1d [index].lower_bound(begin_index) ;
@@ -648,7 +652,8 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 								const int index)
 {
 	int dt = t1 - t0 ;
-	/*{
+	/*
+	{
 	//x[0] and x[1] are the boundaries of the base of the zoid in x dimension
 	//x[2] and x[3] are the boundaries of the top of the zoid in x dimension
 	//projection_2d p ;
@@ -660,8 +665,8 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	//y[2] and y[3] are the boundaries of the top of the zoid in y dimension
 	p->y [0] = grid.x0 [0] ;
 	p->y [1] = grid.x1 [0] ;
-	  
-	if (dt == 1)
+	*/ 
+	/*if (dt == 1)
 	{
 		//base case
 		p->x [2] = grid.x0 [1] ;
@@ -676,7 +681,13 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 		p->x [3] = grid.x1 [1] + grid.dx1 [1] * dt ;
 		p->y [2] = grid.x0 [0] + grid.dx0 [0] * dt ;
 		p->y [3] = grid.x1 [0] + grid.dx1 [0] * dt ;
-	}
+	}*/
+	/*
+	//find the other end of the zoid
+	p->x [2] = grid.x0 [1] + grid.dx0 [1] * (dt - 1) ;
+	p->x [3] = grid.x1 [1] + grid.dx1 [1] * (dt - 1) ;
+	p->y [2] = grid.x0 [0] + grid.dx0 [0] * (dt - 1) ;
+	p->y [3] = grid.x1 [0] + grid.dx1 [0] * (dt - 1) ;
 
 	assert (p->x [0] <= p->x [1] && p->y [0] <= p->y [1]) ;
 	assert (p->x [2] <= p->x [3] && p->y [2] <= p->y [3]) ;
@@ -686,6 +697,7 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 		"(" << p->x [2] << "," << p->x [3] << ") " << " (y0, y1) " <<
 		"(" << p->y [0] << "," << p->y [1] << ")  " << " (y2, y3) " << 
 		"(" << p->y [2] << "," << p->y [3] << ") " << endl ; */
+	
 	/*
 	//case1 : Base of the zoid contains the top of the zoid.
 	if (p->x [0] <= p->x [2] && p->x [3] <= p->x [1] &&
@@ -718,10 +730,22 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 			p->area = a2 ;
 		}
 	}
-	if (p->area <= 0)
+	if (p->area < 0)
 	{
+		cout << "error : projection area is less than zero " << endl ;
 		return ;
 	}
+	//update the co-ordinates with modulo width
+	p->x[0] = p->x [0] % phys_length_ [1] ;
+	p->x[1] = p->x [1] % phys_length_ [1] ;
+	p->x[2] = p->x [2] % phys_length_ [1] ;
+	p->x[3] = p->x [3] % phys_length_ [1] ;
+	
+	p->y[0] = p->y [0] % phys_length_ [0] ;
+	p->y[1] = p->y [1] % phys_length_ [0] ;
+	p->y[2] = p->y [2] % phys_length_ [0] ;
+	p->y[3] = p->y [3] % phys_length_ [0] ;
+
 	multimap<unsigned long, projection_2d *>::iterator pos ;
 	bool found = false ;
 
@@ -773,6 +797,13 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 				{
 					found = true ;
 				}
+				else if (p2->x [2] == p->x [0] && p2->x [3] == p->x [1] &&
+						p2->x [0] == p->x [2] && p2->x [1] == p->x[3] &&
+						p2->y [2] == p->y [0] && p2->y [3] == p->y [1] && 
+						p2->y [0] == p->y [2] && p2->y [1] == p->y [3])
+				{
+					found = true ;
+				}
 			}
 		}
 		if (found)
@@ -804,7 +835,7 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	p->y [0] = grid.x0 [0] ;
 	p->y [1] = grid.x1 [0] ;
 	  
-	if (dt == 1)
+	/*if (dt == 1)
 	{
 		//base case
 		p->x [2] = grid.x0 [1] ;
@@ -814,16 +845,33 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	}
 	else
 	{ 
+	
 		//find the other end of the zoid
 		p->x [2] = grid.x0 [1] + grid.dx0 [1] * dt ;
 		p->x [3] = grid.x1 [1] + grid.dx1 [1] * dt ;
 		p->y [2] = grid.x0 [0] + grid.dx0 [0] * dt ;
 		p->y [3] = grid.x1 [0] + grid.dx1 [0] * dt ;
-	}
+	}*/
+	//find the other end of the zoid
+	p->x [2] = p->x [0] + grid.dx0 [1] * (dt - 1) ;
+	p->x [3] = p->x [1] + grid.dx1 [1] * (dt - 1) ;
+	p->y [2] = p->y [0] + grid.dx0 [0] * (dt - 1) ;
+	p->y [3] = p->y [1] + grid.dx1 [0] * (dt - 1) ;
 
 	assert (p->x [0] <= p->x [1] && p->y [0] <= p->y [1]) ;
 	assert (p->x [2] <= p->x [3] && p->y [2] <= p->y [3]) ;
 	
+	//update the co-ordinates with modulo width
+	p->x[0] = p->x [0] % phys_length_ [1] ;
+	p->x[1] = p->x [1] % phys_length_ [1] ;
+	p->x[2] = p->x [2] % phys_length_ [1] ;
+	p->x[3] = p->x [3] % phys_length_ [1] ;
+	
+	p->y[0] = p->y [0] % phys_length_ [0] ;
+	p->y[1] = p->y [1] % phys_length_ [0] ;
+	p->y[2] = p->y [2] % phys_length_ [0] ;
+	p->y[3] = p->y [3] % phys_length_ [0] ;
+
 	/* cout << " (t0, t1) (" << t0  - 1 << "," << t1 - 1 << ") (x0, x1) " << 
 		"(" << p.x [0] << "," << p.x [1] << ") " << " (x2, x3) " << 
 		"(" << p.x [2] << "," << p.x [3] << ") " << " (y0, y1) " <<
@@ -934,6 +982,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 				grid_info<N_RANK> const grid) 
 {
 	int dt = t1 - t0 ;
+	cout << "to " << t0 << " t1 " << t1 << endl ;
 	int W = 0 ;  //max_width among all dimensions
 	int slope ;
 	for (int i = 0 ; i < N_RANK ; i++)
@@ -949,7 +998,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 	//cout << "ratio " << ratio << endl ;
 	//if (ratio > 1.)
 	//Time cuts are needed if W < 2 * slope * dt
-	/*
+	
 	if (W < 2 * slope * dt)
 	{
 		//compue 2^k where k = ceil(lg (2 * slope * dt / W))
@@ -978,7 +1027,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 				space_time_cut_boundary(t0, time_shift + h2, grid, 0) ;
 			}
 		}
-	}*/
+	}
 	space_time_cut_boundary(t0, t1, grid, 2) ;
 	//looks like some error in projections in 2d. fix it.
 }
