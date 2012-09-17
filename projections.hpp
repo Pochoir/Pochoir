@@ -835,23 +835,6 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	p->y [0] = grid.x0 [0] ;
 	p->y [1] = grid.x1 [0] ;
 	  
-	/*if (dt == 1)
-	{
-		//base case
-		p->x [2] = grid.x0 [1] ;
-		p->x [3] = grid.x1 [1] ;
-		p->y [2] = grid.x0 [0] ;
-		p->y [3] = grid.x1 [0] ;
-	}
-	else
-	{ 
-	
-		//find the other end of the zoid
-		p->x [2] = grid.x0 [1] + grid.dx0 [1] * dt ;
-		p->x [3] = grid.x1 [1] + grid.dx1 [1] * dt ;
-		p->y [2] = grid.x0 [0] + grid.dx0 [0] * dt ;
-		p->y [3] = grid.x1 [0] + grid.dx1 [0] * dt ;
-	}*/
 	//find the other end of the zoid
 	p->x [2] = p->x [0] + grid.dx0 [1] * (dt - 1) ;
 	p->x [3] = p->x [1] + grid.dx1 [1] * (dt - 1) ;
@@ -921,8 +904,8 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	multimap<unsigned long, proj_2d *>::iterator pos ;
 	bool found = false ;
 
-	pos = m_2d.lower_bound(ref_point) ;
-	for ( ; pos != m_2d.upper_bound(ref_point) ; pos++)
+	pos = m_2d [index].lower_bound(ref_point) ;
+	for ( ; pos != m_2d [index].upper_bound(ref_point) ; pos++)
 	{
 		proj_2d * p2 = pos->second ;
 		if (p->type == p2->type) 
@@ -968,7 +951,7 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	
 	if (! found)
 	{
-		m_2d.insert(make_pair(ref_point, p));
+		m_2d [index].insert(make_pair(ref_point, p));
 	}
 	else
 	{
@@ -1003,15 +986,16 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 	{
 		//compue 2^k where k = ceil(lg (2 * slope * dt / W))
 		int k = 8 * sizeof(int) - __builtin_clz((dt - 1) * 2 * slope / W) ; 
+		cout << "k " << k << endl ;
 		int two_to_the_k = 1 << k ; 
 		cout << "width " << W << " dt " << dt <<  " 2^k "  << two_to_the_k << endl ;
+		cout << "slope " << slope << endl ;
 		//h1 = floor (dt/(2^k))
 		int h1 = dt / two_to_the_k ;
 		assert (W >= 2 * slope * h1) ; 
 		space_time_cut_boundary(t0, time_shift + h1, grid, 0) ;
 		//h2 = ceil (dt/(2^k))
 		int h2 = (dt + two_to_the_k - 1) / two_to_the_k ;
-		cout << "slope " << slope << " h1 " << h1 << " h2 " << h2 << endl ;
 		if (h2 != h1)
 		{
 			//you can have a case where W >= 2 * slope * h1 but
@@ -1019,16 +1003,18 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 			//Example W = 33, dt = 33, slope = 1 yields h1 = 16 and h2 = 17
 			if (W < 2 * slope * h2)
 			{
+				cout << " h1 " << h1 << " h2 " << h2 / 2 
+					 << " h3 " << (h2 + 1) / 2 << endl ;
 				space_time_cut_boundary(t0, time_shift + h2 / 2, grid, 0) ;
 				space_time_cut_boundary(t0, time_shift + (h2 + 1) / 2, grid, 0);
 			}
 			else
 			{
+				cout << " h1 " << h1 << " h2 " << h2 << endl ;
 				space_time_cut_boundary(t0, time_shift + h2, grid, 0) ;
 			}
 		}
 	}
-	space_time_cut_boundary(t0, t1, grid, 2) ;
-	//looks like some error in projections in 2d. fix it.
+	//space_time_cut_boundary(t0, t1, grid, 2) ;
 }
 #endif
