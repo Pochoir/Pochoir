@@ -92,7 +92,8 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                 const bool cut_lb = (lb < tb);
                 //const bool can_cut = cut_lb ? (lb >= 2 * thres && lb > dx_recursive_[level]) : (tb >= 2 * thres && lb > dx_recursive_[level]);
                 //const bool can_cut = cut_lb ? (lb >= 2 * thres && lb > 1) : (tb >= 2 * thres && tb > 1);
-                const bool can_cut = cut_lb ? (lb >= 2 * thres) : (tb >= 2 * thres);
+                bool can_cut = cut_lb ? (lb >= 2 * thres) : (tb >= 2 * thres);
+				can_cut = can_cut && (lt > 1) ;
                 if (!can_cut) {
                     /* if we can't cut into this dimension, just directly push 
                      * it into the circular queue 
@@ -236,7 +237,8 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1,
                 const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
                 //const bool can_cut = cut_lb ? (l_touch_boundary ? (lb >= 2 * thres && lb > dx_recursive_boundary_[level]) : (lb >= 2 * thres && lb > dx_recursive_[level])) : (l_touch_boundary ? (tb >= 2 * thres && lb > dx_recursive_boundary_[level]) : (tb >= 2 * thres && lb > dx_recursive_[level]));
         		//const bool can_cut = cut_lb ? (lb >= 2 * thres && lb > 1) : (tb >= 2 * thres && tb > 1) ;
-        		const bool can_cut = cut_lb ? (lb >= 2 * thres) : (tb >= 2 * thres) ;
+        		bool can_cut = cut_lb ? (lb >= 2 * thres) : (tb >= 2 * thres) ;
+				can_cut = can_cut && (lt > 1) ;
                 if (!can_cut) {
                     /* if we can't cut into this dimension, just directly push
                      * it into the circular queue
@@ -362,6 +364,7 @@ inline void Algorithm<N_RANK>::space_time_cut_interior(int t0, int t1,
         //sim_can_cut = sim_can_cut || (cut_lb ? (lb >= 2 * thres && lb > dx_recursive_[i]) : (tb >= 2 * thres && tb > dx_recursive_[i]));
         //sim_can_cut = sim_can_cut || (cut_lb ? (lb >= 2 * thres && lb > 1) : (tb >= 2 * thres && tb > 1)) ; 
         sim_can_cut = sim_can_cut || (cut_lb ? (lb >= 2 * thres) : (tb >= 2 * thres)) ; 
+		sim_can_cut = sim_can_cut && (lt > 1) ;
         /* as long as there's one dimension can conduct a cut, we conduct a 
          * multi-dimensional cut!
          */
@@ -377,8 +380,8 @@ inline void Algorithm<N_RANK>::space_time_cut_interior(int t0, int t1,
         /* cut into time */
 //        assert(dt_recursive_ >= r_t);
         //assert(lt > dt_recursive_);
-        //int halflt = lt / 2;
-        int halflt = (lt + 1) / 2 ;
+        int halflt = lt / 2;
+        //int halflt = (lt + 1) / 2 ;
         l_son_grid = grid;
         space_time_cut_interior(t0, t0+halflt, l_son_grid, index);
 
@@ -452,6 +455,7 @@ inline void Algorithm<N_RANK>::space_time_cut_boundary(int t0, int t1,
         //sim_can_cut = sim_can_cut || (cut_lb ? (l_touch_boundary ? (lb >= 2 * thres && lb > dx_recursive_boundary_[i]) : (lb >= 2 * thres && lb > dx_recursive_[i])) : (l_touch_boundary ? (tb >= 2 * thres && tb > dx_recursive_boundary_[i]) : (tb > 2 * thres && tb > dx_recursive_[i])));
         //sim_can_cut = sim_can_cut || cut_lb ? (lb >= 2 * thres && lb > 1) : (tb >= 2 * thres && tb > 1) ;
         sim_can_cut = sim_can_cut || cut_lb ? (lb >= 2 * thres) : (tb >= 2 * thres) ;
+		sim_can_cut = sim_can_cut && (lt > 1) ;
         call_boundary |= l_touch_boundary;
     }
 
@@ -474,8 +478,8 @@ inline void Algorithm<N_RANK>::space_time_cut_boundary(int t0, int t1,
 	*/
     if (lt > 1) {
         /* cut into time */
-        //int halflt = lt / 2;
-        int halflt = (lt + 1) / 2 ;
+        int halflt = lt / 2;
+        //int halflt = (lt + 1) / 2 ;
         l_son_grid = l_father_grid;
         if (call_boundary) {
             space_time_cut_boundary(t0, t0+halflt, l_son_grid, index);
@@ -601,13 +605,19 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	unsigned long qx3 = grid.x0 [0] + grid.dx0 [0] * (dt - 1) ;
 	unsigned long qx4 = grid.x1 [0] + grid.dx1 [0] * (dt - 1) ;
 
-	//cout << " t0 " << t0  - 1 << " t1 " << t1 - 1 << " x0 " << qx1 
-	//	<< " x1 " << qx2 << " x2 " << qx3 << " x3 " << qx4
-	//	<< endl  ; 
-
+	cout << " t0 " << t0  << " t1 " << t1  << " x0 " << qx1 
+		<< " x1 " << qx2 << " x2 " << qx3 << " x3 " << qx4
+		<< " dx0 " << grid.dx0 [0] << " dx1 " << grid.dx1 [0]
+		<< endl  ; 
+	
 	assert (qx1 <= qx2) ;
 	assert (qx3 <= qx4) ;
-
+	
+	if (qx1 == qx3 && qx2 == qx4)
+	{
+		//rectangle
+		return ;
+	}
 	multimap<unsigned long, unsigned long>::iterator pos ;
 	bool found = false ;
 	int x ;
@@ -615,19 +625,23 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	//find the bigger base
 	if (qx2 - qx1 > qx4 - qx3)
 	{
-		//x = qx2 - qx1 ;
-		x = qx2 % phys_length_ [0] ;
+		x = qx2 - qx1 ;
+		//x = qx2 % phys_length_ [0] ;
 		begin_index = qx1 % phys_length_ [0] ;
 	}
 	else
 	{
-		//x = qx4 - qx3 ;
-		x = qx4 % phys_length_ [0] ;
+		x = qx4 - qx3 ;
+		//x = qx4 % phys_length_ [0] ;
 		begin_index = qx3 % phys_length_ [0] ;
 	}
 	if (x < 0)
 	{
 		cout << "error : projection length is less than zero " << endl ;
+		return ;
+	}
+	if (x == 0)
+	{
 		return ;
 	}
 	pos = map_1d [index].lower_bound(begin_index) ;
@@ -977,6 +991,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 			slope = slope_ [i] ;
 		}		
 	}
+	cout << "time shift " << time_shift << endl ;
 	//double ratio = (double) dt * 2 * slope / W ;
 	//cout << "ratio " << ratio << endl ;
 	//if (ratio > 1.)
@@ -1013,6 +1028,10 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 				cout << " h1 " << h1 << " h2 " << h2 << endl ;
 				space_time_cut_boundary(t0, time_shift + h2, grid, 0) ;
 			}
+		}
+		else
+		{
+			cout << " h1 " << h1 << " h2 " << h2 << endl ;
 		}
 	}
 	//space_time_cut_boundary(t0, t1, grid, 2) ;
