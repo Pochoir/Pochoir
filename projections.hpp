@@ -840,7 +840,9 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	//x[0] and x[1] are the boundaries of the base of the zoid in x dimension
 	//x[2] and x[3] are the boundaries of the top of the zoid in x dimension
 	//projection_2d p ;
-	proj_2d * p = new proj_2d() ;
+	proj_2d p1 ;
+	//proj_2d * p = new proj_2d() ;
+	proj_2d * p = &p1 ;
 	p->x [0] = grid.x0 [1] ;
 	p->x [1] = grid.x1 [1] ;
 
@@ -849,6 +851,11 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	p->y [0] = grid.x0 [0] ;
 	p->y [1] = grid.x1 [0] ;
 	  
+	if (p->x [0] == p->x [1] && p->y [0] == p-> y[1])
+	{
+		//a rectangle of zero area
+		return ;
+	}
 	//find the other end of the zoid
 	p->x [2] = p->x [0] + grid.dx0 [1] * (dt - 1) ;
 	p->x [3] = p->x [1] + grid.dx1 [1] * (dt - 1) ;
@@ -858,6 +865,12 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	assert (p->x [0] <= p->x [1] && p->y [0] <= p->y [1]) ;
 	assert (p->x [2] <= p->x [3] && p->y [2] <= p->y [3]) ;
 	
+	/*if (p->x [0] == p-> x[2] && p->x [1] == p->x [3] &&
+		p->y [0] == p-> y[2] && p->y [1] == p->y [3])
+	{
+		//rectangle
+		return ;
+	}*/
 	//update the co-ordinates with modulo width
 	p->x[0] = p->x [0] % phys_length_ [1] ;
 	p->x[1] = p->x [1] % phys_length_ [1] ;
@@ -915,13 +928,16 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 			p->octagon_type = 1 ;
 		}
 	}
-	multimap<unsigned long, proj_2d *>::iterator pos ;
+	//multimap<unsigned long, proj_2d *>::iterator pos ;
 	bool found = false ;
 
-	pos = m_2d [index].lower_bound(ref_point) ;
-	for ( ; pos != m_2d [index].upper_bound(ref_point) ; pos++)
+	//pos = m_2d [index].lower_bound(ref_point) ;
+	//for ( ; pos != m_2d [index].upper_bound(ref_point) ; pos++)
+	std::vector<proj_2d > & vec = (m_2d [index]) [ref_point] ;
+	for (int i = 0 ; i < vec.size() ; i++)
 	{
-		proj_2d * p2 = pos->second ;
+		//proj_2d * p2 = pos->second ;
+		proj_2d * p2 = & (vec [i]) ;
 		if (p->type == p2->type) 
 		{
 			if (p->type == 0)
@@ -965,12 +981,14 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	
 	if (! found)
 	{
-		m_2d [index].insert(make_pair(ref_point, p));
+		//m_2d [index].insert(make_pair(ref_point, p));
+		vec.push_back(*p);
+		num_projections++ ;
 	}
-	else
+	/*else
 	{
 		delete p ;
-	}
+	}*/
 	}
 }
 
@@ -991,12 +1009,14 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 			slope = slope_ [i] ;
 		}		
 	}
+	if (N_RANK == 2)
+	{
+		m_2d [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d [0].resize (phys_length_ [0] * phys_length_ [1]) ;
+	}
+	num_projections = 0 ;
 	cout << "time shift " << time_shift << endl ;
-	//double ratio = (double) dt * 2 * slope / W ;
-	//cout << "ratio " << ratio << endl ;
-	//if (ratio > 1.)
 	//Time cuts are needed if W < 2 * slope * dt
-	
 	if (W < 2 * slope * dt)
 	{
 		//compue 2^k where k = ceil(lg (2 * slope * dt / W))
