@@ -851,11 +851,6 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	p->y [0] = grid.x0 [0] ;
 	p->y [1] = grid.x1 [0] ;
 	  
-	if (p->x [0] == p->x [1] && p->y [0] == p-> y[1])
-	{
-		//a rectangle of zero area
-		return ;
-	}
 	//find the other end of the zoid
 	p->x [2] = p->x [0] + grid.dx0 [1] * (dt - 1) ;
 	p->x [3] = p->x [1] + grid.dx1 [1] * (dt - 1) ;
@@ -865,12 +860,12 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	assert (p->x [0] <= p->x [1] && p->y [0] <= p->y [1]) ;
 	assert (p->x [2] <= p->x [3] && p->y [2] <= p->y [3]) ;
 	
-	/*if (p->x [0] == p-> x[2] && p->x [1] == p->x [3] &&
-		p->y [0] == p-> y[2] && p->y [1] == p->y [3])
+	if (p->x [0] == p-> x[1] && p->x [2] == p->x [3] && p->x [1] == p->x [2] &&
+		p->y [0] == p-> y[1] && p->y [2] == p->y [3] && p->y [1] == p->y [2])
 	{
-		//rectangle
+		//rectangle with zero area
 		return ;
-	}*/
+	}
 	//update the co-ordinates with modulo width
 	p->x[0] = p->x [0] % phys_length_ [1] ;
 	p->x[1] = p->x [1] % phys_length_ [1] ;
