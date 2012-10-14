@@ -549,8 +549,8 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 		{
 			return ;
 		}
-		pos = map_1d.lower_bound(x) ;
-		for ( ; pos != map_1d.upper_bound(x) ; pos++)
+		pos = m_1d.lower_bound(x) ;
+		for ( ; pos != m_1d.upper_bound(x) ; pos++)
 		{
 			assert (pos->first == x) ;
 			if (pos->second == (qx1 % phys_length_[0]))
@@ -563,7 +563,7 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 		{
 			//cout << "inserting " << qx2 - qx1 << "," << 
 			//	qx1 % phys_length_[0] << endl ;
-			map_1d.insert(make_pair(x, qx1 % phys_length_[0]));
+			m_1d.insert(make_pair(x, qx1 % phys_length_[0]));
 		}
 	}
 	else
@@ -573,8 +573,8 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 		{
 			return ;
 		}
-		pos = map_1d.lower_bound(x) ;
-		for ( ; pos != map_1d.upper_bound(x) ; pos++)
+		pos = m_1d.lower_bound(x) ;
+		for ( ; pos != m_1d.upper_bound(x) ; pos++)
 		{
 			assert (pos->first == x) ;
 			if (pos->second == qx3 % (phys_length_[0]))
@@ -587,7 +587,7 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 		{
 			//cout << "inserting " << x << ", " << qx3 % phys_length_[0] 
 			//	<< endl ;
-			map_1d.insert(make_pair(x, qx3 % phys_length_[0])) ;
+			m_1d.insert(make_pair(x, qx3 % phys_length_[0])) ;
 		}
 	}
 }
@@ -605,10 +605,10 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	unsigned long qx3 = grid.x0 [0] + grid.dx0 [0] * (dt - 1) ;
 	unsigned long qx4 = grid.x1 [0] + grid.dx1 [0] * (dt - 1) ;
 
-	cout << " t0 " << t0  << " t1 " << t1  << " x0 " << qx1 
+	/*cout << " t0 " << t0  << " t1 " << t1  << " x0 " << qx1 
 		<< " x1 " << qx2 << " x2 " << qx3 << " x3 " << qx4
 		<< " dx0 " << grid.dx0 [0] << " dx1 " << grid.dx1 [0]
-		<< endl  ; 
+		<< endl  ; */
 	
 	assert (qx1 <= qx2) ;
 	assert (qx3 <= qx4) ;
@@ -618,7 +618,6 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 		//rectangle
 		return ;
 	}
-	multimap<unsigned long, unsigned long>::iterator pos ;
 	bool found = false ;
 	int x ;
 	unsigned long begin_index ;
@@ -644,11 +643,15 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	{
 		return ;
 	}
-	pos = map_1d [index].lower_bound(begin_index) ;
-	for ( ; pos != map_1d [index].upper_bound(begin_index) ; pos++)
+	//multimap<unsigned long, unsigned long>::iterator pos ;
+	//pos = m_1d [index].lower_bound(begin_index) ;
+	//for ( ; pos != m_1d [index].upper_bound(begin_index) ; pos++)
+	vector <unsigned long> & v = m_1d [index] [begin_index] ;
+	for (int i = 0 ;  i < v.size() ; i++)
 	{
-		assert (pos->first == begin_index) ;
-		if (pos->second == x)
+		//assert (pos->first == begin_index) ;
+		//if (pos->second == x)
+		if (v [i] == x)
 		{
 			found = true ;
 			break ;
@@ -656,7 +659,9 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	}
 	if (! found)
 	{
-		map_1d [index].insert(make_pair(begin_index, x)) ; 
+		//m_1d [index].insert(make_pair(begin_index, x)) ; 
+		v.push_back(x) ; 
+		num_projections++ ;
 	}
 }
 
@@ -666,137 +671,103 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 								const int index)
 {
 	int dt = t1 - t0 ;
-	/*
 	{
 	//x[0] and x[1] are the boundaries of the base of the zoid in x dimension
 	//x[2] and x[3] are the boundaries of the top of the zoid in x dimension
-	//projection_2d p ;
-	projection_2d * p = new projection_2d() ;
-	p->x [0] = grid.x0 [1] ;
-	p->x [1] = grid.x1 [1] ;
+	proj_2d p ;
+	p.x [0] = grid.x0 [1] ;
+	p.x [1] = grid.x1 [1] ;
 
 	//y[0] and y[1] are the boundaries of the base of the zoid in y dimension
 	//y[2] and y[3] are the boundaries of the top of the zoid in y dimension
-	p->y [0] = grid.x0 [0] ;
-	p->y [1] = grid.x1 [0] ;
-	*/ 
-	/*if (dt == 1)
-	{
-		//base case
-		p->x [2] = grid.x0 [1] ;
-		p->x [3] = grid.x1 [1] ;
-		p->y [2] = grid.x0 [0] ;
-		p->y [3] = grid.x1 [0] ;
-	}
-	else
-	{ 
-		//find the other end of the zoid
-		p->x [2] = grid.x0 [1] + grid.dx0 [1] * dt ;
-		p->x [3] = grid.x1 [1] + grid.dx1 [1] * dt ;
-		p->y [2] = grid.x0 [0] + grid.dx0 [0] * dt ;
-		p->y [3] = grid.x1 [0] + grid.dx1 [0] * dt ;
-	}*/
-	/*
+	p.y [0] = grid.x0 [0] ;
+	p.y [1] = grid.x1 [0] ;
+	  
 	//find the other end of the zoid
-	p->x [2] = grid.x0 [1] + grid.dx0 [1] * (dt - 1) ;
-	p->x [3] = grid.x1 [1] + grid.dx1 [1] * (dt - 1) ;
-	p->y [2] = grid.x0 [0] + grid.dx0 [0] * (dt - 1) ;
-	p->y [3] = grid.x1 [0] + grid.dx1 [0] * (dt - 1) ;
+	p.x [2] = p.x [0] + grid.dx0 [1] * (dt - 1) ;
+	p.x [3] = p.x [1] + grid.dx1 [1] * (dt - 1) ;
+	p.y [2] = p.y [0] + grid.dx0 [0] * (dt - 1) ;
+	p.y [3] = p.y [1] + grid.dx1 [0] * (dt - 1) ;
 
-	assert (p->x [0] <= p->x [1] && p->y [0] <= p->y [1]) ;
-	assert (p->x [2] <= p->x [3] && p->y [2] <= p->y [3]) ;
-	*/
-	/* cout << " (t0, t1) (" << t0  - 1 << "," << t1 - 1 << ") (x0, x1) " << 
-		"(" << p->x [0] << "," << p->x [1] << ") " << " (x2, x3) " << 
-		"(" << p->x [2] << "," << p->x [3] << ") " << " (y0, y1) " <<
-		"(" << p->y [0] << "," << p->y [1] << ")  " << " (y2, y3) " << 
-		"(" << p->y [2] << "," << p->y [3] << ") " << endl ; */
+	assert (p.x [0] <= p.x [1] && p.y [0] <= p.y [1]) ;
+	assert (p.x [2] <= p.x [3] && p.y [2] <= p.y [3]) ;
 	
-	/*
-	//case1 : Base of the zoid contains the top of the zoid.
-	if (p->x [0] <= p->x [2] && p->x [3] <= p->x [1] &&
-		p->y [0] <= p->y [2] && p->y [3] <= p->y [1])
+	if (p.x [0] == p. x[1] && p.x [2] == p.x [3] && p.x [1] == p.x [2] &&
+		p.y [0] == p. y[1] && p.y [2] == p.y [3] && p.y [1] == p.y [2])
 	{
-		p->type = 'r' ;
-		p->area = (p->x [1] - p->x [0]) * (p->y [1] - p->y [0]) ;
-		p->larger_base = 0 ;
-	}
-	//case 2 : Top of zoid contains base of zoid
-	else if (p->x [2] <= p->x [0] && p->x [1] <= p->x [3] &&
-			 p->y [2] <= p->y [0] && p->y [1] <= p->y [3])
-	{
-		p->type = 'r' ;
-		p->area = (p->x [3] - p->x [2]) * (p->y [3] - p->y [2]) ;
-		p->larger_base = 1 ;
-	}
-	//case 3 : Neither side contains the other side.
-	else  
-	{
-		p->type = 'o' ;
-		int a1 = (p->x [1] - p->x [0]) * (p->y [1] - p->y [0]) ;
-		int a2 = (p->x [3] - p->x [2]) * (p->y [3] - p->y [2]) ;
-		if (a1 > a2)
-		{
-			p->area = a1 ;
-		}
-		else
-		{
-			p->area = a2 ;
-		}
-	}
-	if (p->area < 0)
-	{
-		cout << "error : projection area is less than zero " << endl ;
+		//rectangle with zero area
+		/*cout << "Area 0 " << endl ;
+		cout << " (t0, t1) (" << t0  - 1 << "," << t1 - 1 << ") (x0, x1) " << 
+		"(" << p.x [0] << "," << p.x [1] << ") " << " (x2, x3) " << 
+		"(" << p.x [2] << "," << p.x [3] << ") " << " (y0, y1) " <<
+		"(" << p.y [0] << "," << p.y [1] << ")  " << " (y2, y3) " << 
+		"(" << p.y [2] << "," << p.y [3] << ") " << endl ; */
 		return ;
 	}
 	//update the co-ordinates with modulo width
-	p->x[0] = p->x [0] % phys_length_ [1] ;
-	p->x[1] = p->x [1] % phys_length_ [1] ;
-	p->x[2] = p->x [2] % phys_length_ [1] ;
-	p->x[3] = p->x [3] % phys_length_ [1] ;
+	p.x[0] = p.x [0] % phys_length_ [1] ;
+	p.x[1] = p.x [1] % phys_length_ [1] ;
+	p.x[2] = p.x [2] % phys_length_ [1] ;
+	p.x[3] = p.x [3] % phys_length_ [1] ;
 	
-	p->y[0] = p->y [0] % phys_length_ [0] ;
-	p->y[1] = p->y [1] % phys_length_ [0] ;
-	p->y[2] = p->y [2] % phys_length_ [0] ;
-	p->y[3] = p->y [3] % phys_length_ [0] ;
+	p.y[0] = p.y [0] % phys_length_ [0] ;
+	p.y[1] = p.y [1] % phys_length_ [0] ;
+	p.y[2] = p.y [2] % phys_length_ [0] ;
+	p.y[3] = p.y [3] % phys_length_ [0] ;
 
-	multimap<unsigned long, projection_2d *>::iterator pos ;
+	int ref_point ;
+	//case1 : x dim converges
+	if (p.x [0] <= p.x [2])
+	{
+		assert (p. x[3] <= p. x[1]) ;
+		ref_point = p. y[0] * phys_length_ [1] + p. x [0] ;
+		//y dim converges
+		if (p.y [0] <= p.y [2]) 
+		{
+			assert (p.y [3] <= p.y [1]) ;
+			p.type = 0 ;
+			p.top_right = p. y[1] * phys_length_ [1] + p. x [1] ;
+		}
+		//y dim diverges
+		else
+		{
+			assert (p.y [1] < p.y [3]) ;
+			p.type = 1 ;
+			p.octagon_type = 0 ;
+		}
+	}
+	//case 2 : x dim diverges
+	else 
+	{
+		assert (p.x [3] > p.x [1]) ;
+		ref_point = p. y[2] * phys_length_ [1] + p. x [2] ;
+		//y dim diverges
+		if (p.y [0] >= p.y [2])
+		{
+			assert (p.y [3] >= p.y [1]) ;
+			p.type = 0 ;
+			p.top_right = p. y[3] * phys_length_ [1] + p. x [3] ;
+		}
+		//y dim converges
+		else
+		{
+			assert (p.y [3] < p.y [1]) ;
+			p.type = 1 ;
+			p.octagon_type = 1 ;
+		}
+	}
 	bool found = false ;
 
-	pos = map_2d.lower_bound(p->area) ;
-	for ( ; pos != map_2d.upper_bound(p->area) ; pos++)
+	std::vector<proj_2d > & vec = (m_2d [index]) [ref_point] ;
+	for (int i = 0 ; i < vec.size() ; i++)
 	{
-		projection_2d * p2 = pos->second ;
-		assert (p->area == p2->area) ;
-		if (p->type == p2->type) // && p->area == p2->area)
+		proj_2d & p2 = vec [i] ;
+		if (p.type == p2.type) 
 		{
-			if (p->type == 'r')
+			if (p.type == 0)
 			{
 				//projection is rectangle
-				int x0, x1, y0, y1 ;
-				if (p2->larger_base == 0) //bottom base is larger
-				{
-					x0 = p2->x [0] ;
-					x1 = p2->x [1] ;
-					y0 = p2->y [0] ;
-					y1 = p2->y [1] ;
-				}
-				else				//top base is larger
-				{
-					x0 = p2->x [2] ;
-					x1 = p2->x [3] ;
-					y0 = p2->y [2] ;
-					y1 = p2->y [3] ;
-				}
-				if (p->larger_base == 0 &&
-					p->x [0] == x0 && p->x [1] == x1 && p->y [0] == y0 && 
-					p->y [1] == y1)
-				{
-					found = true ;
-				}
-				else if (p->larger_base == 1 &&
-					p->x [2] == x0 && p->x [3] == x1 && p->y [2] == y0 && 
-					p->y [3] == y1)
+				if (p.top_right == p2.top_right)
 				{
 					found = true ;
 				}
@@ -804,19 +775,25 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 			else
 			{
 				//projection is octagon
-				if (p2->x [0] == p->x [0] && p2->x [1] == p->x [1] &&
-					p2->x [2] == p->x [2] && p2->x [3] == p->x[3] &&
-					p2->y [0] == p->y [0] && p2->y [1] == p->y [1] && 
-					p2->y [2] == p->y [2] && p2->y [3] == p->y [3])
+				if (p.octagon_type == p2.octagon_type)
 				{
-					found = true ;
+					if (p2.x [0] == p.x [0] && p2.x [1] == p.x [1] &&
+						p2.x [2] == p.x [2] && p2.x [3] == p.x[3] &&
+						p2.y [0] == p.y [0] && p2.y [1] == p.y [1] && 
+						p2.y [2] == p.y [2] && p2.y [3] == p.y [3])
+					{
+						found = true ;
+					}
 				}
-				else if (p2->x [2] == p->x [0] && p2->x [3] == p->x [1] &&
-						p2->x [0] == p->x [2] && p2->x [1] == p->x[3] &&
-						p2->y [2] == p->y [0] && p2->y [3] == p->y [1] && 
-						p2->y [0] == p->y [2] && p2->y [1] == p->y [3])
+				else 
 				{
-					found = true ;
+					if (p2.x [2] == p.x [0] && p2.x [3] == p.x [1] &&
+						p2.x [0] == p.x [2] && p2.x [1] == p.x[3] &&
+						p2.y [2] == p.y [0] && p2.y [3] == p.y [1] && 
+						p2.y [0] == p.y [2] && p2.y [1] == p.y [3])
+					{
+						found = true ;
+					}
 				}
 			}
 		}
@@ -828,21 +805,14 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	
 	if (! found)
 	{
-		map_2d.insert(make_pair(p->area, p));
+		//m_2d [index].insert(make_pair(ref_point, p));
+		vec.push_back(p);
+		num_projections++ ;
 	}
-	else
-	{
-		delete p ;
 	}
-	}*/
-	
+	/*
 	{
-	//x[0] and x[1] are the boundaries of the base of the zoid in x dimension
-	//x[2] and x[3] are the boundaries of the top of the zoid in x dimension
-	//projection_2d p ;
 	proj_2d p1 ;
-	//proj_2d * p = new proj_2d() ;
-	proj_2d * p = &p1 ;
 	p->x [0] = grid.x0 [1] ;
 	p->x [1] = grid.x1 [1] ;
 
@@ -877,12 +847,14 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	p->y[2] = p->y [2] % phys_length_ [0] ;
 	p->y[3] = p->y [3] % phys_length_ [0] ;
 
-	/* cout << " (t0, t1) (" << t0  - 1 << "," << t1 - 1 << ") (x0, x1) " << 
+	// cout << " (t0, t1) (" << t0  - 1 << "," << t1 - 1 << ") (x0, x1) " << 
 		"(" << p.x [0] << "," << p.x [1] << ") " << " (x2, x3) " << 
 		"(" << p.x [2] << "," << p.x [3] << ") " << " (y0, y1) " <<
 		"(" << p.y [0] << "," << p.y [1] << ")  " << " (y2, y3) " << 
-		"(" << p.y [2] << "," << p.y [3] << ") " << endl ; */
-	int ref_point ;
+		"(" << p.y [2] << "," << p.y [3] << ") " << endl ; //
+	//choose (x0, y0) as the reference point
+	int ref_point = (grid.x0 [0] % phys_length_ [0]) * phys_length_ [1] 
+					+ grid.x0 [1] % phys_length_ [1] ;
 	//case1 : x dim converges
 	if (p->x [0] <= p->x [2])
 	{
@@ -980,11 +952,7 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 		vec.push_back(*p);
 		num_projections++ ;
 	}
-	/*else
-	{
-		delete p ;
 	}*/
-	}
 }
 
 template <int N_RANK> 
@@ -1003,6 +971,11 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 			W = phys_length_ [i] ;
 			slope = slope_ [i] ;
 		}		
+	}
+	if (N_RANK == 1)
+	{
+		m_1d [0].reserve (phys_length_ [0]) ;
+		m_1d [0].resize (phys_length_ [0]) ;
 	}
 	if (N_RANK == 2)
 	{
