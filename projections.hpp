@@ -625,13 +625,11 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	if (qx2 - qx1 > qx4 - qx3)
 	{
 		x = qx2 - qx1 ;
-		//x = qx2 % phys_length_ [0] ;
 		begin_index = qx1 % phys_length_ [0] ;
 	}
 	else
 	{
 		x = qx4 - qx3 ;
-		//x = qx4 % phys_length_ [0] ;
 		begin_index = qx3 % phys_length_ [0] ;
 	}
 	if (x < 0)
@@ -643,24 +641,11 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	{
 		return ;
 	}
-	//multimap<unsigned long, unsigned long>::iterator pos ;
-	//pos = m_1d [index].lower_bound(begin_index) ;
-	//for ( ; pos != m_1d [index].upper_bound(begin_index) ; pos++)
-	vector <unsigned long> & v = m_1d [index] [begin_index] ;
-	for (int i = 0 ;  i < v.size() ; i++)
+	set<unsigned long> & s = m_1d [index] [begin_index] ;
+	set<unsigned long>::iterator pos = s.lower_bound(x) ;
+	if (*pos != x)
 	{
-		//assert (pos->first == begin_index) ;
-		//if (pos->second == x)
-		if (v [i] == x)
-		{
-			found = true ;
-			break ;
-		}
-	}
-	if (! found)
-	{
-		//m_1d [index].insert(make_pair(begin_index, x)) ; 
-		v.push_back(x) ; 
+		s.insert(pos, x) ;
 		num_projections++ ;
 	}
 }
@@ -810,151 +795,54 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 		num_projections++ ;
 	}
 	}
+	
 	/*
 	{
-	proj_2d p1 ;
-	p->x [0] = grid.x0 [1] ;
-	p->x [1] = grid.x1 [1] ;
-
-	//y[0] and y[1] are the boundaries of the base of the zoid in y dimension
-	//y[2] and y[3] are the boundaries of the top of the zoid in y dimension
-	p->y [0] = grid.x0 [0] ;
-	p->y [1] = grid.x1 [0] ;
-	  
-	//find the other end of the zoid
-	p->x [2] = p->x [0] + grid.dx0 [1] * (dt - 1) ;
-	p->x [3] = p->x [1] + grid.dx1 [1] * (dt - 1) ;
-	p->y [2] = p->y [0] + grid.dx0 [0] * (dt - 1) ;
-	p->y [3] = p->y [1] + grid.dx1 [0] * (dt - 1) ;
-
-	assert (p->x [0] <= p->x [1] && p->y [0] <= p->y [1]) ;
-	assert (p->x [2] <= p->x [3] && p->y [2] <= p->y [3]) ;
-	
-	if (p->x [0] == p-> x[1] && p->x [2] == p->x [3] && p->x [1] == p->x [2] &&
-		p->y [0] == p-> y[1] && p->y [2] == p->y [3] && p->y [1] == p->y [2])
-	{
-		//rectangle with zero area
-		return ;
-	}
-	//update the co-ordinates with modulo width
-	p->x[0] = p->x [0] % phys_length_ [1] ;
-	p->x[1] = p->x [1] % phys_length_ [1] ;
-	p->x[2] = p->x [2] % phys_length_ [1] ;
-	p->x[3] = p->x [3] % phys_length_ [1] ;
-	
-	p->y[0] = p->y [0] % phys_length_ [0] ;
-	p->y[1] = p->y [1] % phys_length_ [0] ;
-	p->y[2] = p->y [2] % phys_length_ [0] ;
-	p->y[3] = p->y [3] % phys_length_ [0] ;
-
-	// cout << " (t0, t1) (" << t0  - 1 << "," << t1 - 1 << ") (x0, x1) " << 
-		"(" << p.x [0] << "," << p.x [1] << ") " << " (x2, x3) " << 
-		"(" << p.x [2] << "," << p.x [3] << ") " << " (y0, y1) " <<
-		"(" << p.y [0] << "," << p.y [1] << ")  " << " (y2, y3) " << 
-		"(" << p.y [2] << "," << p.y [3] << ") " << endl ; //
+	proj_2d p ;
 	//choose (x0, y0) as the reference point
-	int ref_point = (grid.x0 [0] % phys_length_ [0]) * phys_length_ [1] 
-					+ grid.x0 [1] % phys_length_ [1] ;
-	//case1 : x dim converges
-	if (p->x [0] <= p->x [2])
-	{
-		assert (p-> x[3] <= p-> x[1]) ;
-		ref_point = p-> y[0] * phys_length_ [1] + p-> x [0] ;
-		//y dim converges
-		if (p->y [0] <= p->y [2]) 
-		{
-			assert (p->y [3] <= p->y [1]) ;
-			p->type = 0 ;
-			p->top_right = p-> y[1] * phys_length_ [1] + p-> x [1] ;
-		}
-		//y dim diverges
-		else
-		{
-			assert (p->y [1] < p->y [3]) ;
-			p->type = 1 ;
-			p->octagon_type = 0 ;
-		}
-	}
-	//case 2 : x dim diverges
-	else 
-	{
-		assert (p->x [3] > p->x [1]) ;
-		ref_point = p-> y[2] * phys_length_ [1] + p-> x [2] ;
-		//y dim diverges
-		if (p->y [0] >= p->y [2])
-		{
-			assert (p->y [3] >= p->y [1]) ;
-			p->type = 0 ;
-			p->top_right = p-> y[3] * phys_length_ [1] + p-> x [3] ;
-		}
-		//y dim converges
-		else
-		{
-			assert (p->y [3] < p->y [1]) ;
-			p->type = 1 ;
-			p->octagon_type = 1 ;
-		}
-	}
-	//multimap<unsigned long, proj_2d *>::iterator pos ;
-	bool found = false ;
+	int x0 = grid.x0 [1] % phys_length_ [1] ;
+	int y0 = grid.x0 [0] % phys_length_ [0] ;
+	int bottom_ref_point = y0 * phys_length_ [1] + x0 ;
+	//choose (x2, y2) as the other reference point
+	int x2 = x0 + grid.dx0 [1] * (dt - 1) ; 
+	int y2 = y0 + grid.dx0 [0] * (dt - 1) ;
+	int top_ref_point = y2 * phys_length_ [1] + x2 ;
 
-	//pos = m_2d [index].lower_bound(ref_point) ;
-	//for ( ; pos != m_2d [index].upper_bound(ref_point) ; pos++)
-	std::vector<proj_2d > & vec = (m_2d [index]) [ref_point] ;
-	for (int i = 0 ; i < vec.size() ; i++)
+	int x1 = grid.x1 [1] % phys_length_ [1] ;
+	int y1 = grid.x1 [0] % phys_length_ [0] ;
+	p.top_right[0] = y1 * phys_length_ [1] + x1 ;
+	int x3 = x1 + grid.dx1 [1] * (dt - 1) ; 
+	int y3 = y1 + grid.dx1 [0] * (dt - 1) ;
+	p.top_right[1] = y3 * phys_length_ [1] + x3 ;
+
+	set <unsigned long> & s = m_2d [index] [bottom_ref_point] ;
+	set <unsigned long>::iterator pos = s.lower_bound(top_ref_point) ;
+	proj_2d & p1 = *pos ;
+	//if (*pos != top_ref_point)
+	if (p1.top_right [0] != p.top_right [0] || 
+		p1.top_right [1] != p.top_right [1])
 	{
-		//proj_2d * p2 = pos->second ;
-		proj_2d * p2 = & (vec [i]) ;
-		if (p->type == p2->type) 
+		set <unsigned long> & s1 = m_2d [index] [top_ref_point] ;
+		set <unsigned long>::iterator pos1 = s.lower_bound(bottom_ref_point) ;
+		proj_2d & p2 = *pos1 ;
+		if (p2.top_right [0] != p.top_right[])
+		//if (*pos1 != bottom_ref_point)
 		{
-			if (p->type == 0)
-			{
-				//projection is rectangle
-				if (p->top_right == p2->top_right)
-				{
-					found = true ;
-				}
-			}
-			else
-			{
-				//projection is octagon
-				if (p->octagon_type == p2->octagon_type)
-				{
-					if (p2->x [0] == p->x [0] && p2->x [1] == p->x [1] &&
-						p2->x [2] == p->x [2] && p2->x [3] == p->x[3] &&
-						p2->y [0] == p->y [0] && p2->y [1] == p->y [1] && 
-						p2->y [2] == p->y [2] && p2->y [3] == p->y [3])
-					{
-						found = true ;
-					}
-				}
-				else 
-				{
-					if (p2->x [2] == p->x [0] && p2->x [3] == p->x [1] &&
-						p2->x [0] == p->x [2] && p2->x [1] == p->x[3] &&
-						p2->y [2] == p->y [0] && p2->y [3] == p->y [1] && 
-						p2->y [0] == p->y [2] && p2->y [1] == p->y [3])
-					{
-						found = true ;
-					}
-				}
-			}
+			//projection not found
+			//s.insert(pos, top_ref_point) ;
+			s.insert(pos, make_pair(top_ref_point, p)) ;
+			num_projections++ ;
 		}
-		if (found)
+		else
 		{
-			break ;
+			//compare the top roght corners
+			
 		}
-	}
-	
-	if (! found)
-	{
-		//m_2d [index].insert(make_pair(ref_point, p));
-		vec.push_back(*p);
-		num_projections++ ;
 	}
 	}*/
 }
 
+/*
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::compute_projections(int t0, int t1, 
 				grid_info<N_RANK> const grid) 
@@ -1023,5 +911,66 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 		}
 	}
 	//space_time_cut_boundary(t0, t1, grid, 2) ;
+}*/
+
+
+template <int N_RANK> 
+inline void Algorithm<N_RANK>::compute_projections(int t0, int t1, 
+				grid_info<N_RANK> const grid) 
+{
+	int T = t1 - t0 ;
+	cout << "to " << t0 << " t1 " << t1 << endl ;
+	int W = 0 ;  //max_width among all dimensions
+	int slope ;
+	for (int i = 0 ; i < N_RANK ; i++)
+	{
+		cout << "dim " << i << " length " << phys_length_ [i] << endl ;
+		if (phys_length_ [i] > W)
+		{
+			W = phys_length_ [i] ;
+			slope = slope_ [i] ;
+		}		
+	}
+	if (N_RANK == 1)
+	{
+		m_1d [0].reserve (phys_length_ [0]) ;
+		m_1d [0].resize (phys_length_ [0]) ;
+		m_1d [1].reserve (phys_length_ [0]) ;
+		m_1d [1].resize (phys_length_ [0]) ;
+
+		num_projections_1d [0] = 0 ;
+		num_projections_1d [1] = 0 ;
+	}
+	if (N_RANK == 2)
+	{
+		m_2d_r [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_r [0].resize (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [0].resize (phys_length_ [0] * phys_length_ [1]) ;
+
+		m_2d_r [1].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_r [1].resize (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [1].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [1].resize (phys_length_ [0] * phys_length_ [1]) ;
+
+		num_projections_2d_r [0] = 0 ;
+		num_projections_2d_r [1] = 0 ;
+		num_projections_2d_o [0] = 0 ;
+		num_projections_2d_o [1] = 0 ;
+	}
+	cout << "time shift " << time_shift << endl ;
+	int Wn = W / (2 * slope) ;
+	//Time cuts are needed if Wn < T
+	if (Wn < T)
+	{
+		int h2 = T % Wn ;
+		cout << "slope " << slope << endl ;
+		space_time_cut_boundary(t0, time_shift + Wn, grid, 0) ;
+		if (h2 > 0)
+		{
+			space_time_cut_boundary(t0, time_shift + h2, grid, 1) ;
+		}
+		cout << " Wn " << Wn << " T % Wn " << h2 << endl ;
+	}
 }
 #endif
