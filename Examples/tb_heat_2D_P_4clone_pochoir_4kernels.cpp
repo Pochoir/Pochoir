@@ -41552,6 +41552,7 @@ return;
     }  
 }
 
+#define pmod(a, b) ((a) - ((b) & -((a)>=(b))))
 /* This is the version for interior region cut! */
 template <int N_RANK> template <typename F, typename F0, typename F1, typename F2, typename F3>
 inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_info<N_RANK> const grid, F const & f, F0 const & f_00, F1 const & f_01, F2 const & f_10, F3 const & f_11)
@@ -41591,10 +41592,10 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
 			x3 %= phys_length_ [1] ;
 			*/
 
-			pmod(x0, phys_length_ [1]) ;
-			pmod(x1, phys_length_ [1]) ;
-			pmod(x2, phys_length_ [1]) ;
-			pmod(x3, phys_length_ [1]) ;
+			x0 = pmod(x0, phys_length_ [1]) ;
+			x1 = pmod(x1, phys_length_ [1]) ;
+			x2 = pmod(x2, phys_length_ [1]) ;
+			x3 = pmod(x3, phys_length_ [1]) ;
 			
 			int half_n1 = phys_length_ [1] / 2 ;
 			int half_n2 = phys_length_ [0] / 2 ;
@@ -41606,10 +41607,10 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
 				y2 %= phys_length_ [0] ;	
 				y3 %= phys_length_ [0] ;
 				*/
-				pmod(y0, phys_length_ [0]) ;
-				pmod(y1, phys_length_ [0]) ;
-				pmod(y2, phys_length_ [0]) ;
-				pmod(y3, phys_length_ [0]) ;
+				y0 = pmod(y0, phys_length_ [0]) ;
+				y1 = pmod(y1, phys_length_ [0]) ;
+				y2 = pmod(y2, phys_length_ [0]) ;
+				y3 = pmod(y3, phys_length_ [0]) ;
 				if (y1 <= half_n2 && y0 < half_n2 && 
 					y3 <= half_n2 && y2 < half_n2)
 				{
@@ -41630,10 +41631,10 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
 				y1 %= phys_length_ [0] ;
 				y2 %= phys_length_ [0] ;	
 				y3 %= phys_length_ [0] ;*/
-				pmod(y0, phys_length_ [0]) ;
-				pmod(y1, phys_length_ [0]) ;
-				pmod(y2, phys_length_ [0]) ;
-				pmod(y3, phys_length_ [0]) ;
+				y0 = pmod(y0, phys_length_ [0]) ;
+				y1 = pmod(y1, phys_length_ [0]) ;
+				y2 = pmod(y2, phys_length_ [0]) ;
+				y3 = pmod(y3, phys_length_ [0]) ;
 				if (y1 <= half_n2 && y0 < half_n2 && 
 					y3 <= half_n2 && y2 < half_n2)
 				{
@@ -43256,10 +43257,10 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
 			x2 %= phys_length_ [1] ;
 			x3 %= phys_length_ [1] ;
 			*/
-			pmod(x0, phys_length_ [1]) ;
-			pmod(x1, phys_length_ [1]) ;
-			pmod(x2, phys_length_ [1]) ;
-			pmod(x3, phys_length_ [1]) ;
+			x0 = pmod(x0, phys_length_ [1]) ;
+			x1 = pmod(x1, phys_length_ [1]) ;
+			x2 = pmod(x2, phys_length_ [1]) ;
+			x3 = pmod(x3, phys_length_ [1]) ;
 
 			int half_n1 = phys_length_ [1] / 2 ;
 			int half_n2 = phys_length_ [0] / 2 ;
@@ -43270,10 +43271,10 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
 				y1 %= phys_length_ [0] ;
 				y2 %= phys_length_ [0] ;	
 				y3 %= phys_length_ [0] ; */
-				pmod(y0, phys_length_ [0]) ;
-				pmod(y1, phys_length_ [0]) ;
-				pmod(y2, phys_length_ [0]) ;
-				pmod(y3, phys_length_ [0]) ;
+				y0 = pmod(y0, phys_length_ [0]) ;
+				y1 = pmod(y1, phys_length_ [0]) ;
+				y2 = pmod(y2, phys_length_ [0]) ;
+				y3 = pmod(y3, phys_length_ [0]) ;
 				if (y1 <= half_n2 && y0 < half_n2 && 
 					y3 <= half_n2 && y2 < half_n2)
 				{
@@ -43296,10 +43297,10 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
 				y1 %= phys_length_ [0] ;
 				y2 %= phys_length_ [0] ;	
 				y3 %= phys_length_ [0] ; */
-				pmod(y0, phys_length_ [0]) ;
-				pmod(y1, phys_length_ [0]) ;
-				pmod(y2, phys_length_ [0]) ;
-				pmod(y3, phys_length_ [0]) ;
+				y0 = pmod(y0, phys_length_ [0]) ;
+				y1 = pmod(y1, phys_length_ [0]) ;
+				y2 = pmod(y2, phys_length_ [0]) ;
+				y3 = pmod(y3, phys_length_ [0]) ;
 				if (y1 <= half_n2 && y0 < half_n2 && 
 					y3 <= half_n2 && y2 < half_n2)
 				{
@@ -46249,7 +46250,7 @@ int main(int argc, char * argv[])
     T_SIZE = StrToInt(argv[3]);
 	*/
 
-	for (int i = 0 ; i < 10 ; i++)
+	for (int i = 0 ; i < 1 ; i++)
 	{
 	srand (time(__null));
 	//T_SIZE = max(N1, N2) * (rand() % 10 + 3) + 1 ;
