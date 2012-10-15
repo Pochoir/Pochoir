@@ -41567,34 +41567,49 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
 	if (grid.x1 [1] - grid.x0 [1] <= phys_length_ [1] / 2 &&
 		grid.x1 [0] - grid.x0 [0] <= phys_length_ [0] / 2)
 	{
-		int half_n1 = phys_length_ [1] / 2 ;
-		int half_n2 = phys_length_ [0] / 2 ;
-		int x0 = grid.x0 [1] ;
-		int x1 = grid.x1 [1] ;
-		int y0 = grid.x0 [0] ;
-		int y1 = grid.x1 [0] ;
-
 		//bottom rectangle probably lies in a quadrant
-		int x2 = x0 + grid.dx0 [1] * (lt - 1) ;
-		int x3 = x1 + grid.dx1 [1] * (lt - 1) ;
-		
-		int y2 = y0 + grid.dx0 [0] * (lt - 1) ;
-		int y3 = y1 + grid.dx1 [0] * (lt - 1) ;
-		if (x3 - x2 <= half_n1 && y3 - y2 <= half_n2)
+		if (grid.x1 [1] - grid.x0 [1] +
+			(grid.dx1 [1] - grid.dx0 [1]) * (lt - 1) <= phys_length_ [1] / 2 &&
+			grid.x1 [0] - grid.x0 [0] +
+			(grid.dx1 [0] - grid.dx0 [0]) * (lt - 1) <= phys_length_ [0] / 2)
+		//if (x3 - x2 <= half_n1 && y3 - y2 <= half_n2)
 		{
-			x0 %= phys_length_ [1] ;
+			int x0 = grid.x0 [1] ;
+			int x1 = grid.x1 [1] ;
+			int y0 = grid.x0 [0] ;
+			int y1 = grid.x1 [0] ;
+	
+			int x2 = x0 + grid.dx0 [1] * (lt - 1) ;
+			int x3 = x1 + grid.dx1 [1] * (lt - 1) ;
+			
+			int y2 = y0 + grid.dx0 [0] * (lt - 1) ;
+			int y3 = y1 + grid.dx1 [0] * (lt - 1) ;
+
+			/*x0 %= phys_length_ [1] ;
 			x1 %= phys_length_ [1] ;
 			x2 %= phys_length_ [1] ;
 			x3 %= phys_length_ [1] ;
+			*/
 
+			pmod(x0, phys_length_ [1]) ;
+			pmod(x1, phys_length_ [1]) ;
+			pmod(x2, phys_length_ [1]) ;
+			pmod(x3, phys_length_ [1]) ;
+			
+			int half_n1 = phys_length_ [1] / 2 ;
+			int half_n2 = phys_length_ [0] / 2 ;
 			//top rectangle probably lies in a quadrant
 			if (x1 <= half_n1 && x0 < half_n1 && x3 <= half_n1 && x2 < half_n1)
 			{
-				y0 %= phys_length_ [0] ;
+				/*y0 %= phys_length_ [0] ;
 				y1 %= phys_length_ [0] ;
 				y2 %= phys_length_ [0] ;	
 				y3 %= phys_length_ [0] ;
-
+				*/
+				pmod(y0, phys_length_ [0]) ;
+				pmod(y1, phys_length_ [0]) ;
+				pmod(y2, phys_length_ [0]) ;
+				pmod(y3, phys_length_ [0]) ;
 				if (y1 <= half_n2 && y0 < half_n2 && 
 					y3 <= half_n2 && y2 < half_n2)
 				{
@@ -41611,10 +41626,14 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
 			else if (x1 > half_n1 && x0 >= half_n1 && 
 					 x3 > half_n1 && x2 >= half_n1)
 			{
-				y0 %= phys_length_ [0] ;
+				/*y0 %= phys_length_ [0] ;
 				y1 %= phys_length_ [0] ;
 				y2 %= phys_length_ [0] ;	
-				y3 %= phys_length_ [0] ;
+				y3 %= phys_length_ [0] ;*/
+				pmod(y0, phys_length_ [0]) ;
+				pmod(y1, phys_length_ [0]) ;
+				pmod(y2, phys_length_ [0]) ;
+				pmod(y3, phys_length_ [0]) ;
 				if (y1 <= half_n2 && y0 < half_n2 && 
 					y3 <= half_n2 && y2 < half_n2)
 				{
@@ -43215,32 +43234,46 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
 	if (grid.x1 [1] - grid.x0 [1] <= phys_length_ [1] / 2 &&
 		grid.x1 [0] - grid.x0 [0] <= phys_length_ [0] / 2)
 	{
-		int half_n1 = phys_length_ [1] / 2 ;
-		int half_n2 = phys_length_ [0] / 2 ;
-		int x0 = grid.x0 [1] ;
-		int x1 = grid.x1 [1] ;
-		int y0 = grid.x0 [0] ;
-		int y1 = grid.x1 [0] ;
 		//bottom rectangle probably lies in a quadrant
-		int x2 = x0 + grid.dx0 [1] * (lt - 1) ;
-		int x3 = x1 + grid.dx1 [1] * (lt - 1) ;
-		
-		int y2 = y0 + grid.dx0 [0] * (lt - 1) ;
-		int y3 = y1 + grid.dx1 [0] * (lt - 1) ;
-		if (x3 - x2 <= half_n1 && y3 - y2 <= half_n2)
+		if (grid.x1 [1] - grid.x0 [1] +
+			(grid.dx1 [1] - grid.dx0 [1]) * (lt - 1) <= phys_length_ [1] / 2 &&
+			grid.x1 [0] - grid.x0 [0] +
+			(grid.dx1 [0] - grid.dx0 [0]) * (lt - 1) <= phys_length_ [0] / 2)
+		//if (x3 - x2 <= half_n1 && y3 - y2 <= half_n2)
 		{
-			x0 %= phys_length_ [1] ;
+			int x0 = grid.x0 [1] ;
+			int x1 = grid.x1 [1] ;
+			int y0 = grid.x0 [0] ;
+			int y1 = grid.x1 [0] ;
+			int x2 = x0 + grid.dx0 [1] * (lt - 1) ;
+			int x3 = x1 + grid.dx1 [1] * (lt - 1) ;
+			
+			int y2 = y0 + grid.dx0 [0] * (lt - 1) ;
+			int y3 = y1 + grid.dx1 [0] * (lt - 1) ;
+
+			/*x0 %= phys_length_ [1] ;
 			x1 %= phys_length_ [1] ;
 			x2 %= phys_length_ [1] ;
 			x3 %= phys_length_ [1] ;
+			*/
+			pmod(x0, phys_length_ [1]) ;
+			pmod(x1, phys_length_ [1]) ;
+			pmod(x2, phys_length_ [1]) ;
+			pmod(x3, phys_length_ [1]) ;
 
+			int half_n1 = phys_length_ [1] / 2 ;
+			int half_n2 = phys_length_ [0] / 2 ;
 			//top rectangle probably lies in a quadrant
 			if (x1 <= half_n1 && x0 < half_n1 && x3 <= half_n1 && x2 < half_n1)
 			{
-				y0 %= phys_length_ [0] ;
+				/*y0 %= phys_length_ [0] ;
 				y1 %= phys_length_ [0] ;
 				y2 %= phys_length_ [0] ;	
-				y3 %= phys_length_ [0] ;
+				y3 %= phys_length_ [0] ; */
+				pmod(y0, phys_length_ [0]) ;
+				pmod(y1, phys_length_ [0]) ;
+				pmod(y2, phys_length_ [0]) ;
+				pmod(y3, phys_length_ [0]) ;
 				if (y1 <= half_n2 && y0 < half_n2 && 
 					y3 <= half_n2 && y2 < half_n2)
 				{
@@ -43259,10 +43292,14 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
 			else if (x1 > half_n1 && x0 >= half_n1 && 
 					 x3 > half_n1 && x2 >= half_n1)
 			{
-				y0 %= phys_length_ [0] ;
+				/*y0 %= phys_length_ [0] ;
 				y1 %= phys_length_ [0] ;
 				y2 %= phys_length_ [0] ;	
-				y3 %= phys_length_ [0] ;
+				y3 %= phys_length_ [0] ; */
+				pmod(y0, phys_length_ [0]) ;
+				pmod(y1, phys_length_ [0]) ;
+				pmod(y2, phys_length_ [0]) ;
+				pmod(y3, phys_length_ [0]) ;
 				if (y1 <= half_n2 && y0 < half_n2 && 
 					y3 <= half_n2 && y2 < half_n2)
 				{
@@ -44511,11 +44548,11 @@ int slope ;
 			slope = slope_ [i] ;
 		}		
 	}
-	if (N_RANK == 2)
+	/*if (N_RANK == 2)
 	{
 		m_2d [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
 		m_2d [0].resize (phys_length_ [0] * phys_length_ [1]) ;
-	}
+	}*/
 	num_projections = 0 ;
 	cout << "time shift " << time_shift << endl ;
 	//Time cuts are needed if W < 2 * slope * dt
@@ -44530,7 +44567,7 @@ int k = 8 * sizeof(int) - __builtin_clz((dt - 1) * 2 * slope / W) ;
 		//h1 = floor (dt/(2^k))
 int h1 = dt / two_to_the_k ;
 		(static_cast<void> (0)) ; 
-		space_time_cut_boundary(t0, time_shift + h1, grid, 0) ;
+		//space_time_cut_boundary(t0, time_shift + h1, grid, 0) ;
 		//h2 = ceil (dt/(2^k))
 int h2 = (dt + two_to_the_k - 1) / two_to_the_k ;
 		if (h2 != h1)
@@ -44540,13 +44577,13 @@ if (W < 2 * slope * h2)
 			{
 				cout << " h1 " << h1 << " h2 " << h2 / 2 
 					 << " h3 " << (h2 + 1) / 2 << endl ;
-				space_time_cut_boundary(t0, time_shift + h2 / 2, grid, 0) ;
-				space_time_cut_boundary(t0, time_shift + (h2 + 1) / 2, grid, 0);
+				//space_time_cut_boundary(t0, time_shift + h2 / 2, grid, 0) ;
+				//space_time_cut_boundary(t0, time_shift + (h2 + 1) / 2, grid, 0);
 			}
 			else
 			{
 				cout << " h1 " << h1 << " h2 " << h2 << endl ;
-				space_time_cut_boundary(t0, time_shift + h2, grid, 0) ;
+				//space_time_cut_boundary(t0, time_shift + h2, grid, 0) ;
 			}
 		}
 		else
@@ -46201,21 +46238,22 @@ int main(int argc, char * argv[])
 	const int BASE = 1024;
 	int t;
 	struct timeval start, end;
-    int N1 = 20, N2 = 300, T_SIZE = 501;
+	int N1 = 2335, N2 = 2579, T_SIZE = 6129;
 
-    if (argc < 4) {
+    /*if (argc < 4) {
         printf("argc < 4, quit! \n");
         exit(1);
     }
     N1 = StrToInt(argv[1]);
     N2 = StrToInt(argv[2]);
     T_SIZE = StrToInt(argv[3]);
-	
+	*/
 
-	for (int i = 0 ; i < 1 ; i++)
+	for (int i = 0 ; i < 10 ; i++)
 	{
 	srand (time(__null));
 	//T_SIZE = max(N1, N2) * (rand() % 10 + 3) + 1 ;
+	T_SIZE = max(N1, N2) * 10 ;
 printf("N1 = %d, N2 = %d, T_SIZE = %d\n", N1, N2, T_SIZE);
     
 	/* Known */ Pochoir_Shape <2> heat_shape_2D [6] = {{0, 0, 0}, {-1, 1, 0}, {-1, 0, 0}, {-1, -1, 0}, {-1, 0, -1}, {-1, 0, 1}};
@@ -46598,11 +46636,12 @@ a.Register_Boundary(aperiodic_2D); /* Register_Boundary */
 	gettimeofday(&end, 0);
 	std::cout << "Pochoir ET: consumed time :" << 1.0e3 * tdiff(&end, &start)/1 << "ms" << std::endl;
 
+
 	/*
 	gettimeofday(&start, 0);
-    for (int times = 0; times < TIMES; ++times) {
+    for (int times = 0; times < 1; ++times) {
 	for (int t = 0; t < T_SIZE; ++t) {
-    cilk_for (int i = 0; i < N1; ++i) {
+    _Cilk_for (int i = 0; i < N1; ++i) {
 	for (int j = 0; j < N2; ++j) {
 		if (i < N1 / 2 && j < N2 / 2)
 		{
@@ -46625,14 +46664,15 @@ a.Register_Boundary(aperiodic_2D); /* Register_Boundary */
 	}
 	}
 	gettimeofday(&end, 0);
-	std::cout << "Naive Loop: consumed time :" << 1.0e3 * tdiff(&end, &start)/TIMES << "ms" << std::endl;
+	std::cout << "Naive Loop: consumed time :" << 1.0e3 * tdiff(&end, &start)/1 << "ms" << std::endl;
 
 	t = T_SIZE;
 	for (int i = 0; i < N1; ++i) {
 	for (int j = 0; j < N2; ++j) {
 		check_result(t, i, j, a.interior(t, i, j), b.interior(t, i, j));
-	} }*/
-	N1++ ; N2-- ;
+	} } */
+	N1 += 100 ; 
+	N2 += 100 ; 
 	}
 	return 0;
 }
