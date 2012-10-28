@@ -641,12 +641,12 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	{
 		return ;
 	}
-	set<unsigned long> & s = m_1d [index] [begin_index] ;
-	set<unsigned long>::iterator pos = s.lower_bound(x) ;
+	set<int> & s = m_1d [index] [begin_index] ;
+	set<int>::iterator pos = s.lower_bound(x) ;
 	if (*pos != x)
 	{
 		s.insert(pos, x) ;
-		num_projections++ ;
+		num_projections_1d [index]++ ;
 	}
 }
 
@@ -656,7 +656,7 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 								const int index)
 {
 	int dt = t1 - t0 ;
-	{
+	/*{
 	//x[0] and x[1] are the boundaries of the base of the zoid in x dimension
 	//x[2] and x[3] are the boundaries of the top of the zoid in x dimension
 	proj_2d p ;
@@ -681,12 +681,12 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 		p.y [0] == p. y[1] && p.y [2] == p.y [3] && p.y [1] == p.y [2])
 	{
 		//rectangle with zero area
-		/*cout << "Area 0 " << endl ;
+		cout << "Area 0 " << endl ;
 		cout << " (t0, t1) (" << t0  - 1 << "," << t1 - 1 << ") (x0, x1) " << 
 		"(" << p.x [0] << "," << p.x [1] << ") " << " (x2, x3) " << 
 		"(" << p.x [2] << "," << p.x [3] << ") " << " (y0, y1) " <<
 		"(" << p.y [0] << "," << p.y [1] << ")  " << " (y2, y3) " << 
-		"(" << p.y [2] << "," << p.y [3] << ") " << endl ; */
+		"(" << p.y [2] << "," << p.y [3] << ") " << endl ; 
 		return ;
 	}
 	//update the co-ordinates with modulo width
@@ -794,11 +794,10 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 		vec.push_back(p);
 		num_projections++ ;
 	}
-	}
+	}*/
 	
-	/*
+	
 	{
-	proj_2d p ;
 	//choose (x0, y0) as the reference point
 	int x0 = grid.x0 [1] % phys_length_ [1] ;
 	int y0 = grid.x0 [0] % phys_length_ [0] ;
@@ -807,39 +806,58 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	int x2 = x0 + grid.dx0 [1] * (dt - 1) ; 
 	int y2 = y0 + grid.dx0 [0] * (dt - 1) ;
 	int top_ref_point = y2 * phys_length_ [1] + x2 ;
-
-	int x1 = grid.x1 [1] % phys_length_ [1] ;
-	int y1 = grid.x1 [0] % phys_length_ [0] ;
-	p.top_right[0] = y1 * phys_length_ [1] + x1 ;
-	int x3 = x1 + grid.dx1 [1] * (dt - 1) ; 
-	int y3 = y1 + grid.dx1 [0] * (dt - 1) ;
-	p.top_right[1] = y3 * phys_length_ [1] + x3 ;
-
-	set <unsigned long> & s = m_2d [index] [bottom_ref_point] ;
-	set <unsigned long>::iterator pos = s.lower_bound(top_ref_point) ;
-	proj_2d & p1 = *pos ;
-	//if (*pos != top_ref_point)
-	if (p1.top_right [0] != p.top_right [0] || 
-		p1.top_right [1] != p.top_right [1])
+	if (x0 <= x2 && y0 <= y2)
 	{
-		set <unsigned long> & s1 = m_2d [index] [top_ref_point] ;
-		set <unsigned long>::iterator pos1 = s.lower_bound(bottom_ref_point) ;
-		proj_2d & p2 = *pos1 ;
-		if (p2.top_right [0] != p.top_right[])
-		//if (*pos1 != bottom_ref_point)
+		//bottom rectangle is the projection
+		int x1 = grid.x1 [1] % phys_length_ [1] ;
+		int y1 = grid.x1 [0] % phys_length_ [0] ;
+		int corner = y1 * phys_length_ [1] + x1 ;
+		set <int> & s = m_2d_r [index] [bottom_ref_point] ;
+		set <int>::iterator pos = s.lower_bound(corner) ;
+		if (*pos != corner)
+		//if (m_2d_r [index] [bottom_ref_point] == 0)
 		{
-			//projection not found
-			//s.insert(pos, top_ref_point) ;
-			s.insert(pos, make_pair(top_ref_point, p)) ;
-			num_projections++ ;
-		}
-		else
-		{
-			//compare the top roght corners
-			
+			//m_2d_r [index] [bottom_ref_point] = 1 ;
+			s.insert(pos, corner) ;
+			num_projections_2d_r [index]++ ;
 		}
 	}
-	}*/
+	else if (x0 > x2 && y0 > y2)
+	{
+		//top rectangle is the projection
+		int x1 = grid.x1 [1] % phys_length_ [1] ;
+		int y1 = grid.x1 [0] % phys_length_ [0] ;
+		int x3 = x1 + grid.dx1 [1] * (dt - 1) ; 
+		int y3 = y1 + grid.dx1 [0] * (dt - 1) ;
+		int corner = y3 * phys_length_ [1] + x3 ;
+		set <int> & s = m_2d_r [index] [bottom_ref_point] ;
+		set <int>::iterator pos = s.lower_bound(corner) ;
+		if (*pos != corner)
+		//if (m_2d_r [index] [top_ref_point] == 0)
+		{
+			//m_2d_r [index] [top_ref_point] = 1 ;
+			s.insert(pos, corner) ;
+			num_projections_2d_r [index]++ ;
+		}
+	}
+	else
+	{
+		//projection is an octagon
+		set <int> & s = m_2d_o [index] [bottom_ref_point] ;
+		set <int>::iterator pos = s.lower_bound(top_ref_point) ;
+		if (*pos != top_ref_point)
+		{
+			set <int> & s1 = m_2d_o [index] [top_ref_point] ;
+			set <int>::iterator pos1 = s.lower_bound(bottom_ref_point) ;
+			if (*pos1 != bottom_ref_point)
+			{
+				//projection not found
+				s.insert(pos, top_ref_point) ;
+				num_projections_2d_o [index]++ ;
+			}
+		}
+	}
+	}
 }
 
 /*
@@ -945,11 +963,13 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 	{
 		m_2d_r [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
 		m_2d_r [0].resize (phys_length_ [0] * phys_length_ [1]) ;
+		//fill(m_2d_r [0].begin(), m_2d_r [0].end(), 0) ;
 		m_2d_o [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
 		m_2d_o [0].resize (phys_length_ [0] * phys_length_ [1]) ;
 
 		m_2d_r [1].reserve (phys_length_ [0] * phys_length_ [1]) ;
 		m_2d_r [1].resize (phys_length_ [0] * phys_length_ [1]) ;
+		//fill(m_2d_r [1].begin(), m_2d_r [1].end(), 0) ;
 		m_2d_o [1].reserve (phys_length_ [0] * phys_length_ [1]) ;
 		m_2d_o [1].resize (phys_length_ [0] * phys_length_ [1]) ;
 
