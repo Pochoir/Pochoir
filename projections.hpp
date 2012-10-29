@@ -602,8 +602,8 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	assert (dt >= 1) ;
 	unsigned long qx1 = grid.x0 [0] ;
 	unsigned long qx2 = grid.x1 [0] ;
-	unsigned long qx3 = grid.x0 [0] + grid.dx0 [0] * (dt - 1) ;
-	unsigned long qx4 = grid.x1 [0] + grid.dx1 [0] * (dt - 1) ;
+	unsigned long qx3 = grid.x0 [0] + grid.dx0 [0] * dt ; //(dt - 1) ;
+	unsigned long qx4 = grid.x1 [0] + grid.dx1 [0] * dt ; //(dt - 1) ;
 
 	/*cout << " t0 " << t0  << " t1 " << t1  << " x0 " << qx1 
 		<< " x1 " << qx2 << " x2 " << qx3 << " x3 " << qx4
@@ -799,43 +799,67 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	
 	{
 	//choose (x0, y0) as the reference point
-	int x0 = grid.x0 [1] % phys_length_ [1] ;
-	int y0 = grid.x0 [0] % phys_length_ [0] ;
-	int bottom_ref_point = y0 * phys_length_ [1] + x0 ;
+	//int x0 = pmod (grid.x0 [1], phys_length_ [1]) ;
+	//int y0 = pmod (grid.x0 [0], phys_length_ [0]) ;
+	//int bottom_ref_point = y0 * phys_length_ [1] + x0 ;
 	//choose (x2, y2) as the other reference point
-	int x2 = x0 + grid.dx0 [1] * (dt - 1) ; 
-	int y2 = y0 + grid.dx0 [0] * (dt - 1) ;
-	int top_ref_point = y2 * phys_length_ [1] + x2 ;
-	if (x0 <= x2 && y0 <= y2)
+	int x2 = grid.x0 [1] + grid.dx0 [1] * (dt - 1) ;
+	int y2 = grid.x0 [0] + grid.dx0 [0] * (dt - 1) ;
+	//int x2 = pmod (grid.x0 [1] + grid.dx0 [1] * (dt - 1), phys_length_ [1]) ; 
+	//int y2 = pmod (grid.x0 [0] + grid.dx0 [0] * (dt - 1), phys_length_ [0]) ;
+	//int top_ref_point = y2 * phys_length_ [1] + x2 ;
+	/*{
+		cout << " (t0, t1) (" << t0  - 1 << "," << t1 - 1 << ") (x0, x1) " << 
+		"(" << grid.x0 [1] << "," << grid.x1 [1] << ") " << " (x2, x3) " << 
+		"(" << grid.x0 [1] + grid.dx0 [1] * (dt - 1) << "," << 
+			grid.x1 [1] + grid.dx1 [1] * (dt - 1) << ") " << " (y0, y1) " <<
+		"(" << grid.x0 [0] << "," << grid.x1 [0] << ")  " << " (y2, y3) " << 
+		"(" << grid.x0 [0] + grid.dx0 [0] * (dt - 1) << "," << 
+			grid.x1 [0] + grid.dx1 [0] * (dt - 1) << ") " << endl ; 
+	}*/
+	//cout << "bottom_ref_point " << bottom_ref_point << endl ;
+	//cout << "top_ref_point " << top_ref_point << endl ;
+	if (grid.x0 [1] <= x2 && grid.x0 [0] <= y2)
 	{
 		//bottom rectangle is the projection
-		int x1 = grid.x1 [1] % phys_length_ [1] ;
-		int y1 = grid.x1 [0] % phys_length_ [0] ;
+		int x0 = pmod (grid.x0 [1], phys_length_ [1]) ;
+		int y0 = pmod (grid.x0 [0], phys_length_ [0]) ;
+		int bottom_ref_point = y0 * phys_length_ [1] + x0 ;
+
+		int x1 = pmod (grid.x1 [1], phys_length_ [1]) ;
+		int y1 = pmod (grid.x1 [0], phys_length_ [0]) ;
 		int corner = y1 * phys_length_ [1] + x1 ;
+		if (bottom_ref_point == corner)
+		{
+			return ; //projection is of zero area
+		}
 		set <int> & s = m_2d_r [index] [bottom_ref_point] ;
 		set <int>::iterator pos = s.lower_bound(corner) ;
 		if (*pos != corner)
-		//if (m_2d_r [index] [bottom_ref_point] == 0)
 		{
-			//m_2d_r [index] [bottom_ref_point] = 1 ;
 			s.insert(pos, corner) ;
 			num_projections_2d_r [index]++ ;
 		}
 	}
-	else if (x0 > x2 && y0 > y2)
+	else if (grid.x0 [1] > x2 && grid.x0 [0] > y2)
 	{
 		//top rectangle is the projection
-		int x1 = grid.x1 [1] % phys_length_ [1] ;
-		int y1 = grid.x1 [0] % phys_length_ [0] ;
-		int x3 = x1 + grid.dx1 [1] * (dt - 1) ; 
-		int y3 = y1 + grid.dx1 [0] * (dt - 1) ;
-		int corner = y3 * phys_length_ [1] + x3 ;
-		set <int> & s = m_2d_r [index] [bottom_ref_point] ;
+		int top_ref_point = pmod (y2, phys_length_ [0]) * phys_length_ [1] + 
+							pmod (x2, phys_length_ [1]) ;
+		//int x1 = grid.x1 [1] % phys_length_ [1] ;
+		//int y1 = grid.x1 [0] % phys_length_ [0] ;
+		int x3 = grid.x1 [1] + grid.dx1 [1] * (dt - 1) ; 
+		int y3 = grid.x1 [0] + grid.dx1 [0] * (dt - 1) ;
+		int corner = pmod (y3, phys_length_ [0]) * phys_length_ [1] + 
+					pmod (x3, phys_length_ [1]) ;
+		if (top_ref_point == corner)
+		{
+			return ; //projection is of zero area
+		}
+		set <int> & s = m_2d_r [index] [top_ref_point] ;
 		set <int>::iterator pos = s.lower_bound(corner) ;
 		if (*pos != corner)
-		//if (m_2d_r [index] [top_ref_point] == 0)
 		{
-			//m_2d_r [index] [top_ref_point] = 1 ;
 			s.insert(pos, corner) ;
 			num_projections_2d_r [index]++ ;
 		}
@@ -843,12 +867,17 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	else
 	{
 		//projection is an octagon
+		int x0 = pmod (grid.x0 [1], phys_length_ [1]) ;
+		int y0 = pmod (grid.x0 [0], phys_length_ [0]) ;
+		int bottom_ref_point = y0 * phys_length_ [1] + x0 ;
+		int top_ref_point = pmod (y2, phys_length_ [0]) * phys_length_ [1] + 
+							pmod (x2, phys_length_ [1]) ;
 		set <int> & s = m_2d_o [index] [bottom_ref_point] ;
 		set <int>::iterator pos = s.lower_bound(top_ref_point) ;
 		if (*pos != top_ref_point)
 		{
 			set <int> & s1 = m_2d_o [index] [top_ref_point] ;
-			set <int>::iterator pos1 = s.lower_bound(bottom_ref_point) ;
+			set <int>::iterator pos1 = s1.lower_bound(bottom_ref_point) ;
 			if (*pos1 != bottom_ref_point)
 			{
 				//projection not found
@@ -932,6 +961,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 }*/
 
 
+/*
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::compute_projections(int t0, int t1, 
 				grid_info<N_RANK> const grid) 
@@ -985,12 +1015,83 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 	{
 		int h2 = T % Wn ;
 		cout << "slope " << slope << endl ;
+		cout << " Wn " << Wn << " T % Wn " << h2 << endl ;
 		space_time_cut_boundary(t0, time_shift + Wn, grid, 0) ;
+		cout << "done1 " << endl ;
 		if (h2 > 0)
 		{
 			space_time_cut_boundary(t0, time_shift + h2, grid, 1) ;
 		}
-		cout << " Wn " << Wn << " T % Wn " << h2 << endl ;
+	}
+}*/
+
+
+
+template <int N_RANK> 
+inline void Algorithm<N_RANK>::compute_projections(int t0, int t1, 
+				grid_info<N_RANK> const grid) 
+{
+	int T = t1 - t0 ;
+	cout << "to " << t0 << " t1 " << t1 << endl ;
+	int W = 0 ;  //max_width among all dimensions
+	int slope ;
+	for (int i = 0 ; i < N_RANK ; i++)
+	{
+		cout << "dim " << i << " length " << phys_length_ [i] << endl ;
+		if (phys_length_ [i] > W)
+		{
+			W = phys_length_ [i] ;
+			slope = slope_ [i] ;
+		}		
+	}
+	if (N_RANK == 1)
+	{
+		m_1d [0].reserve (phys_length_ [0]) ;
+		m_1d [0].resize (phys_length_ [0]) ;
+		m_1d [1].reserve (phys_length_ [0]) ;
+		m_1d [1].resize (phys_length_ [0]) ;
+
+		num_projections_1d [0] = 0 ;
+		num_projections_1d [1] = 0 ;
+	}
+	if (N_RANK == 2)
+	{
+		m_2d_r [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_r [0].resize (phys_length_ [0] * phys_length_ [1]) ;
+		//fill(m_2d_r [0].begin(), m_2d_r [0].end(), 0) ;
+		m_2d_o [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [0].resize (phys_length_ [0] * phys_length_ [1]) ;
+
+		m_2d_r [1].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_r [1].resize (phys_length_ [0] * phys_length_ [1]) ;
+		//fill(m_2d_r [1].begin(), m_2d_r [1].end(), 0) ;
+		m_2d_o [1].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [1].resize (phys_length_ [0] * phys_length_ [1]) ;
+
+		num_projections_2d_r [0] = 0 ;
+		num_projections_2d_r [1] = 0 ;
+		num_projections_2d_o [0] = 0 ;
+		num_projections_2d_o [1] = 0 ;
+	}
+	cout << "time shift " << time_shift << endl ;
+	//find index of most significant bit that is set
+	int index_msb = 8 * sizeof(int) - __builtin_clz(T) - 1 ;
+	int logT = 1 << index_msb ;
+	cout << "t0 " << t0 << " logT " << logT << " time_shift + logT " <<
+		time_shift + logT << endl ;
+	space_time_cut_boundary(t0, time_shift + logT, grid, 0) ;
+	t0 += logT ;
+	T = t1 - t0 ;
+	while (T > 0)
+	{
+		//find index of most significant bit that is set
+		int index_msb = 8 * sizeof(int) - __builtin_clz(T) - 1 ;
+		int logT = 1 << index_msb ;
+		cout << "t0 " << t0 << " logT " << logT << " t0 + logT " <<
+			t0 + logT << endl ;
+		space_time_cut_boundary(t0, t0 + logT, grid, 1) ;
+		t0 += logT ;
+		T = t1 - t0 ;
 	}
 }
 #endif
