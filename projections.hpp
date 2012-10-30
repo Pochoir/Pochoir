@@ -110,9 +110,11 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         /* push the middle triangular minizoid (gray) into 
                          * circular queue of (curr_dep) 
                          */
-                        l_son_grid.x0[level] = l_start + mid - thres;
+                        //l_son_grid.x0[level] = l_start + mid - thres;
+                        l_son_grid.x0[level] = l_start ;
                         l_son_grid.dx0[level] = slope_[level];
-                        l_son_grid.x1[level] = l_start + mid + thres;
+                        //l_son_grid.x1[level] = l_start + mid + thres;
+                        l_son_grid.x1[level] = l_end ;
                         l_son_grid.dx1[level] = -slope_[level];
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
 
@@ -123,14 +125,16 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                          */
                         l_son_grid.x0[level] = l_start;
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
-                        l_son_grid.x1[level] = l_start + mid - thres;
+                        //l_son_grid.x1[level] = l_start + mid - thres;
+                        l_son_grid.x1[level] = l_start ;
                         l_son_grid.dx1[level] = slope_[level];
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
 
                         /* push the right big trapezoid (black)
                          * into circular queue of (curr_dep + 1)
                          */
-                        l_son_grid.x0[level] = l_start + mid + thres;
+                        //l_son_grid.x0[level] = l_start + mid + thres;
+                        l_son_grid.x0[level] = l_end ;
                         l_son_grid.dx0[level] = -slope_[level];
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
@@ -143,17 +147,21 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         grid_info<N_RANK> l_son_grid = l_father_grid;
                         const int l_start = (l_father_grid.x0[level]);
                         const int l_end = (l_father_grid.x1[level]);
-                        const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+                        //const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
 
                         /* push left black sub-grid into circular queue of (curr_dep) */
+						const int dx0_h = l_father_grid.dx0[level] * lt;
                         l_son_grid.x0[level] = l_start;
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
-                        l_son_grid.x1[level] = ul_start + mid;
+                        //l_son_grid.x1[level] = ul_start + mid;
+                        l_son_grid.x1[level] = l_start + 2 * dx0_h ;
                         l_son_grid.dx1[level] = -slope_[level];
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
 
                         /* push right black sub-grid into circular queue of (curr_dep) */
-                        l_son_grid.x0[level] = ul_start + mid;;
+						const int dx1_h = l_father_grid.dx1[level] * lt;
+                        //l_son_grid.x0[level] = ul_start + mid;;
+                        l_son_grid.x0[level] = l_end + 2 * dx1_h ;
                         l_son_grid.dx0[level] = slope_[level];
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
@@ -163,9 +171,11 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         /* push the middle gray triangular minizoid into 
                          * circular queue of (curr_dep + 1)
                          */
-                        l_son_grid.x0[level] = ul_start + mid;
+                        //l_son_grid.x0[level] = ul_start + mid;
+                        l_son_grid.x0[level] = l_start + 2 * dx0_h ;
                         l_son_grid.dx0[level] = -slope_[level];
-                        l_son_grid.x1[level] = ul_start + mid;
+                        //l_son_grid.x1[level] = ul_start + mid;
+                        l_son_grid.x1[level] = l_end + 2 * dx1_h ;
                         l_son_grid.dx1[level] = slope_[level];
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
                     } /* end else (cut_tb) */
@@ -257,27 +267,41 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1,
                         /* push the middle gray minizoid
                          * into circular queue of (curr_dep) 
                          */
-                        l_son_grid.x0[level] = l_start + mid - thres;
+                        //l_son_grid.x0[level] = l_start + mid - thres;
+                        l_son_grid.x0[level] = l_start ;
                         l_son_grid.dx0[level] = slope_[level];
-                        l_son_grid.x1[level] = l_start + mid + thres;
+                        //l_son_grid.x1[level] = l_start + mid + thres;
+                        l_son_grid.x1[level] = l_end ;
                         l_son_grid.dx1[level] = -slope_[level];
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+						//cout << "lb < tb " << endl ;
+						/*cout << " center x0 " << 
+							l_son_grid.x0[level] <<
+							" x1 " << l_son_grid.x1[level] << endl ; */
 
                         /* cilk_sync */
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
                         l_son_grid.x0[level] = l_start;
                         l_son_grid.dx0[level] = l_father_grid.dx0[level];
-                        l_son_grid.x1[level] = l_start + mid - thres;
+                        //l_son_grid.x1[level] = l_start + mid - thres;
+                        l_son_grid.x1[level] = l_start ;
                         l_son_grid.dx1[level] = slope_[level];
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+						/*cout << " left x0 " << 
+							l_son_grid.x0[level] <<
+							" x1 " << l_son_grid.x1[level] << endl ; */
 
                         /* push one sub-grid into circular queue of (curr_dep + 1)*/
-                        l_son_grid.x0[level] = l_start + mid + thres;
+                        //l_son_grid.x0[level] = l_start + mid + thres;
+                        l_son_grid.x0[level] = l_end ;
                         l_son_grid.dx0[level] = -slope_[level];
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+						/*cout << " right x0 " << 
+							l_son_grid.x0[level] <<
+							" x1 " << l_son_grid.x1[level] << endl ; */
                     } /* end if (cut_lb) */
                     else { /* cut_tb */
                         if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
@@ -288,49 +312,78 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1,
                             const int l_start = (l_father_grid.x0[level]);
                             const int l_end = (l_father_grid.x1[level]);
                             const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+							/*cout << " l_start " << l_start << " l_end " <<
+								l_end << " ul_start " << ul_start << endl ;*/
                             /* merge the big black trapezoids */
-                            l_son_grid.x0[level] = ul_start + mid;
+                            //l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.x0[level] = l_start ;
                             l_son_grid.dx0[level] = slope_[level];
-                            l_son_grid.x1[level] = l_end + (ul_start - l_start) + mid;
+                            //l_son_grid.x1[level] = l_end + (ul_start - l_start) + mid;
+                            l_son_grid.x1[level] = l_end ;
                             l_son_grid.dx1[level] = -slope_[level];
+							/*cout << "initial cut " << " x0 " << 
+								l_son_grid.x0[level] <<
+								" x1 " << l_son_grid.x1[level] << endl ; */
                             push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
 
                             /* cilk_sync */
                             const int next_dep_pointer = (curr_dep + 1) & 0x1;
                             /* push middle minizoid into circular queue of (curr_dep + 1)*/
-                            l_son_grid.x0[level] = ul_start + mid;
+                            //l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.x0[level] = l_end ;
                             l_son_grid.dx0[level] = -slope_[level];
-                            l_son_grid.x1[level] = ul_start + mid;
+                            //l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.x1[level] = l_end ;
                             l_son_grid.dx1[level] = slope_[level];
+							/*cout << "adj grid " << " x0 " << 
+								l_son_grid.x0[level] <<
+								" x1 " << l_son_grid.x1[level] << endl ; */
                             push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
                         } else { /* NOT the initial cut! */
                             const int mid = tb/2;
                             grid_info<N_RANK> l_son_grid = l_father_grid;
                             const int l_start = (l_father_grid.x0[level]);
                             const int l_end = (l_father_grid.x1[level]);
-                            const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+                            //const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+							const int dx0_h = l_father_grid.dx0[level] * lt;
                             /* push one sub-grid into circular queue of (curr_dep) */
                             l_son_grid.x0[level] = l_start;
                             l_son_grid.dx0[level] = l_father_grid.dx0[level];
-                            l_son_grid.x1[level] = ul_start + mid;
+                            //l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.x1[level] = l_start + 2 * dx0_h ;
                             l_son_grid.dx1[level] = -slope_[level];
                             push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+							/*cout << "tb <= lb " << endl ;
+							cout << " left x0 " << 
+								l_son_grid.x0[level] <<
+								" x1 " << l_son_grid.x1[level] << endl ; */
 
                             /* push one sub-grid into circular queue of (curr_dep) */
-                            l_son_grid.x0[level] = ul_start + mid;
+                            //l_son_grid.x0[level] = ul_start + mid;
+							const int dx1_h = l_father_grid.dx1[level] * lt;
+                            //l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.x0[level] = l_end + 2 * dx1_h ;
                             l_son_grid.dx0[level] = slope_[level];
                             l_son_grid.x1[level] = l_end;
                             l_son_grid.dx1[level] = l_father_grid.dx1[level];
                             push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+							/*cout << " right x0 " << 
+								l_son_grid.x0[level] <<
+								" x1 " << l_son_grid.x1[level] << endl ; */
 
                             /* cilk_sync */
                             const int next_dep_pointer = (curr_dep + 1) & 0x1;
                             /* push one sub-grid into circular queue of (curr_dep + 1)*/
-                            l_son_grid.x0[level] = ul_start + mid;
+                            //l_son_grid.x0[level] = ul_start + mid;
+                            l_son_grid.x0[level] = l_start + 2 * dx0_h ;
                             l_son_grid.dx0[level] = -slope_[level];
-                            l_son_grid.x1[level] = ul_start + mid;
+                            //l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.x1[level] = l_end + 2 * dx1_h ;
                             l_son_grid.dx1[level] = slope_[level];
                             push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+							/*cout << " center x0 " << 
+								l_son_grid.x0[level] <<
+								" x1 " << l_son_grid.x1[level] << endl ; */
                         }                    
                     } /* end if (cut_tb) */
                 } /* end if (can_cut) */
@@ -945,8 +998,8 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	}*/
 		
 	{
-	int x2 = grid.x0 [1] + grid.dx0 [1] * (dt - 1) ;
-	int y2 = grid.x0 [0] + grid.dx0 [0] * (dt - 1) ;
+	int x2 = grid.x0 [1] + grid.dx0 [1] * dt ; //(dt - 1) ;
+	int y2 = grid.x0 [0] + grid.dx0 [0] * dt ; //(dt - 1) ;
 	/*{
 		cout << " (t0, t1) (" << t0  - 1 << "," << t1 - 1 << ") (x0, x1) " << 
 		"(" << grid.x0 [1] << "," << grid.x1 [1] << ") " << " (x2, x3) " << 
@@ -985,8 +1038,8 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 		//choose (x2, y2) as the reference point
 		int ref_point = pmod (y2, phys_length_ [0]) * phys_length_ [1] + 
 						pmod (x2, phys_length_ [1]) ;
-		int x3 = grid.x1 [1] + grid.dx1 [1] * (dt - 1) ; 
-		int y3 = grid.x1 [0] + grid.dx1 [0] * (dt - 1) ;
+		int x3 = grid.x1 [1] + grid.dx1 [1] * dt ; // (dt - 1) ; 
+		int y3 = grid.x1 [0] + grid.dx1 [0] * dt ; //(dt - 1) ;
 		int corner = pmod (y3, phys_length_ [0]) * phys_length_ [1] + 
 					pmod (x3, phys_length_ [1]) ;
 		if (ref_point == corner)
@@ -1010,8 +1063,8 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 		p.y [0] = pmod (grid.x0 [0], phys_length_ [0]) ;
 		p.x [1] = pmod (grid.x1 [1], phys_length_ [1]) ;
 		p.y [1] = pmod (grid.x1 [0], phys_length_ [0]) ;
-		p.x [3] = grid.x1 [1] + grid.dx1 [1] * (dt - 1) ; 
-		p.y [3] = grid.x1 [0] + grid.dx1 [0] * (dt - 1) ;
+		p.x [3] = grid.x1 [1] + grid.dx1 [1] * dt ; // (dt - 1) ; 
+		p.y [3] = grid.x1 [0] + grid.dx1 [0] * dt ; // (dt - 1) ;
 		p.x [3] = pmod (p.x [3], phys_length_ [1]) ;
 		p.y [3] = pmod (p.y [3], phys_length_ [0]) ;
 		if (grid.x0 [1] <= x2)
@@ -1264,8 +1317,8 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 			" time_shift + logT " << time_shift + logT << endl ;
 	space_time_cut_boundary(t0, time_shift + logT, grid, 0) ;
 	//t0 += logT ;
-	t1 -= logT ;
-	T = t1 - t0 ;
+	//t1 -= logT ;
+	//T = t1 - t0 ;
 	//T = t1 - logT ;
 	while (T > 0)
 	{
