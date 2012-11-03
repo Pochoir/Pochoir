@@ -32,6 +32,7 @@ do { \
     --queue_len_[_dep]; \
 } while(0)
 
+bool print_projections ;
 /* ************************************************************************************** */
 /* following are the procedures for obase with duality , always cutting based on shorter bar
  */
@@ -658,10 +659,6 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	unsigned long qx3 = grid.x0 [0] + grid.dx0 [0] * dt ; //(dt - 1) ;
 	unsigned long qx4 = grid.x1 [0] + grid.dx1 [0] * dt ; //(dt - 1) ;
 
-	/*cout << " t0 " << t0  << " t1 " << t1  << " x0 " << qx1 
-		<< " x1 " << qx2 << " x2 " << qx3 << " x3 " << qx4
-		<< " dx0 " << grid.dx0 [0] << " dx1 " << grid.dx1 [0]
-		<< endl  ; */
 	
 	assert (qx1 <= qx2) ;
 	assert (qx3 <= qx4) ;
@@ -694,12 +691,20 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	{
 		return ;
 	}
+	/*cout << " t0 " << t0  << " t1 " << t1  << " x0 " << qx1 
+		<< " x1 " << qx2 << " x2 " << qx3 << " x3 " << qx4
+		<< " dx0 " << grid.dx0 [0] << " dx1 " << grid.dx1 [0]
+		<< endl  ; */
 	set<int> & s = m_1d [index] [begin_index] ;
 	set<int>::iterator pos = s.lower_bound(x) ;
 	if (*pos != x)
 	{
 		s.insert(pos, x) ;
 		num_projections_1d [index]++ ;
+		if (print_projections)
+		{
+			cout << "new proj at " << begin_index << " len " << x << endl ; 
+		}
 	}
 }
 
@@ -1259,7 +1264,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 }*/
 
 
-
+/*
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::compute_projections(int t0, int t1, 
 				grid_info<N_RANK> const grid) 
@@ -1316,24 +1321,125 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 	cout << "t0 " << t0 << " t1 " << t1 << " logT " << logT << 
 			" time_shift + logT " << time_shift + logT << endl ;
 	space_time_cut_boundary(t0, time_shift + logT, grid, 0) ;
-	//t0 += logT ;
-	//t1 -= logT ;
-	//T = t1 - t0 ;
-	//T = t1 - logT ;
+	t0 += logT + time_shift ;
+	T = t1 - t0 ;
+	int num_rec = 0, num_oct = 0 ;
+	int num_proj_1d = 0 ;
 	while (T > 0)
 	{
 		//find index of most significant bit that is set
 		int index_msb = 8 * sizeof(int) - __builtin_clz(T) - 1 ;
 		logT = 1 << index_msb ;
 		cout << "t0 " << t0 << " t1 " << t1 << 
-			" T " << T << " logT " << logT << " time_shift + logT " <<
-			time_shift + logT << endl ;
-		//space_time_cut_boundary(t0, t0 + logT, grid, 1) ;
-		space_time_cut_boundary(t0, time_shift + logT, grid, 1) ;
-		//t0 += logT ;
-		t1 -= logT ;
+			" T " << T << " logT " << logT << " t0 + time_shift + logT " <<
+			t0 + time_shift + logT << endl ;
+		space_time_cut_boundary(t0, t0 + time_shift + logT, grid, 1) ;
+		t0 += logT + time_shift ;
 		T = t1 - t0 ;
-		//T = t1 - logT ;
+		print_projections = true ;*/
+		/*if (N_RANK == 2)
+		{
+			num_rec += num_projections_2d_r [1] ;
+			num_oct += num_projections_2d_o [1] ;
+			cout << "# rec " << num_projections_2d_r [1] <<
+				"# oct " << num_projections_2d_o [1] << endl ;
+			num_projections_2d_r [1] = 0 ;
+			num_projections_2d_o [1] = 0 ;
+			for (int i = 0 ; i < phys_length_ [0] * phys_length_ [1] ; i++)
+			{
+				m_2d_o [1] [i].clear() ;
+				m_2d_r [1] [i].clear() ;
+			}
+		}
+		if (N_RANK == 1)
+		{
+			num_proj_1d += num_projections_1d [1] ;
+			cout << "# proj " << num_projections_1d [1] << endl ;
+			num_projections_1d [1] = 0 ;
+			for (int i = 0 ; i < phys_length_ [0] ; i++)
+			{
+				m_1d [1] [i].clear() ;
+			}
+		}*/
+	/*}
+}*/
+
+
+template <int N_RANK> 
+inline void Algorithm<N_RANK>::compute_projections(int t0, int t1, 
+				grid_info<N_RANK> const grid) 
+{
+	int T = t1 - t0 ;
+	cout << "to " << t0 << " t1 " << t1 << endl ;
+	int W = 0 ;  //max_width among all dimensions
+	int slope ;
+	for (int i = 0 ; i < N_RANK ; i++)
+	{
+		cout << "dim " << i << " length " << phys_length_ [i] << 
+				" x0 [" << i << "] " << grid.x0[i] <<
+				" x1 [" << i << "] " << grid.x1[i] <<
+				" dx0 [" << i << "] " << grid.dx0[i] <<
+				" dx1 [" << i << "] " << grid.dx1[i] <<
+				endl ;
+		if (phys_length_ [i] > W)
+		{
+			W = phys_length_ [i] ;
+			slope = slope_ [i] ;
+		}		
+	}
+	if (N_RANK == 1)
+	{
+		m_1d [0].reserve (phys_length_ [0]) ;
+		m_1d [0].resize (phys_length_ [0]) ;
+		m_1d [1].reserve (phys_length_ [0]) ;
+		m_1d [1].resize (phys_length_ [0]) ;
+
+		num_projections_1d [0] = 0 ;
+		num_projections_1d [1] = 0 ;
+	}
+	if (N_RANK == 2)
+	{
+		m_2d_r [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_r [0].resize (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [0].resize (phys_length_ [0] * phys_length_ [1]) ;
+
+		m_2d_r [1].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_r [1].resize (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [1].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [1].resize (phys_length_ [0] * phys_length_ [1]) ;
+
+		num_projections_2d_r [0] = 0 ;
+		num_projections_2d_r [1] = 0 ;
+		num_projections_2d_o [0] = 0 ;
+		num_projections_2d_o [1] = 0 ;
+	}
+	cout << "time shift " << time_shift << endl ;
+	//find index of most significant bit that is set
+	int Wn = W / (2 * slope) ;
+	int index_msb = 8 * sizeof(int) - __builtin_clz(Wn) - 1 ;
+	int h1 = 1 << index_msb ;
+	cout << "t0 " << t0 << " t1 " << t1 << " h1 " << h1 << 
+			" time_shift + h1 " << time_shift + h1 << endl ;
+	space_time_cut_boundary(t0, time_shift + h1, grid, 0) ;
+	int r = T / h1 * h1 ;
+	t0 += time_shift + r ;
+	int h2 = t1 - t0 ;
+	//int h2 = T % h1 ;
+	cout << "t0 " << t0 << " t1 " << t1 << " h2 " << h2 << 
+		" t0 + time_shift + h2 " << t0 + time_shift + h2 << endl << endl ;
+	while (h2 > 0)
+	{
+		//find index of most significant bit that is set
+		index_msb = 8 * sizeof(int) - __builtin_clz(h2) - 1 ;
+		int h = 1 << index_msb ;
+		cout << "t0 " << t0 << " t1 " << t1 << 
+			" h " << h << " t0 + time_shift + h " <<
+			t0 + time_shift + h << endl ;
+		space_time_cut_boundary(t0, t0 + time_shift + h, grid, 0) ;
+		t0 += time_shift + h ;
+		h2 = t1 - t0 ;
+		//print_projections = true ;
 	}
 }
 #endif
