@@ -4,11 +4,18 @@ ICC = icpc
 OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x
 ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h  
+TARGETS = heat_1D_NP
+
+all: ${TARGETS}
+
 heat_1D_NP : tb_heat_1D_NP.cpp
-#   Phase-II compilation
+ifdef DEBUG
+	#	Phase-I compilation with debugging aid
+	${CC} -o tb_heat_1D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_1D_NP.cpp
+else
+	# Phase-II compilation
 	${CC} -o heat_1D_NP ${OPT_FLAGS} tb_heat_1D_NP.cpp
-#	Phase-I compilation with debugging aid
-#	${CC} -o tb_heat_1D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_heat_1D_NP.cpp
+endif
 
 heat_NP : tb_heat_2D_NP.cpp
 #   Phase-II compilation
@@ -105,4 +112,4 @@ tb_3dfd : tb_3dfd.cpp
 
 
 clean: 
-	rm -f *.o *.i *_pochoir *_pochoir.cpp *.out
+	rm -f *.o *.i *_pochoir *_pochoir.cpp *.out ${TARGETS}
