@@ -50,10 +50,10 @@ lcs : tb_lcs.cpp
 	${CC} -o tb_lcs_pochoir ${CFLAGS} tb_lcs.cpp
 
 berkeley3d7pt : tb_3d7pt.cpp
-	${CC} -o tb_3d7pt_pochoir ${CFLAGS} tb_3d7pt.cpp
+	${CC} -o tb_berkeley3d7pt_pochoir ${CFLAGS} tb_3d7pt.cpp
 
 berkeley3d27pt : tb_3d27pt.cpp
-	${CC} -o tb_3d27pt_pochoir ${CFLAGS} tb_3d27pt.cpp
+	${CC} -o tb_berkeley3d27pt_pochoir ${CFLAGS} tb_3d27pt.cpp
 
 3dfd : tb_3dfd.cpp
 	${CC} -o tb_3dfd_pochoir ${CFLAGS} tb_3dfd.cpp
@@ -75,6 +75,9 @@ cilk_for_2D : tb_cilk_for_2D.cpp
 	${ICC} -o cfor_2D_gdb ${ICC_DEBUG_FLAGS} tb_cilk_for_2D_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_cilk_for_2D_pochoir ${POCHOIR_DEBUG_FLAGS} tb_cilk_for_2D.cpp
+
+check:
+	python ./tests.py
 
 clean: 
 	rm -f *.o *.i *_pochoir *_pochoir.cpp *.out
