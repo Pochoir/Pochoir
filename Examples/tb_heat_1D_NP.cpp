@@ -71,7 +71,7 @@ int main(int argc, char * argv[])
     printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);
 	/* data structure of Pochoir - row major */
     Pochoir_Shape_1D heat_shape_1D[] = {{1, 0}, {0, 1}, {0, -1}, {0, 0}};
-	Pochoir_Array_1D(double) a(N_SIZE), b(N_SIZE+2);
+	Pochoir_Array_1D(double) a(N_SIZE), b(N_SIZE);
     Pochoir_1D heat_1D(heat_shape_1D);
 
 	cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
@@ -80,14 +80,15 @@ int main(int argc, char * argv[])
     Pochoir_Kernel_End
 
     a.Register_Boundary(heat_bv_1D);
+    b.Register_Boundary(heat_bv_1D);
     heat_1D.Register_Array(a);
     b.Register_Shape(heat_shape_1D);
 
 	for (int i = 0; i < N_SIZE; ++i) {
         a(0, i) = 1.0 * (rand() % BASE); 
         a(1, i) = 0; 
-        b(0, i+1) = a(0, i);
-        b(1, i+1) = 0;
+        b(0, i) = a(0, i);
+        b(1, i) = 0;
 	} 
 
 
@@ -107,8 +108,8 @@ int main(int argc, char * argv[])
     for (int times = 0; times < TIMES; ++times) {
     	gettimeofday(&start, 0);
     	for (int t = 0; t < T_SIZE; ++t) {
-            cilk_for (int i = 1; i < N_SIZE+1; ++i) {
-               b.interior(t+1, i) = 0.125 * (b.interior(t, i+1) - 2.0 * b.interior(t, i) + b.interior(t, i-1)); 
+            cilk_for (int i = 0; i < N_SIZE; ++i) {
+               b(t+1, i) = 0.125 * (b(t, i+1) - 2.0 * b(t, i) + b(t, i-1)); 
             } 
         }
     	gettimeofday(&end, 0);
@@ -119,7 +120,7 @@ int main(int argc, char * argv[])
 	t = T_SIZE;
     bool passed = true;
 	for (int i = 0; i < N_SIZE; ++i) {
-		passed &= check_result(t, i, a.interior(t, i), b.interior(t, i+1));
+		passed &= check_result(t, i, a(t, i), b(t, i));
 	}
 
     if (passed) {
