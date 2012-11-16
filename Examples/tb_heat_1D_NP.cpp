@@ -38,14 +38,15 @@ using namespace std;
 #define N_RANK 2
 #define TOLERANCE (1e-6)
 
-void check_result(int t, int i, double a, double b)
+bool check_result(int t, int i, double a, double b)
 {
 	if (abs(a - b) < TOLERANCE) {
-//		printf("a(%d, %d) == b(%d, %d) == %f : passed!\n", t, i, t, i, a);
+        // printf("a(%d, %d) == b(%d, %d) == %f : PASSED!\n", t, i, t, i, a);
+        return true;
 	} else {
 		printf("a(%d, %d) = %f, b(%d, %d) = %f : FAILED!\n", t, i, a, t, i, b);
+        return false;
 	}
-
 }
 
 Pochoir_Boundary_1D(heat_bv_1D, arr, t, i)
@@ -61,9 +62,10 @@ int main(int argc, char * argv[])
     int N_SIZE = 0, T_SIZE = 0;
 
     if (argc < 3) {
-        printf("argc < 3, quit! \n");
+        printf("Usage: tb_heat_1D_NP_pochoir N_SIZE T_SIZE\n");
         exit(1);
     }
+
     N_SIZE = StrToInt(argv[1]);
     T_SIZE = StrToInt(argv[2]);
     printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);
@@ -97,26 +99,32 @@ int main(int argc, char * argv[])
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
 	std::cout << "Pochoir ET: consumed time :" << min_tdiff << "ms" << std::endl;
-
 #endif
+
 #if 1
     min_tdiff = INF;
     /* cilk_for + zero-padding */
     for (int times = 0; times < TIMES; ++times) {
-	gettimeofday(&start, 0);
-	for (int t = 0; t < T_SIZE; ++t) {
-    cilk_for (int i = 1; i < N_SIZE+1; ++i) {
-       b.interior(t+1, i) = 0.125 * (b.interior(t, i+1) - 2.0 * b.interior(t, i) + b.interior(t, i-1)); 
-    } }
-	gettimeofday(&end, 0);
-    min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
+    	gettimeofday(&start, 0);
+    	for (int t = 0; t < T_SIZE; ++t) {
+            cilk_for (int i = 1; i < N_SIZE+1; ++i) {
+               b.interior(t+1, i) = 0.125 * (b.interior(t, i+1) - 2.0 * b.interior(t, i) + b.interior(t, i-1)); 
+            } 
+        }
+    	gettimeofday(&end, 0);
+        min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
 	std::cout << "Naive Loop: consumed time :" << min_tdiff << "ms" << std::endl;
 
 	t = T_SIZE;
+    bool passed = true;
 	for (int i = 0; i < N_SIZE; ++i) {
-		check_result(t, i, a.interior(t, i), b.interior(t, i+1));
-	}  
+		passed &= check_result(t, i, a.interior(t, i), b.interior(t, i+1));
+	}
+
+    if (passed) {
+        printf("PASSED!\n");
+    }
 #endif
 
 	return 0;
