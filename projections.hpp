@@ -35,7 +35,6 @@ do { \
 bool print_projections ;
 
 #ifndef MODIFIED_SPACE_TIME_CUT 
-{
 template <int N_RANK>
 inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, 
 												grid_info<N_RANK> const grid,
@@ -338,10 +337,8 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1,
         assert(queue_len_[curr_dep_pointer] == 0);
     } /* end for (curr_dep < N_RANK+1) */
 }
-}
 
-#ifdef MODIFIED_SPACE_TIME_CUT 
-{
+#else
 /* ************************************************************************************** */
 /* following are the procedures for obase with duality , always cutting based on shorter bar
  */
@@ -704,7 +701,7 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1,
         assert(queue_len_[curr_dep_pointer] == 0);
     } /* end for (curr_dep < N_RANK+1) */
 }
-}
+#endif
 
 /* This is the version for interior region cut! */
 template <int N_RANK>
@@ -1438,7 +1435,7 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	}
 }
 
-
+/*
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::compute_projections(int t0, int t1, 
 				grid_info<N_RANK> const grid) 
@@ -1496,7 +1493,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 		//h1 = floor (T/(2^k))
 		int h1 = T / two_to_the_k ;
 		assert (W >= 2 * slope * h1) ; 
-		space_time_cut_boundary(t0, time_shift + h1, grid, 0) ;
+		//space_time_cut_boundary(t0, time_shift + h1, grid, 0) ;
 		//h2 = ceil (T/(2^k))
 		int h2 = (T + two_to_the_k - 1) / two_to_the_k ;
 		if (h2 != h1)
@@ -1508,13 +1505,13 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 			{
 				cout << " h1 " << h1 << " h2 " << h2 / 2 
 					 << " h3 " << (h2 + 1) / 2 << endl ;
-				space_time_cut_boundary(t0, time_shift + h2 / 2, grid, 0) ;
-				space_time_cut_boundary(t0, time_shift + (h2 + 1) / 2, grid, 0);
+				//space_time_cut_boundary(t0, time_shift + h2 / 2, grid, 0) ;
+				//space_time_cut_boundary(t0, time_shift + (h2 + 1) / 2, grid, 0);
 			}
 			else
 			{
 				cout << " h1 " << h1 << " h2 " << h2 << endl ;
-				space_time_cut_boundary(t0, time_shift + h2, grid, 0) ;
+				//space_time_cut_boundary(t0, time_shift + h2, grid, 0) ;
 			}
 		}
 		else
@@ -1523,7 +1520,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 		}
 	}
 	//space_time_cut_boundary(t0, t1, grid, 2) ;
-}
+}*/
 
 
 /*
@@ -1691,7 +1688,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 	/*}
 }*/
 
-/*
+
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::compute_projections(int t0, int t1, 
 				grid_info<N_RANK> const grid) 
@@ -1768,5 +1765,66 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 		h2 = t1 - t0 ;
 		//print_projections = true ;
 	}
-}*/
+}
+
+template <int N_RANK> template <typename F, typename BF>
+inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1, 
+				grid_info<N_RANK> const grid, F const & f, BF const & bf) 
+{
+	int T = t1 - t0 ;
+	cout << "to " << t0 << " t1 " << t1 << endl ;
+	int W = 0 ;  //max_width among all dimensions
+	int slope ;
+	for (int i = 0 ; i < N_RANK ; i++)
+	{
+		cout << "dim " << i << " length " << phys_length_ [i] << 
+				" x0 [" << i << "] " << grid.x0[i] <<
+				" x1 [" << i << "] " << grid.x1[i] <<
+				" dx0 [" << i << "] " << grid.dx0[i] <<
+				" dx1 [" << i << "] " << grid.dx1[i] <<
+				endl ;
+		if (phys_length_ [i] > W)
+		{
+			W = phys_length_ [i] ;
+			slope = slope_ [i] ;
+		}		
+	}
+	cout << "time shift " << time_shift << endl ;
+	//find index of most significant bit that is set
+	int Wn = W / (2 * slope) ;
+	int index_msb = 8 * sizeof(int) - __builtin_clz(Wn) - 1 ;
+	int h1 = 1 << index_msb ;
+	cout << "t0 " << t0 << " t1 " << t1 << " Wn " << Wn << " 2^floor(lg(Wn)) "
+				 << h1 << endl ;
+	h1 = T / h1 * h1 ;
+	//for (int i = 0 ; i < T / h1 ; i++)
+	//{	
+		cout << "t0 " << t0 << " t1 " << t1 << 
+			" h1 " << h1 << " t0 + h1 " <<
+			t0 + h1 << endl ;
+		shorter_duo_sim_obase_bicut_p(t0, t0 + h1, grid, f, bf) ;
+		t0 += h1 ;
+	//}
+	/*if (t1 > t0)
+	{
+		cout << "t0 " << t0 << " t1 " << t1 << endl ;
+		shorter_duo_sim_obase_bicut_p(t0, t1, grid, f, bf) ;
+	}*/
+
+	int h2 = t1 - t0 ;
+	cout << "t0 " << t0 << " t1 " << t1 << " h2 " << h2 << 
+		" t0 + h2 " << t0 + h2 << endl << endl ;
+	while (h2 > 0)
+	{
+		//find index of most significant bit that is set
+		index_msb = 8 * sizeof(int) - __builtin_clz(h2) - 1 ;
+		int h = 1 << index_msb ;
+		cout << "t0 " << t0 << " t1 " << t1 << 
+			" h " << h << " t0 + h " <<
+			t0 + h << endl ;
+		shorter_duo_sim_obase_bicut_p(t0, t0 + h, grid, f, bf) ;
+		t0 += h ;
+		h2 = t1 - t0 ;
+	}
+}
 #endif
