@@ -34,7 +34,7 @@ do { \
 
 bool print_projections ;
 
-#ifndef MODIFIED_SPACE_TIME_CUT 
+#ifdef DEFAULT_SPACE_CUT 
 template <int N_RANK>
 inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, 
 												grid_info<N_RANK> const grid,
@@ -278,27 +278,54 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1,
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
                     } /* end if (cut_lb) */
                     else { /* cut_tb */
+//                        if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
+//                            assert(l_father_grid.dx0[level] == 0);
+//                            assert(l_father_grid.dx1[level] == 0);
+//                            const int mid = tb/2;
+//                            grid_info<N_RANK> l_son_grid = l_father_grid;
+//                            const int l_start = (l_father_grid.x0[level]);
+//                            const int l_end = (l_father_grid.x1[level]);
+//                            const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
+//                            /* merge the big black trapezoids */
+//                            l_son_grid.x0[level] = ul_start + mid;
+//                            l_son_grid.dx0[level] = slope_[level];
+//                            l_son_grid.x1[level] = l_end + (ul_start - l_start) + mid;
+//                            l_son_grid.dx1[level] = -slope_[level];
+//                            push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+//
+//                            /* cilk_sync */
+//                            const int next_dep_pointer = (curr_dep + 1) & 0x1;
+//                            /* push middle minizoid into circular queue of (curr_dep + 1)*/
+//                            l_son_grid.x0[level] = ul_start + mid;
+//                            l_son_grid.dx0[level] = -slope_[level];
+//                            l_son_grid.x1[level] = ul_start + mid;
+//                            l_son_grid.dx1[level] = slope_[level];
+//                            push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+//                        }
                         if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
+							//check if this works properly by doing the same at run time. //to do
+						   /* initial cut on the dimension */
                             assert(l_father_grid.dx0[level] == 0);
                             assert(l_father_grid.dx1[level] == 0);
                             const int mid = tb/2;
+							const int dx = slope_ [level] * lt ;
                             grid_info<N_RANK> l_son_grid = l_father_grid;
                             const int l_start = (l_father_grid.x0[level]);
                             const int l_end = (l_father_grid.x1[level]);
-                            const int ul_start = (l_father_grid.x0[level] + l_father_grid.dx0[level] * lt);
-                            /* merge the big black trapezoids */
-                            l_son_grid.x0[level] = ul_start + mid;
+                            //draw a triangle with a vertex at midpoint of 
+							//top base.
+                            l_son_grid.x0[level] = mid - dx ;
                             l_son_grid.dx0[level] = slope_[level];
-                            l_son_grid.x1[level] = l_end + (ul_start - l_start) + mid;
+                            l_son_grid.x1[level] = mid + dx ;
                             l_son_grid.dx1[level] = -slope_[level];
                             push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
 
                             /* cilk_sync */
                             const int next_dep_pointer = (curr_dep + 1) & 0x1;
-                            /* push middle minizoid into circular queue of (curr_dep + 1)*/
-                            l_son_grid.x0[level] = ul_start + mid;
+                            // push trapezoid into circular queue of (curr_dep + 1)
+                            l_son_grid.x0[level] = mid + dx ;
                             l_son_grid.dx0[level] = -slope_[level];
-                            l_son_grid.x1[level] = ul_start + mid;
+                            l_son_grid.x1[level] = l_end + mid - dx ;
                             l_son_grid.dx1[level] = slope_[level];
                             push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
                         } else { /* NOT the initial cut! */
@@ -348,6 +375,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
 												grid_info<N_RANK> const grid,
 												const int index)
 {
+	//cout << "space cut interior " << endl ;
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
     int queue_head_[2], queue_tail_[2], queue_len_[2];
@@ -425,7 +453,9 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         l_son_grid.x1[level] = l_end ;
                         l_son_grid.dx1[level] = -slope_[level];
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
-
+						cout << " start " << l_start << " end " << l_end <<
+							" slope 0 " << slope_ [level] << " slope 1 " <<
+							-slope_[level] << endl ;
                         /* cilk_sync */
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
                         /* push the left big trapezoid (black)
@@ -437,6 +467,9 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         l_son_grid.x1[level] = l_start ;
                         l_son_grid.dx1[level] = slope_[level];
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+						cout << " start " << l_start << " end " << l_start <<
+							" slope 0 " << l_father_grid.dx0[level] << " slope 1 " <<
+							slope_[level] << endl ;
 
                         /* push the right big trapezoid (black)
                          * into circular queue of (curr_dep + 1)
@@ -447,6 +480,9 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+						cout << " start " << l_end << " end " << l_end <<
+							" slope 0 " << -slope_ [level] << " slope 1 " <<
+							l_father_grid.dx1[level] << endl ;
 
                     } /* end if (cut_lb) */
                     else {
@@ -465,6 +501,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         l_son_grid.x1[level] = l_start + 2 * dx0_h ;
                         l_son_grid.dx1[level] = -slope_[level];
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+						cout << " start " << l_start << " end " << l_start + 2 * dx0_h << " slope 0 " << l_father_grid.dx0[level] << " slope 1 " << -slope_[level] << endl ;
 
                         /* push right black sub-grid into circular queue of (curr_dep) */
 						const int dx1_h = l_father_grid.dx1[level] * lt;
@@ -474,6 +511,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+						cout << " start " << l_end + 2 * dx1_h << " end " << l_end << " slope 0 " << slope_[level] << " slope 1 " << l_father_grid.dx1[level] << endl ;
 
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
                         /* push the middle gray triangular minizoid into 
@@ -486,6 +524,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         l_son_grid.x1[level] = l_end + 2 * dx1_h ;
                         l_son_grid.dx1[level] = slope_[level];
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+						cout << " start " << l_start + 2 * dx0_h << " end " << l_end + 2 * dx1_h << " slope 0 " << -slope_ [level] << " slope 1 " << slope_[level] << endl ;
                     } /* end else (cut_tb) */
                 } /* end if (can_cut) */
             } /* end if (performing a space cut) */
@@ -721,7 +760,8 @@ inline void Algorithm<N_RANK>::space_time_cut_interior(int t0, int t1,
         bool cut_lb = (lb < tb);
         thres = (slope_[i] * lt);
 		//cout << "dx_recursive " << dx_recursive_[i] << "dx_recursive_boundary_ " << dx_recursive_boundary_[i] << endl ;
-		//cout << "lb " << lb <<  " tb " << tb << " lt " << lt << endl ; 
+		//cout << "space time cut interior lb " << lb <<  " tb " << tb << " lt " << lt << endl ; 
+		//cout << "x0 : " << grid.x0[i] << " x1 " << grid.x1[i] << " x2 " << grid.x0[i] + grid.dx0[i] * lt  << " x3 " << grid.x1[i] + grid.dx1[i] * lt << endl ;
         //sim_can_cut = sim_can_cut || (cut_lb ? (lb >= 2 * thres & lb > dx_recursive_[i]) : (tb >= 2 * thres & tb > dx_recursive_[i]));
         //sim_can_cut = sim_can_cut || (cut_lb ? (lb >= 2 * thres && lb > dx_recursive_[i]) : (tb >= 2 * thres && tb > dx_recursive_[i]));
         //sim_can_cut = sim_can_cut || (cut_lb ? (lb >= 2 * thres && lb > 1) : (tb >= 2 * thres && tb > 1)) ; 
@@ -983,12 +1023,14 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	if (qx2 - qx1 > qx4 - qx3)
 	{
 		x = qx2 - qx1 ;
-		begin_index = qx1 % phys_length_ [0] ;
+		//begin_index = qx1 % phys_length_ [0] ;
+		begin_index = pmod(qx1, phys_length_ [0]) ;
 	}
 	else
 	{
 		x = qx4 - qx3 ;
-		begin_index = qx3 % phys_length_ [0] ;
+		//begin_index = qx3 % phys_length_ [0] ;
+		begin_index = pmod(qx3, phys_length_ [0]) ;
 	}
 	if (x < 0)
 	{
@@ -1009,6 +1051,8 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	{
 		s.insert(pos, x) ;
 		num_projections_1d [index]++ ;
+		//cout << "inserting len " << x << endl ;
+		m_1d_proj_length [x]++ ;
 		if (print_projections)
 		{
 			cout << "new proj at " << begin_index << " len " << x << endl ; 
@@ -1435,92 +1479,7 @@ inline void Algorithm<2>::print_projection(int t0, int t1,
 	}
 }
 
-/*
-template <int N_RANK> 
-inline void Algorithm<N_RANK>::compute_projections(int t0, int t1, 
-				grid_info<N_RANK> const grid) 
-{
-	int T = t1 - t0 ;
-	cout << "to " << t0 << " t1 " << t1 << endl ;
-	int W = 0 ;  //max_width among all dimensions
-	int slope ;
-	for (int i = 0 ; i < N_RANK ; i++)
-	{
-		cout << "dim " << i << " length " << phys_length_ [i] << endl ;
-		if (phys_length_ [i] > W)
-		{
-			W = phys_length_ [i] ;
-			slope = slope_ [i] ;
-		}		
-	}
-	if (N_RANK == 1)
-	{
-		m_1d [0].reserve (phys_length_ [0]) ;
-		m_1d [0].resize (phys_length_ [0]) ;
-		m_1d [1].reserve (phys_length_ [0]) ;
-		m_1d [1].resize (phys_length_ [0]) ;
 
-		num_projections_1d [0] = 0 ;
-		num_projections_1d [1] = 0 ;
-	}
-	if (N_RANK == 2)
-	{
-		m_2d_r [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
-		m_2d_r [0].resize (phys_length_ [0] * phys_length_ [1]) ;
-		m_2d_o [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
-		m_2d_o [0].resize (phys_length_ [0] * phys_length_ [1]) ;
-
-		m_2d_r [1].reserve (phys_length_ [0] * phys_length_ [1]) ;
-		m_2d_r [1].resize (phys_length_ [0] * phys_length_ [1]) ;
-		m_2d_o [1].reserve (phys_length_ [0] * phys_length_ [1]) ;
-		m_2d_o [1].resize (phys_length_ [0] * phys_length_ [1]) ;
-
-		num_projections_2d_r [0] = 0 ;
-		num_projections_2d_r [1] = 0 ;
-		num_projections_2d_o [0] = 0 ;
-		num_projections_2d_o [1] = 0 ;
-	}
-	cout << "time shift " << time_shift << endl ;
-	//Time cuts are needed if W < 2 * slope * T
-	if (W < 2 * slope * T)
-	{
-		//compue 2^k where k = ceil(lg (2 * slope * T / W))
-		int k = 8 * sizeof(int) - __builtin_clz((T - 1) * 2 * slope / W) ; 
-		cout << "k " << k << endl ;
-		int two_to_the_k = 1 << k ; 
-		cout << "width " << W << " T " << T <<  " 2^k "  << two_to_the_k << endl ;
-		cout << "slope " << slope << endl ;
-		//h1 = floor (T/(2^k))
-		int h1 = T / two_to_the_k ;
-		assert (W >= 2 * slope * h1) ; 
-		//space_time_cut_boundary(t0, time_shift + h1, grid, 0) ;
-		//h2 = ceil (T/(2^k))
-		int h2 = (T + two_to_the_k - 1) / two_to_the_k ;
-		if (h2 != h1)
-		{
-			//you can have a case where W >= 2 * slope * h1 but
-			//W < 2 * slope * h2 
-			//Example W = 33, T = 33, slope = 1 yields h1 = 16 and h2 = 17
-			if (W < 2 * slope * h2)
-			{
-				cout << " h1 " << h1 << " h2 " << h2 / 2 
-					 << " h3 " << (h2 + 1) / 2 << endl ;
-				//space_time_cut_boundary(t0, time_shift + h2 / 2, grid, 0) ;
-				//space_time_cut_boundary(t0, time_shift + (h2 + 1) / 2, grid, 0);
-			}
-			else
-			{
-				cout << " h1 " << h1 << " h2 " << h2 << endl ;
-				//space_time_cut_boundary(t0, time_shift + h2, grid, 0) ;
-			}
-		}
-		else
-		{
-			cout << " h1 " << h1 << " h2 " << h2 << endl ;
-		}
-	}
-	//space_time_cut_boundary(t0, t1, grid, 2) ;
-}*/
 
 
 /*
@@ -1689,6 +1648,99 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 }*/
 
 
+#ifdef DEFAULT_TIME_CUT
+template <int N_RANK> 
+inline void Algorithm<N_RANK>::compute_projections(int t0, int t1, 
+				grid_info<N_RANK> const grid) 
+{
+	int T = t1 - t0 ;
+	cout << "to " << t0 << " t1 " << t1 << endl ;
+	int W = 0 ;  //max_width among all dimensions
+	int slope ;
+	for (int i = 0 ; i < N_RANK ; i++)
+	{
+		cout << "dim " << i << " length " << phys_length_ [i] << endl ;
+		if (phys_length_ [i] > W)
+		{
+			W = phys_length_ [i] ;
+			slope = slope_ [i] ;
+		}		
+	}
+	if (N_RANK == 1)
+	{
+		m_1d [0].reserve (phys_length_ [0]) ;
+		m_1d [0].resize (phys_length_ [0]) ;
+		m_1d [1].reserve (phys_length_ [0]) ;
+		m_1d [1].resize (phys_length_ [0]) ;
+
+		m_1d_proj_length.resize (phys_length_ [0] + 1, 0) ;
+		num_projections_1d [0] = 0 ;
+		num_projections_1d [1] = 0 ;
+	}
+	if (N_RANK == 2)
+	{
+		m_2d_r [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_r [0].resize (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [0].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [0].resize (phys_length_ [0] * phys_length_ [1]) ;
+
+		m_2d_r [1].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_r [1].resize (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [1].reserve (phys_length_ [0] * phys_length_ [1]) ;
+		m_2d_o [1].resize (phys_length_ [0] * phys_length_ [1]) ;
+
+		num_projections_2d_r [0] = 0 ;
+		num_projections_2d_r [1] = 0 ;
+		num_projections_2d_o [0] = 0 ;
+		num_projections_2d_o [1] = 0 ;
+	}
+	cout << "time shift " << time_shift << endl ;
+	//Time cuts are needed if W < 2 * slope * T
+	if (W < 2 * slope * T)
+	{
+		//compue 2^k where k = ceil(lg (2 * slope * T / W))
+		//int k = 8 * sizeof(int) - __builtin_clz((T - 1) * 2 * slope / W) ; 
+		int k = 8 * sizeof(int) - __builtin_clz((T * 2 * slope - 1) / W) ; 
+		cout << "k " << k << endl ;
+		int two_to_the_k = 1 << k ; 
+		cout << "width " << W << " T " << T <<  " 2^k "  << two_to_the_k << endl ;
+		cout << "slope " << slope << endl ;
+		//h1 = floor (T/(2^k))
+		int h1 = T / two_to_the_k ;
+		assert (W >= 2 * slope * h1) ; 
+		space_time_cut_boundary(t0, time_shift + h1, grid, 0) ;
+		//h2 = ceil (T/(2^k))
+		int h2 = (T + two_to_the_k - 1) / two_to_the_k ;
+		if (h2 != h1)
+		{
+			//you can have a case where W >= 2 * slope * h1 but
+			//W < 2 * slope * h2 
+			//Example W = 33, T = 33, slope = 1 yields h1 = 16 and h2 = 17
+			if (W < 2 * slope * h2)
+			{
+				cout << " h1 " << h1 << " h2 " << h2 / 2 
+					 << " h3 " << (h2 + 1) / 2 << endl ;
+				space_time_cut_boundary(t0, time_shift + h2 / 2, grid, 0) ;
+				space_time_cut_boundary(t0, time_shift + (h2 + 1) / 2, grid, 0);
+			}
+			else
+			{
+				cout << " h1 " << h1 << " h2 " << h2 << endl ;
+				space_time_cut_boundary(t0, time_shift + h2, grid, 0) ;
+			}
+		}
+		else
+		{
+			cout << " h1 " << h1 << " h2 " << h2 << endl ;
+		}
+	}
+	else
+	{
+		space_time_cut_boundary(t0, t1, grid, 0) ;
+	}
+	//space_time_cut_boundary(t0, t1, grid, 2) ;
+}
+#else
 template <int N_RANK> 
 inline void Algorithm<N_RANK>::compute_projections(int t0, int t1, 
 				grid_info<N_RANK> const grid) 
@@ -1718,6 +1770,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 		m_1d [1].reserve (phys_length_ [0]) ;
 		m_1d [1].resize (phys_length_ [0]) ;
 
+		m_1d_proj_length.resize (phys_length_ [0] + 1, 0) ;
 		num_projections_1d [0] = 0 ;
 		num_projections_1d [1] = 0 ;
 	}
@@ -1743,29 +1796,35 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 	int Wn = W / (2 * slope) ;
 	int index_msb = 8 * sizeof(int) - __builtin_clz(Wn) - 1 ;
 	int h1 = 1 << index_msb ;
-	cout << "t0 " << t0 << " t1 " << t1 << " h1 " << h1 << 
-			" time_shift + h1 " << time_shift + h1 << endl ;
-	space_time_cut_boundary(t0, time_shift + h1, grid, 0) ;
+	cout << "t0 " << t0 << " t1 " << t1 << " Wn " << Wn << " 2^floor(lg(Wn)) "
+				 << h1 << endl ;
+	if (W > 2 * slope * T)
+	{
+		h1 = T ;
+	}
+	cout << "t0 " << t0 << " t1 " << t1 << 
+			" h1 " << h1 << " t0 + h1 " <<
+			t0 + h1 << endl ;
+	space_time_cut_boundary(t0, t0 + h1, grid, 0) ;
 	int r = T / h1 * h1 ;
-	t0 += time_shift + r ;
+	t0 += r ;
 	int h2 = t1 - t0 ;
-	//int h2 = T % h1 ;
 	cout << "t0 " << t0 << " t1 " << t1 << " h2 " << h2 << 
-		" t0 + time_shift + h2 " << t0 + time_shift + h2 << endl << endl ;
+		" t0 + h2 " << t0 + h2 << endl << endl ;
 	while (h2 > 0)
 	{
 		//find index of most significant bit that is set
 		index_msb = 8 * sizeof(int) - __builtin_clz(h2) - 1 ;
 		int h = 1 << index_msb ;
 		cout << "t0 " << t0 << " t1 " << t1 << 
-			" h " << h << " t0 + time_shift + h " <<
-			t0 + time_shift + h << endl ;
-		space_time_cut_boundary(t0, t0 + time_shift + h, grid, 0) ;
-		t0 += time_shift + h ;
+			" h " << h << " t0 + h " <<
+			t0 + h << endl ;
+		space_time_cut_boundary(t0, t0 + h, grid, 0) ;
+		t0 += h ;
 		h2 = t1 - t0 ;
-		//print_projections = true ;
 	}
 }
+#endif
 
 template <int N_RANK> template <typename F, typename BF>
 inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1, 
