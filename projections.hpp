@@ -453,9 +453,9 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         l_son_grid.x1[level] = l_end ;
                         l_son_grid.dx1[level] = -slope_[level];
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
-						cout << " start " << l_start << " end " << l_end <<
+						/*cout << " start " << l_start << " end " << l_end <<
 							" slope 0 " << slope_ [level] << " slope 1 " <<
-							-slope_[level] << endl ;
+							-slope_[level] << endl ;*/
                         /* cilk_sync */
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
                         /* push the left big trapezoid (black)
@@ -467,9 +467,9 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         l_son_grid.x1[level] = l_start ;
                         l_son_grid.dx1[level] = slope_[level];
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
-						cout << " start " << l_start << " end " << l_start <<
+						/*cout << " start " << l_start << " end " << l_start <<
 							" slope 0 " << l_father_grid.dx0[level] << " slope 1 " <<
-							slope_[level] << endl ;
+							slope_[level] << endl ;*/
 
                         /* push the right big trapezoid (black)
                          * into circular queue of (curr_dep + 1)
@@ -480,9 +480,9 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
-						cout << " start " << l_end << " end " << l_end <<
+						/*cout << " start " << l_end << " end " << l_end <<
 							" slope 0 " << -slope_ [level] << " slope 1 " <<
-							l_father_grid.dx1[level] << endl ;
+							l_father_grid.dx1[level] << endl ;*/
 
                     } /* end if (cut_lb) */
                     else {
@@ -501,7 +501,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         l_son_grid.x1[level] = l_start + 2 * dx0_h ;
                         l_son_grid.dx1[level] = -slope_[level];
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
-						cout << " start " << l_start << " end " << l_start + 2 * dx0_h << " slope 0 " << l_father_grid.dx0[level] << " slope 1 " << -slope_[level] << endl ;
+						/*cout << " start " << l_start << " end " << l_start + 2 * dx0_h << " slope 0 " << l_father_grid.dx0[level] << " slope 1 " << -slope_[level] << endl ;*/
 
                         /* push right black sub-grid into circular queue of (curr_dep) */
 						const int dx1_h = l_father_grid.dx1[level] * lt;
@@ -511,7 +511,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         l_son_grid.x1[level] = l_end;
                         l_son_grid.dx1[level] = l_father_grid.dx1[level];
                         push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
-						cout << " start " << l_end + 2 * dx1_h << " end " << l_end << " slope 0 " << slope_[level] << " slope 1 " << l_father_grid.dx1[level] << endl ;
+						//cout << " start " << l_end + 2 * dx1_h << " end " << l_end << " slope 0 " << slope_[level] << " slope 1 " << l_father_grid.dx1[level] << endl ;
 
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
                         /* push the middle gray triangular minizoid into 
@@ -524,7 +524,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1,
                         l_son_grid.x1[level] = l_end + 2 * dx1_h ;
                         l_son_grid.dx1[level] = slope_[level];
                         push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
-						cout << " start " << l_start + 2 * dx0_h << " end " << l_end + 2 * dx1_h << " slope 0 " << -slope_ [level] << " slope 1 " << slope_[level] << endl ;
+						//cout << " start " << l_start + 2 * dx0_h << " end " << l_end + 2 * dx1_h << " slope 0 " << -slope_ [level] << " slope 1 " << slope_[level] << endl ;
                     } /* end else (cut_tb) */
                 } /* end if (can_cut) */
             } /* end if (performing a space cut) */
@@ -1019,18 +1019,21 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 	bool found = false ;
 	int x ;
 	unsigned long begin_index ;
+	unsigned long unwrapped_index ;
 	//find the bigger base
 	if (qx2 - qx1 > qx4 - qx3)
 	{
 		x = qx2 - qx1 ;
 		//begin_index = qx1 % phys_length_ [0] ;
 		begin_index = pmod(qx1, phys_length_ [0]) ;
+		unwrapped_index = qx1 ;
 	}
 	else
 	{
 		x = qx4 - qx3 ;
 		//begin_index = qx3 % phys_length_ [0] ;
 		begin_index = pmod(qx3, phys_length_ [0]) ;
+		unwrapped_index = qx3 ;
 	}
 	if (x < 0)
 	{
@@ -1053,9 +1056,10 @@ inline void Algorithm<1>::print_projection(int t0, int t1,
 		num_projections_1d [index]++ ;
 		//cout << "inserting len " << x << endl ;
 		m_1d_proj_length [x]++ ;
+		m_1d_index_by_length [x].insert(unwrapped_index);
 		if (print_projections)
 		{
-			cout << "new proj at " << begin_index << " len " << x << endl ; 
+			cout << "new proj at [" << unwrapped_index << ", " << unwrapped_index + x << ")" << endl ; 
 		}
 	}
 }
@@ -1674,6 +1678,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 		m_1d [1].resize (phys_length_ [0]) ;
 
 		m_1d_proj_length.resize (phys_length_ [0] + 1, 0) ;
+		m_1d_index_by_length.resize (phys_length_ [0] + 1) ; 
 		num_projections_1d [0] = 0 ;
 		num_projections_1d [1] = 0 ;
 	}
@@ -1770,6 +1775,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 		m_1d [1].reserve (phys_length_ [0]) ;
 		m_1d [1].resize (phys_length_ [0]) ;
 
+		m_1d_index_by_length.resize (phys_length_ [0] + 1) ; 
 		m_1d_proj_length.resize (phys_length_ [0] + 1, 0) ;
 		num_projections_1d [0] = 0 ;
 		num_projections_1d [1] = 0 ;
