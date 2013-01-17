@@ -25,6 +25,7 @@
 
 module Main where
 
+import Prelude hiding (catch)
 import System.Process
 import System.Environment
 import System.IO 
