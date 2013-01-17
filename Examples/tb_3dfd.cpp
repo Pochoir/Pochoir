@@ -416,7 +416,7 @@ void dotest()
   struct timeval start, end;
 	
   ///////////////////////////////////////////////                                                                      
-#if 1
+#if 0
   
   init_variables();
   gettimeofday(&start, 0);

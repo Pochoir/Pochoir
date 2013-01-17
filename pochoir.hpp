@@ -205,7 +205,8 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
     toggle_ = depth + 1;
     for (int i = 0; i < N_SIZE; ++i) {
         for (int r = 0; r < N_RANK; ++r) {
-            slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
+//             slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
+            slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[N_RANK-r]/(l_max_time_shift - shape[i].shift[0]))));
         }
     }
 #if DEBUG 
@@ -396,7 +397,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f) {
 #pragma isat marker M2_begin
    // algor.sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
 #if 1
-    printf("shorter_duo_sim_obase_bicut!\n");
+    // printf("shorter_duo_sim_obase_bicut!\n");
     algor.shorter_duo_sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
 #else
     printf("stevenj!\n");
@@ -437,7 +438,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 //    fprintf(stderr, "Call sim_obase_bicut_P\n");
 #pragma isat marker M2_begin
 #if 1
-    printf("shorter_duo_sim_obase_bicut_p!\n");
+    // printf("shorter_duo_sim_obase_bicut_p!\n");
     algor.shorter_duo_sim_obase_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #else
     printf("stevenj_p!\n");

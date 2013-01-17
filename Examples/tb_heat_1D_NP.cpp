@@ -50,7 +50,7 @@ bool check_result(int t, int i, double a, double b)
 }
 
 Pochoir_Boundary_1D(heat_bv_1D, arr, t, i)
-    return 0;
+    return t;
 Pochoir_Boundary_End
 
 int main(int argc, char * argv[])
@@ -90,7 +90,6 @@ int main(int argc, char * argv[])
         b(0, i) = a(0, i);
         b(1, i) = 0;
 	} 
-
 
 #if 1
     for (int times = 0; times < TIMES; ++times) {

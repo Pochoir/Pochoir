@@ -43,6 +43,26 @@ life : tb_life.cpp
 psa_struct : tb_psa_struct.cpp
 	${CC} -o tb_psa_struct_pochoir ${CFLAGS} tb_psa_struct.cpp
 
+animwave_struct : tb_animwave_struct.cpp
+#   Phase-II compilation
+	${CC} -o tb_animwave_struct_pochoir -split-c-pointer ${OPT_FLAGS} tb_animwave_struct.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o tb_animwave_struct_pochoir ${POCHOIR_DEBUG_FLAGS} tb_animwave_struct.cpp
+
+parallel_heat_1D_NP : tb_parallel_heat_1D_NP.cpp
+#   Phase-II compilation
+	${CC} -o tb_parallel_heat_1D_NP_pochoir -split-c-pointer ${OPT_FLAGS} tb_parallel_heat_1D_NP.cpp
+	${CC} -o tb_parallel_heat_1D_NP_pochoir_gdb ${POCHOIR_DEBUG_FLAGS} tb_parallel_heat_1D_NP_pochoir.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o tb_parallel_heat_1D_NP_pochoir ${POCHOIR_DEBUG_FLAGS} tb_parallel_heat_1D_NP.cpp
+
+reaction_diffusion_1D : tb_reaction_diffusion_1D.cpp
+#   Phase-II compilation
+	${CC} -o tb_reaction_diffusion_1D_pochoir -split-c-pointer ${OPT_FLAGS} tb_reaction_diffusion_1D.cpp
+#	${CC} -o tb_reaction_diffusion_1D_pochoir_gdb ${POCHOIR_DEBUG_FLAGS} tb_reaction_diffusion_1D_pochoir.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o tb_reaction_diffusion_1D_pochoir ${POCHOIR_DEBUG_FLAGS} tb_reaction_diffusion_1D.cpp
+
 rna : tb_rna.cpp
 	${CC} -o tb_rna_pochoir ${CFLAGS} tb_rna.cpp
 

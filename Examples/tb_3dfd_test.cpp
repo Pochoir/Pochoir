@@ -31,8 +31,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <sys/time.h>
-
-#include <pochoir.hpp>
+#include <cilk/cilk.h>
+#include <cilk/cilk_api.h>
 
 using namespace std;
 
@@ -42,332 +42,17 @@ int Nx = 100;
 int Ny = 100;
 int Nz = 100;
 int T = 40;
-static const int NPIECES = 2;
-int N_CORES=2;
-#if 1
-static const int dt_threshold = 3;
-static const int dx_threshold = 1000;
-static const int dyz_threshold = 3;
-#else
-static const int dt_threshold = 5;
-static const int dx_threshold = 150;
-static const int dyz_threshold = 150;
-#endif
-float **A;
-
-float coef[ds + 1];
+float ** A;
+float coef[ds+1];
 float *vsq;
-
-int N = 997;
-int Nxy;
 int sx2, sx3, sx4;
 int sxy2, sxy3, sxy4;
 
-
-void basecase(int t0, int t1, 
-	      int x0, int dx0, int x1, int dx1,
-	      int y0, int dy0, int y1, int dy1, 
-	      int z0, int dz0, int z1, int dz1 )
+#define TOLERANCE (1e-6)
+static inline double tdiff (struct timeval *a, struct timeval *b)
 {
-  int _Nx = Nx;
-  int Nxy = _Nx * Ny;
-  int sx2 = _Nx * 2;
-  int sx3 = _Nx * 3;
-  int sx4 = _Nx * 4;
-  int sxy2 = Nxy * 2;
-  int sxy3 = Nxy * 3;
-  int sxy4 = Nxy * 4;
-  float c0 = coef[0], c1 = coef[1], c2 = coef[2], c3 = coef[3], c4 = coef[4];
-
-  for(int t = t0; t < t1; ++t) {
-    for(int z = z0; z < z1; ++z) {
-      for(int y = y0; y < y1; ++y) {
-	  float *A_cur = &A[t & 1][z * Nxy + y * _Nx];
-	  float *A_next = &A[(t + 1) & 1][z * Nxy + y * _Nx];
-	  float *vvv = &vsq[z * Nxy + y * _Nx];
-#pragma ivdep
-	for(int x = x0; x < x1; ++x) {
-	  float div = c0 * A_cur[x] 
-	    + c1 * ((A_cur[x + 1] + A_cur[x - 1])
-		    + (A_cur[x + _Nx] + A_cur[x - _Nx])
-		    + (A_cur[x + Nxy] + A_cur[x - Nxy]))
-	    + c2 * ((A_cur[x + 2] + A_cur[x - 2])
-		    + (A_cur[x + sx2] + A_cur[x - sx2])
-		    + (A_cur[x + sxy2] + A_cur[x - sxy2]))
-	    + c3 * ((A_cur[x + 3] + A_cur[x - 3])
-		    + (A_cur[x + sx3] + A_cur[x - sx3])
-		    + (A_cur[x + sxy3] + A_cur[x - sxy3]))
-	    + c4 * ((A_cur[x + 4] + A_cur[x - 4])
-		    + (A_cur[x + sx4] + A_cur[x - sx4])
-		    + (A_cur[x + sxy4] + A_cur[x - sxy4]));
-	  A_next[x] = 2 * A_cur[x] - A_next[x] + vvv[x] * div;
-	}
-      }
-    }
-    x0 += dx0; x1 += dx1;
-    y0 += dy0; y1 += dy1;
-    z0 += dz0; z1 += dz1;
-  }
-}
-
-void basecase_loop(int t, 
-                   int x0, int x1,
-                   int y0, int y1, 
-                   int z )
-{
-  int _Nx = Nx;
-  int Nxy = _Nx * Ny;
-  int sx2 = _Nx * 2;
-  int sx3 = _Nx * 3;
-  int sx4 = _Nx * 4;
-  int sxy2 = Nxy * 2;
-  int sxy3 = Nxy * 3;
-  int sxy4 = Nxy * 4;
-  float c0 = coef[0], c1 = coef[1], c2 = coef[2], c3 = coef[3], c4 = coef[4];
-
-      for(int y = y0; y < y1; ++y) {
-	  float *A_cur = &A[t & 1][z * Nxy + y * _Nx];
-	  float *A_next = &A[(t + 1) & 1][z * Nxy + y * _Nx];
-	  float *vvv = &vsq[z * Nxy + y * _Nx];
-#pragma ivdep
-	for(int x = x0; x < x1; ++x) {
-	  float div = c0 * A_cur[x] 
-	    + c1 * ((A_cur[x + 1] + A_cur[x - 1])
-		    + (A_cur[x + _Nx] + A_cur[x - _Nx])
-		    + (A_cur[x + Nxy] + A_cur[x - Nxy]))
-	    + c2 * ((A_cur[x + 2] + A_cur[x - 2])
-		    + (A_cur[x + sx2] + A_cur[x - sx2])
-		    + (A_cur[x + sxy2] + A_cur[x - sxy2]))
-	    + c3 * ((A_cur[x + 3] + A_cur[x - 3])
-		    + (A_cur[x + sx3] + A_cur[x - sx3])
-		    + (A_cur[x + sxy3] + A_cur[x - sxy3]))
-	    + c4 * ((A_cur[x + 4] + A_cur[x - 4])
-		    + (A_cur[x + sx4] + A_cur[x - sx4])
-		    + (A_cur[x + sxy4] + A_cur[x - sxy4]));
-	  A_next[x] = 2 * A_cur[x] - A_next[x] + vvv[x] * div;
-	}
-      }
-}
-
-/* map the triple (t, x, y) into a unique long long */
-static inline long long encode(int t, int x, int y, int z)
-{
-  return N * (N * (N * (long long)t + x) + y) + z;
-}
-
-static inline float &aref(int t, int x, int y, int z)
-{
-  return A[t & 1][Nxy * z + Nx * y + x];
-}
-
-static inline float &aref(int t, int s) {
-  return A[t & 1][s];
-}
-
-static inline float &vsqref(int x, int y, int z)
-{
-  return vsq[Nxy * z + Nx * y + x];
-}
-
-static inline float &vsqref(int s)
-{
-  return vsq[s];
-}
-
-//Kernel:
-//	Addition: 26
-//  Multiplication: 7
-void loop_opt3(int t0, int t1, 
-	       int x0, int x1,
-	       int y0, int y1,
-	       int z0, int z1)
-{
-  for(int t = t0; t < t1; ++t) {
-      cilk_for (int z = z0; z < z1; ++ z) {
-          basecase_loop(t, x0, x1, y0, y1, z);
-      }
-  }
-}
-
-void walk3(int t0, int t1, 
-	   int x0, int dx0, int x1, int dx1,
-	   int y0, int dy0, int y1, int dy1, 
-	   int z0, int dz0, int z1, int dz1 )
-{
-  int dt = t1 - t0, dx = x1 - x0, dy = y1 - y0, dz = z1 - z0;
-  int i;
-
-  if (dx >= dx_threshold && dx >= dy && dx >= dz &&
-      dt >= 1 && dx >= 2 * ds * dt * NPIECES) {
-    int chunk = dx / NPIECES;
-
-    for (i = 0; i < NPIECES - 1; ++i)
-      cilk_spawn walk3(t0, t1,
-		       x0 + i * chunk, ds, x0 + (i+1) * chunk, -ds,
-		       y0, dy0, y1, dy1,
-		       z0, dz0, z1, dz1);
-    cilk_spawn walk3(t0, t1,
-		     x0 + i * chunk, ds, x1, -ds,
-		     y0, dy0, y1, dy1, 
-		     z0, dz0, z1, dz1);
-    cilk_sync;
-    cilk_spawn walk3(t0, t1, 
-		     x0, dx0, x0, ds,
-		     y0, dy0, y1, dy1, 
-		     z0, dz0, z1, dz1);
-    for (i = 1; i < NPIECES; ++i)
-      cilk_spawn walk3(t0, t1,
-		       x0 + i * chunk, -ds, x0 + i * chunk, ds,
-		       y0, dy0, y1, dy1, 
-		       z0, dz0, z1, dz1);
-    cilk_spawn walk3(t0, t1, 
-		     x1, -ds, x1, dx1,
-		     y0, dy0, y1, dy1, 
-		     z0, dz0, z1, dz1);
-  } else if (dy >= dyz_threshold && dy >= dz && dt >= 1 && dy >= 2 * ds * dt * NPIECES) {
-    int chunk = dy / NPIECES;
-
-    for (i = 0; i < NPIECES - 1; ++i)
-      cilk_spawn walk3(t0, t1,
-		       x0, dx0, x1, dx1,
-		       y0 + i * chunk, ds, y0 + (i+1) * chunk, -ds, 
-		       z0, dz0, z1, dz1);
-    cilk_spawn walk3(t0, t1,
-		     x0, dx0, x1, dx1,
-		     y0 + i * chunk, ds, y1, -ds, 
-		     z0, dz0, z1, dz1);
-    cilk_sync;
-    cilk_spawn walk3(t0, t1, 
-		     x0, dx0, x1, dx1,
-		     y0, dy0, y0, ds, 
-		     z0, dz0, z1, dz1);
-    for (i = 1; i < NPIECES; ++i)
-      cilk_spawn walk3(t0, t1,
-		       x0, dx0, x1, dx1,
-		       y0 + i * chunk, -ds, y0 + i * chunk, ds, 
-		       z0, dz0, z1, dz1);
-    cilk_spawn walk3(t0, t1, 
-		     x0, dx0, x1, dx1,
-		     y1, -ds, y1, dy1, 
-		     z0, dz0, z1, dz1);
-  } else if (dz >= dyz_threshold && dt >= 1 && dz >= 2 * ds * dt * NPIECES) {
-    int chunk = dz / NPIECES;
-
-    for (i = 0; i < NPIECES - 1; ++i)
-      cilk_spawn walk3(t0, t1,
-		       x0, dx0, x1, dx1,
-		       y0, dy0, y1, dy1,
-		       z0 + i * chunk, ds, z0 + (i+1) * chunk, -ds);
-    cilk_spawn walk3(t0, t1,
-		     x0, dx0, x1, dx1,
-		     y0, dy0, y1, dy1, 
-		     z0 + i * chunk, ds, z1, -ds);
-    cilk_sync;
-    cilk_spawn walk3(t0, t1, 
-		     x0, dx0, x1, dx1,
-		     y0, dy0, y1, dy1,
-		     z0, dz0, z0, ds);
-    for (i = 1; i < NPIECES; ++i)
-      cilk_spawn walk3(t0, t1,
-		       x0, dx0, x1, dx1,
-		       y0, dy0, y1, dy1,
-		       z0 + i * chunk, -ds, z0 + i * chunk, ds);
-    cilk_spawn walk3(t0, t1, 
-		     x0, dx0, x1, dx1,
-		     y0, dy0, y1, dy1,
-		     z1, -ds, z1, dz1);
-  }  else if (dt > dt_threshold) {
-    int halfdt = dt / 2;
-    walk3(t0, t0 + halfdt,
-	  x0, dx0, x1, dx1,
-	  y0, dy0, y1, dy1, 
-	  z0, dz0, z1, dz1);
-    walk3(t0 + halfdt, t1, 
-	  x0 + dx0 * halfdt, dx0, x1 + dx1 * halfdt, dx1,
-	  y0 + dy0 * halfdt, dy0, y1 + dy1 * halfdt, dy1, 
-	  z0 + dz0 * halfdt, dz0, z1 + dz1 * halfdt, dz1);
-  } else {
-    basecase(t0, t1, 
-	     x0, dx0, x1, dx1,
-	     y0, dy0, y1, dy1,
-	     z0, dz0, z1, dz1);
-  } 
-}
-
-void init_variables() 
-{
-  int count = 0;
-  Nxy = Nx * Ny;
-  sx2 = Nx * 2;
-  sx3 = Nx * 3;
-  sx4 = Nx * 4;
-  sxy2 = Nxy * 2;
-  sxy3 = Nxy * 3;
-  sxy4 = Nxy * 4;
-
-  coef[4] = -1.0f / 560.0f;
-  coef[3] = 8.0f/315;
-  coef[2] = -0.2f;
-  coef[1] = 1.6f;
-  coef[0] = -1435.0f/504 * 3;
-
-  count = 0;
-
-  for (int z = 0; z < Nz; ++z)
-    for (int y = 0; y < Ny; ++y) 
-      for(int x = 0; x < Nx; ++x) {
-	/* set initial values */
-	/*
-	  aref(0, x, y, z) = encode(0, x, y, z);
-	  aref(1, x, y, z) = encode(-1, x, y, z); // set to invalid
-	*/
-	float r = abs((float)(x - Nx/2 + y - Ny/2 + z - Nz/2) / 30);
-	r = max(1 - r, 0.0f) + 1;
-	
-	aref(0, x, y, z) = r;
-	aref(1, x, y, z) = r;
-	vsqref(x, y, z) = 0.001f;
-      }
-    N_CORES = max(2, __cilkrts_get_nworkers());
-    printf("N_CORES = %d\n", N_CORES);
-}
-
-template <typename T_Array>
-void init_pochoir_array(T_Array & arr) 
-{
-  int count = 0;
-  Nxy = Nx * Ny;
-  sx2 = Nx * 2;
-  sx3 = Nx * 3;
-  sx4 = Nx * 4;
-  sxy2 = Nxy * 2;
-  sxy3 = Nxy * 3;
-  sxy4 = Nxy * 4;
-
-  coef[4] = -1.0f / 560.0f;
-  coef[3] = 8.0f/315;
-  coef[2] = -0.2f;
-  coef[1] = 1.6f;
-  coef[0] = -1435.0f/504 * 3;
-
-  count = 0;
-
-  for (int z = 0; z < Nz; ++z)
-    for (int y = 0; y < Ny; ++y) 
-      for(int x = 0; x < Nx; ++x) {
-	/* set initial values */
-	/*
-	  aref(0, x, y, z) = encode(0, x, y, z);
-	  aref(1, x, y, z) = encode(-1, x, y, z); // set to invalid
-	*/
-	float r = abs((float)(x - Nx/2 + y - Ny/2 + z - Nz/2) / 30);
-	r = max(1 - r, 0.0f) + 1;
-	
-	arr(0, z, y, x) = r;
-	arr(1, z, y, x) = r;
-	vsqref(x, y, z) = 0.001f;
-  }
-}
+        return a->tv_sec - b->tv_sec + 1e-6 * (a->tv_usec - b->tv_usec);
+}   
 
 void print_summary(char *header, double interval) {
   /* print timing information */
@@ -397,60 +82,15 @@ void print_summary(char *header, double interval) {
   //printf("count = %d\n\n", count);		
 }
 
-void print_y() {
-  FILE *fout = fopen("y_points.txt", "w");
-  int z = Nz/2;
-  int x = Nx/2;
-  for(int y = 0; y < Ny; y++) {
-    fprintf(fout, "%f\n", aref(T, x, y, z));
-  }
-  fclose(fout);
-  printf("Done writing output\n");
-}
-
-void dotest()
+void check_result(int t, int i, int j, int k, double a, double b)
 {
-  struct timeval start, end;
-	
-  ///////////////////////////////////////////////                                                                      
-#if 1
-  
-  init_variables();
-  gettimeofday(&start, 0);
-  /* this is loop based version */
-  loop_opt3(0, T,
-            ds, Nx - ds, 
-            ds, Ny - ds,
-            ds, Nz - ds);
-  gettimeofday(&end, 0);
-  //basecase(0, T,
-  //	    ds, 0, Nx - ds, 0, 
-  //	    ds, 0, Ny - ds, 0, 
-  //	    ds, 0, Nz - ds, 0);
-  //copy_A_to_B();
-  print_summary("base", tdiff(&end, &start));
-  ///////////////////////////////////////////////
-  
-  init_variables();
-  // verify_A_and_B();
-  gettimeofday(&start, 0);
-  /* this is the divide-and-conquer version in cilk++ */
-  walk3(0, T,
-	    ds, 0, Nx - ds, 0, 
-		ds, 0, Ny - ds, 0, 
-		ds, 0, Nz - ds, 0);
-  gettimeofday(&end, 0);
-  print_summary("COStencilTask", tdiff(&end, &start));
+    if (abs(a - b) < TOLERANCE) {
+//      printf("a(%d, %d, %d, %d) == b(%d, %d, %d, %d) == %f : passed!\n", t, i, j, k, t, i, j, k, a);
+    } else {
+        printf("a(%d, %d, %d, %d) = %f, b(%d, %d, %d, %d) = %f : FAILED!\n", t, i, j, k, a, t, i, j, k, b);
+    }
 
-  // verify_A_and_B();
-  //print_y();
-
-#endif
 }
-
-Pochoir_Boundary_3D(fd_bv_3D, arr, t, i, j, k)
-    return 0;
-Pochoir_Boundary_End
 
 int main(int argc, char *argv[])
 {
@@ -466,62 +106,29 @@ int main(int argc, char *argv[])
 
   printf("Order-%d 3D-Stencil (%d points) with space %dx%dx%d and time %d\n", 
 	 ds, ds*2*3+1, Nx, Ny, Nz, T);
-// #define acc_pb(t, i, j, k) pb[(t)&0x1][(i)>>1][(j)>>1][(k)>>1][(i)&0x1][(j)&0x1][(k)&0x1]
-// #define acc_pc(t, i, j, k) pc[(t)&0x1][i][j][k]
-#define acc_pb(t, i, j, k) pb[((t)&0x1)*(Nx+4)*(Ny+4)*(Nz+4) + ((i)/2) * ((Nx+4)/2) * ((Ny+4)/2) + ((j)/2) * ((Nx+4)/2) + ((k)/2) + (i) & 0x1 + (j) & 0x1 + (k) & 0x1]
-#define acc_pc(t, i, j, k) pc[((t)&0x1)*(Nx+4)*(Ny+4)*(Nz+4) + (i) * (Nx+4) * (Ny+4) + (j) * (Nx+4) + (k)]
-#define acc_vsq(i, j, k) vsq[(i) * (Nx+4) * (Ny+4) + (j) * (Nx+4) + (k)]
-#define pabs(a) (a) < 0 ? -(a) : (a)
-
+  const int Nxyz = Nx * Ny * Nz, Nxy = Nx * Ny;
+  const int half_Nx = (Nx >> 1) << 3, half_Ny = Ny >> 1, half_Nz = Nz >> 1;
+  const int half_Nxy = half_Nx * half_Ny;
   //initialization
   A = new float*[2];
-  A[0] = new float[Nx * Ny * Nz];
-  A[1] = new float[Nx * Ny * Nz];
-  float * vsq = new float [(Nx + 4) * (Ny + 4) * (Nz + 4)];
-  float * pb = new float[2 * (Nx + 4) * (Ny + 4) * (Nz + 4)];
-  float * pc = new float[2 * (Nx + 4) * (Ny + 4) * (Nz + 4)];
+  A[0] = new float[Nxyz];
+  A[1] = new float[Nxyz];
+  float * vsq = new float [Nxyz];
+  float * pb = new float[2 * Nxyz];
+  float * pc = new float[2 * Nxyz];
   // float vsq[Nz][Ny][Nx];
   // float pb[2][Nz/2][Ny/2][Nx/2][2][2][2];
   // float pc[2][Nz][Ny][Nx];
+#define acc_pb(t, i, j, k) pb[((t)&0x1)*Nxyz + ((i)>>1) * half_Nxy+ ((j)>>1) * half_Nx + (((k)>>1) << 3) + (((i) & 0x1) << 2) + (((j) & 0x1) << 1) + (k) & 0x1]
+#define acc_pbl(t, i, j, k, ii, jj, kk) pb[((t)&0x1)*Nxyz + (i) * half_Nxy + (j) * half_Nx + ((k) << 3) + ((ii) << 2) + ((jj) << 1) + (kk)]
+#define acc_pc(t, i, j, k) pc[((t)&0x1)*Nxyz + (i) * Nxy + (j) * Nx + (k)]
+#define acc_vsq(i, j, k) vsq[(i) * Nxy + (j) * Nx + (k)]
+#define pabs(a) (a) < 0 ? -(a) : (a)
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define PB 0
+#define PBL 1
+#define PC 0
 
-#if 0
-  Pochoir_Shape_3D fd_shape_3D[26] = {{1, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 1}, {0, 0, 0, -1}, {0, 0, 1, 0}, {0, 0, -1, 0}, {0, 1, 0, 0}, {0, -1, 0, 0}, {0, 0, 0, 2}, {0, 0, 0, -2}, {0, 0, 2, 0}, {0, 0, -2, 0}, {0, 2, 0, 0}, {0, -2, 0, 0}, {0, 0, 0, 3}, {0, 0, 0, -3}, {0, 0, 3, 0}, {0, 0, -3, 0}, {0, 3, 0, 0}, {0, -3, 0, 0}, {0, 0, 0, 4}, {0, 0, 0, -4}, {0, 0, 4, 0}, {0, 0, -4, 0}, {0, 4, 0, 0}, {0, -4, 0, 0}};
-  Pochoir_Array_3D(float) pa(Nz, Ny, Nx);
-  Pochoir_3D fd_3D(fd_shape_3D);
-  Pochoir_Domain I(0+ds, Nx-ds), J(0+ds, Ny-ds), K(0+ds, Nz-ds);
-
-  fd_3D.Register_Array(pa);
-  fd_3D.Register_Domain(I, J, K);
-
-  Pochoir_Kernel_3D(fd_3D_fn, t, i, j, k)
-    float c0 = coef[0], c1 = coef[1], c2 = coef[2], c3 = coef[3], c4 = coef[4];
-    float div = c0 * pa(t, i, j, k) + 
-                c1 * ((pa(t, i, j, k+1) + pa(t, i, j, k-1)) 
-                    + (pa(t, i, j+1, k) + pa(t, i, j-1, k)) 
-                    + (pa(t, i+1, j, k) + pa(t, i-1, j, k))) 
-              + c2 * ((pa(t, i, j, k+2) + pa(t, i, j, k-2)) 
-                    + (pa(t, i, j+2, k) + pa(t, i, j-2, k)) 
-                    + (pa(t, i+2, j, k) + pa(t, i-2, j, k))) 
-              + c3 * ((pa(t, i, j, k+3) + pa(t, i, j, k-3)) 
-                    + (pa(t, i, j+3, k) + pa(t, i, j-3, k)) 
-                    + (pa(t, i+3, j, k) + pa(t, i-3, j, k))) 
-              + c4 * ((pa(t, i, j, k+4) + pa(t, i, j, k-4)) 
-                    + (pa(t, i, j+4, k) + pa(t, i, j-4, k)) 
-                    + (pa(t, i+4, j, k) + pa(t, i-4, j, k)));
-     pa(t+1, i, j, k) = 2 * pa(t, i, j, k) - pa(t+1, i, j, k) + vsq[i * Nxy + j * Nx + k] * div;
-  Pochoir_Kernel_End
-
-  // dotest();
-
-  init_pochoir_array(pa);
-  gettimeofday(&start, 0);
-  fd_3D.Run(T, fd_3D_fn);
-  gettimeofday(&end, 0);
-  print_summary("Pochoir", tdiff(&end, &start));
-#endif
-  {
-  int count = 0;
-  Nxy = Nx * Ny;
   sx2 = Nx * 2;
   sx3 = Nx * 3;
   sx4 = Nx * 4;
@@ -535,33 +142,56 @@ int main(int argc, char *argv[])
   coef[1] = 1.6f;
   coef[0] = -1435.0f/504 * 3;
 
-  count = 0;
-
-  for (int z = 0; z < Nz; ++z)
+  cilk_for (int z = 0; z < Nz; ++z)
     for (int y = 0; y < Ny; ++y) 
       for(int x = 0; x < Nx; ++x) {
 	/* set initial values */
-	/*
-	  aref(0, x, y, z) = encode(0, x, y, z);
-	  aref(1, x, y, z) = encode(-1, x, y, z); // set to invalid
-	*/
 	float r = pabs((x - Nx/2 + y - Ny/2 + z - Nz/2) / 30);
 	r = max(1 - r, 0.0f) + 1;
 	
+#if PB
 	acc_pb(0, z, y, x) = r;
 	acc_pb(1, z, y, x) = r;
+#endif
+#if PBL
+	acc_pbl(0, z>>1, y>>1, x>>1, 0, 0, 0) = r;
+	acc_pbl(0, z>>1, y>>1, x>>1, 0, 0, 1) = r;
+	acc_pbl(0, z>>1, y>>1, x>>1, 0, 1, 0) = r;
+	acc_pbl(0, z>>1, y>>1, x>>1, 0, 1, 1) = r;
+	acc_pbl(0, z>>1, y>>1, x>>1, 1, 0, 0) = r;
+	acc_pbl(0, z>>1, y>>1, x>>1, 1, 0, 1) = r;
+	acc_pbl(0, z>>1, y>>1, x>>1, 1, 1, 0) = r;
+	acc_pbl(0, z>>1, y>>1, x>>1, 1, 1, 1) = r;
+	acc_pbl(1, z>>1, y>>1, x>>1, 0, 0, 0) = r;
+	acc_pbl(1, z>>1, y>>1, x>>1, 0, 0, 1) = r;
+	acc_pbl(1, z>>1, y>>1, x>>1, 0, 1, 0) = r;
+	acc_pbl(1, z>>1, y>>1, x>>1, 0, 1, 1) = r;
+	acc_pbl(1, z>>1, y>>1, x>>1, 1, 0, 0) = r;
+	acc_pbl(1, z>>1, y>>1, x>>1, 1, 0, 1) = r;
+	acc_pbl(1, z>>1, y>>1, x>>1, 1, 1, 0) = r;
+	acc_pbl(1, z>>1, y>>1, x>>1, 1, 1, 1) = r;
+#endif
+#if PC
 	acc_pc(0, z, y, x) = r;
 	acc_pc(1, z, y, x) = r;
+#endif
 	acc_vsq(z, y, x) = 0.001f;
   }
-  }
+  const int start_x = ds, end_x = (Nx - ds);
+  const int start_y = ds, end_y = (Ny - ds);
+  const int start_z = ds, end_z = (Nz - ds);
+  const int half_start_x = ds/2, half_end_x = (Nx - ds)/2;
+  const int half_start_y = ds/2, half_end_y = (Ny - ds)/2;
+  const int half_start_z = ds/2, half_end_z = (Nz - ds)/2;
+#if PB
   gettimeofday(&start, 0);
   for (int t = 0; t < T; ++t) {
-     for (int i = 0; i < Nx/2; i+=2) {
-        for (int j = 0; j < Ny/2; j+=2) {
-            for (int k = 0; k < Nz/2; k+=2) {
-    float c0 = coef[0], c1 = coef[1], c2 = coef[2], c3 = coef[3], c4 = coef[4];
-    float div0 = c0 * acc_pb(t, i, j, k) + 
+     cilk_for (int i = start_z; i < end_z; i+=2) {
+        for (int j = start_y; j < end_y; j+=2) {
+#pragma ivdep
+            for (int k = start_x; k < end_x; k+=2) {
+          const float c0 = coef[0], c1 = coef[1], c2 = coef[2], c3 = coef[3], c4 = coef[4];
+          float div = c0 * acc_pb(t, i, j, k) + 
                 c1 * ((acc_pb(t, i, j, k+1) + acc_pb(t, i, j, k-1)) 
                     + (acc_pb(t, i, j+1, k) + acc_pb(t, i, j-1, k)) 
                     + (acc_pb(t, i+1, j, k) + acc_pb(t, i-1, j, k))) 
@@ -574,8 +204,8 @@ int main(int argc, char *argv[])
               + c4 * ((acc_pb(t, i, j, k+4) + acc_pb(t, i, j, k-4)) 
                     + (acc_pb(t, i, j+4, k) + acc_pb(t, i, j-4, k)) 
                     + (acc_pb(t, i+4, j, k) + acc_pb(t, i-4, j, k)));
-     acc_pb(t+1, i, j, k) = 2 * acc_pb(t, i, j, k) - acc_pb(t+1, i, j, k) + acc_vsq(i, j, k) * div0;
-    float div1 = c0 * acc_pb(t, i, j, k+1) + 
+     acc_pb(t+1, i, j, k) = 2 * acc_pb(t, i, j, k) - acc_pb(t+1, i, j, k) + acc_vsq(i, j, k) * div;
+          div = c0 * acc_pb(t, i, j, k+1) + 
                 c1 * ((acc_pb(t, i, j, k+1+1) + acc_pb(t, i, j, k-1+1)) 
                     + (acc_pb(t, i, j+1, k+1) + acc_pb(t, i, j-1, k+1)) 
                     + (acc_pb(t, i+1, j, k+1) + acc_pb(t, i-1, j, k+1))) 
@@ -588,8 +218,8 @@ int main(int argc, char *argv[])
               + c4 * ((acc_pb(t, i, j, k+4+1) + acc_pb(t, i, j, k-4+1)) 
                     + (acc_pb(t, i, j+4, k+1) + acc_pb(t, i, j-4, k+1)) 
                     + (acc_pb(t, i+4, j, k+1) + acc_pb(t, i-4, j, k+1)));
-     acc_pb(t+1, i, j, k+1) = 2 * acc_pb(t, i, j, k+1) - acc_pb(t+1, i, j, k+1) + acc_vsq(i, j, k+1) * div1;
-    float div2 = c0 * acc_pb(t, i, j+1, k) + 
+     acc_pb(t+1, i, j, k+1) = 2 * acc_pb(t, i, j, k+1) - acc_pb(t+1, i, j, k+1) + acc_vsq(i, j, k+1) * div;
+          div = c0 * acc_pb(t, i, j+1, k) + 
                 c1 * ((acc_pb(t, i, j+1, k+1) + acc_pb(t, i, j+1, k-1)) 
                     + (acc_pb(t, i, j+1+1, k) + acc_pb(t, i, j-1+1, k)) 
                     + (acc_pb(t, i+1, j+1, k) + acc_pb(t, i-1, j+1, k))) 
@@ -602,8 +232,8 @@ int main(int argc, char *argv[])
               + c4 * ((acc_pb(t, i, j+1, k+4) + acc_pb(t, i, j+1, k-4)) 
                     + (acc_pb(t, i, j+4+1, k) + acc_pb(t, i, j-4+1, k)) 
                     + (acc_pb(t, i+4, j+1, k) + acc_pb(t, i-4, j+1, k)));
-     acc_pb(t+1, i, j+1, k) = 2 * acc_pb(t, i, j+1, k) - acc_pb(t+1, i, j+1, k) + acc_vsq(i, j+1, k) * div2;
-    float div3 = c0 * acc_pb(t, i, j+1, k+1) + 
+     acc_pb(t+1, i, j+1, k) = 2 * acc_pb(t, i, j+1, k) - acc_pb(t+1, i, j+1, k) + acc_vsq(i, j+1, k) * div;
+          div = c0 * acc_pb(t, i, j+1, k+1) + 
                 c1 * ((acc_pb(t, i, j+1, k+1+1) + acc_pb(t, i, j+1, k-1+1)) 
                     + (acc_pb(t, i, j+1+1, k+1) + acc_pb(t, i, j-1+1, k+1)) 
                     + (acc_pb(t, i+1, j+1, k+1) + acc_pb(t, i-1, j+1, k+1))) 
@@ -616,9 +246,9 @@ int main(int argc, char *argv[])
               + c4 * ((acc_pb(t, i, j+1, k+4+1) + acc_pb(t, i, j+1, k-4+1)) 
                     + (acc_pb(t, i, j+4+1, k+1) + acc_pb(t, i, j-4+1, k+1)) 
                     + (acc_pb(t, i+4, j+1, k+1) + acc_pb(t, i-4, j+1, k+1)));
-     acc_pb(t+1, i, j+1, k+1) = 2 * acc_pb(t, i, j+1, k+1) - acc_pb(t+1, i, j+1, k+1) + acc_vsq(i, j+1, k+1) * div3;
+     acc_pb(t+1, i, j+1, k+1) = 2 * acc_pb(t, i, j+1, k+1) - acc_pb(t+1, i, j+1, k+1) + acc_vsq(i, j+1, k+1) * div;
 
-    float div4 = c0 * acc_pb(t, i+1, j, k) + 
+          div = c0 * acc_pb(t, i+1, j, k) + 
                 c1 * ((acc_pb(t, i+1, j, k+1) + acc_pb(t, i+1, j, k-1)) 
                     + (acc_pb(t, i+1, j+1, k) + acc_pb(t, i+1, j-1, k)) 
                     + (acc_pb(t, i+1+1, j, k) + acc_pb(t, i-1+1, j, k))) 
@@ -631,8 +261,8 @@ int main(int argc, char *argv[])
               + c4 * ((acc_pb(t, i+1, j, k+4) + acc_pb(t, i+1, j, k-4)) 
                     + (acc_pb(t, i+1, j+4, k) + acc_pb(t, i+1, j-4, k)) 
                     + (acc_pb(t, i+4+1, j, k) + acc_pb(t, i-4+1, j, k)));
-     acc_pb(t+1, i+1, j, k) = 2 * acc_pb(t, i+1, j, k) - acc_pb(t+1, i+1, j, k) + acc_vsq(i+1, j, k) * div4;
-    float div5 = c0 * acc_pb(t, i+1, j, k+1) + 
+     acc_pb(t+1, i+1, j, k) = 2 * acc_pb(t, i+1, j, k) - acc_pb(t+1, i+1, j, k) + acc_vsq(i+1, j, k) * div;
+          div = c0 * acc_pb(t, i+1, j, k+1) + 
                 c1 * ((acc_pb(t, i+1, j, k+1+1) + acc_pb(t, i+1, j, k-1+1)) 
                     + (acc_pb(t, i+1, j+1, k+1) + acc_pb(t, i+1, j-1, k+1)) 
                     + (acc_pb(t, i+1+1, j, k+1) + acc_pb(t, i-1+1, j, k+1))) 
@@ -645,8 +275,8 @@ int main(int argc, char *argv[])
               + c4 * ((acc_pb(t, i+1, j, k+4+1) + acc_pb(t, i+1, j, k-4+1)) 
                     + (acc_pb(t, i+1, j+4, k+1) + acc_pb(t, i+1, j-4, k+1)) 
                     + (acc_pb(t, i+4+1, j, k+1) + acc_pb(t, i-4+1, j, k+1)));
-     acc_pb(t+1, i+1, j, k+1) = 2 * acc_pb(t, i+1, j, k+1) - acc_pb(t+1, i+1, j, k+1) + acc_vsq(i+1, j, k+1) * div5;
-    float div6 = c0 * acc_pb(t, i+1, j+1, k) + 
+     acc_pb(t+1, i+1, j, k+1) = 2 * acc_pb(t, i+1, j, k+1) - acc_pb(t+1, i+1, j, k+1) + acc_vsq(i+1, j, k+1) * div;
+          div = c0 * acc_pb(t, i+1, j+1, k) + 
                 c1 * ((acc_pb(t, i+1, j+1, k+1) + acc_pb(t, i+1, j+1, k-1)) 
                     + (acc_pb(t, i+1, j+1+1, k) + acc_pb(t, i+1, j-1+1, k)) 
                     + (acc_pb(t, i+1+1, j+1, k) + acc_pb(t, i-1+1, j+1, k))) 
@@ -659,8 +289,8 @@ int main(int argc, char *argv[])
               + c4 * ((acc_pb(t, i+1, j+1, k+4) + acc_pb(t, i+1, j+1, k-4)) 
                     + (acc_pb(t, i+1, j+4+1, k) + acc_pb(t, i+1, j-4+1, k)) 
                     + (acc_pb(t, i+4+1, j+1, k) + acc_pb(t, i-4+1, j+1, k)));
-     acc_pb(t+1, i+1, j+1, k) = 2 * acc_pb(t, i+1, j+1, k) - acc_pb(t+1, i+1, j+1, k) + acc_vsq(i+1, j+1, k) * div6;
-    float div7 = c0 * acc_pb(t, i+1, j+1, k+1) + 
+     acc_pb(t+1, i+1, j+1, k) = 2 * acc_pb(t, i+1, j+1, k) - acc_pb(t+1, i+1, j+1, k) + acc_vsq(i+1, j+1, k) * div;
+          div = c0 * acc_pb(t, i+1, j+1, k+1) + 
                 c1 * ((acc_pb(t, i+1, j+1, k+1+1) + acc_pb(t, i+1, j+1, k-1+1)) 
                     + (acc_pb(t, i+1, j+1+1, k+1) + acc_pb(t, i+1, j-1+1, k+1)) 
                     + (acc_pb(t, i+1+1, j+1, k+1) + acc_pb(t, i-1+1, j+1, k+1))) 
@@ -673,18 +303,149 @@ int main(int argc, char *argv[])
               + c4 * ((acc_pb(t, i+1, j+1, k+4+1) + acc_pb(t, i+1, j+1, k-4+1)) 
                     + (acc_pb(t, i+1, j+4+1, k+1) + acc_pb(t, i+1, j-4+1, k+1)) 
                     + (acc_pb(t, i+4+1, j+1, k+1) + acc_pb(t, i-4+1, j+1, k+1)));
-     acc_pb(t+1, i+1, j+1, k+1) = 2 * acc_pb(t, i+1, j+1, k+1) - acc_pb(t+1, i+1, j+1, k+1) + acc_vsq(i+1, j+1, k+1) * div7;
+     acc_pb(t+1, i+1, j+1, k+1) = 2 * acc_pb(t, i+1, j+1, k+1) - acc_pb(t+1, i+1, j+1, k+1) + acc_vsq(i+1, j+1, k+1) * div;
             }}}}
   gettimeofday(&end, 0);
   print_summary("Data block + unrolling", tdiff(&end, &start));
 
+#endif /* end PB */
+
+#if PBL
   gettimeofday(&start, 0);
   for (int t = 0; t < T; ++t) {
-     for (int i = 0; i < Nx; ++i) {
-        for (int j = 0; j < Ny; ++j) {
-            for (int k = 0; k < Nz; ++k) {
-    float c0 = coef[0], c1 = coef[1], c2 = coef[2], c3 = coef[3], c4 = coef[4];
-    float div = c0 * acc_pc(t, i, j, k) + 
+     cilk_for (int i = half_start_z; i < half_end_z; ++i) {
+        for (int j = half_start_y; j < half_end_y; ++j) {
+#pragma ivdep
+            for (int k = half_start_x; k < half_end_x; ++k) {
+          const float c0 = coef[0], c1 = coef[1], c2 = coef[2], c3 = coef[3], c4 = coef[4];
+          float div0 = c0 * acc_pbl(t, i, j, k, 0, 0, 0) + 
+                c1 * ((acc_pbl(t, i, j, k+1, 0, 0, 0) + acc_pbl(t, i, j, k-1, 0, 0, 0)) 
+                    + (acc_pbl(t, i, j+1, k, 0, 0, 0) + acc_pbl(t, i, j-1, k, 0, 0, 0)) 
+                    + (acc_pbl(t, i+1, j, k, 0, 0, 0) + acc_pbl(t, i-1, j, k, 0, 0, 0))) 
+              + c2 * ((acc_pbl(t, i, j, k+2, 0, 0, 0) + acc_pbl(t, i, j, k-2, 0, 0, 0)) 
+                    + (acc_pbl(t, i, j+2, k, 0, 0, 0) + acc_pbl(t, i, j-2, k, 0, 0, 0)) 
+                    + (acc_pbl(t, i+2, j, k, 0, 0, 0) + acc_pbl(t, i-2, j, k, 0, 0, 0))) 
+              + c3 * ((acc_pbl(t, i, j, k+3, 0, 0, 0) + acc_pbl(t, i, j, k-3, 0, 0, 0)) 
+                    + (acc_pbl(t, i, j+3, k, 0, 0, 0) + acc_pbl(t, i, j-3, k, 0, 0, 0)) 
+                    + (acc_pbl(t, i+3, j, k, 0, 0, 0) + acc_pbl(t, i-3, j, k, 0, 0, 0))) 
+              + c4 * ((acc_pbl(t, i, j, k+4, 0, 0, 0) + acc_pbl(t, i, j, k-4, 0, 0, 0)) 
+                    + (acc_pbl(t, i, j+4, k, 0, 0, 0) + acc_pbl(t, i, j-4, k, 0, 0, 0)) 
+                    + (acc_pbl(t, i+4, j, k, 0, 0, 0) + acc_pbl(t, i-4, j, k, 0, 0, 0)));
+          float div1 = c0 * acc_pbl(t, i, j, k, 0, 0, 1) + 
+                c1 * ((acc_pbl(t, i, j, k+1, 0, 0, 1) + acc_pbl(t, i, j, k-1, 0, 0, 1)) 
+                    + (acc_pbl(t, i, j+1, k, 0, 0, 1) + acc_pbl(t, i, j-1, k, 0, 0, 1)) 
+                    + (acc_pbl(t, i+1, j, k, 0, 0, 1) + acc_pbl(t, i-1, j, k, 0, 0, 1))) 
+              + c2 * ((acc_pbl(t, i, j, k+2, 0, 0, 1) + acc_pbl(t, i, j, k-2, 0, 0, 1)) 
+                    + (acc_pbl(t, i, j+2, k, 0, 0, 1) + acc_pbl(t, i, j-2, k, 0, 0, 1)) 
+                    + (acc_pbl(t, i+2, j, k, 0, 0, 1) + acc_pbl(t, i-2, j, k, 0, 0, 1))) 
+              + c3 * ((acc_pbl(t, i, j, k+3, 0, 0, 1) + acc_pbl(t, i, j, k-3, 0, 0, 1)) 
+                    + (acc_pbl(t, i, j+3, k, 0, 0, 1) + acc_pbl(t, i, j-3, k, 0, 0, 1)) 
+                    + (acc_pbl(t, i+3, j, k, 0, 0, 1) + acc_pbl(t, i-3, j, k, 0, 0, 1))) 
+              + c4 * ((acc_pbl(t, i, j, k+4, 0, 0, 1) + acc_pbl(t, i, j, k-4, 0, 0, 1)) 
+                    + (acc_pbl(t, i, j+4, k, 0, 0, 1) + acc_pbl(t, i, j-4, k, 0, 0, 1)) 
+                    + (acc_pbl(t, i+4, j, k, 0, 0, 1) + acc_pbl(t, i-4, j, k, 0, 0, 1)));
+          float div2 = c0 * acc_pbl(t, i, j, k, 0, 1, 0) + 
+                c1 * ((acc_pbl(t, i, j, k+1, 0, 1, 0) + acc_pbl(t, i, j, k-1, 0, 1, 0)) 
+                    + (acc_pbl(t, i, j+1, k, 0, 1, 0) + acc_pbl(t, i, j-1, k, 0, 1, 0)) 
+                    + (acc_pbl(t, i+1, j, k, 0, 1, 0) + acc_pbl(t, i-1, j, k, 0, 1, 0))) 
+              + c2 * ((acc_pbl(t, i, j, k+2, 0, 1, 0) + acc_pbl(t, i, j, k-2, 0, 1, 0)) 
+                    + (acc_pbl(t, i, j+2, k, 0, 1, 0) + acc_pbl(t, i, j-2, k, 0, 1, 0)) 
+                    + (acc_pbl(t, i+2, j, k, 0, 1, 0) + acc_pbl(t, i-2, j, k, 0, 1, 0))) 
+              + c3 * ((acc_pbl(t, i, j, k+3, 0, 1, 0) + acc_pbl(t, i, j, k-3, 0, 1, 0)) 
+                    + (acc_pbl(t, i, j+3, k, 0, 1, 0) + acc_pbl(t, i, j-3, k, 0, 1, 0)) 
+                    + (acc_pbl(t, i+3, j, k, 0, 1, 0) + acc_pbl(t, i-3, j, k, 0, 1, 0))) 
+              + c4 * ((acc_pbl(t, i, j, k+4, 0, 1, 0) + acc_pbl(t, i, j, k-4, 0, 1, 0)) 
+                    + (acc_pbl(t, i, j+4, k, 0, 1, 0) + acc_pbl(t, i, j-4, k, 0, 1, 0)) 
+                    + (acc_pbl(t, i+4, j, k, 0, 1, 0) + acc_pbl(t, i-4, j, k, 0, 1, 0)));
+          float div3 = c0 * acc_pbl(t, i, j, k, 0, 1, 1) + 
+                c1 * ((acc_pbl(t, i, j, k+1, 0, 1, 1) + acc_pbl(t, i, j, k-1, 0, 1, 1)) 
+                    + (acc_pbl(t, i, j+1, k, 0, 1, 1) + acc_pbl(t, i, j-1, k, 0, 1, 1)) 
+                    + (acc_pbl(t, i+1, j, k, 0, 1, 1) + acc_pbl(t, i-1, j, k, 0, 1, 1))) 
+              + c2 * ((acc_pbl(t, i, j, k+2, 0, 1, 1) + acc_pbl(t, i, j, k-2, 0, 1, 1)) 
+                    + (acc_pbl(t, i, j+2, k, 0, 1, 1) + acc_pbl(t, i, j-2, k, 0, 1, 1)) 
+                    + (acc_pbl(t, i+2, j, k, 0, 1, 1) + acc_pbl(t, i-2, j, k, 0, 1, 1))) 
+              + c3 * ((acc_pbl(t, i, j, k+3, 0, 1, 1) + acc_pbl(t, i, j, k-3, 0, 1, 1)) 
+                    + (acc_pbl(t, i, j+3, k, 0, 1, 1) + acc_pbl(t, i, j-3, k, 0, 1, 1)) 
+                    + (acc_pbl(t, i+3, j, k, 0, 1, 1) + acc_pbl(t, i-3, j, k, 0, 1, 1))) 
+              + c4 * ((acc_pbl(t, i, j, k+4, 0, 1, 1) + acc_pbl(t, i, j, k-4, 0, 1, 1)) 
+                    + (acc_pbl(t, i, j+4, k, 0, 1, 1) + acc_pbl(t, i, j-4, k, 0, 1, 1)) 
+                    + (acc_pbl(t, i+4, j, k, 0, 1, 1) + acc_pbl(t, i-4, j, k, 0, 1, 1)));
+          float div4 = c0 * acc_pbl(t, i, j, k, 1, 0, 0) + 
+                c1 * ((acc_pbl(t, i, j, k+1, 1, 0, 0) + acc_pbl(t, i, j, k-1, 1, 0, 0)) 
+                    + (acc_pbl(t, i, j+1, k, 1, 0, 0) + acc_pbl(t, i, j-1, k, 1, 0, 0)) 
+                    + (acc_pbl(t, i+1, j, k, 1, 0, 0) + acc_pbl(t, i-1, j, k, 1, 0, 0))) 
+              + c2 * ((acc_pbl(t, i, j, k+2, 1, 0, 0) + acc_pbl(t, i, j, k-2, 1, 0, 0)) 
+                    + (acc_pbl(t, i, j+2, k, 1, 0, 0) + acc_pbl(t, i, j-2, k, 1, 0, 0)) 
+                    + (acc_pbl(t, i+2, j, k, 1, 0, 0) + acc_pbl(t, i-2, j, k, 1, 0, 0))) 
+              + c3 * ((acc_pbl(t, i, j, k+3, 1, 0, 0) + acc_pbl(t, i, j, k-3, 1, 0, 0)) 
+                    + (acc_pbl(t, i, j+3, k, 1, 0, 0) + acc_pbl(t, i, j-3, k, 1, 0, 0)) 
+                    + (acc_pbl(t, i+3, j, k, 1, 0, 0) + acc_pbl(t, i-3, j, k, 1, 0, 0))) 
+              + c4 * ((acc_pbl(t, i, j, k+4, 1, 0, 0) + acc_pbl(t, i, j, k-4, 1, 0, 0)) 
+                    + (acc_pbl(t, i, j+4, k, 1, 0, 0) + acc_pbl(t, i, j-4, k, 1, 0, 0)) 
+                    + (acc_pbl(t, i+4, j, k, 1, 0, 0) + acc_pbl(t, i-4, j, k, 1, 0, 0)));
+          float div5 = c0 * acc_pbl(t, i, j, k, 1, 0, 1) + 
+                c1 * ((acc_pbl(t, i, j, k+1, 1, 0, 1) + acc_pbl(t, i, j, k-1, 1, 0, 1)) 
+                    + (acc_pbl(t, i, j+1, k, 1, 0, 1) + acc_pbl(t, i, j-1, k, 1, 0, 1)) 
+                    + (acc_pbl(t, i+1, j, k, 1, 0, 1) + acc_pbl(t, i-1, j, k, 1, 0, 1))) 
+              + c2 * ((acc_pbl(t, i, j, k+2, 1, 0, 1) + acc_pbl(t, i, j, k-2, 1, 0, 1)) 
+                    + (acc_pbl(t, i, j+2, k, 1, 0, 1) + acc_pbl(t, i, j-2, k, 1, 0, 1)) 
+                    + (acc_pbl(t, i+2, j, k, 1, 0, 1) + acc_pbl(t, i-2, j, k, 1, 0, 1))) 
+              + c3 * ((acc_pbl(t, i, j, k+3, 1, 0, 1) + acc_pbl(t, i, j, k-3, 1, 0, 1)) 
+                    + (acc_pbl(t, i, j+3, k, 1, 0, 1) + acc_pbl(t, i, j-3, k, 1, 0, 1)) 
+                    + (acc_pbl(t, i+3, j, k, 1, 0, 1) + acc_pbl(t, i-3, j, k, 1, 0, 1))) 
+              + c4 * ((acc_pbl(t, i, j, k+4, 1, 0, 1) + acc_pbl(t, i, j, k-4, 1, 0, 1)) 
+                    + (acc_pbl(t, i, j+4, k, 1, 0, 1) + acc_pbl(t, i, j-4, k, 1, 0, 1)) 
+                    + (acc_pbl(t, i+4, j, k, 1, 0, 1) + acc_pbl(t, i-4, j, k, 1, 0, 1)));
+          float div6 = c0 * acc_pbl(t, i, j, k, 1, 1, 0) + 
+                c1 * ((acc_pbl(t, i, j, k+1, 1, 1, 0) + acc_pbl(t, i, j, k-1, 1, 1, 0)) 
+                    + (acc_pbl(t, i, j+1, k, 1, 1, 0) + acc_pbl(t, i, j-1, k, 1, 1, 0)) 
+                    + (acc_pbl(t, i+1, j, k, 1, 1, 0) + acc_pbl(t, i-1, j, k, 1, 1, 0))) 
+              + c2 * ((acc_pbl(t, i, j, k+2, 1, 1, 0) + acc_pbl(t, i, j, k-2, 1, 1, 0)) 
+                    + (acc_pbl(t, i, j+2, k, 1, 1, 0) + acc_pbl(t, i, j-2, k, 1, 1, 0)) 
+                    + (acc_pbl(t, i+2, j, k, 1, 1, 0) + acc_pbl(t, i-2, j, k, 1, 1, 0))) 
+              + c3 * ((acc_pbl(t, i, j, k+3, 1, 1, 0) + acc_pbl(t, i, j, k-3, 1, 1, 0)) 
+                    + (acc_pbl(t, i, j+3, k, 1, 1, 0) + acc_pbl(t, i, j-3, k, 1, 1, 0)) 
+                    + (acc_pbl(t, i+3, j, k, 1, 1, 0) + acc_pbl(t, i-3, j, k, 1, 1, 0))) 
+              + c4 * ((acc_pbl(t, i, j, k+4, 1, 1, 0) + acc_pbl(t, i, j, k-4, 1, 1, 0)) 
+                    + (acc_pbl(t, i, j+4, k, 1, 1, 0) + acc_pbl(t, i, j-4, k, 1, 1, 0)) 
+                    + (acc_pbl(t, i+4, j, k, 1, 1, 0) + acc_pbl(t, i-4, j, k, 1, 1, 0)));
+          float div7 = c0 * acc_pbl(t, i, j, k, 1, 1, 1) + 
+                c1 * ((acc_pbl(t, i, j, k+1, 1, 1, 1) + acc_pbl(t, i, j, k-1, 1, 1, 1)) 
+                    + (acc_pbl(t, i, j+1, k, 1, 1, 1) + acc_pbl(t, i, j-1, k, 1, 1, 1)) 
+                    + (acc_pbl(t, i+1, j, k, 1, 1, 1) + acc_pbl(t, i-1, j, k, 1, 1, 1))) 
+              + c2 * ((acc_pbl(t, i, j, k+2, 1, 1, 1) + acc_pbl(t, i, j, k-2, 1, 1, 1)) 
+                    + (acc_pbl(t, i, j+2, k, 1, 1, 1) + acc_pbl(t, i, j-2, k, 1, 1, 1)) 
+                    + (acc_pbl(t, i+2, j, k, 1, 1, 1) + acc_pbl(t, i-2, j, k, 1, 1, 1))) 
+              + c3 * ((acc_pbl(t, i, j, k+3, 1, 1, 1) + acc_pbl(t, i, j, k-3, 1, 1, 1)) 
+                    + (acc_pbl(t, i, j+3, k, 1, 1, 1) + acc_pbl(t, i, j-3, k, 1, 1, 1)) 
+                    + (acc_pbl(t, i+3, j, k, 1, 1, 1) + acc_pbl(t, i-3, j, k, 1, 1, 1))) 
+              + c4 * ((acc_pbl(t, i, j, k+4, 1, 1, 1) + acc_pbl(t, i, j, k-4, 1, 1, 1)) 
+                    + (acc_pbl(t, i, j+4, k, 1, 1, 1) + acc_pbl(t, i, j-4, k, 1, 1, 1)) 
+                    + (acc_pbl(t, i+4, j, k, 1, 1, 1) + acc_pbl(t, i-4, j, k, 1, 1, 1)));
+     acc_pbl(t+1, i, j, k, 0, 0, 0) = 2 * acc_pbl(t, i, j, k, 0, 0, 0) - acc_pbl(t+1, i, j, k, 0, 0, 0) + acc_vsq(i<<1, j<<1, k<<1) * div0;
+     acc_pbl(t+1, i, j, k, 0, 0, 1) = 2 * acc_pbl(t, i, j, k, 0, 0, 1) - acc_pbl(t+1, i, j, k, 0, 0, 1) + acc_vsq(i<<1, j<<1, (k<<1) + 1) * div1;
+     acc_pbl(t+1, i, j, k, 0, 1, 0) = 2 * acc_pbl(t, i, j, k, 0, 1, 0) - acc_pbl(t+1, i, j, k, 0, 1, 0) + acc_vsq(i<<1, (j<<1)+1, k<<1) * div2;
+     acc_pbl(t+1, i, j, k, 0, 1, 1) = 2 * acc_pbl(t, i, j, k, 0, 1, 1) - acc_pbl(t+1, i, j, k, 0, 1, 1) + acc_vsq(i<<1, (j<<1)+1, (k<<1)+1) * div3;
+     acc_pbl(t+1, i, j, k, 1, 0, 0) = 2 * acc_pbl(t, i, j, k, 1, 0, 0) - acc_pbl(t+1, i, j, k, 1, 0, 0) + acc_vsq((i<<1)+1, j<<1, k<<1) * div4;
+     acc_pbl(t+1, i, j, k, 1, 0, 1) = 2 * acc_pbl(t, i, j, k, 1, 0, 1) - acc_pbl(t+1, i, j, k, 1, 0, 1) + acc_vsq((i<<1)+1, j<<1, (k<<1)+1) * div5;
+     acc_pbl(t+1, i, j, k, 1, 1, 0) = 2 * acc_pbl(t, i, j, k, 1, 1, 0) - acc_pbl(t+1, i, j, k, 1, 1, 0) + acc_vsq((i<<1)+1, (j<<1)+1, k) * div6;
+     acc_pbl(t+1, i, j, k, 1, 1, 1) = 2 * acc_pbl(t, i, j, k, 1, 1, 1) - acc_pbl(t+1, i, j, k, 1, 1, 1) + acc_vsq((i<<1)+1, (j<<1)+1, (k<<1)+1) * div7;
+            }}}}
+  gettimeofday(&end, 0);
+  print_summary("Data block + unrolling", tdiff(&end, &start));
+
+#endif /* end PBL */
+
+#if PC
+
+  gettimeofday(&start, 0);
+  for (int t = 0; t < T; ++t) {
+     cilk_for (int i = start_z; i < end_z; ++i) {
+        for (int j = start_y; j < end_y; ++j) {
+#pragma ivdep
+            for (int k = start_x; k < end_x; ++k) {
+          const float c0 = coef[0], c1 = coef[1], c2 = coef[2], c3 = coef[3], c4 = coef[4];
+          float div = c0 * acc_pc(t, i, j, k) + 
                 c1 * ((acc_pc(t, i, j, k+1) + acc_pc(t, i, j, k-1)) 
                     + (acc_pc(t, i, j+1, k) + acc_pc(t, i, j-1, k)) 
                     + (acc_pc(t, i+1, j, k) + acc_pc(t, i-1, j, k))) 
@@ -701,8 +462,31 @@ int main(int argc, char *argv[])
             }}}}
   gettimeofday(&end, 0);
   print_summary("Naive", tdiff(&end, &start));
+#endif /* end PC */
 
-  delete[] A;
+#if (PB && PC)
+    int t = T;
+    for (int i = start_z; i < end_z; ++i) {
+    for (int j = start_y; j < end_y; ++j) {
+    for (int k = start_x; k < end_x; ++k) {
+        check_result(t, i, j, k, acc_pb(t, i, j, k), acc_pc(t, i, j, k));
+    } } }
+#endif
+
+
+#if (PBL && PC)
+    int t = T;
+    for (int i = start_z; i < end_z; ++i) {
+    for (int j = start_y; j < end_y; ++j) {
+    for (int k = start_x; k < end_x; ++k) {
+        check_result(t, i, j, k, acc_pbl(t, i>>1, j>>1, k>>1, i&0x1, j&0x1, k&0x1), acc_pc(t, i, j, k));
+    } } }
+    printf("check passed!\n");
+#endif
+
+  delete [] A[0];
+  delete [] A[1];
+  delete [] A;
   delete [] vsq;
   delete [] pc;
   delete [] pb;
