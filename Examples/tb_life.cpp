@@ -34,15 +34,17 @@
 #include <pochoir.hpp>
 
 using namespace std;
-#define TIMES 3
+#define TIMES 1
 
-void check_result(int t, int j, int i, bool a, bool b)
+bool check_result(int t, int j, int i, bool a, bool b)
 {
 	if (a == b) {
-//		printf("a(%d, %d, %d) == b(%d, %d, %d) == %s : passed!\n", t, j, i, t, j, i, a ? "True" : "False");
-	} else {
-		printf("a(%d, %d, %d) = %s, b(%d, %d, %d) = %s : FAILED!\n", t, j, i, a ? "True" : "False", t, j, i, b ? "True" : "False");
-	}
+		// printf("a(%d, %d, %d) == b(%d, %d, %d) == %s : passed!\n", t, j, i, t, j, i, a ? "True" : "False");
+	   return true;
+    } else {
+	   printf("a(%d, %d, %d) = %s, b(%d, %d, %d) = %s : FAILED!\n", t, j, i, a ? "True" : "False", t, j, i, b ? "True" : "False");
+	   return false;
+    }
 
 }
 
@@ -168,26 +170,42 @@ int main(int argc, char * argv[])
 	std::cout << "Naive Loop: consumed time :" << 1.0e3 * tdiff(&end, &start) / TIMES << "ms" << std::endl;
 
 	t = T_SIZE;
-    printf("compare a with c : ");
+    bool passed1 = true;
+    printf("compare a with c : \n");
 	for (int i = 0; i < N_SIZE; ++i) {
 	for (int j = 0; j < N_SIZE; ++j) {
-		check_result(t, i, j, a.interior(t, i, j), c.interior(t, i, j));
+		passed1 &= check_result(t, i, j, a.interior(t, i, j), c.interior(t, i, j));
 	} } 
-    printf("passed!\n");
 
-    printf("compare a with b : ");
-	for (int i = 0; i < N_SIZE; ++i) {
-	for (int j = 0; j < N_SIZE; ++j) {
-		check_result(t, i, j, a.interior(t, i, j), b.interior(t, i, j));
-	} } 
-    printf("passed!\n");
+    if (passed1) {
+        printf("ok\n");
+    }
 
-    printf("compare c with b : ");
+    bool passed2 = true;
+    printf("compare a with b : \n");
 	for (int i = 0; i < N_SIZE; ++i) {
 	for (int j = 0; j < N_SIZE; ++j) {
-		check_result(t, i, j, c.interior(t, i, j), b.interior(t, i, j));
+		passed2 &= check_result(t, i, j, a.interior(t, i, j), b.interior(t, i, j));
 	} } 
-    printf("passed!\n");
+
+    if (passed2) {
+        printf("ok\n");
+    }
+
+    bool passed3 = true;
+    printf("compare c with b : \n");
+	for (int i = 0; i < N_SIZE; ++i) {
+	for (int j = 0; j < N_SIZE; ++j) {
+		passed3 &= check_result(t, i, j, c.interior(t, i, j), b.interior(t, i, j));
+	} } 
+
+    if (passed3) {
+        printf("ok\n");
+    }
+
+    if (passed1 && passed2 && passed3) {
+        printf("PASSED!\n");
+    }
 
 	return 0;
 }

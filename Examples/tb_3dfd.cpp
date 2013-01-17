@@ -416,7 +416,7 @@ void dotest()
   struct timeval start, end;
 	
   ///////////////////////////////////////////////                                                                      
-#if 1
+#if 0
   
   init_variables();
   gettimeofday(&start, 0);
@@ -433,6 +433,7 @@ void dotest()
   //copy_A_to_B();
   print_summary("base", tdiff(&end, &start));
   ///////////////////////////////////////////////
+#endif
   
   init_variables();
   // verify_A_and_B();
@@ -448,7 +449,6 @@ void dotest()
   // verify_A_and_B();
   //print_y();
 
-#endif
 }
 
 Pochoir_Boundary_3D(fd_bv_3D, arr, t, i, j, k)
