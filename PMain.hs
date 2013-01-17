@@ -25,13 +25,11 @@
 
 module Main where
 
-import Prelude hiding (catch)
-import System.Cmd
-import System.IO
-import System.FilePath
+import System.Process
 import System.Environment
+import System.IO 
+import qualified Control.Exception as Control
 import System.Exit
-import qualified Control.Exception as Exception 
 import Data.List
 import System.Directory 
 import System.Cmd (rawSystem)
@@ -70,8 +68,9 @@ ppopp :: (PMode, Bool, Bool, [String]) -> [(String, String)] -> IO ()
 ppopp (_, _, _, _) [] = return ()
 ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) = 
     do putStrLn ("pochoir called with mode =" ++ show mode)
---       pochoirLibPath <- catch (getEnv "POCHOIR_LIB_PATH")(\e -> return "EnvError")
-       pochoirLibPath <- getEnv "POCHOIR_LIB_PATH"
+       pochoirLibPath <- Control.catch (getEnv "POCHOIR_LIB_PATH")
+                         (\e -> do let err = show (e::Control.IOException)
+                                   return err)
        whilst (pochoirLibPath == "EnvError") $ do
           putStrLn ("Pochoir environment variable not set:")
           putStrLn ("POCHOIR_LIB_PATH")
@@ -132,8 +131,7 @@ icc = "icpc"
 
 iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 
--- iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
-iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
+iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 
 -- iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
 iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++0x"]
