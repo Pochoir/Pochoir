@@ -51,7 +51,7 @@ data PType = PType {
     basicType :: PBasicType,
     typeName :: String
 } deriving Eq
-data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | PMUnroll | POptPointer | PPointer | PMacroShadow | PNoPP | PAllCondTileMacro | PAllCondTileCPointer | PAllCondTilePointer | PAllCondTileOptPointer | PUnrollTimeTileMacro | PUnrollTimeTileCPointer | PUnrollTimeTilePointer | PUnrollTimeTileOptPointer | PAllCondTileMacroOverlap | PAllCondTileCPointerOverlap | PAllCondTilePointerOverlap | PAllCondTileOptPointerOverlap | PUnrollTimeTileMacroOverlap | PUnrollTimeTileCPointerOverlap | PUnrollTimeTilePointerOverlap | PUnrollTimeTileOptPointerOverlap deriving Eq
+data PMode = PHelp | PDefault | PDebug | PCaching | PMUnroll | PNoPP | PAllCondTileMacroOverlap | PAllCondTileCPointerOverlap | PAllCondTilePointerOverlap | PAllCondTileOptPointerOverlap | PUnrollTimeTileMacroOverlap | PUnrollTimeTileCPointerOverlap | PUnrollTimeTilePointerOverlap | PUnrollTimeTileOptPointerOverlap deriving Eq
 data TileOp = PNOP | PSERIAL | PEXCLUSIVE | PINCLUSIVE deriving (Eq, Show)
 
 data PMacro = PMacro {
@@ -289,20 +289,6 @@ instance Show PMode where
     show PDefault = "-default" 
     show PDebug = "-debug" 
     show PCaching = "-split-caching" 
-    show PCPointer = "-split-c-pointer" 
-    show POptPointer = "-split-opt-pointer" 
-    show PPointer = "-split-pointer" 
-    show PMacroShadow = "-split-macro-shadow" 
-    show PNoPP = "-No-Preprocessing"
-    show PMUnroll = "-unroll-multi-kernel"
-    show PAllCondTileMacro = "-all-cond-tile-macro"
-    show PAllCondTileCPointer = "-all-cond-tile-c-pointer"
-    show PAllCondTilePointer = "-all-cond-tile-pointer"
-    show PAllCondTileOptPointer = "-all-cond-tile-opt-pointer"
-    show PUnrollTimeTileMacro = "-unroll-t-tile-macro"
-    show PUnrollTimeTileCPointer = "-unroll-t-tile-c-pointer"
-    show PUnrollTimeTilePointer = "-unroll-t-tile-pointer"
-    show PUnrollTimeTileOptPointer = "-unroll-t-tile-opt-pointer"
     show PAllCondTileMacroOverlap = "-all-cond-tile-macro-overlap"
     show PAllCondTileCPointerOverlap = "-all-cond-tile-c-pointer-overlap"
     show PAllCondTilePointerOverlap = "-all-cond-tile-pointer-overlap"

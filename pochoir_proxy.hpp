@@ -33,6 +33,9 @@ template<typename T>
 class Pochoir_Proxy
 {
 public:
+    Pochoir_Proxy() {
+        ref_ = &val_;
+    }
     explicit Pochoir_Proxy(T * v) : ref_(v) { 
         val_ = *v;
     }
@@ -50,6 +53,9 @@ public:
      */
     operator T () const { return val_; }
     operator T () { return val_; }
+    inline T& operator() (){
+        return (*ref_);
+    }
 
     T * operator->() { return ref_; }
     T * get_ref() { return ref_; }

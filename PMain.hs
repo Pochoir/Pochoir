@@ -25,12 +25,13 @@
 
 module Main where
 
-import System.Process
+import Prelude hiding (catch)
+import System.Cmd
+import System.IO
+import System.FilePath
 import System.Environment
--- import System.IO hiding (try) -- "try" is also defined in Parsec
-import System.IO -- "try" is also defined in Parsec
-import qualified Control.Exception as Control
 import System.Exit
+import qualified Control.Exception as Exception
 import Data.List
 import System.Directory 
 import System.Cmd (rawSystem)
@@ -72,10 +73,9 @@ ppopp :: (PMode, Bool, Bool, [String]) -> [(String, String)] -> IO ()
 ppopp (_, _, _, _) [] = return ()
 ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) = 
     do putStrLn ("pochoir called with mode =" ++ show mode)
---       pochoirLibPath <- Control.catch (getEnv "POCHOIR_LIB_PATH")(\e -> return "EnvError")
-       pochoirLibPath <- Control.catch (getEnv "POCHOIR_LIB_PATH")
-                        (\e -> do let err = show (e::Control.IOException)
-                                  return err)
+--       pochoirLibPath <- Exception.catch (getEnv "POCHOIR_LIB_PATH")
+--                                         (\e -> return "EnvError")
+       pochoirLibPath <- getEnv "POCHOIR_LIB_PATH"
        whilst (pochoirLibPath == "EnvError") $ do
           putStrLn ("Pochoir environment variable not set:")
           putStrLn ("POCHOIR_LIB_PATH")
@@ -98,8 +98,8 @@ ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) =
        system cmd
        -- a pass of pochoir compilation
        whilst (mode /= PDebug) $ do
-           -- inh <- openFile iccPPFile ReadMode
-           inh <- openFile midFile ReadMode
+           inh <- openFile iccPPFile ReadMode
+           -- inh <- openFile midFile ReadMode
            outh <- openFile outFile WriteMode
            kernelh <- openFile kernelFile WriteMode
            putStrLn ("pochoir " ++ show mode ++ " " ++ iccPPFile)
@@ -135,7 +135,7 @@ iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 -- preprocessing flags for g++
 -- iccPPFlags = ["-E", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
 -- preprocessing flags for icpc
-iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
+iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
 
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x"]
@@ -197,57 +197,9 @@ parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL
         let l_mode = PUnrollTimeTileOptPointerOverlap
             aL' = delete "-unroll-t-tile-opt-pointer-overlap" aL
         in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-all-cond-tile-macro" aL =
-        let l_mode = PAllCondTileMacro
-            aL' = delete "-all-cond-tile-macro" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-all-cond-tile-c-pointer" aL =
-        let l_mode = PAllCondTileCPointer
-            aL' = delete "-all-cond-tile-c-pointer" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-all-cond-tile-pointer" aL =
-        let l_mode = PAllCondTilePointer
-            aL' = delete "-all-cond-tile-pointer" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-all-cond-tile-opt-pointer" aL =
-        let l_mode = PAllCondTileOptPointer
-            aL' = delete "-all-cond-tile-opt-pointer" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-unroll-t-tile-macro" aL =
-        let l_mode = PUnrollTimeTileMacro
-            aL' = delete "-unroll-t-tile-macro" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-unroll-t-tile-c-pointer" aL =
-        let l_mode = PUnrollTimeTileCPointer
-            aL' = delete "-unroll-t-tile-c-pointer" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-unroll-t-tile-pointer" aL =
-        let l_mode = PUnrollTimeTilePointer
-            aL' = delete "-unroll-t-tile-pointer" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-unroll-t-tile-opt-pointer" aL =
-        let l_mode = PUnrollTimeTileOptPointer
-            aL' = delete "-unroll-t-tile-opt-pointer" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
     | elem "-unroll-multi-kernel" aL =
         let l_mode = PMUnroll
             aL' = delete "-unroll-multi-kernel" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-split-c-pointer" aL =
-        let l_mode = PCPointer
-            aL' = delete "-split-c-pointer" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-split-opt-pointer" aL =
-        let l_mode = POptPointer
-            aL' = delete "-split-opt-pointer" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-split-pointer" aL =
-        let l_mode = PPointer
-            aL' = delete "-split-pointer" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-split-macro-shadow" aL =
-        let l_mode = PMacroShadow
-            aL' = delete "-split-macro-shadow" aL
         in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
     | elem "-showFile" aL =
         let l_showFile = True

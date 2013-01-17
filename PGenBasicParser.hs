@@ -211,45 +211,6 @@ ppStencil l_id l_state =
                       return ""
                       
 -- get all iterators from Kernel
-transKernel :: PMode -> PStencil -> PKernelFunc -> PKernelFunc
-transKernel l_mode l_stencil l_kernelFunc =
-       let l_stmts = kfStmt l_kernelFunc
-           l_params = kfParams l_kernelFunc
-           l_iters =
-                   case l_mode of 
-                       PMacroShadow -> getFromStmts getIter PRead 
-                                    (transArrayMap $ sArrayInUse l_stencil) 
-                                    l_stmts
-                       PCPointer -> getFromStmts getIter PRead
-                                    (transArrayMap $ sArrayInUse l_stencil) 
-                                    l_stmts
-                       PPointer -> getFromStmts (getPointer l_params) PRead 
-                                    (transArrayMap $ sArrayInUse l_stencil) 
-                                    l_stmts
-                       POptPointer -> getFromStmts getIter PRead
-                                    (transArrayMap $ sArrayInUse l_stencil) 
-                                    l_stmts 
-                       PCaching -> getFromStmts (getPointer l_params) PRead
-                                    (transArrayMap $ sArrayInUse l_stencil) 
-                                    l_stmts 
-                       PMUnroll -> let l_get = 
-                                            if sRank l_stencil < 3 
-                                                then getIter
-                                                else (getPointer l_params)
-                                   in  getFromStmts l_get PRead
-                                         (transArrayMap $ sArrayInUse l_stencil) 
-                                         l_stmts 
-                       PDefault -> let l_get = 
-                                            if sRank l_stencil < 3 
-                                                then getIter
-                                                else (getPointer l_params)
-                                   in  getFromStmts l_get PRead
-                                         (transArrayMap $ sArrayInUse l_stencil) 
-                                         l_stmts 
-           l_revIters = transIterN 0 l_iters
-       in  l_kernelFunc { kfIter = l_revIters }
-
--- get all iterators from Kernel
 getIterFromKernel :: PMode -> PStencil -> [PName] -> [Stmt] -> [Iter]
 getIterFromKernel l_mode l_stencil l_params l_stmts =
        let l_iters =
