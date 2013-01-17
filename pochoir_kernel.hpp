@@ -325,7 +325,7 @@ struct Color_Region<1> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<1> * > & pgs_;
     Grid_Info<1> & phys_grid_;
-    Color_Region(Vector_Info< Pochoir_Guard<1> * > & _pgs, Grid_Info<1> & _grid) : sz_pgk_(_pgs.size()), pgs_(_pgs), phys_grid_(_grid) {}
+    Color_Region(Vector_Info< Pochoir_Guard<1> * > & _pgs, Grid_Info<1> & _grid) : sz_pgk_(_pgs.size()), pgs_(_pgs), phys_grid_(_grid) { }
 
     T_color get_color(int t, int i) {
         T_color l_color = 0;
@@ -354,23 +354,6 @@ struct Color_Region<1> {
         }
         return Homogeneity(l_o, l_a, sz_pgk_);
     }
-
-
-	//find the homogeneity of the points on the grid
-    Homogeneity operator() (Grid_Info<1> const & grid)
-	{
-        Grid_Info<1> l_grid = grid;
-        int start_i = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
-        T_color start_color = get_color(0, start_i);
-        T_color l_o = start_color, l_a = start_color;
-        for (int i = l_grid.x0[0]; i < l_grid.x1[0]; ++i) 
-		{
-        	const int new_i = pmod_lu(i, phys_grid_.x0[0], phys_grid_.x1[0]);
-            T_color l_color = get_color(0, new_i);
-            l_o |= l_color; l_a &= l_color;
-        }
-        return Homogeneity(l_o, l_a, sz_pgk_);
-    }
 };
 
 template <>
@@ -378,7 +361,7 @@ struct Color_Region<2> {
     int sz_pgk_;
     Vector_Info< Pochoir_Guard<2> * > & pgs_;
     Grid_Info<2> & phys_grid_;
-    Color_Region(Vector_Info< Pochoir_Guard<2> * > & _pgs, Grid_Info<2> & _grid) : sz_pgk_(_pgs.size()), pgs_(_pgs), phys_grid_(_grid) {}
+    Color_Region(Vector_Info< Pochoir_Guard<2> * > & _pgs, Grid_Info<2> & _grid) : sz_pgk_(_pgs.size()), pgs_(_pgs), phys_grid_(_grid) { }
 
     T_color get_color(int t, int i, int j) {
         T_color l_color = 0;
@@ -409,29 +392,6 @@ struct Color_Region<2> {
             /* Adjust trapezoid */
             l_grid.x0[0] += l_grid.dx0[0]; l_grid.x1[0] += l_grid.dx1[0];
             l_grid.x0[1] += l_grid.dx0[1]; l_grid.x1[1] += l_grid.dx1[1];
-        }
-        return Homogeneity(l_o, l_a, sz_pgk_);
-    }
-
-
-	//find the homogeneity of the points on the grid
-    Homogeneity operator() (Grid_Info<2> const & grid) 
-	{
-        Grid_Info<2> l_grid = grid;
-        int start_i = pmod_lu(l_grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
-        int start_j = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
-        T_color start_color = get_color(0, start_i, start_j);
-        T_color l_o = start_color, l_a = start_color;
-        for (int i = l_grid.x0[1]; i < l_grid.x1[1]; ++i) 
-		{
-            const int new_i = pmod_lu(i, phys_grid_.x0[1], phys_grid_.x1[1]);
-        	for (int j = l_grid.x0[0]; j < l_grid.x1[0]; ++j) 
-			{
-            	const int new_j = 
-							pmod_lu(j, phys_grid_.x0[0], phys_grid_.x1[0]);
-            	T_color l_color = get_color(0, new_i, new_j);
-            	l_o |= l_color; l_a &= l_color;
-			}
         }
         return Homogeneity(l_o, l_a, sz_pgk_);
     }
@@ -478,34 +438,6 @@ struct Color_Region<3> {
             l_grid.x0[0] += l_grid.dx0[0]; l_grid.x1[0] += l_grid.dx1[0];
             l_grid.x0[1] += l_grid.dx0[1]; l_grid.x1[1] += l_grid.dx1[1];
             l_grid.x0[2] += l_grid.dx0[2]; l_grid.x1[2] += l_grid.dx1[2];
-        }
-        return Homogeneity(l_o, l_a, sz_pgk_);
-    }
-
-	//find the homogeneity of the points on the grid
-    Homogeneity operator() (Grid_Info<3> const & grid)
-	{
-        Grid_Info<3> l_grid = grid;
-        int start_i = pmod_lu(l_grid.x0[2], phys_grid_.x0[2], phys_grid_.x1[2]);
-        int start_j = pmod_lu(l_grid.x0[1], phys_grid_.x0[1], phys_grid_.x1[1]);
-        int start_k = pmod_lu(l_grid.x0[0], phys_grid_.x0[0], phys_grid_.x1[0]);
-        T_color start_color = get_color(0, start_i, start_j, start_k);
-        T_color l_o = start_color, l_a = start_color;
-        for (int i = l_grid.x0[2]; i < l_grid.x1[2]; ++i) 
-		{
-        	const int new_i = pmod_lu(i, phys_grid_.x0[2], phys_grid_.x1[2]);
-        	for (int j = l_grid.x0[1]; j < l_grid.x1[1]; ++j) 
-			{
-            	const int new_j = 
-							pmod_lu(j, phys_grid_.x0[1], phys_grid_.x1[1]);
-            	for (int k = l_grid.x0[0]; k < l_grid.x1[0]; ++k) 
-				{
-                	const int new_k = 
-							pmod_lu(k, phys_grid_.x0[0], phys_grid_.x1[0]);
-                	T_color l_color = get_color(0, new_i, new_j, new_k);
-                	l_o |= l_color; l_a &= l_color;
-            	}
-			}
         }
         return Homogeneity(l_o, l_a, sz_pgk_);
     }

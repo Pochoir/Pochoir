@@ -32,9 +32,6 @@
 #include "pochoir_dloader.hpp"
 #include "pochoir_walk_recursive.hpp"
 #include "pochoir_walk_loops.hpp"
-#include "rbq/rbq_2d_and.hpp"
-#include "rbq/rbq_2d_or.hpp"
-
 /* assuming there won't be more than 10 Pochoir_Array in one Pochoir object! */
 // #define ARRAY_SIZE 10
 
@@ -44,9 +41,9 @@ class Pochoir {
         int slope_[N_RANK];
         Grid_Info<N_RANK> logic_grid_;
         Grid_Info<N_RANK> phys_grid_;
-        int time_shift_;  //depth of the stencil
+        int time_shift_;
         int toggle_;
-        int timestep_;	//# of time steps
+        int timestep_;
         bool regArrayFlag_, regLogicDomainFlag_, regPhysDomainFlag_, regShapeFlag_;
         void checkFlag(bool flag, char const * str);
         void checkFlags(void);
@@ -62,9 +59,7 @@ class Pochoir {
         int order_num_;
         double pochoir_time_;
         Pochoir_Mode pmode_;
-		
-		//pointer to rbq
-		rbq_2d<POCHOIR_WORD_TYPE> * rbq ;
+
         Vector_Info< Pochoir_Tile_Kernel<N_RANK> * > reg_tile_kernels_;
         Vector_Info< Pochoir_Combined_Obase_Kernel<N_RANK> * > reg_obase_kernels_;
         Vector_Info< Pochoir_Guard<N_RANK> * > reg_guards_;
@@ -153,15 +148,11 @@ class Pochoir {
 
     /* Executable Spec */
     /* to remove: Run(timestep) */
-    //void Run(int timestep);
-    //void Run_Obase(int timestep);
+    void Run(int timestep);
+    void Run_Obase(int timestep);
     Pochoir_Plan<N_RANK> & Gen_Plan(int timepstep);
     template <typename T_Array>
     Pochoir_Plan<N_RANK> & Gen_Plan_Obase(int timepstep, const char * pochoir_mode, const char * fname, T_Array & a);
-    template <typename T_Array>
-    Pochoir_Plan<N_RANK> & Gen_Plan_Obase_internal(int timepstep, const char * pochoir_mode, const char * fname, T_Array & a);
-    template <typename T_Array>
-    Pochoir_Plan<N_RANK> & generate_clones(int timepstep, const char * pochoir_mode, const char * fname, T_Array & a);
     template <typename T_Array, typename ... T_ArrayS>
     Pochoir_Plan<N_RANK> & Gen_Plan_Obase(int timepstep, const char * pochoir_mode, const char * fname, T_Array & a, T_ArrayS ... as);
     Pochoir_Plan<N_RANK> & Load_Plan(const char * file_name);
@@ -171,19 +162,9 @@ class Pochoir {
     Pochoir_Plan<N_RANK> & Load_Plan_Obase(const char * file_name, T_Array & a, T_ArrayS ... as);
     void Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & _plan);
     void Destroy_Plan(Pochoir_Plan<N_RANK> & _plan); 
-	
-	//new run functions that use a plan
     void Run(Pochoir_Plan<N_RANK> & _plan);
-    void Run_Obase_All_Cond_with_plan(Pochoir_Plan<N_RANK> & _plan);
-    void Run_Obase_Unroll_T_with_plan(Pochoir_Plan<N_RANK> & _plan);
-
-	//wrapper functions to switch between the new functions that use plan
-	//and the old functions that do not use a plan
     void Run_Obase_All_Cond(Pochoir_Plan<N_RANK> & _plan);
     void Run_Obase_Unroll_T(Pochoir_Plan<N_RANK> & _plan);
-
-	//run functions that do not use a plan
-	void Run_Obase_Unroll_T_without_plan() ;
 };
 
 template <int N_RANK> template <typename I>
@@ -446,7 +427,7 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> * shape, int N_SIZE) 
     }
     for (int i = 0; i < N_SIZE; ++i) {
         for (int r = 0; r < N_RANK; ++r) {
-            slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
+            slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[N_RANK-r]/(l_max_time_shift - shape[i].shift[0]))));
         }
     }
     LOG_ARGS(0, "toggle = %d\n", toggle_);
@@ -517,129 +498,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan(int timestep) {
 }
 
 template <int N_RANK> template <typename T_Array> 
-Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::generate_clones(int timestep, 
-				const char * pochoir_mode, const char * fname, T_Array & a) 
-{
-    struct timeval l_start, l_end;
-    double l_min_tdiff = INF;
-
-    Algorithm<N_RANK> algor(slope_);
-    algor.set_phys_grid(phys_grid_);
-    algor.set_thres(arr_type_size_);
-    algor.set_time_shift(time_shift_);
-    /* we unroll at least twice in out-most loop to promote performance */
-    lcm_unroll_ = (lcm_unroll_ > 1) ? lcm_unroll_ : 2;
-    algor.set_unroll(lcm_unroll_);
-#ifdef DEBUG
-    printf("lcm_unroll_ = %d\n", lcm_unroll_);
-#endif
-    /* set individual unroll factor from opgk_ */
-    if (pmode_ == Pochoir_Tile) {
-        algor.set_pts(reg_guards_);
-    } else {
-        ERROR("Something is wrong in generate_clones(Timestep)!\n");
-    }
-    timestep_ = timestep;
-    checkFlags();
-	
-	//initialize the rbq pointer
-	//rbq = new rbq_2d<POCHOIR_WORD_TYPE> ()
-	algor.find_homogeneity(logic_grid_) ;
-
-    char color_vector_fname[FNAME_LENGTH], kernel_info_fname[FNAME_LENGTH];
-    sprintf(color_vector_fname, "%s_%d_color.dat", fname, order_num_);
-    sprintf(kernel_info_fname, "%s_kernel_info.cpp", fname);
-
-    Vector_Info< Homogeneity > & l_color_vector = algor.get_color_vector();
-    Homogeneity * white_clone = NULL;
-
-    if (l_color_vector.size() > 0) {
-        white_clone = new Homogeneity(l_color_vector[0].size());
-    } else {
-        white_clone = new Homogeneity(0);
-    }
-    /* sort the color vector according to the member 'measure_' */
-    l_color_vector.sort();
-    l_color_vector.set_size(55);
-    /* make the 'rec_level' of white_clone to be 0, so it won't be eliminated out */
-    l_color_vector.push_back_unique(*white_clone, 0);
-    std::ofstream os_color_vector;
-    os_color_vector.open(color_vector_fname, ofstream::out | ofstream::trunc);
-    if (os_color_vector.is_open()) {
-        os_color_vector << l_color_vector << std::endl;
-    } else {
-        ERROR("os_color_vector is NOT open! exit!\n");
-    }
-    os_color_vector.close();
-
-    l_min_tdiff = INF;
-    gettimeofday(&l_start, 0);
-    char cmd[200];
-    sprintf(cmd, "./genstencils -order %d %s %s %s", order_num_, pochoir_mode, color_vector_fname, kernel_info_fname);
-    LOG_ARGS(INF, "%s\n", cmd);
-    int ret = system(cmd);
-    if (ret == -1) {
-        ERROR("system() call to genstencils failed!\n");
-    }
-    LOG(INF, "./genstencils exits!\n");
-    gettimeofday(&l_end, 0);
-    l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    LOG_ARGS(INF, "Kernel Generation (genstencils) time : %.6f milliseconds\n", l_min_tdiff);
-
-    l_min_tdiff = INF;
-    gettimeofday(&l_start, 0);
-    char gen_kernel_fname [strlen(fname) + 20];
-    sprintf(gen_kernel_fname, "./%s_%d_gen_kernel", fname, order_num_);
-    LOG_ARGS(0, "gen_kernel_fname = %s\n", gen_kernel_fname);
-    char cpp_filename[strlen(gen_kernel_fname) + 10], so_filename[strlen(gen_kernel_fname) + 10];
-    sprintf(cpp_filename, "%s.cpp", gen_kernel_fname);
-    sprintf(so_filename, "%s.so", gen_kernel_fname);
-#if 0 
-    /* This branch is for debugging purpose */
-    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O0 -g -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
-#else
-    /* This branch is for best performance */
-    // sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O2 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
-    sprintf(cmd, "icpc -o %s -shared -nostartfiles -fPIC -O2 -Wall -Werror -unroll-agressive -funroll-loops -xHost -fno-alias -fno-fnalias -fp-model precise -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
-    // sprintf(cmd, "g++-cilk -o %s -shared -nostartfiles -fPIC -O2 -std=c++0x -I${POCHOIR_LIB_PATH} %s", so_filename, cpp_filename);
-#endif
-
-    LOG_ARGS(INF, "%s\n", cmd);
-    ret = system(cmd);
-    if (ret == -1) {
-        ERROR("system() call failed!");
-    }
-    gettimeofday(&l_end, 0);
-    l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    LOG_ARGS(INF, "Kernel Compilation (icpc) time : %.6f milliseconds\n", l_min_tdiff);
-
-    l_min_tdiff = INF;
-    gettimeofday(&l_start, 0);
-    Pochoir_Plan<N_RANK> * l_plan = new Pochoir_Plan<N_RANK>();
-    l_plan->set_order_num(order_num_);
-    l_plan->set_fname(fname);
-    l_plan->load_kernels(*this, a); 
-    gettimeofday(&l_end, 0);
-    l_min_tdiff = min (l_min_tdiff, (1.0e3 * tdiff(&l_end, &l_start)));
-    LOG_ARGS(INF, "Dynamic loading time : %.6f milliseconds\n", l_min_tdiff);
-
-    ++order_num_;
-    /* clean up the memory to avoid memory leak */
-    del_ele(white_clone);
-    return (*l_plan);
-}
-
-template <int N_RANK> template <typename T_Array> 
-Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char * pochoir_mode, const char * fname, T_Array & a) 
-{
-	//return Gen_Plan_Obase_internal(timestep, pochoir_mode, fname, a) ;
-	return generate_clones(timestep, pochoir_mode, fname, a) ;
-}
-
-
-
-template <int N_RANK> template <typename T_Array> 
-Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase_internal(int timestep, const char * pochoir_mode, const char * fname, T_Array & a) {
+Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char * pochoir_mode, const char * fname, T_Array & a) {
     Pochoir_Plan<N_RANK> * l_plan = new Pochoir_Plan<N_RANK>();
     int l_sz_base_data, l_sz_sync_data;
     Spawn_Tree<N_RANK> * l_tree;
@@ -670,9 +529,8 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase_internal(int timestep, co
     l_tree->set_add_empty_region(false);
     l_root = l_tree->get_root();
     algor.set_tree(l_tree);
-	
     algor.gen_plan_cut_p(l_root, 0 + time_shift_, timestep + time_shift_, logic_grid_, 0);
-	l_sz_base_data = algor.get_sz_base_data();
+    l_sz_base_data = algor.get_sz_base_data();
     l_sz_sync_data = max(1, algor.get_sz_sync_data());
     l_plan->alloc_base_data(l_sz_base_data);
     l_plan->alloc_sync_data(l_sz_sync_data);
@@ -791,6 +649,7 @@ Pochoir_Plan<N_RANK> & Pochoir<N_RANK>::Gen_Plan_Obase(int timestep, const char 
     Node_Info<N_RANK> * l_root;
     struct timeval l_start, l_end;
     double l_min_tdiff = INF;
+
     gettimeofday(&l_start, 0);
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
@@ -927,10 +786,7 @@ void Pochoir<N_RANK>::Store_Plan(const char * file_name, Pochoir_Plan<N_RANK> & 
     sprintf(l_base_file_name, "base_%s", file_name);
     char * l_sync_file_name = new char[100];
     sprintf(l_sync_file_name, "sync_%s", file_name);
-	if (_plan.sz_base_data_ > 0)
-	{
-    	_plan.store_plan(l_base_file_name, l_sync_file_name);
-	}
+    _plan.store_plan(l_base_file_name, l_sync_file_name);
     del_arr(l_base_file_name);
     del_arr(l_sync_file_name);
     return;
@@ -997,7 +853,7 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
     int offset = 0, l_sz_pigk = reg_tile_kernels_.size();
     for (int j = 0; _plan.sync_data_->region_[j] != END_SYNC; ++j) {
         for (int i = offset; i < _plan.sync_data_->region_[j]; ++i) {
-            //int l_region_n = _plan.base_data_->region_[i].region_n_;
+            int l_region_n = _plan.base_data_->region_[i].region_n_;
             int l_t0 = _plan.base_data_->region_[i].t0_;
             int l_t1 = _plan.base_data_->region_[i].t1_;
             Grid_Info<N_RANK> l_grid = _plan.base_data_->region_[i].grid_;
@@ -1020,7 +876,7 @@ void Pochoir<N_RANK>::Run(Pochoir_Plan<N_RANK> & _plan) {
 }
 
 template <int N_RANK>
-void Pochoir<N_RANK>::Run_Obase_Unroll_T_with_plan(Pochoir_Plan<N_RANK> & _plan){
+void Pochoir<N_RANK>::Run_Obase_Unroll_T(Pochoir_Plan<N_RANK> & _plan) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
@@ -1081,7 +937,7 @@ void Pochoir<N_RANK>::Run_Obase_Unroll_T_with_plan(Pochoir_Plan<N_RANK> & _plan)
 }
 
 template <int N_RANK> 
-void Pochoir<N_RANK>::Run_Obase_All_Cond_with_plan(Pochoir_Plan<N_RANK> & _plan) {
+void Pochoir<N_RANK>::Run_Obase_All_Cond(Pochoir_Plan<N_RANK> & _plan) {
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
@@ -1148,42 +1004,4 @@ void Pochoir<N_RANK>::Run_Obase_All_Cond_with_plan(Pochoir_Plan<N_RANK> & _plan)
     return;
 }
 
-
-template <int N_RANK>
-void Pochoir<N_RANK>::Run_Obase_Unroll_T(Pochoir_Plan<N_RANK> & _plan) 
-{
-	//Run_Obase_Unroll_T_with_plan(_plan) ;
-	Run_Obase_Unroll_T_without_plan() ;
-}
-template <int N_RANK>
-void Pochoir<N_RANK>::Run_Obase_All_Cond(Pochoir_Plan<N_RANK> & _plan)
-{
-	Run_Obase_All_Cond_with_plan(_plan) ;
-}
-
-template <int N_RANK>
-void Pochoir<N_RANK>::Run_Obase_Unroll_T_without_plan()
-{
-    Algorithm<N_RANK> algor(slope_);
-    algor.set_phys_grid(phys_grid_);
-    algor.set_thres(arr_type_size_);
-    algor.set_unroll(lcm_unroll_);
-    algor.set_time_shift(time_shift_);
-    algor.set_time_step(timestep_);
-    if (pmode_ == Pochoir_Obase_Tile) {
-		cout << "Not using plans at runtime" << endl ;
-        algor.set_opks(reg_obase_kernels_.get_root());
-		algor.set_num_kernels(reg_obase_kernels_.pointer_) ;
-    } else {
-        ERROR("Something is wrong in Run_Obase(Plan)!\n");
-    }
-    checkFlags();
-    struct timeval l_start, l_end;
-    gettimeofday(&l_start, 0);
-	algor.space_time_cut_boundary(0 + time_shift_, timestep_ + time_shift_, 
-								logic_grid_);
-    gettimeofday(&l_end, 0);
-    pochoir_time_ = min(pochoir_time_, (1.0e3 * tdiff(&l_end, &l_start)));
-    LOG_ARGS(0, "Pochoir time = %.6f milliseconds\n", pochoir_time_);
-}
 #endif

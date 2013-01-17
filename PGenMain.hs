@@ -25,12 +25,13 @@
 
 module Main where
 
-import System.Process
+import Prelude hiding (catch)
+import System.Cmd
+import System.IO
+import System.FilePath
 import System.Environment
-import System.IO -- "try" is also defined in Parsec
-import qualified Control.Exception as Control
-import System.Exit
--- import IO hiding (try) -- "try" is also defined in Parsec
+import System.Exit 
+import qualified Control.Exception as Exception
 import Data.List
 import Data.Maybe
 import System.Directory 
@@ -146,57 +147,9 @@ parseArgs (colorNum, color_file, kernel_file, mode, showFile, userArgs) aL
         let l_mode = PUnrollTimeTileOptPointerOverlap
             aL' = delete "-unroll-t-tile-opt-pointer-overlap" aL
         in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-all-cond-tile-macro" aL =
-        let l_mode = PAllCondTileMacro
-            aL' = delete "-all-cond-tile-macro" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-all-cond-tile-c-pointer" aL =
-        let l_mode = PAllCondTileCPointer
-            aL' = delete "-all-cond-tile-c-pointer" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-all-cond-tile-pointer" aL =
-        let l_mode = PAllCondTilePointer
-            aL' = delete "-all-cond-tile-pointer" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-all-cond-tile-opt-pointer" aL =
-        let l_mode = PAllCondTileOptPointer
-            aL' = delete "-all-cond-tile-opt-pointer" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-unroll-t-tile-macro" aL =
-        let l_mode = PUnrollTimeTileMacro
-            aL' = delete "-unroll-t-tile-macro" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-unroll-t-tile-c-pointer" aL =
-        let l_mode = PUnrollTimeTileCPointer
-            aL' = delete "-unroll-t-tile-c-pointer" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-unroll-t-tile-pointer" aL =
-        let l_mode = PUnrollTimeTilePointer
-            aL' = delete "-unroll-t-tile-pointer" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-unroll-t-tile-opt-pointer" aL =
-        let l_mode = PUnrollTimeTileOptPointer
-            aL' = delete "-unroll-t-tile-opt-pointer" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-unroll-multi-kernel" aL =
         let l_mode = PMUnroll
             aL' = delete "-unroll-multi-kernel" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-split-c-pointer" aL =
-        let l_mode = PCPointer
-            aL' = delete "-split-c-pointer" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-split-opt-pointer" aL =
-        let l_mode = POptPointer
-            aL' = delete "-split-opt-pointer" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-split-pointer" aL =
-        let l_mode = PPointer
-            aL' = delete "-split-pointer" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-split-macro-shadow" aL =
-        let l_mode = PMacroShadow
-            aL' = delete "-split-macro-shadow" aL
         in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-order" aL =
         let l_idx = fromJust $ elemIndex "-order" aL

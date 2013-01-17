@@ -35,7 +35,6 @@
 #include <cilk/reducer_opadd.h>
 // #include "pochoir_types.hpp"
 #include "pochoir_common.hpp"
-#include <map>
 
 using namespace std;
 
@@ -431,24 +430,10 @@ struct Algorithm {
         bool boundarySet, physGridSet, slopeSet, opksSet, ptsSet;
         int lcm_unroll_, time_shift_;
         Pochoir_Combined_Obase_Kernel<N_RANK> ** opks_;
-		int num_kernels ; //number of kernels generated
         int sz_base_data_, sz_sync_data_;
         Spawn_Tree<N_RANK> * tree_;
         Color_Region<N_RANK> * color_region_;
         Vector_Info< Homogeneity > * homogeneity_vector_;
-		int num_time_steps ; // # of time steps
-#ifdef COUNT_PROJECTION
-		multimap <unsigned long, unsigned long> map_1d ;
-		typedef struct
-		{
-			int x [4] ;     //the 4 x co-ordinates
-			int y [4] ;     //the 4 y co-ordinates
-			unsigned long area ;        //area of the bigger rectangle
-			char type ;     //'r' for rectangle, 'o' for octagon
-			int larger_base ; //0 for bottom, 1 for top
-		} projection_2d ;
-		multimap <unsigned long, projection_2d *> map_2d ;
-#endif
 	public:
 #if STAT
     /* sim_count_cut will be accessed outside Algorithm object */
@@ -497,50 +482,6 @@ struct Algorithm {
     ~Algorithm() {
         del_ele(color_region_);
         del_ele(homogeneity_vector_);
-#ifdef COUNT_PROJECTION
-		if (N_RANK == 1 && map_1d.size() > 0)
-		{
-			cout << "(N, T, # of projections) " 
-			     << " (" << phys_length_ [0] << "," << num_time_steps << "," <<
-				 map_1d.size() << ") " << endl ;
-			multimap<unsigned long, unsigned long>::iterator pos = 
-						map_1d.begin();
-			cout << "slope " << slope_ [0] << endl ;
-			cout << "smallest length " << pos->first << endl ;
-			/*for (pos = map_1d.begin() ; pos != map_1d.end() ; pos++)
-			{
-				cout << pos->first << "," << pos->second << endl ;
-			}*/
-		}
-		else if (N_RANK == 2 && map_2d.size() > 0)
-		{
-			cout << "(N1, N2, T, # of projections) " 
-			     << " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
-				<< num_time_steps << "," <<
-				 map_2d.size() << ") " << endl ;
-			cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
-				<< endl ;
-			//cout << "# of projections " << map_2d.size() << endl ;
-
-			typename multimap <unsigned long, projection_2d *>::iterator pos =  
-			//multimap <unsigned long, unsigned long>::iterator pos =  
-															map_2d.begin() ;
-			cout << "smallest area " << pos->first << endl ; 
-			for (pos = map_2d.begin() ; pos != map_2d.end() ; pos++)
-			{
-				//projection_2d & p = pos->second ;
-				projection_2d * p = pos->second ;
-				/*cout << "Area " << p->area << " type " << p->type << 
-				" (x0, x1) " << "(" << p->x [0] << "," << p->x [1] << ") " <<
-				" (x2, x3) " << "(" << p->x [2] << "," << p->x [3] << ") " <<
-				" (y0, y1) " << "(" << p->y [0] << "," << p->y [1] << ") " <<
-				" (y2, y3) " << "(" << p->y [2] << "," << p->y [3] << ") " <<
-				 endl ;*/
-				delete p ;
-				pos->second = 0 ;
-			}
-		}
-#endif
     }
     /* README!!!: set_phys_grid()/set_stride() must be called before call to 
      * - walk_adaptive 
@@ -581,16 +522,6 @@ struct Algorithm {
 
         assert(slope_[0] != 0);
         dt_recursive_ = (N_RANK == 1) ? floor(dx_recursive_[0]/(2 * slope_[0]) - 100) : ((N_RANK == 2) ? floor(dx_recursive_[0]/(2 * slope_[0])-10) : 5);
-#ifdef COUNT_PROJECTION
-		//avoid any optimizations for space/time cuts
-        dx_recursive_[0] = 3 ;
-        dx_homo_[0] = 1;
-        for (int i = N_RANK-1; i >= 1; --i) {
-            dx_recursive_[i] = 3 ;
-            dx_homo_[i] = 1;
-        }
-        dt_recursive_ = 1 ;
-#endif
 #else
         dx_recursive_[0] = (N_RANK == 1) ? 10000 : (N_RANK == 2 ? 100 : (N_RANK == 3 ? 20 : 10));
         for (int i = N_RANK-1; i >= 1; --i)
@@ -620,16 +551,6 @@ struct Algorithm {
         // dt_recursive_boundary_ = _lcm_unroll; 
     }
     void set_time_shift(int _time_shift) { time_shift_ = _time_shift; }
-	void set_time_step(int num_time_steps) 
-	{
-		this->num_time_steps = num_time_steps ;
-	}
-
-#ifdef COUNT_PROJECTION
-	//print projection
-	inline void print_projection(int t0, int t1, 
-								Grid_Info<N_RANK> const & grid);
-#endif
 
     Vector_Info< Homogeneity > & get_color_vector(void) { return (*homogeneity_vector_); }
     inline bool touch_boundary(int i, int lt, Grid_Info<N_RANK> & grid);
@@ -656,28 +577,13 @@ struct Algorithm {
      * -- This is the version for unroll-t-tile-* modes
      */
     inline void plan_space_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
-    inline void space_bicut_interior(int t0, int t1, 
-									Grid_Info<N_RANK> const grid);
     inline void plan_space_bicut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
-    inline void space_bicut_boundary(int t0, int t1, 
-									Grid_Info<N_RANK> const grid);
     inline void plan_space_cut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
-    inline void space_cut_interior(int t0, int t1, 
-									Grid_Info<N_RANK> const grid);
     inline void plan_space_cut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
-    inline void space_cut_boundary(int t0, int t1, 
-									Grid_Info<N_RANK> const grid);
     inline void plan_bicut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
-    inline void bicut_interior(int t0, int t1, Grid_Info<N_RANK> const grid);
     inline void plan_bicut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
-    inline void bicut_boundary(int t0, int t1, Grid_Info<N_RANK> const grid);
     inline void plan_cut(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
-    inline void space_time_cut_interior(int t0, int t1, 
-										Grid_Info<N_RANK> const grid);
     inline void plan_cut_p(int t0, int t1, Grid_Info<N_RANK> const grid, int region_n);
-    inline void space_time_cut_boundary(int t0, int t1, 
-										Grid_Info<N_RANK> const grid);
-
     /* meta functions to run the plan */
     /*******************************************************************************/
     /* meta functions to run the plan 
@@ -771,15 +677,6 @@ struct Algorithm {
 	void print_index(int t, int const idx[]);
 	void print_region(int t, int const head[], int const tail[]);
 #endif
-
-	//Find the homogeneity of the grid
-    inline void find_homogeneity(Grid_Info<N_RANK> const & grid);
-	
-	void set_num_kernels(int num_kernels) 
-	{
-		assert (num_kernels > 0) ;
-		this->num_kernels = num_kernels ;
-	}
 };
 
 template <int N_RANK>

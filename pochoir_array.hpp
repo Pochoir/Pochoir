@@ -33,6 +33,7 @@
 #include "pochoir_range.hpp"
 #include "pochoir_common.hpp"
 #include "pochoir_proxy.hpp"
+#include <cilk/holder.h>
 
 using namespace std;
 
@@ -121,6 +122,7 @@ class Pochoir_Array {
 
         typedef typename Boundary<T, N_RANK>::Types BValue;
         BValue bv_;
+        cilk::holder<T, cilk::holder_keep_last> ret_v;
 
         /* disable the copy constructor! */
 		Pochoir_Array (Pochoir_Array<T, N_RANK> const & orig) { }
@@ -219,7 +221,7 @@ class Pochoir_Array {
             for (int i = 0; i < l_shape_size; ++i) {
                 shape_.push_back_unique(shape[i]);
                 for (int r = 0; r < N_RANK; ++r) {
-                    slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
+                    slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[N_RANK-r]/(l_max_time_shift - shape[i].shift[0]))));
                 }
             }
 #if DEBUG 
@@ -256,7 +258,7 @@ class Pochoir_Array {
             for (int i = 0; i < N_SIZE; ++i) {
                 shape_.push_back_unique(shape[i]);
                 for (int r = 0; r < N_RANK; ++r) {
-                    slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
+                    slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[N_RANK-r]/(l_max_time_shift - shape[i].shift[0]))));
                 }
             }
 #if DEBUG 
@@ -429,7 +431,7 @@ class Pochoir_Array {
         }
 
         template <typename ... IS>
-		inline Pochoir_Proxy<T> operator() (int _idx_t, IS ... _idxs) {
+		inline T & operator() (int _idx_t, IS ... _idxs) {
             if (!allocMemFlag_) {
                 printf("Pochoir array access error:\n");
                 printf("A Pochoir array is accessed without being registered with a Pochoir object.\n");
@@ -444,10 +446,12 @@ class Pochoir_Array {
 #endif
             bool l_boundary = check_bound(_idxs ...);
             bool set_boundary = (l_boundary && bv_ != NULL);
-            if (set_boundary) 
-                return Pochoir_Proxy<T>(bv_(*this, _idx_t, _idxs...));
+            if (set_boundary) {
+                ret_v() = bv_(*this, _idx_t, _idxs...);
+                return ret_v();
+            }
 			int l_idx = cal_addr(_idxs ...) + (_idx_t % toggle_) * total_size_;
-            return Pochoir_Proxy<T>(data_ + l_idx);
+            return (*(data_ + l_idx));
 		}
 
         /* set()/get() pair to set/get boundary value in user supplied bvalue function */
@@ -482,13 +486,15 @@ class Pochoir_Array {
         }
 
         template <typename ... IS>
-		inline Pochoir_Proxy<T> boundary (int _idx_t, IS ... _idxs) {
+		inline T & boundary (int _idx_t, IS ... _idxs) {
             bool l_boundary = check_bound(_idxs ...);
             bool set_boundary = (l_boundary && bv_ != NULL);
-            if (set_boundary)
-                return Pochoir_Proxy<T>(bv_(*this, _idx_t, _idxs ...));
+            if (set_boundary) {
+                ret_v() = bv_(*this, _idx_t, _idxs ...);
+                return ret_v();
+            }
 			int l_idx = cal_addr(_idxs ...) + (_idx_t % toggle_) * total_size_;
-            return Pochoir_Proxy<T>(data_ + l_idx);
+            return (*(data_ + l_idx));
 		}
 
 		/* size_info is of type int[] */
