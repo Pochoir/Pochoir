@@ -48,7 +48,7 @@ void check_result(int t, int i, int j, int k, double a, double b)
 
 }
 
-Pochoir_Boundary_3D(heat_bv_3D, arr, t, i, j, k)
+Pochoir_Boundary_3D(Pochoir_Aperiodic_3D, arr, t, i, j, k)
     return 0;
 Pochoir_Boundary_End
 
@@ -103,7 +103,7 @@ int main(int argc, char * argv[])
      * the boundary region and when to call the user supplied boundary
      * value function
      */
-    // a.Register_Boundary(heat_bv_3D);
+    // a.Register_Boundary(Pochoir_Aperiodic_3D);
     heat_3D.Register_Domain(I, J, K);
 
 #if 1

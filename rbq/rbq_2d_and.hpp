@@ -156,7 +156,11 @@ void rbq_2d_and<word_type>::query_without_preprocessing(unsigned long i,
 		{
 			for (unsigned long n = k ; answer && n <= l ; n++)
 			{
+#if 0
 				answer = get_bit(in + n / this->WORD_SIZE, n % this->WORD_SIZE);
+#else
+				answer &= get_bit(in + n / this->WORD_SIZE, n % this->WORD_SIZE);
+#endif
 			}
 			in += num_words_row ;
 		}

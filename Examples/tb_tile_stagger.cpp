@@ -182,7 +182,7 @@ int main(int argc, char * argv[])
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
-            for (int i = 0; i < N; ++i) {
+            cilk_for (int i = 0; i < N; ++i) {
                 if ((t - 1) % 4 == 0) {
                     /* k0 */
 #if DEBUG
