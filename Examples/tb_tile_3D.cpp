@@ -47,20 +47,6 @@ void check_result(int t, int i, int j, double a, double b)
     }
 }
 
-Pochoir_Boundary_2D(periodic_2D, arr, t, i, j)
-    const int arr_size_0 = arr.size(0);
-    const int arr_size_1 = arr.size(1);
-
-    int new_i = (i >= arr_size_1) ? (i - arr_size_1) : (i < 0 ? i + arr_size_1 : i);
-    int new_j = (j >= arr_size_0) ? (j - arr_size_0) : (j < 0 ? j + arr_size_0 : j);
-
-    return arr.get(t, new_i, new_j);
-Pochoir_Boundary_End
-
-Pochoir_Boundary_2D(aperiodic_2D, arr, t, i, j)
-    return 0;
-Pochoir_Boundary_End
-
 int main(int argc, char * argv[])
 {
     const int BASE = 1024798;
@@ -91,9 +77,9 @@ int main(int argc, char * argv[])
     Pochoir_Array_2D(double) a(N, N);
     Pochoir_Array_2D(double) b(N, N);
     Pochoir_2D leap_frog;
-    a.Register_Boundary(aperiodic_2D);
+    a.Register_Boundary(Pochoir_Aperiodic_2D);
     b.Register_Shape(twod_5pt);
-    b.Register_Boundary(aperiodic_2D);
+    b.Register_Boundary(Pochoir_Aperiodic_2D);
 
     Pochoir_Kernel_2D_Begin(k0, t, i, j)
         a(t, i, j) = 

@@ -52,8 +52,6 @@ Pochoir_Boundary_1D(heat_bv_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
 
-#define N 16
-#define T 32
 int main(int argc, char * argv[])
 {
 	const int BASE = 1024;
@@ -67,29 +65,21 @@ int main(int argc, char * argv[])
         exit(1);
     }
     N_SIZE = StrToInt(argv[1]);
-    N_SIZE = N ;
     T_SIZE = StrToInt(argv[2]);
-    T_SIZE = T ;
-	char pochoir_plan_file_name[100];
     printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);
 	/* data structure of Pochoir - row major */
-    //Pochoir_Shape_1D heat_shape_1D[] = {{1, 0}, {0, 1}, {0, -1}, {0, 0}};
-    Pochoir_Shape_1D heat_shape_1D[] = {{0, 0}, {-1, 1}, {-1, -1}, {-1, 0}};
-    Pochoir_1D heat_1D ;
+    Pochoir_Shape_1D heat_shape_1D[] = {{1, 0}, {0, 1}, {0, -1}, {0, 0}};
 	Pochoir_Array_1D(double) a(N_SIZE), b(N_SIZE+2);
-    a.Register_Boundary(heat_bv_1D);
-    b.Register_Shape(heat_shape_1D);
-    b.Register_Boundary(heat_bv_1D);
-    //Pochoir_1D heat_1D(heat_shape_1D);
+    Pochoir_1D heat_1D(heat_shape_1D);
 
 	cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
-    Pochoir_Kernel_1D_Begin(heat_1D_fn, t, i)
-	   //a(t+1, i) = 0.125 * (a(t, i+1) - 2.0 * a(t, i) + a(t, i-2));
-	   a(t, i) = 0.125 * (a(t - 1, i+1) - 2.0 * a(t - 1, i) + a(t - 1, i-2));
-    Pochoir_Kernel_1D_End(heat_1D_fn, heat_shape_1D)
+    Pochoir_Kernel_1D(heat_1D_fn, t, i)
+	   a(t+1, i) = 0.125 * (a(t, i+1) - 2.0 * a(t, i) + a(t, i-2));
+    Pochoir_Kernel_End
 
-	heat_1D.Register_Tile_Kernels(Default_Guard_1D, heat_1D_fn);
+    a.Register_Boundary(heat_bv_1D);
     heat_1D.Register_Array(a);
+    b.Register_Shape(heat_shape_1D);
 
 	for (int i = 0; i < N_SIZE; ++i) {
         a(0, i) = 1.0 * (rand() % BASE); 
@@ -100,13 +90,9 @@ int main(int argc, char * argv[])
 
 
 #if 1
-	Pochoir_Plan<1> & l_plan = heat_1D.Gen_Plan(T);
-    sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat\0", N, T);
-    heat_1D.Store_Plan(pochoir_plan_file_name, l_plan);
     for (int times = 0; times < TIMES; ++times) {
 	    gettimeofday(&start, 0);
-		heat_1D.Run(l_plan) ;
-        //heat_1D.Run(T_SIZE, heat_1D_fn);
+        heat_1D.Run(T_SIZE, heat_1D_fn);
 	    gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }

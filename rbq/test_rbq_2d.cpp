@@ -15,7 +15,7 @@
 #include <iostream>
 
 typedef unsigned long word_type ;
-#define NUM_QUERIES 1
+#define NUM_QUERIES 100
 
 /* This routine simulates a divide and conquer on a 2D grid
    invoking a query at each step. */
@@ -125,7 +125,7 @@ void simulate(int t0, int t1, unsigned long x0, int dx0, unsigned long x1,
 			if (query_result [j] != check_result [j])
 			{
 				error = 1 ;
-				std::cout << "bit " << j << " result :" << query_result [j] << 
+				std::cout << "error bit " << j << " result :" << query_result [j] << 
 				 "  result no preprocess: " << check_result [j] << std::endl ;
 			}
 		}
@@ -133,6 +133,7 @@ void simulate(int t0, int t1, unsigned long x0, int dx0, unsigned long x1,
 		if (error)
 		{
 			printf("Error. Results are different!\n") ;
+            exit(1);
 			break ;
 		}
 	}
@@ -340,9 +341,13 @@ int main(int argc, char *argv[])
 				{
 					for (k = 0 ; k < num_words_row ; k++)
 					{
+#if 0
 						in [k] = (rand() % 2 == 0 ? 0 : 
 												rbq_2d<word_type>::WORD_MAX) ;
 						//in [k] = rbq_2d<word_type>::WORD_MAX ;
+#else
+                        in [k] = rand();
+#endif
 					}
 					in += num_words_row ;
 				}
@@ -395,6 +400,7 @@ int main(int argc, char *argv[])
 		{
 			//use the test case input
 			//generate col input
+            printf("use test case input...\n");
 			char * c = row_input_bits ;
 			word_type * col_in = col_input ;
             for (j = 0 ; j < q ; j++)
@@ -512,6 +518,7 @@ int main(int argc, char *argv[])
 		rbq_2d<word_type> * rbq ; 
 		if (op == 'a')
 		{
+            printf("goto bit-wise and query\n");
 			rbq = new rbq_2d_and<word_type>(row_input, n1, n2, q, dxdt, dydt) ;	
 		}
 		else if (op == 'o')

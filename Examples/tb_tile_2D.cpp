@@ -47,7 +47,7 @@ void check_result(int t, int i, double a, double b)
     }
 }
 
-Pochoir_Boundary_1D(periodic_1D, arr, t, i)
+Pochoir_Boundary_1D(Pochoir_Periodic_1D, arr, t, i)
     const int arr_size_0 = arr.size(0);
 
     int new_i = (i >= arr_size_0) ? (i - arr_size_0) : (i < 0 ? i + arr_size_0 : i);
@@ -55,9 +55,12 @@ Pochoir_Boundary_1D(periodic_1D, arr, t, i)
     return arr.get(t, new_i);
 Pochoir_Boundary_End
 
-Pochoir_Boundary_1D(aperiodic_1D, arr, t, i)
+Pochoir_Boundary_1D(Pochoir_Aperiodic_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
+
+#define N 5500
+#define T 500
 
 int main(int argc, char * argv[])
 {
@@ -66,15 +69,15 @@ int main(int argc, char * argv[])
     struct timeval start, end;
     double min_tdiff = INF;
     /* the 1D spatial dimension has 'N' points */
-    int N = 0, T = 0;
+    // int N = 0, T = 0;
     char pochoir_plan_file_name[100];
 
     if (argc < 3) {
         printf("argc < 3, quit! \n");
         exit(1);
     }
-    N = StrToInt(argv[1]);
-    T = StrToInt(argv[2]);
+    // N = StrToInt(argv[1]);
+    // T = StrToInt(argv[2]);
     printf("N = %d, T = %d\n", N, T);
 #if 0
     /* we can initialize the multi-dimensional array like following 
@@ -96,9 +99,9 @@ int main(int argc, char * argv[])
     Pochoir_Array_1D(double) a(N);
     Pochoir_Array_1D(double) b(N);
     Pochoir_1D leap_frog;
-    a.Register_Boundary(periodic_1D);
+    a.Register_Boundary(Pochoir_Periodic_1D);
     b.Register_Shape(oned_3pt);
-    b.Register_Boundary(periodic_1D);
+    b.Register_Boundary(Pochoir_Periodic_1D);
 
     Pochoir_Guard_1D_Begin(guard_interior, t, i)
         if (t > T/2 && i > N/2) {
@@ -110,7 +113,16 @@ int main(int argc, char * argv[])
     Pochoir_Guard_1D_End(guard_interior)
 
     Pochoir_Guard_1D_Begin(guard_exterior, t, i)
+#if 0
         return (!guard_interior(t, i));
+#else
+        if (t > T/2 && i > N/2) {
+            /* up right rectangle */
+            return false;
+        } else {
+            return true;
+        }
+#endif
     Pochoir_Guard_1D_End(guard_exterior)
 
     Pochoir_Kernel_1D_Begin(k0, t, i)
@@ -192,7 +204,7 @@ int main(int argc, char * argv[])
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         for (int t = 1; t < T + 1; ++t) {
-            for (int i = 0; i < N; ++i) {
+            cilk_for (int i = 0; i < N; ++i) {
                 if ((t - 1) % 2 == 0 && i % 2 == 0) {
                     /* k0 */
 #if DEBUG
