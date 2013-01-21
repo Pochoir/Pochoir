@@ -51,7 +51,7 @@ data PType = PType {
     typeName :: String
 } deriving Eq
 data PState = PochoirBegin | PochoirEnd | PochoirMacro | PochoirDeclArray | PochoirDeclRange | PochoirError | Unrelated deriving (Show, Eq)
-data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | POptPointer | PPointer | PMacroShadow | PNoPP deriving (Show, Eq)
+data PMode = PHelp | PDefault | PDebug | PCaching | PCPointer | POptPointer | PPointer | PMacroShadow | PNoPP deriving Eq
 data PMacro = PMacro {
     mName :: PName,
     mValue :: PValue
@@ -152,6 +152,17 @@ data DimExpr = DimVAR String
           | DimParen DimExpr
           | DimINT Int
           deriving Eq
+
+instance Show PMode where
+    show PHelp = " -help " 
+    show PDefault = " -default " 
+    show PDebug = " -debug " 
+    show PCaching = " -split-caching " 
+    show PCPointer = " -split-c-pointer " 
+    show POptPointer = " -split-opt-pointer " 
+    show PPointer = " -split-pointer " 
+    show PMacroShadow = " -split-macro-shadow " 
+    show PNoPP = " -No-Preprocessing "
 
 instance Show PType where
     show ptype = typeName ptype

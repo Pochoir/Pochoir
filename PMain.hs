@@ -25,11 +25,13 @@
 
 module Main where
 
-import System.Process
+import Prelude hiding (catch)
+import System.Cmd
+import System.IO
+import System.FilePath
 import System.Environment
-import System.IO 
-import qualified Control.Exception as Control
 import System.Exit
+import qualified Control.Exception as Control
 import Data.List
 import System.Directory 
 import System.Cmd (rawSystem)
@@ -131,7 +133,8 @@ icc = "icpc"
 
 iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 
-iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
+-- iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
+iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
 
 -- iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
 iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++0x"]
