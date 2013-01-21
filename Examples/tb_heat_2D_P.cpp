@@ -38,14 +38,12 @@ using namespace std;
 #define N_RANK 2
 #define TOLERANCE (1e-6)
 
-bool check_result(int t, int j, int i, double a, double b)
+void check_result(int t, int j, int i, double a, double b)
 {
 	if (abs(a - b) < TOLERANCE) {
-		// printf("a(%d, %d, %d) == b(%d, %d, %d) == %f : passed!\n", t, j, i, t, j, i, a);
-        return true;
+//		printf("a(%d, %d, %d) == b(%d, %d, %d) == %f : passed!\n", t, j, i, t, j, i, a);
 	} else {
 		printf("a(%d, %d, %d) = %f, b(%d, %d, %d) = %f : FAILED!\n", t, j, i, a, t, j, i, b);
-        return false;
 	}
 
 }
@@ -87,11 +85,11 @@ int main(int argc, char * argv[])
     Pochoir_Shape_2D heat_shape_2D[] = {{0, 0, 0}, {-1, 1, 0}, {-1, 0, 0}, {-1, -1, 0}, {-1, 0, -1}, {-1, 0, 1}};
     Pochoir<N_RANK> heat_2D(heat_shape_2D);
 	Pochoir_Array<double, N_RANK> a(N_SIZE, N_SIZE), b(N_SIZE, N_SIZE);
-    a.Register_Boundary(aperiodic_2D);
+    a.Register_Boundary(periodic_2D);
     heat_2D.Register_Array(a);
 
     b.Register_Shape(heat_shape_2D);
-    b.Register_Boundary(aperiodic_2D);
+    b.Register_Boundary(periodic_2D);
 
     /* Now we can only access the Pochoir_Array after Register_Array,
      * or Register_Shape with the array, because we rely on the shape
@@ -128,15 +126,10 @@ int main(int argc, char * argv[])
 	std::cout << "Naive Loop: consumed time :" << 1.0e3 * tdiff(&end, &start)/TIMES << "ms" << std::endl;
 
 	t = T_SIZE;
-    bool passed = true;
 	for (int i = 0; i < N_SIZE; ++i) {
 	for (int j = 0; j < N_SIZE; ++j) {
-		passed &= check_result(t, i, j, a.interior(t, i, j), b.interior(t, i, j));
-	} }
-
-    if (passed) {
-        printf("PASSED!\n");
-    }
+		check_result(t, i, j, a.interior(t, i, j), b.interior(t, i, j));
+	} } 
 
 	return 0;
 }

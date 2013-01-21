@@ -38,14 +38,12 @@ using namespace std;
 #define N_RANK 3
 #define TOLERANCE (1e-6)
 
-bool check_result(int t, int i, int j, int k, double a, double b)
+void check_result(int t, int i, int j, int k, double a, double b)
 {
 	if (abs(a - b) < TOLERANCE) {
-		// printf("a(%d, %d, %d, %d) == b(%d, %d, %d, %d) == %f : passed!\n", t, i, j, k, t, i, j, k, a);
-        return true;
+//		printf("a(%d, %d, %d, %d) == b(%d, %d, %d, %d) == %f : passed!\n", t, i, j, k, t, i, j, k, a);
 	} else {
 		printf("a(%d, %d, %d, %d) = %f, b(%d, %d, %d, %d) = %f : FAILED!\n", t, i, j, k, a, t, i, j, k, b);
-        return false;
 	}
 
 }
@@ -139,16 +137,11 @@ int main(int argc, char * argv[])
 	std::cout << "Naive Loop: consumed time :" << min_tdiff << "ms" << std::endl;
 
 	t = T_SIZE;
-    bool passed = true;
 	for (int i = 1; i < N_SIZE-1; ++i) {
 	for (int j = 1; j < N_SIZE-1; ++j) {
     for (int k = 1; k < N_SIZE-1; ++k) {
-		passed &= check_result(t, i, j, k, a.interior(t, i, j, k), b.interior(t, i, j, k));
+		check_result(t, i, j, k, a.interior(t, i, j, k), b.interior(t, i, j, k));
 	} } }
-
-    if (passed) {
-        printf("PASSED!\n");
-    }
 #endif
 
 	return 0;

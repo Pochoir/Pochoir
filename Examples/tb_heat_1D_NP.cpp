@@ -38,19 +38,19 @@ using namespace std;
 #define N_RANK 2
 #define TOLERANCE (1e-6)
 
-bool check_result(int t, int i, double a, double b)
+void check_result(int t, int i, double a, double b)
 {
 	if (abs(a - b) < TOLERANCE) {
-        // printf("a(%d, %d) == b(%d, %d) == %f : PASSED!\n", t, i, t, i, a);
-        return true;
+//		printf("a(%d, %d) == b(%d, %d) == %f : passed!\n", t, i, t, i, a);
 	} else {
 		printf("a(%d, %d) = %f, b(%d, %d) = %f : FAILED!\n", t, i, a, t, i, b);
-        return false;
 	}
+
 }
 
 Pochoir_Boundary_1D(heat_bv_1D, arr, t, i)
     return t;
+    // return 0;
 Pochoir_Boundary_End
 
 int main(int argc, char * argv[])
@@ -62,10 +62,9 @@ int main(int argc, char * argv[])
     int N_SIZE = 0, T_SIZE = 0;
 
     if (argc < 3) {
-        printf("Usage: tb_heat_1D_NP_pochoir N_SIZE T_SIZE\n");
+        printf("argc < 3, quit! \n");
         exit(1);
     }
-
     N_SIZE = StrToInt(argv[1]);
     T_SIZE = StrToInt(argv[2]);
     printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);
@@ -80,7 +79,6 @@ int main(int argc, char * argv[])
     Pochoir_Kernel_End
 
     a.Register_Boundary(heat_bv_1D);
-    b.Register_Boundary(heat_bv_1D);
     heat_1D.Register_Array(a);
     b.Register_Shape(heat_shape_1D);
 
@@ -99,32 +97,27 @@ int main(int argc, char * argv[])
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
 	std::cout << "Pochoir ET: consumed time :" << min_tdiff << "ms" << std::endl;
-#endif
 
+#endif
 #if 1
+    b.Register_Boundary(heat_bv_1D);
     min_tdiff = INF;
     /* cilk_for + zero-padding */
     for (int times = 0; times < TIMES; ++times) {
-    	gettimeofday(&start, 0);
-    	for (int t = 0; t < T_SIZE; ++t) {
-            cilk_for (int i = 0; i < N_SIZE; ++i) {
-               b(t+1, i) = 0.125 * (b(t, i+1) - 2.0 * b(t, i) + b(t, i-1)); 
-            } 
-        }
-    	gettimeofday(&end, 0);
-        min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
+	gettimeofday(&start, 0);
+	for (int t = 0; t < T_SIZE; ++t) {
+    cilk_for (int i = 0; i < N_SIZE; ++i) {
+       b(t+1, i) = 0.125 * (b(t, i+1) - 2.0 * b(t, i) + b(t, i-1)); 
+    } }
+	gettimeofday(&end, 0);
+    min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
 	std::cout << "Naive Loop: consumed time :" << min_tdiff << "ms" << std::endl;
 
 	t = T_SIZE;
-    bool passed = true;
 	for (int i = 0; i < N_SIZE; ++i) {
-		passed &= check_result(t, i, a(t, i), b(t, i));
-	}
-
-    if (passed) {
-        printf("PASSED!\n");
-    }
+		check_result(t, i, a.interior(t, i), b.interior(t, i));
+	}  
 #endif
 
 	return 0;

@@ -23,7 +23,9 @@
  *********************************************************************************
  */
 
-/* Test bench - two parallel 1D heat equation, Non-periodic version */
+/* Test bench - two parallel 1D heat equation, Non-periodic version 
+ *                                  -- Rodrigo
+ */
 #include <cstdio>
 #include <cstddef>
 #include <iostream>
