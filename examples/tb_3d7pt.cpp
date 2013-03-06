@@ -50,10 +50,6 @@ void check_result(int t, int i, int j, int k, double a, double b)
 
 }
 
-Pochoir_Boundary_3D(fd_bv_3D, arr, t, i, j, k)
-    return 0;
-Pochoir_Boundary_End
-
 int main(int argc, char *argv[])
 {
     struct timeval start, end;

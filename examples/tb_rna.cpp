@@ -34,7 +34,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <sys/time.h>
-// #include "cilktime.h"
+#include "cilktime.h"
 #include <cmath>
 
 #include <pochoir.hpp>

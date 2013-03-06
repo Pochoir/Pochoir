@@ -49,8 +49,7 @@ void check_result(int t, int i, double a, double b)
 }
 
 Pochoir_Boundary_1D(heat_bv_1D, arr, t, i)
-    return t;
-    // return 0;
+    return 0;
 Pochoir_Boundary_End
 
 int main(int argc, char * argv[])
@@ -70,12 +69,12 @@ int main(int argc, char * argv[])
     printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);
 	/* data structure of Pochoir - row major */
     Pochoir_Shape_1D heat_shape_1D[] = {{1, 0}, {0, 1}, {0, -1}, {0, 0}};
-	Pochoir_Array_1D(double) a(N_SIZE), b(N_SIZE);
+	Pochoir_Array_1D(double) a(N_SIZE), b(N_SIZE+2);
     Pochoir_1D heat_1D(heat_shape_1D);
 
 	cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
     Pochoir_Kernel_1D(heat_1D_fn, t, i)
-	   a(t+1, i) = 0.125 * (a(t, i+1) - 2.0 * a(t, i) + a(t, i-1));
+	   a(t+1, i) = 0.125 * (a(t, i+1) - 2.0 * a(t, i) + a(t, i-2));
     Pochoir_Kernel_End
 
     a.Register_Boundary(heat_bv_1D);
@@ -85,9 +84,10 @@ int main(int argc, char * argv[])
 	for (int i = 0; i < N_SIZE; ++i) {
         a(0, i) = 1.0 * (rand() % BASE); 
         a(1, i) = 0; 
-        b(0, i) = a(0, i);
-        b(1, i) = 0;
+        b(0, i+1) = a(0, i);
+        b(1, i+1) = 0;
 	} 
+
 
 #if 1
     for (int times = 0; times < TIMES; ++times) {
@@ -100,14 +100,13 @@ int main(int argc, char * argv[])
 
 #endif
 #if 1
-    b.Register_Boundary(heat_bv_1D);
     min_tdiff = INF;
     /* cilk_for + zero-padding */
     for (int times = 0; times < TIMES; ++times) {
 	gettimeofday(&start, 0);
 	for (int t = 0; t < T_SIZE; ++t) {
-    cilk_for (int i = 0; i < N_SIZE; ++i) {
-       b(t+1, i) = 0.125 * (b(t, i+1) - 2.0 * b(t, i) + b(t, i-1)); 
+    cilk_for (int i = 1; i < N_SIZE+1; ++i) {
+       b.interior(t+1, i) = 0.125 * (b.interior(t, i+1) - 2.0 * b.interior(t, i) + b.interior(t, i-1)); 
     } }
 	gettimeofday(&end, 0);
     min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
@@ -116,7 +115,7 @@ int main(int argc, char * argv[])
 
 	t = T_SIZE;
 	for (int i = 0; i < N_SIZE; ++i) {
-		check_result(t, i, a.interior(t, i), b.interior(t, i));
+		check_result(t, i, a.interior(t, i), b.interior(t, i+1));
 	}  
 #endif
 

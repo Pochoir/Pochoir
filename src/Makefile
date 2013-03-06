@@ -1,7 +1,11 @@
-PP_FILE=PMain.hs PMainParser.hs PBasicParser.hs PData.hs PShow.hs PUtils.hs PParser2.hs
+PP_FILE=PMain.hs PMainParser.hs PBasicParser.hs PData.hs PShow.hs PUtils.hs PMainParser2.hs PBasicParser2.hs
+GEN_FILE=PGenMain.hs PGenMainParser.hs PGenBasicParser.hs PGenData.hs PGenShow.hs PGenUtils.hs PGenMainParser2.hs PGenBasicParser2.hs
+all : pochoir genstencils
 pochoir : ${PP_FILE} 
 	ghc -o pochoir -O --make PMain.hs
 	cp pochoir ..
-
+genstencils : ${GEN_FILE} 
+	ghc -o genstencils -O --make PGenMain.hs
+	cp genstencils ..
 clean: 
-	rm -rf *.o *.hi pochoir
+	rm -f *.o *.hi pochoir genstencils

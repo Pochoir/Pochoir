@@ -34,7 +34,7 @@
 #include <pochoir.hpp>
 
 using namespace std;
-#define TIMES 1
+#define TIMES 3
 
 void check_result(int t, int j, int i, bool a, bool b)
 {
