@@ -13,6 +13,7 @@
     (This is mainly for 'ghc', the Glasgow Haskell Compiler: 
      http://www.haskell.org/ghc/)
 
+
 * Once the system prerequisites are satisfied, go into the src/ 
   directory of the Pochoir compiler and type 'make' to build the Pochoir 
   compiler.  If the compiler builds successfully, you will see a 'pochoir'
