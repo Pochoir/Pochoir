@@ -42,4 +42,4 @@ check: all
 	python check.py $(FLAG)
 
 clean: 
-	rm -f *.o *.i *_pochoir *_gdb *_pochoir.cpp *_kernel_info.cpp *.out $(TARGETS)
+	rm -f *.o *.i *_pochoir *_gdb *_pochoir.cpp *_kernel_info.cpp *_gen_kernel.cpp *_gen_kernel.so *_color.dat *.out *.csv $(TARGETS)
