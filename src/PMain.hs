@@ -95,7 +95,7 @@ ppopp (mode, showFile, userArgs) ((inFile, inDir):files) =
        -- let envPath = ["-I" ++ pochoirLibPath] ++ ["-I" ++ cilkHeaderPath]
        let iccPPFile = inDir ++ getPPFile inFile
        let ppFile = ["-o", iccPPFile]
-       let outFile = iccPPFile
+       let outFile = inDir ++ getPochoirFile inFile
        let kernelFile = rename "_kernel_info" inFile
        let ppFlags = if cc == "icc" 
                         then if mode == PDebug
@@ -121,7 +121,15 @@ ppopp (mode, showFile, userArgs) ((inFile, inDir):files) =
        ppopp (mode, showFile, userArgs) files
 
 getPPFile :: String -> String
-getPPFile fname = name ++ "_pochoir" ++ suffix
+getPPFile fname = name ++ ".i"
+    where (name, suffix) = break ('.' ==) fname
+
+getPochoirFile :: String -> String
+getPochoirFile fname = name ++ "_pochoir.cpp"
+    where (name, suffix) = break ('.' ==) fname
+
+getBinFile :: String -> String
+getBinFile fname = name 
     where (name, suffix) = break ('.' ==) fname
 
 pInitState = ParserState { pMode = PCaching, pInFile = "", pInDir = "", pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0, pColorNum = 0 }
