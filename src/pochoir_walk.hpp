@@ -379,7 +379,7 @@ struct meta_grid_interior <1>{
 
 static inline void set_worker_count(const char * nstr) 
 {
-#if 1
+#if 0
     if (0 != __cilkrts_set_param("nworkers", nstr)) {
         printf("Failed to set worker count\n");
     } else {
@@ -734,6 +734,8 @@ void Algorithm<N_RANK>::set_opks(Pochoir_Combined_Obase_Kernel<N_RANK> ** _opks)
      * for opks_, we keep using raw pointer for performance
      */
     assert(physGridSet);
+    if (homogeneity_vector_ == NULL) 
+        homogeneity_vector_ = new Vector_Info< Homogeneity >();
     opks_ = _opks;
     opksSet = true;
     return;
@@ -819,9 +821,9 @@ void Algorithm<N_RANK>::print_sync(FILE * fp)
 template <int N_RANK>
 void Algorithm<N_RANK>::print_index(int t, int const idx[])
 {
-    printf("U(t=%lu, {", t);
+    printf("U(t=%d, {", t);
     for (int i = 0; i < N_RANK; ++i) {
-        printf("%lu ", idx[i]);
+        printf("%d ", idx[i]);
     }
     printf("}) ");
     fflush(stdout);
@@ -830,9 +832,9 @@ void Algorithm<N_RANK>::print_index(int t, int const idx[])
 template <int N_RANK>
 void Algorithm<N_RANK>::print_region(int t, int const head[], int const tail[])
 {
-    printf("%s:%lu t=%lu, {", __FUNCTION__, __LINE__, t);
+    printf("%s:%d t=%d, {", __FUNCTION__, __LINE__, t);
     for (int i = 0; i < N_RANK; ++i) {
-        printf("{%lu, %lu} ", head[i], tail[i]);
+        printf("{%d, %d} ", head[i], tail[i]);
     }
     printf("}\n");
     fflush(stdout);

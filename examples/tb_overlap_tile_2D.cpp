@@ -24,6 +24,7 @@
  */
 
 /* test bench for 2D checkerboard style stencil in Pochoir
+ * rev
  */
 #include <cstdio>
 #include <cstddef>
@@ -70,8 +71,8 @@ Pochoir_Boundary_1D(aperiodic_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
 
-#define N 8000
-#define T 1000
+#define N 80
+#define T 10
 
 int main(int argc, char * argv[])
 {
@@ -84,8 +85,7 @@ int main(int argc, char * argv[])
      * - So to define the N, T as macros!
      */
     // int N = 0, T = 0;
-    double umin, umax;
-    char pochoir_plan_file_name[100];
+    // double umin, umax;
 
     if (argc < 3) {
         printf("argc < 3, quit! \n");
@@ -308,19 +308,13 @@ int main(int argc, char * argv[])
         b(1, i) = 0;
     }
 
-    Pochoir_Plan<1> & l_plan = overlap.Gen_Plan(T);
-    sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat", N, T);
-    overlap.Store_Plan(pochoir_plan_file_name, l_plan);
-    // Pochoir_Plan<1> & ll_plan = overlap.Load_Plan(pochoir_plan_file_name);
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        overlap.Run(l_plan);
+        overlap.Run(T);
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
     printf("Pochoir time = %.6f ms\n", min_tdiff);
-    overlap.Destroy_Plan(l_plan);
-    // overlap.Destroy_Plan(ll_plan);
 
     printf("\n--------------------------------------------------------------------------\n");
     min_tdiff = INF;
@@ -452,7 +446,7 @@ int main(int argc, char * argv[])
 //    std::cout << "Parallel Loop time : " << min_tdiff << " ms" << std::endl;
 
     /* check results! */
-    t = T;
+    t = T-1;
     for (int i = 0; i < N; ++i) {
         check_result(t, i, a(t, i), b(t, i));
     } 

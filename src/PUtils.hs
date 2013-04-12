@@ -436,16 +436,16 @@ pFillGuardOrder n (l_pGuard, l_pTiles) = (l_pGuard { gOrder = n }, l_pTiles)
 pFillPShapeName :: PName -> Int -> PShape -> PShape
 pFillPShapeName l_name n l_pShape = l_pShape { shapeName = "__POCHOIR_Shape_" ++ l_name ++ "_" ++ show n ++ "__" }
 
-pGetOverlapGuardFuncName :: PGuard -> String
-pGetOverlapGuardFuncName l_pGuard = 
+pGetGuardFuncName :: PGuard -> String
+pGetGuardFuncName l_pGuard = 
     let l_gComment = gComment l_pGuard
         l_gOrder = gOrder l_pGuard
         l_gfName = filter (not . isPrefixOf "!") l_gComment
         l_gfName' = "__POCHOIR_Guard_" ++ show l_gOrder ++ "__"
     in  l_gfName'
 
-pGetOverlapGuardName :: PGuard -> String
-pGetOverlapGuardName l_pGuard =
+pGetGuardName :: PGuard -> String
+pGetGuardName l_pGuard =
     let l_gComment = gComment l_pGuard
         l_gOrder = gOrder l_pGuard
         l_gfName = filter (not . isPrefixOf "!") l_gComment

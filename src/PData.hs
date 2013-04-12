@@ -45,13 +45,13 @@ stripWhite l = dropWhile isSpace l
 -- We use newtype just because we want to manually derive a Show instance of PShift
 newtype PShift = PShift Int deriving (Eq, Ord)
 data RegionT = Periodic | Nonperiodic | UnknownRegionT deriving Show
-data PBasicType = PChar | PShort | PLong | PSigned | PUnsigned | PVoid | PInt | PDouble | PFloat | PBool | PUserType deriving Eq
+data PBasicType = PChar | PShort | PLong | PLongLong | PSigned | PUnsigned | PVoid | PInt | PDouble | PFloat | PBool | PUserType deriving Eq
 data PRWMode = PRead | PWrite | POther deriving (Eq, Show)
 data PType = PType {
     basicType :: PBasicType,
     typeName :: String
 } deriving Eq
-data PMode = PHelp | PDefault | PDebug | PCaching | PMUnroll | PNoPP | PAllCondTileMacroOverlap | PAllCondTileCPointerOverlap | PAllCondTilePointerOverlap | PAllCondTileOptPointerOverlap | PUnrollTimeTileMacroOverlap | PUnrollTimeTileCPointerOverlap | PUnrollTimeTilePointerOverlap | PUnrollTimeTileOptPointerOverlap deriving Eq
+data PMode = PHelp | PDefault | PDebug | PCaching | PMUnroll | PNoPP | PCondMacro | PCondCPointer | PCondPointer | PCondOptPointer | PUnrollMacro | PUnrollCPointer | PUnrollPointer | PUnrollOptPointer deriving Eq
 data TileOp = PNOP | PSERIAL | PEXCLUSIVE | PINCLUSIVE deriving (Eq, Show)
 
 data PMacro = PMacro {
@@ -289,14 +289,14 @@ instance Show PMode where
     show PDefault = "-default" 
     show PDebug = "-debug" 
     show PCaching = "-split-caching" 
-    show PAllCondTileMacroOverlap = "-all-cond-tile-macro-overlap"
-    show PAllCondTileCPointerOverlap = "-all-cond-tile-c-pointer-overlap"
-    show PAllCondTilePointerOverlap = "-all-cond-tile-pointer-overlap"
-    show PAllCondTileOptPointerOverlap = "-all-cond-tile-opt-pointer-overlap"
-    show PUnrollTimeTileMacroOverlap = "-unroll-t-tile-macro-overlap"
-    show PUnrollTimeTileCPointerOverlap = "-unroll-t-tile-c-pointer-overlap"
-    show PUnrollTimeTilePointerOverlap = "-unroll-t-tile-pointer-overlap"
-    show PUnrollTimeTileOptPointerOverlap = "-unroll-t-tile-opt-pointer-overlap"
+    show PCondMacro = "-cond-macro"
+    show PCondCPointer = "-cond-c-pointer"
+    show PCondPointer = "-cond-pointer"
+    show PCondOptPointer = "-cond-opt-pointer"
+    show PUnrollMacro = "-unroll-macro"
+    show PUnrollCPointer = "-unroll-c-pointer"
+    show PUnrollPointer = "-unroll-pointer"
+    show PUnrollOptPointer = "-unroll-opt-pointer"
 
 instance Show PType where
     show ptype = typeName ptype

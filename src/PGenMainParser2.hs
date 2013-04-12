@@ -84,10 +84,10 @@ pDestroyLambdas l_mode l_rank l_stencil cL =
     let l_header = externC ++ "int Destroy_Lambdas " ++
                    mkParen "void" ++ " { " ++ breakline
         l_content = 
-            if l_mode == PAllCondTileMacroOverlap ||
-               l_mode == PAllCondTileCPointerOverlap ||
-               l_mode == PAllCondTilePointerOverlap ||
-               l_mode == PAllCondTileOptPointerOverlap 
+            if l_mode == PCondMacro ||
+               l_mode == PCondCPointer ||
+               l_mode == PCondPointer ||
+               l_mode == PCondOptPointer 
                then concatMap (pDestroyLambdaTerm l_mode l_rank "boundary" l_stencil) cL ++
                     concatMap (pDestroyLambdaTerm l_mode l_rank "interior" l_stencil) cL 
                else concatMap (pDestroyLambdaTerm l_mode l_rank "boundary" l_stencil) cL ++
@@ -110,10 +110,10 @@ pCreateLambdas l_mode l_rank l_stencil cL =
                     mkParen (l_stencilInputRef ++ ", " ++ intercalate ", " l_arrayInputRefList) ++ 
                     "{" ++ breakline
         l_content = 
-            if l_mode == PAllCondTileMacroOverlap ||
-               l_mode == PAllCondTileCPointerOverlap ||
-               l_mode == PAllCondTilePointerOverlap ||
-               l_mode == PAllCondTileOptPointerOverlap 
+            if l_mode == PCondMacro ||
+               l_mode == PCondCPointer ||
+               l_mode == PCondPointer ||
+               l_mode == PCondOptPointer 
                then concatMap 
                         (pCreateLambdaTerm l_mode l_rank "boundary" l_stencil l_inputList) 
                         cL ++ 

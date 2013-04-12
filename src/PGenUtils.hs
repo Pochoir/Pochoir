@@ -48,10 +48,6 @@ updatePGuardFuncOrder :: Int -> ParserState -> ParserState
 updatePGuardFuncOrder l_guardFuncOrder parserState =
     parserState { pGuardFuncOrder = l_guardFuncOrder }
 
-updatePGenPlanOrder :: Int -> ParserState -> ParserState
-updatePGenPlanOrder l_gen_plan_order parserState =
-    parserState { pGenPlanOrder = l_gen_plan_order }
-
 updatePKernelFunc :: PKernelFunc -> ParserState -> ParserState
 updatePKernelFunc l_kernelFunc parserState =
     parserState { pKernelFunc = Map.insert (kfName l_kernelFunc) l_kernelFunc $ pKernelFunc parserState }
@@ -84,10 +80,6 @@ updatePStencil :: [(PName, PStencil)] -> ParserState -> ParserState
 updatePStencil [] parserState = parserState
 updatePStencil pL@(p:ps) parserState =
     parserState { pStencil = foldr pMapInsert (pStencil parserState) pL }
-
-updatePGenPlan :: (Int, PStencil) -> ParserState -> ParserState
-updatePGenPlan p parserState =
-    parserState { pGenPlan = pMapInsert p (pGenPlan parserState) }
 
 updatePRange :: [(PName, PRange)] -> ParserState -> ParserState
 updatePRange [] parserState = parserState
@@ -815,16 +807,16 @@ pFillTileOrder n l_tile = l_tile { tOrder = n }
 pFillPShapeName :: PName -> Int -> PShape -> PShape
 pFillPShapeName l_name n l_pShape = l_pShape { shapeName = "__POCHOIR_Shape_" ++ l_name ++ "_" ++ show n ++ "__" }
 
-pGetOverlapGuardFuncName :: PGuard -> String
-pGetOverlapGuardFuncName l_pGuard = 
+pGetGuardFuncName :: PGuard -> String
+pGetGuardFuncName l_pGuard = 
     let l_gComment = gComment l_pGuard
         l_gOrder = gOrder l_pGuard
         l_gfName = filter (not . isPrefixOf "!") l_gComment
         l_gfName' = "__POCHOIR_Guard_" ++ show l_gOrder ++ "__"
     in  l_gfName'
 
-pGetOverlapGuardName :: PGuard -> String
-pGetOverlapGuardName l_pGuard =
+pGetGuardName :: PGuard -> String
+pGetGuardName l_pGuard =
     let l_gComment = gComment l_pGuard
         l_gOrder = gOrder l_pGuard
         l_gfName = filter (not . isPrefixOf "!") l_gComment
@@ -1131,14 +1123,14 @@ zipInsert op delim a b = a ++ op ++ b ++ delim
 getTagFromMode :: PMode -> String
 getTagFromMode l_mode = 
     case l_mode of
-        PAllCondTileMacroOverlap -> "Macro"
-        PAllCondTileCPointerOverlap -> "CPointer"
-        PAllCondTilePointerOverlap -> "Pointer"
-        PAllCondTileOptPointerOverlap -> "Opt_Pointer"
-        PUnrollTimeTileMacroOverlap -> "Macro"
-        PUnrollTimeTileCPointerOverlap -> "CPointer"
-        PUnrollTimeTilePointerOverlap -> "Pointer"
-        PUnrollTimeTileOptPointerOverlap -> "Opt_Pointer"
+        PCondMacro -> "Macro"
+        PCondCPointer -> "CPointer"
+        PCondPointer -> "Pointer"
+        PCondOptPointer -> "Opt_Pointer"
+        PUnrollMacro -> "Macro"
+        PUnrollCPointer -> "CPointer"
+        PUnrollPointer -> "Pointer"
+        PUnrollOptPointer -> "Opt_Pointer"
         otherwise -> "Unknown"
 
 foldTileOp :: TileOp -> TileOp -> TileOp

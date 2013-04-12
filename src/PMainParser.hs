@@ -256,13 +256,6 @@ pParsePochoirAutoKernelFunc =
        l_kernel_params <- parens $ commaSep1 (reserved "int" >> identifier)
        reserved "{"
        exprStmts <- manyTill pStatement (try $ reserved "};")
-       let l_len_kernel_params = length l_kernel_params
-       -- The transformation of input kernel parameters (t, i, j, ...) to 
-       -- (t, i2, i1, ...) is not safe because besides the PVAR ..., 
-       -- the input kernel parameters t, i, j, ... can also be used in other 
-       -- calculation spread through the kernel functions.
-       let l_rev_exprStmts = transStmts exprStmts (transKernelParams l_kernel_params 0 (l_len_kernel_params-1))
-       let l_rev_kernel_params = getKernelParams l_len_kernel_params
        let l_kernelFunc = PKernelFunc { kfName = l_kernel_name, 
                                         kfParams = l_kernel_params,
                                         kfStmt = exprStmts, 

@@ -50,16 +50,12 @@ pParser = do tokens0 <- many $ pToken
              -- tokens1 <- many pToken1
              l_state <- getState
              let l_mode = pMode l_state
-             let l_colorNum = pColorNum l_state
-             -- let l_stencils = Map.elems $ pGenPlan l_state
+             let l_stencil_name = pStencilName l_state
              let l_colorVectors = pColorVectors l_state
              let l_guardFuncs = sortBy (comparing gfOrder) $ Map.elems $ pGuardFunc l_state
-             -- let l_reg_GTs = sRegTileKernel l_stencil
-             case Map.lookup l_colorNum $ pGenPlan l_state of
-                 Nothing -> 
-                    return ("pGenPlan (with colorNum = " ++ (show l_colorNum) ++ 
-                           ") Not Found!")
-                 Just l_stencil -> 
+             case Map.lookup l_stencil_name $ pStencil l_state of
+                 Nothing -> return (l_stencil_name ++ "NOT found")
+                 Just l_stencil ->
                     do let l_arrayInUse = sArrayInUse l_stencil
                        let l_regBound = foldr (||) False $ map (getArrayRegBound l_state) l_arrayInUse
                        let l_stencil' = l_stencil { sRegBound = l_regBound }

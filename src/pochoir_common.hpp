@@ -66,7 +66,7 @@ static inline int lcm(int a, int b) {
 
 #define ARRAY_LENGTH(x) (int)(sizeof(x)/sizeof(x[0]))
 
-#if 0
+#if 1
 #define cilk_for for
 #define cilk_spawn 
 #define cilk_sync
@@ -100,7 +100,7 @@ enum Pochoir_Mode {
 // define an alias to the array of array of Pochoir_Kernel
 #define POCHOIR_TILE Pochoir_Kernel
 #define max(a, b) ((a) > (b) ? (a) : (b))
-#define min(a, b) ((a) < (b) ? (a) : (b))
+// #define min(a, b) ((a) < (b) ? (a) : (b))
 #define pabs(a, b) ((a) > (b) ? ((a) - (b)) : ((b) - (a)))
 /* a bit tricky version of modulo operation, assuming a < 2 * b */
 #define pmod(a, b) ((a) - ((b) & -((a)>=(b))))
@@ -550,9 +550,6 @@ struct Vector_Info {
         for (int i = 0; i < VECTOR_SIZE; ++i)
             measure_[i] = 0;
         pointer_ = 0; size_ = VECTOR_SIZE;
-#if DEBUG
-        printf("init size = %d\n", size_);
-#endif
     }
     Vector_Info(int size) {
         region_ = setup_region<T>(size, region_type_());
@@ -560,9 +557,6 @@ struct Vector_Info {
         for (int i = 0; i < size; ++i)
             measure_[i] = 0;
         pointer_ = 0; size_ = size;
-#if DEBUG
-        printf("init size = %d\n", size_);
-#endif
     }
     Vector_Info(Vector_Info<T> const & rhs) {
         int l_rhs_size = rhs.size();
@@ -612,9 +606,6 @@ struct Vector_Info {
          * occupy a seperate slot in the vector regardless if it's a duplicate
          * of existing elements
          */
-#if DEBUG
-        std::cerr << "push_back " << ele << std::endl;
-#endif
         if (pointer_ < size_) {
             region_[pointer_] = ele;
             ++pointer_;
@@ -645,9 +636,6 @@ struct Vector_Info {
         /* by push_back_unique, it's guaranteed that the element added
          * into the vector will be union'ed against the existing elements
          */
-#if DEBUG
-        std::cerr << "push_back_unique " << ele << std::endl;
-#endif
         /* to make sure every element in this vector is unique */
         for (int i = 0; i < pointer_; ++i) {
             if (region_[i] == ele)
@@ -663,16 +651,14 @@ struct Vector_Info {
          * of existing elements
          */
         T_measure l_inc = (T_measure)1/(0x1 << rec_level);
-#if DEBUG
-        std::cerr << "push_back " << ele << std::endl;
-#endif
+
         if (pointer_ < size_) {
             region_[pointer_] = ele;
             measure_[pointer_] = l_inc;
             ++pointer_;
         } else {
 #if DEBUG
-            LOG_ARGS("realloc memory size = %d -> %d!\n", size_, 2 * size_);
+            LOG_ARGS(0, "realloc memory size = %d -> %d!\n", size_, 2 * size_);
 #endif
             T * l_region = setup_region<T>(2 * size_, region_type_());
             T_measure * l_measure = setup_region<T_measure>(2 * size_, measure_type_());
@@ -1200,7 +1186,7 @@ struct Spawn_Tree {
         Node_Info<N_RANK> * l_node = NULL;
         if (node->op == IS_SPAWN) {
             assert(node->left == NULL);
-            assert(node->region_.region_n >= 0);
+            //assert(node->region_.region_n_ >= 0);
             l_node = node->right;
             base_data.push_back(node->region_);
             rm_node(node);
@@ -1244,7 +1230,10 @@ struct Spawn_Tree {
 template <int N_RANK, size_t N>
 size_t ArraySize (Pochoir_Shape<N_RANK> (& arr)[N]) { return N; }
 
+#ifdef CHECK_SHAPE
 static bool inRun = false;
+#endif
+
 static int home_cell_[9];
 
 static inline void klein(int & new_i, int & new_j, Grid_Info<2> const & grid) {

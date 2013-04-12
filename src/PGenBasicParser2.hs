@@ -56,10 +56,10 @@ pRegLambdaTerm l_mode l_rank l_stencil (g, t) =
         l_obase_pointer = (mkParen . derefPointer) l_obase_name
         l_cond_obase_pointer = (mkParen . derefPointer) l_cond_obase_name
         l_run_kernel = 
-            if l_mode == PAllCondTileMacroOverlap ||
-               l_mode == PAllCondTileCPointerOverlap ||
-               l_mode == PAllCondTilePointerOverlap ||
-               l_mode == PAllCondTileOptPointerOverlap 
+            if l_mode == PCondMacro ||
+               l_mode == PCondCPointer ||
+               l_mode == PCondPointer ||
+               l_mode == PCondOptPointer 
                then if l_regBound 
                        then l_obase_pointer ++ ", " ++ l_bdry_pointer
                        else l_obase_pointer
@@ -68,7 +68,7 @@ pRegLambdaTerm l_mode l_rank l_stencil (g, t) =
                             ", " ++ l_bdry_pointer ++ ", " ++ l_cond_bdry_pointer
                        else l_obase_pointer ++ ", " ++ l_cond_obase_pointer
         l_pochoir_id = sName l_stencil
-        l_guard_name = pGetOverlapGuardName g
+        l_guard_name = pGetGuardName g
         l_unroll = foldr lcm 1 $ map (head . tSizes) t
         l_unroll' = if l_unroll == 1 then 2 else l_unroll
     in  pTab ++ l_pochoir_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guard_name ++

@@ -45,7 +45,7 @@ struct Pochoir_Kernel {
     template <int N_SIZE>
     Pochoir_Kernel(T_Kernel _kernel, Pochoir_Shape<N_RANK> (& _shape)[N_SIZE]) : kernel_(_kernel) {
         int l_min_time_shift=0, l_max_time_shift=0, depth=0;
-        for (int r = 0; r < N_RANK+1; ++r) {
+        for (int r = 0; r < N_RANK; ++r) {
             slope_[r] = 0;
         }
         for (int i = 0; i < N_SIZE; ++i) {
@@ -82,7 +82,7 @@ struct Pochoir_Base_Kernel {
     // typedef std::function<void (int, int, const Grid_Info<N_RANK> &)> T_Kernel;
     // virtual T_Kernel & Get_Kernel (void) = 0;
     virtual Pochoir_Shape<N_RANK> * Get_Shape() = 0;
-    virtual inline void operator()(int t0, int t1, Grid_Info<N_RANK> const & grid) const = 0;
+    virtual void operator()(int t0, int t1, Grid_Info<N_RANK> const & grid) const = 0;
     virtual int Get_Shape_Size() = 0;
 };
 
@@ -115,7 +115,7 @@ struct Pochoir_Obase_Kernel : public Pochoir_Base_Kernel<N_RANK> {
         }
         shape_size_ = N_SIZE;
         shape_ = _shape;
-#if DEBUG
+#ifdef DEBUG
         printf("time_shift_ = %d, toggle = %d\n", time_shift_, toggle_);
         for (int r = 0; r < N_RANK; ++r) {
             printf("slope[%d] = %d, ", r, slope_[r]);
@@ -126,7 +126,7 @@ struct Pochoir_Obase_Kernel : public Pochoir_Base_Kernel<N_RANK> {
     Pochoir_Shape<N_RANK> * Get_Shape() { return shape_; }
     int Get_Shape_Size() { return shape_size_; }
     // F & Get_Kernel (void) { return kernel_; }
-    inline void operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const {
+    void operator() (int t0, int t1, Grid_Info<N_RANK> const & grid) const {
         kernel_(t0, t1, grid);
     }
     ~Pochoir_Obase_Kernel() { }
@@ -293,9 +293,6 @@ struct Pochoir_Run_Regional_Guard_Tile_Kernel {
     inline void operator() (int t, IS ... is) const {
         if ((*pg_)(t, is ...)) {
             int l_kernel_pointer = set_pointer(N_RANK, t, is ...);
-#if DEBUG
-            printf("<%s> l_kernel_pointer = %d\n", __FUNCTION__, l_kernel_pointer);
-#endif
             (pt_->kernel_[l_kernel_pointer])(t, is ...);
         }
     }

@@ -52,14 +52,14 @@ pTab = "\t"
 -- We use newtype just because we want to manually derive a Show instance of PShift
 newtype PShift = PShift Int deriving (Eq, Ord)
 data RegionT = Periodic | Nonperiodic | UnknownRegionT deriving Show
-data PBasicType = PChar | PShort | PLong | PSigned | PUnsigned | PVoid | PInt | PDouble | PFloat | PBool | PUserType deriving Eq
+data PBasicType = PChar | PShort | PLong | PLongLong | PSigned | PUnsigned | PVoid | PInt | PDouble | PFloat | PBool | PUserType deriving Eq
 data PPred = PLEQ | PGEQ | PEQ | PNEQ deriving (Eq, Show)
 data PRWMode = PRead | PWrite | POther deriving (Eq, Show)
 data PType = PType {
     basicType :: PBasicType,
     typeName :: String
 } deriving Eq
-data PMode = PHelp | PDefault | PDebug | PCaching | PMUnroll | PNoPP | PAllCondTileMacroOverlap | PAllCondTileCPointerOverlap | PAllCondTilePointerOverlap | PAllCondTileOptPointerOverlap | PUnrollTimeTileMacroOverlap | PUnrollTimeTileCPointerOverlap | PUnrollTimeTilePointerOverlap | PUnrollTimeTileOptPointerOverlap deriving Eq
+data PMode = PHelp | PDefault | PDebug | PCaching | PMUnroll | PNoPP | PCondMacro | PCondCPointer | PCondPointer | PCondOptPointer | PUnrollMacro | PUnrollCPointer | PUnrollPointer | PUnrollOptPointer deriving Eq
 data TileOp = PNULL | PSERIAL | PEXCLUSIVE | PINCLUSIVE deriving (Eq, Show)
 
 data Homogeneity = Homogeneity {
@@ -251,10 +251,7 @@ data ParserState = ParserState {
     pTileOrder :: Int,
     pGuardOrder :: Int,
     pGuardFuncOrder :: Int,
-    pGenPlan :: Map.Map Int PStencil, -- this is a snapshot of each PStencil object
-                                      -- at the time of calling Gen_Plan_Obase(T)
-    pGenPlanOrder :: Int,
-    pColorNum :: Int
+    pStencilName :: String
 } deriving Show
 
 data Expr = VAR String String 
@@ -327,14 +324,14 @@ instance Show PMode where
     show PCaching = "-split-caching" 
     show PNoPP = "-No-Preprocessing"
     show PMUnroll = "-unroll-multi-kernel"
-    show PAllCondTileMacroOverlap = "-all-cond-tile-macro-overlap"
-    show PAllCondTileCPointerOverlap = "-all-cond-tile-c-pointer-overlap"
-    show PAllCondTilePointerOverlap = "-all-cond-tile-pointer-overlap"
-    show PAllCondTileOptPointerOverlap = "-all-cond-tile-opt-pointer-overlap"
-    show PUnrollTimeTileMacroOverlap = "-unroll-t-tile-macro-overlap"
-    show PUnrollTimeTileCPointerOverlap = "-unroll-t-tile-c-pointer-overlap"
-    show PUnrollTimeTilePointerOverlap = "-unroll-t-tile-pointer-overlap"
-    show PUnrollTimeTileOptPointerOverlap = "-unroll-t-tile-opt-pointer-overlap"
+    show PCondMacro = "-all-cond-tile-macro-overlap"
+    show PCondCPointer = "-all-cond-tile-c-pointer-overlap"
+    show PCondPointer = "-all-cond-tile-pointer-overlap"
+    show PCondOptPointer = "-all-cond-tile-opt-pointer-overlap"
+    show PUnrollMacro = "-unroll-t-tile-macro-overlap"
+    show PUnrollCPointer = "-unroll-t-tile-c-pointer-overlap"
+    show PUnrollPointer = "-unroll-t-tile-pointer-overlap"
+    show PUnrollOptPointer = "-unroll-t-tile-opt-pointer-overlap"
 
 instance Show Homogeneity where
     show h = "<" ++ showBin (size h - 1) (o h) ++ ", " ++ showBin (size h - 1) (a h) ++ ">\n"

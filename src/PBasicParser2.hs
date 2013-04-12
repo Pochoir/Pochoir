@@ -44,52 +44,29 @@ import PData
 
 ppStencil1 :: String -> ParserState -> GenParser Char ParserState String
 ppStencil1 l_id l_state = 
-        do try $ pMember "Gen_Plan"
-           l_tstep <- parens exprStmtDim
-           semi
-           let l_mode = pMode l_state
-           case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Gen_Plan(" ++ show l_tstep ++ "); /* Unknown stencil id" ++ breakline)
-               Just l_stencil ->
-                   do let l_inFile = pInFile l_state 
-                      let l_fname = pSubstitute ".cpp" "" l_inFile
-                      let l_arrayInUse = map aName $ sArrayInUse l_stencil
-                      return (l_id ++ ".Gen_Plan_Obase(" ++ show l_tstep ++ 
-                              ", " ++ (mkQuote . show) l_mode ++ 
-                              ", " ++ mkQuote l_fname ++
-                              ", " ++ (intercalate ", " l_arrayInUse) ++
-                              "); /* KNOWN */" ++ breakline)
-    <|> do try $ pMember "Load_Plan"
-           l_fname <- parens pFileName
-           semi
-           case Map.lookup l_id $ pStencil l_state of
-               Nothing -> return (l_id ++ ".Load_Plan(" ++ l_fname ++ ");")
-               Just l_stencil ->
-                   do let l_arrayInUse = map aName $ sArrayInUse l_stencil
-                      return (l_id ++ ".Load_Plan_Obase(" ++ l_fname ++
-                              ", " ++ (intercalate ", " l_arrayInUse) ++
-                              "); /* KNOWN */" ++ breakline)
-    <|> do try $ pMember "Run"
+        do try $ pMember "Run"
            l_tstep <- parens exprStmtDim
            semi
            let l_mode = pMode l_state
            case Map.lookup l_id $ pStencil l_state of
                Nothing -> return (l_id ++ ".Run(" ++ show l_tstep ++ ");")
                Just l_stencil -> 
-                   if l_mode == PMUnroll 
-                            || l_mode == PAllCondTileMacroOverlap
-                            || l_mode == PAllCondTileCPointerOverlap
-                            || l_mode == PAllCondTilePointerOverlap
-                            || l_mode == PAllCondTileOptPointerOverlap
-                          then do return (breakline ++ l_id ++ 
-                                         ".Run_Obase_All_Cond(" ++ 
-                                         show l_tstep ++
-                                         "); /* Run with Stencil " ++ l_id ++ " */" ++ 
-                                         breakline)
-                          else do return (breakline ++ l_id ++ 
-                                          ".Run_Obase_Unroll_T(" ++
-                                          show l_tstep ++  
-                                          "); /* Run with Stencil " ++ l_id ++ " */" ++ 
-                                          breakline)
+                   do let l_inFile = pInFile l_state
+                      let l_fname = pSubstitute ".cpp" "" l_inFile
+                      let l_stencil_name = sName l_stencil
+                      let l_arrayInUse = map aName $ sArrayInUse l_stencil
+                      let l_runCmd = if l_mode == PMUnroll 
+                            || l_mode == PCondMacro
+                            || l_mode == PCondCPointer
+                            || l_mode == PCondPointer
+                            || l_mode == PCondOptPointer
+                          then ".Run_Obase_All_Cond(" 
+                          else ".Run_Obase_Unroll_T(" 
+                      return (l_id ++ l_runCmd ++ show l_tstep ++
+                              ", " ++ (mkQuote . show) l_mode ++
+                              ", " ++ mkQuote l_fname ++
+                              ", " ++ mkQuote l_stencil_name ++
+                              ", " ++ (intercalate ", " l_arrayInUse) ++
+                              "); /* KNOWN */" ++ breakline)
     <|> do return (l_id)
 

@@ -50,13 +50,14 @@ main = do args <- getArgs
           whilst (null args || length args < 2) $ do
              printUsage
              exitFailure
-          let (colorNum, color_file, kernel_file, mode, showFile, userArgs) 
-                = parseArgs (2, "", "", PDefault, True, []) args
+          let (stencil_name, color_file, kernel_file, mode, showFile, userArgs) 
+                = parseArgs ("", "", "", PDefault, True, []) args
           whilst (mode == PHelp) $ do
              printOptions
              exitFailure
           whilst (mode /= PNoPP) $ do
-             putStrLn ("color_num = " ++ show colorNum ++ ", color_file = " ++ color_file ++
+             putStrLn ("stencil_name = " ++ stencil_name ++
+                       ", color_file = " ++ color_file ++
                        ", kernel_file = " ++ kernel_file ++ ", mode = " ++ show mode)
              colorh <- openFile color_file ReadMode
              colorVectors <- pParseColorFile colorh
@@ -65,7 +66,7 @@ main = do args <- getArgs
              -- let genKernel_file = pSubstitute "kernel_info" "gen_kernel" kernel_file
              let genKernel_file = pSubstitute "color.dat" "gen_kernel.cpp" color_file
              genKernelh <- openFile genKernel_file WriteMode
-             pGenKernel mode colorVectors colorNum kernelh genKernelh
+             pGenKernel mode stencil_name colorVectors kernelh genKernelh
              hClose genKernelh
           whilst (showFile == False) $ do
              removeFile color_file 
@@ -75,96 +76,97 @@ whilst :: Bool -> IO () -> IO ()
 whilst True action = action
 whilst False action = return () 
 
-pInitState = ParserState { pMode = PDefault, pColorVectors = [], pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0, pGuardOrder = 0, pGuardFuncOrder = 0, pGenPlan = Map.empty, pGenPlanOrder = 0, pColorNum = 0 }
+pInitState = ParserState { pMode = PUnrollPointer, pColorVectors = [], pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0, pGuardOrder = 0, pGuardFuncOrder = 0, pStencilName = ""}
 
-icc = "icpc"
+-- icc = "icpc"
+-- icc = "g++_4_7"
 
-iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
+-- iccFlags = ["-O3", "-DNDEBUG", "-std=c++11", "-Wall", "-Werror", "-ipo", "-fcilkplus", "-lcilkrts"]
 
-iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
+-- iccPPFlags = ["-E", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++11", "-Wall", "-Werror", "-ipo", "-fcilkplus"]
 
 -- iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
-iccDebugFlags = ["-DNDEBUG", "-O0", "-g3", "-std=c++0x"]
+-- iccDebugFlags = ["-DNDEBUG", "-O0", "-g3", "-std=c++11", "-include", "cilk_stub.h"]
 
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x"]
-iccDebugPPFlags = ["-P", "-C", "-DNDEBUG", "-g3", "-std=c++0x"]
+-- iccDebugPPFlags = ["-E", "-C", "-DNDEBUG", "-g3", "-std=c++11", "-include", "cilk_stub.h"]
 
-parseArgs :: (Int, String, String, PMode, Bool, [String]) -> [String] -> (Int, String, String, PMode, Bool, [String])
-parseArgs (colorNum, color_file, kernel_file, mode, showFile, userArgs) aL 
+parseArgs :: (String, String, String, PMode, Bool, [String]) -> [String] -> (String, String, String, PMode, Bool, [String])
+parseArgs (stencil_name, color_file, kernel_file, mode, showFile, userArgs) aL 
     | elem "--help" aL =
         let l_mode = PHelp
             aL' = delete "--help" aL
-        in  (colorNum, color_file, kernel_file, l_mode, showFile, aL')
+        in  (stencil_name, color_file, kernel_file, l_mode, showFile, aL')
     | elem "-h" aL =
         let l_mode = PHelp
             aL' = delete "-h" aL
-        in  (colorNum, color_file, kernel_file, l_mode, showFile, aL')
+        in  (stencil_name, color_file, kernel_file, l_mode, showFile, aL')
     | elem "-showFile" aL =
         let l_showFile = True
             aL' = delete "-showFile" aL
-        in  parseArgs (colorNum, color_file, kernel_file, mode, l_showFile, aL') aL'
+        in  parseArgs (stencil_name, color_file, kernel_file, mode, l_showFile, aL') aL'
     | elem "-auto-optimize" aL =
         let l_mode = PDefault
             aL' = delete "-auto-optimize" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (stencil_name, color_file, kernel_file, l_mode, showFile, aL') aL'
 ------------------------------------------------------------------------------
 -- so far, the split-caching mode doesn't work for multiple-kernel case!!!! --
 ------------------------------------------------------------------------------
     | elem "-split-caching" aL =
         let l_mode = PCaching
             aL' = delete "-split-caching" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-all-cond-tile-macro-overlap" aL =
-        let l_mode = PAllCondTileMacroOverlap
-            aL' = delete "-all-cond-tile-macro-overlap" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-all-cond-tile-c-pointer-overlap" aL =
-        let l_mode = PAllCondTileCPointerOverlap
-            aL' = delete "-all-cond-tile-c-pointer-overlap" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-all-cond-tile-pointer-overlap" aL =
-        let l_mode = PAllCondTilePointerOverlap
-            aL' = delete "-all-cond-tile-pointer-overlap" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-all-cond-tile-opt-pointer-overlap" aL =
-        let l_mode = PAllCondTileOptPointerOverlap
-            aL' = delete "-all-cond-tile-opt-pointer-overlap" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-unroll-t-tile-macro-overlap" aL =
-        let l_mode = PUnrollTimeTileMacroOverlap
-            aL' = delete "-unroll-t-tile-macro-overlap" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-unroll-t-tile-c-pointer-overlap" aL =
-        let l_mode = PUnrollTimeTileCPointerOverlap
-            aL' = delete "-unroll-t-tile-c-pointer-overlap" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-unroll-t-tile-pointer-overlap" aL =
-        let l_mode = PUnrollTimeTilePointerOverlap
-            aL' = delete "-unroll-t-tile-pointer-overlap" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-unroll-t-tile-opt-pointer-overlap" aL =
-        let l_mode = PUnrollTimeTileOptPointerOverlap
-            aL' = delete "-unroll-t-tile-opt-pointer-overlap" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
+        in  parseArgs (stencil_name, color_file, kernel_file, l_mode, showFile, aL') aL'
+    | elem "-cond-macro" aL =
+        let l_mode = PCondMacro
+            aL' = delete "-cond-macro" aL
+        in  parseArgs (stencil_name, color_file, kernel_file, l_mode, showFile, aL') aL'
+    | elem "-cond-c-pointer" aL =
+        let l_mode = PCondCPointer
+            aL' = delete "-cond-c-pointer" aL
+        in  parseArgs (stencil_name, color_file, kernel_file, l_mode, showFile, aL') aL'
+    | elem "-cond-pointer" aL =
+        let l_mode = PCondPointer
+            aL' = delete "-cond-pointer" aL
+        in  parseArgs (stencil_name, color_file, kernel_file, l_mode, showFile, aL') aL'
+    | elem "-cond-opt-pointer" aL =
+        let l_mode = PCondOptPointer
+            aL' = delete "-cond-opt-pointer" aL
+        in  parseArgs (stencil_name, color_file, kernel_file, l_mode, showFile, aL') aL'
+    | elem "-unroll-macro" aL =
+        let l_mode = PUnrollMacro
+            aL' = delete "-unroll-macro" aL
+        in  parseArgs (stencil_name, color_file, kernel_file, l_mode, showFile, aL') aL'
+    | elem "-unroll-c-pointer" aL =
+        let l_mode = PUnrollCPointer
+            aL' = delete "-unroll-c-pointer" aL
+        in  parseArgs (stencil_name, color_file, kernel_file, l_mode, showFile, aL') aL'
+    | elem "-unroll-pointer" aL =
+        let l_mode = PUnrollPointer
+            aL' = delete "-unroll-pointer" aL
+        in  parseArgs (stencil_name, color_file, kernel_file, l_mode, showFile, aL') aL'
+    | elem "-unroll-opt-pointer" aL =
+        let l_mode = PUnrollOptPointer
+            aL' = delete "-unroll-opt-pointer" aL
+        in  parseArgs (stencil_name, color_file, kernel_file, l_mode, showFile, aL') aL'
     | elem "-unroll-multi-kernel" aL =
         let l_mode = PMUnroll
             aL' = delete "-unroll-multi-kernel" aL
-        in  parseArgs (colorNum, color_file, kernel_file, l_mode, showFile, aL') aL'
-    | elem "-order" aL =
-        let l_idx = fromJust $ elemIndex "-order" aL
-            l_order = aL !! (l_idx + 1)
-            l_colorNum = fromIntegral $ read l_order
-            aL' = delete l_order $ delete "-order" aL 
-        in  parseArgs (l_colorNum, color_file, kernel_file, mode, showFile, aL') aL'
+        in  parseArgs (stencil_name, color_file, kernel_file, l_mode, showFile, aL') aL'
+    | elem "-stencil" aL = 
+        let idx = fromMaybe 0 $ elemIndex "-stencil" aL
+            l_stencil_name = aL !! (idx + 1)
+            aL' = delete "-stencil" aL
+            aL'' = delete l_stencil_name aL'
+        in  parseArgs (l_stencil_name, color_file, kernel_file, mode, showFile, aL'') aL''
     | null aL == False =
         let (l_color_file, l_color_dir) = findFileBySuffix aL "color.dat" 
             (l_kernel_file, l_kernel_dir) = findFileBySuffix aL "kernel_info.cpp" 
             aL' = delete (l_color_dir ++ l_color_file) $ delete (l_kernel_dir ++ l_kernel_file) aL
-        in  (colorNum, l_color_dir++l_color_file, l_kernel_dir++l_kernel_file, mode, showFile, aL')
+        in  (stencil_name, l_color_dir++l_color_file, l_kernel_dir++l_kernel_file, mode, showFile, aL')
     | otherwise = 
         let l_mode = PNoPP
-        in  (colorNum, color_file, kernel_file, l_mode, showFile, aL)
+        in  (stencil_name, color_file, kernel_file, l_mode, showFile, aL)
 
 findFileBySuffix :: [String] -> String -> (String, String) 
 findFileBySuffix [] _ = ("", "")
@@ -188,10 +190,10 @@ printOptions =
     do putStrLn ("Usage: genkernels [OPTION] [KERNEL_INFO_FILE] [COLOR_INFO_FILE]")
        putStrLn ("Run the genkernels with kernel_info and color_info.")
 
-pGenKernel :: PMode -> [Homogeneity] -> Int -> Handle -> Handle -> IO ()           
-pGenKernel mode colorVectors colorNum kernelh genKernelh = 
+pGenKernel :: PMode -> String -> [Homogeneity] -> Handle -> Handle -> IO ()           
+pGenKernel mode stencil_name colorVectors kernelh genKernelh = 
     do ls <- hGetContents kernelh
-       let pRevInitState = pInitState { pMode = mode, pColorVectors = colorVectors, pColorNum = colorNum }
+       let pRevInitState = pInitState { pMode = mode, pColorVectors = colorVectors, pStencilName = stencil_name}
        case runParser pParser pRevInitState "" $ stripWhite ls of
            Left err -> print err
            Right str -> hPutStrLn genKernelh str

@@ -2550,7 +2550,7 @@ inline void Algorithm<N_RANK>::plan_space_bicut_p(int t0, int t1, Grid_Info<N_RA
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
                 const int l_padding = 2 * l_slope;
-                const bool cross_region = (region_n < 0);
+                //const bool cross_region = (region_n < 0);
                 const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
                 const bool can_cut = plan_space_can_cut_p(level);
                 if (!can_cut) {
@@ -2849,7 +2849,7 @@ inline void Algorithm<N_RANK>::plan_space_cut_p(int t0, int t1, Grid_Info<N_RANK
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
                 const int l_padding = 2 * l_slope;
-                const bool cross_region = (region_n < 0);
+                //const bool cross_region = (region_n < 0);
                 const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
                 const bool can_cut = plan_space_can_cut_p(level);
                 if (!can_cut) {
@@ -4125,11 +4125,6 @@ inline void Algorithm<N_RANK>::walk_adaptive(int t0, int t1, Grid_Info<N_RANK> c
 		return;
 	}
 }
-
-#if DEBUG
-static int count_boundary = 0;
-static int count_internal = 0;
-#endif
 
 /* walk_ncores_boundary_p() will be called for -split-shadow mode */
 template <int N_RANK> template <typename F, typename BF>

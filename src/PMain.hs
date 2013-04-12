@@ -45,18 +45,31 @@ import PMainParser
 
 main :: IO ()
 main = do args <- getArgs
+          cc <- getEnv "CC_CILK"
+
           whilst (null args) $ do
              printUsage
              exitFailure
-          let (inFiles, inDirs, mode, debug, showFile, userArgs) 
-                = parseArgs ([], [], PDefault, False, True, []) args
+          let (inFiles, inDirs, mode, showFile, userArgs) 
+                = parseArgs ([], [], PDefault, True, []) args
           whilst (mode == PHelp) $ do
              printOptions
              exitFailure
+          putStrLn ("Before ppopp")
           whilst (mode /= PNoPP) $ do
-             ppopp (mode, debug, showFile, userArgs) (zip inFiles inDirs)
-          -- pass everything to icc after preprocessing and Pochoir optimization
-          let iccArgs = userArgs
+             ppopp (mode, showFile, userArgs) (zip inFiles inDirs)
+          -- pass everything to g++ after preprocessing and Pochoir optimization
+          putStrLn ("After ppopp")
+          let icc = if cc == "icc" then cc_icc else cc_gcc
+          let ccFlags = 
+                if cc == "icc"  
+                   then if mode == PDebug
+                           then debugCCFlags_icc 
+                           else ccFlags_icc
+                   else if mode == PDebug
+                           then debugCCFlags_gcc
+                           else ccFlags_gcc
+          let iccArgs = ccFlags ++ userArgs
           putStrLn (icc ++ " " ++ intercalate " " iccArgs)
           rawSystem icc iccArgs
           whilst (showFile == False) $ do
@@ -69,37 +82,35 @@ whilst :: Bool -> IO () -> IO ()
 whilst True action = action
 whilst False action = return () 
 
-ppopp :: (PMode, Bool, Bool, [String]) -> [(String, String)] -> IO ()
-ppopp (_, _, _, _) [] = return ()
-ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) = 
+ppopp :: (PMode, Bool, [String]) -> [(String, String)] -> IO ()
+ppopp (_, _, _) [] = return ()
+ppopp (mode, showFile, userArgs) ((inFile, inDir):files) = 
     do putStrLn ("pochoir called with mode =" ++ show mode)
---       pochoirLibPath <- Exception.catch (getEnv "POCHOIR_LIB_PATH")
---                                         (\e -> return "EnvError")
-       pochoirLibPath <- getEnv "POCHOIR_LIB_PATH"
-       whilst (pochoirLibPath == "EnvError") $ do
-          putStrLn ("Pochoir environment variable not set:")
-          putStrLn ("POCHOIR_LIB_PATH")
+       -- System use environment variables
+       cc <- getEnv "CC_CILK"
+
+       whilst (cc == "EnvError") $ do
+          putStrLn ("Pochoir environment variable not set correctly!")
           exitFailure
        -- let envPath = ["-I" ++ pochoirLibPath] ++ ["-I" ++ cilkHeaderPath]
-       let envPath = ["-I" ++ pochoirLibPath]
        let iccPPFile = inDir ++ getPPFile inFile
-       let midFile = getMidFile inFile
-       let outFile = rename "_pochoir" inFile
+       let ppFile = ["-o", iccPPFile]
+       let outFile = iccPPFile
        let kernelFile = rename "_kernel_info" inFile
-       let iccPPArgs = if debug == False
-             -- then iccPPFlags ++ envPath ++ [inFile] ++ [">", midFile]
-             -- else iccDebugPPFlags ++ envPath ++ [inFile] ++ [">", midFile]
-             then iccPPFlags ++ envPath ++ [inFile]
-             else iccDebugPPFlags ++ envPath ++ [inFile]
-       -- a pass of icc preprocessing
-       -- rawSystem icc iccPPArgs
-       let cmd = icc ++ " " ++ intercalate " " iccPPArgs
+       let ppFlags = if cc == "icc" 
+                        then if mode == PDebug
+                                then debugPPFlags_icc ++ [inFile] ++ ppFile
+                                else ppFlags_icc ++ [inFile] ++ ppFile
+                        else if mode == PDebug 
+                                then debugPPFlags_gcc ++ [inFile] ++ ppFile
+                                else ppFlags_gcc ++ [inFile] ++ ppFile
+       -- a pass of c++ preprocessing
+       let cmd = cc ++ " " ++ intercalate " " ppFlags
        putStrLn cmd
        system cmd
        -- a pass of pochoir compilation
        whilst (mode /= PDebug) $ do
            inh <- openFile iccPPFile ReadMode
-           -- inh <- openFile midFile ReadMode
            outh <- openFile outFile WriteMode
            kernelh <- openFile kernelFile WriteMode
            putStrLn ("pochoir " ++ show mode ++ " " ++ iccPPFile)
@@ -107,115 +118,115 @@ ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) =
            hClose inh
            hClose outh
            hClose kernelh
-       whilst (mode == PDebug) $ do
-           putStrLn ("mv " ++ midFile ++ " " ++ outFile)
-           renameFile midFile outFile
-       ppopp (mode, debug, showFile, userArgs) files
-
-getMidFile :: String -> String
-getMidFile a  
-    | isSuffixOf ".cpp" a || isSuffixOf ".cxx" a = take (length a - 4) a ++ ".i"
-    | otherwise = a
+       ppopp (mode, showFile, userArgs) files
 
 getPPFile :: String -> String
-getPPFile fname = name ++ ".i"
+getPPFile fname = name ++ "_pochoir" ++ suffix
     where (name, suffix) = break ('.' ==) fname
 
 pInitState = ParserState { pMode = PCaching, pInFile = "", pInDir = "", pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty, pKernelFunc = Map.empty, pGuard = Map.empty, pGuardFunc = Map.empty, pTile = Map.empty, pTileOrder = 0, pColorNum = 0 }
 
--- icc = "g++"
-icc = "icpc"
--- icc = "g++-cilk"
 
--- compilation flags for icpc
-iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
--- compilation flags for g++
--- iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
+-- When the environment variable "CC_CILK" equals to "icc", we will use cc_icc; otherwise cc_gcc
+cc_icc = "icc"
+cc_gcc = "g++_4_7"
+
 
 -- preprocessing flags for g++
--- iccPPFlags = ["-E", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
--- preprocessing flags for icpc
-iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
+ppFlags_gcc = ["-E", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++11", "-Wall", "-fcilkplus", "-I${POCHOIR_LIB_PATH}", "-I${CILK_HEADER_PATH}"]
+-- preprocessing flags for icc
+ppFlags_icc = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++11", "-Wall", "-I/usr/include/x86_64-linux-gnu/", "-I${POCHOIR_LIB_PATH}", "-I${CILK_HEADER_PATH}"]
 
--- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
--- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x"]
--- debug flags for icpc
-iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DNDEBUG", "-g3", "-std=c++0x"]
+-- compile flags for gcc
+ccFlags_gcc = ["-O3", "-Wall", "-unroll-aggressive", "-funroll-loops", "-std=c++11", "-fcilkplus", "-lcilkrts"]
+
+-- compile flags for icc
+ccFlags_icc = ["-DNCHECK_SHAPE", "-DNDEBUG", "-O3", "-Wall", "-unroll-aggressive", "-funroll-loops", "-xHOST", "-fno-alias", "-fno-fnalias", "-std=c++11"]
+
+-- debug flags for icc
+debugPPFlags_icc = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-std=c++11", "-g", "-Wall", "-I/usr/include/x86_64-linux-gnu/", "-I${POCHOIR_LIB_PATH}", "-I${CILK_HEADER_PATH}", "-include", "cilk_stub.h"]
+
 -- debug flags for g++
--- iccDebugPPFlags = ["-E", "-DCHECK_SHAPE", "-DNDEBUG", "-g3", "-std=c++0x"]
+debugPPFlags_gcc = ["-E", "-DCHECK_SHAPE", "-DDEBUG", "-std=c++11", "-g", "-Wall", "-I${POCHOIR_LIB_PATH}", "-I${CILK_HEADER_PATH}", "-include", "cilk_stub.h"]
 
-parseArgs :: ([String], [String], PMode, Bool, Bool, [String]) -> [String] -> ([String], [String], PMode, Bool, Bool, [String])
-parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL 
+-- debug compile flags for gcc
+debugCCFlags_gcc = ["-O0", "-g", "-Wall", "-std=c++11", "-fcilkplus", "-lcilkrts"]
+
+-- debug compile flags for icc
+debugCCFlags_icc = ["-O0", "-g", "-Wall", "-std=c++11"]
+
+
+parseArgs :: ([String], [String], PMode, Bool, [String]) -> [String] -> ([String], [String], PMode, Bool, [String])
+parseArgs (inFiles, inDirs, mode, showFile, userArgs) aL 
     | elem "--help" aL =
         let l_mode = PHelp
             aL' = delete "--help" aL
-        in  (inFiles, inDirs, l_mode, debug, showFile, aL')
+        in  (inFiles, inDirs, l_mode, showFile, aL')
     | elem "-h" aL =
         let l_mode = PHelp
             aL' = delete "-h" aL
-        in  (inFiles, inDirs, l_mode, debug, showFile, aL')
+        in  (inFiles, inDirs, l_mode, showFile, aL')
     | elem "-auto-optimize" aL =
         let l_mode = PDefault
             aL' = delete "-auto-optimize" aL
-        in  (inFiles, inDirs, l_mode, debug, showFile, aL')
+        in  (inFiles, inDirs, l_mode, showFile, aL')
 ------------------------------------------------------------------------------
 -- so far, the split-caching mode doesn't work for multiple-kernel case!!!! --
 ------------------------------------------------------------------------------
     | elem "-split-caching" aL =
         let l_mode = PCaching
             aL' = delete "-split-caching" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-all-cond-tile-macro-overlap" aL =
-        let l_mode = PAllCondTileMacroOverlap
-            aL' = delete "-all-cond-tile-macro-overlap" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-all-cond-tile-c-pointer-overlap" aL =
-        let l_mode = PAllCondTileCPointerOverlap
-            aL' = delete "-all-cond-tile-c-pointer-overlap" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-all-cond-tile-pointer-overlap" aL =
-        let l_mode = PAllCondTilePointerOverlap
-            aL' = delete "-all-cond-tile-pointer-overlap" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-all-cond-tile-opt-pointer-overlap" aL =
-        let l_mode = PAllCondTileOptPointerOverlap
-            aL' = delete "-all-cond-tile-opt-pointer-overlap" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-unroll-t-tile-macro-overlap" aL =
-        let l_mode = PUnrollTimeTileMacroOverlap
-            aL' = delete "-unroll-t-tile-macro-overlap" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-unroll-t-tile-c-pointer-overlap" aL =
-        let l_mode = PUnrollTimeTileCPointerOverlap
-            aL' = delete "-unroll-t-tile-c-pointer-overlap" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-unroll-t-tile-pointer-overlap" aL =
-        let l_mode = PUnrollTimeTilePointerOverlap
-            aL' = delete "-unroll-t-tile-pointer-overlap" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
-    | elem "-unroll-t-tile-opt-pointer-overlap" aL =
-        let l_mode = PUnrollTimeTileOptPointerOverlap
-            aL' = delete "-unroll-t-tile-opt-pointer-overlap" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+        in  parseArgs (inFiles, inDirs, l_mode, showFile, aL') aL'
+    | elem "-cond-macro" aL =
+        let l_mode = PCondMacro
+            aL' = delete "-cond-macro" aL
+        in  parseArgs (inFiles, inDirs, l_mode, showFile, aL') aL'
+    | elem "-cond-c-pointer" aL =
+        let l_mode = PCondCPointer
+            aL' = delete "-cond-c-pointer" aL
+        in  parseArgs (inFiles, inDirs, l_mode, showFile, aL') aL'
+    | elem "-cond-pointer" aL =
+        let l_mode = PCondPointer
+            aL' = delete "-cond-pointer" aL
+        in  parseArgs (inFiles, inDirs, l_mode, showFile, aL') aL'
+    | elem "-cond-opt-pointer" aL =
+        let l_mode = PCondOptPointer
+            aL' = delete "-cond-opt-pointer" aL
+        in  parseArgs (inFiles, inDirs, l_mode, showFile, aL') aL'
+    | elem "-unroll-macro" aL =
+        let l_mode = PUnrollMacro
+            aL' = delete "-unroll-macro" aL
+        in  parseArgs (inFiles, inDirs, l_mode, showFile, aL') aL'
+    | elem "-unroll-c-pointer" aL =
+        let l_mode = PUnrollCPointer
+            aL' = delete "-unroll-c-pointer" aL
+        in  parseArgs (inFiles, inDirs, l_mode, showFile, aL') aL'
+    | elem "-unroll-pointer" aL =
+        let l_mode = PUnrollPointer
+            aL' = delete "-unroll-pointer" aL
+        in  parseArgs (inFiles, inDirs, l_mode, showFile, aL') aL'
+    | elem "-unroll-opt-pointer" aL =
+        let l_mode = PUnrollOptPointer
+            aL' = delete "-unroll-opt-pointer" aL
+        in  parseArgs (inFiles, inDirs, l_mode, showFile, aL') aL'
     | elem "-unroll-multi-kernel" aL =
         let l_mode = PMUnroll
             aL' = delete "-unroll-multi-kernel" aL
-        in  parseArgs (inFiles, inDirs, l_mode, debug, showFile, aL') aL'
+        in  parseArgs (inFiles, inDirs, l_mode, showFile, aL') aL'
     | elem "-showFile" aL =
         let l_showFile = True
             aL' = delete "-showFile" aL
-        in  parseArgs (inFiles, inDirs, mode, debug, l_showFile, aL') aL'
+        in  parseArgs (inFiles, inDirs, mode, l_showFile, aL') aL'
     | elem "-debug" aL =
-        let l_debug = True 
-            l_mode = PDebug
+        let l_mode = PDebug
             aL' = delete "-debug" aL
-        in  parseArgs (inFiles, inDirs, l_mode, l_debug, showFile, aL') aL'
+        in  parseArgs (inFiles, inDirs, l_mode, showFile, aL') aL'
     | null aL == False =
         let (l_files, l_dirs, l_mode, aL') = findCPP aL ([], [], mode, aL)
-        in  (l_files, l_dirs, l_mode, debug, showFile, aL')
+        in  (l_files, l_dirs, l_mode, showFile, aL')
     | otherwise = 
         let l_mode = PNoPP
-        in  (inFiles, inDirs, l_mode, debug, showFile, aL)
+        in  (inFiles, inDirs, l_mode, showFile, aL)
 
 findCPP :: [String] -> ([String], [String], PMode, [String]) -> ([String], [String], PMode, [String])
 findCPP [] (l_files, l_dirs, l_mode, l_al) = 

@@ -17,25 +17,25 @@ pShowAutoTileString l_mode l_stencil (l_guardName, l_tiles@(t:ts)) =
         l_rev_kernel_funcs = map (map (pFillIters l_iters)) l_kernel_funcs
         l_id = sName l_stencil
     in  case l_mode of
-            PAllCondTileMacroOverlap ->
-                pSplitAllCondTileOverlapScope
+            PCondMacro ->
+                pSplitCondScope
                   ("Macro_", l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_rev_kernel_funcs, l_stencil, l_comments)
-                  (pShowAllCondTileOverlapMacroKernels False)
+                  (pShowCondMacroKernels False)
 
-pSplitAllCondTileOverlapScope :: (String, PMode, PName, PName, Int, [[Int]], [[PKernelFunc]], PStencil, String) -> (String -> PStencil -> [[Int]] -> [[PKernelFunc]] -> String) -> String
-pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfss, l_stencil, l_comments) l_showAllCondTileOverlapKernel = 
+pSplitCondScope :: (String, PMode, PName, PName, Int, [[Int]], [[PKernelFunc]], PStencil, String) -> (String -> PStencil -> [[Int]] -> [[PKernelFunc]] -> String) -> String
+pSplitCondScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_tile_indices, l_kfss, l_stencil, l_comments) l_showCondKernel = 
     let oldKernelName = intercalate "_" $ map kfName $ concat l_kfss
         bdryKernelName = l_tag ++ "boundary_" ++ oldKernelName
         obaseKernelName = l_tag ++ "interior_" ++ oldKernelName
         regBound = sRegBound l_stencil
         l_pShape = pSysShape $ foldr mergePShapes emptyShape (map kfShape $ concat l_kfss)
         bdryKernel = if regBound
-                        then pShowAllCondTileOverlapMacroKernels True bdryKernelName
+                        then pShowCondMacroKernels True bdryKernelName
                                 l_stencil l_pShape l_tile_indices l_kfss
                         else ""
-        -- usually, the l_showAllCondTileOverlapKernel is just
-        -- (pShowAllCondTileOverlapMacroKernels False)
-        obaseKernel = l_showAllCondTileOverlapKernel obaseKernelName
+        -- usually, the l_showCondKernel is just
+        -- (pShowCondMacroKernels False)
+        obaseKernel = l_showCondKernel obaseKernelName
                         l_stencil l_pShape l_tile_indices l_kfss
         runKernel = if regBound
                        then obaseKernelName ++ ", " ++ bdryKernelName
@@ -45,8 +45,8 @@ pSplitAllCondTileOverlapScope (l_tag, l_mode, l_id, l_guardName, l_unroll, l_til
          breakline ++ l_id ++ ".Register_Tile_Obase_Kernels(" ++ l_guardName ++
          ", " ++ show l_unroll ++ ", " ++ runKernel ++ ");" ++ breakline)
 
-pShowAllCondTileOverlapMacroKernels :: Bool -> String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String
-pShowAllCondTileOverlapMacroKernels l_bound l_name l_stencil l_pShape l_tile_indices l_kfss@(k:ks) =
+pShowCondMacroKernels :: Bool -> String -> PStencil -> PShape -> [[Int]] -> [[PKernelFunc]] -> String
+pShowCondMacroKernels l_bound l_name l_stencil l_pShape l_tile_indices l_kfss@(k:ks) =
     let l_t = "t"
         l_t_begin = l_t ++ "0"
         l_t_end = l_t ++ "1"
@@ -65,7 +65,7 @@ pShowAllCondTileOverlapMacroKernels l_bound l_name l_stencil l_pShape l_tile_ind
                           else pUndefMacroArrayInUse l_arrayInUse l_kfParams
         l_showPhysGrid = "Grid_Info <" ++ show l_rank ++ "> l_phys_grid = " ++
                             sName l_stencil ++ ".get_phys_grid();"
-        l_unfold_kernels = pShowAllCondTileOverlapSingleMacroKernel l_t l_tile_indices l_kfss
+        l_unfold_kernels = pShowCondSingleMacroKernel l_t l_tile_indices l_kfss
         l_kernelFuncName = pSys l_name
         l_header = "/* KNOWN! */ auto " ++ l_kernelFuncName ++
                    " = [&] (int " ++ l_t_begin ++ ", int " ++ l_t_end ++ ", " ++ 
@@ -86,9 +86,9 @@ pShowAllCondTileOverlapMacroKernels l_bound l_name l_stencil l_pShape l_tile_ind
         breakline ++ l_tail ++
         breakline ++ l_undefMacro ++ breakline
 
-pShowAllCondTileOverlapSingleMacroKernel :: String -> [[Int]] -> [[PKernelFunc]] -> String
-pShowAllCondTileOverlapSingleMacroKernel _ [] _ = ""
-pShowAllCondTileOverlapSingleMacroKernel l_t l_tile_indices@(t:ts) l_kL@(k:ks) = 
+pShowCondSingleMacroKernel :: String -> [[Int]] -> [[PKernelFunc]] -> String
+pShowCondSingleMacroKernel _ [] _ = ""
+pShowCondSingleMacroKernel l_t l_tile_indices@(t:ts) l_kL@(k:ks) = 
     let l_spatial_params = tail $ kfParams $ head k
         l_rank = length l_spatial_params
         l_params = [l_t] ++ l_spatial_params
@@ -98,24 +98,24 @@ pShowAllCondTileOverlapSingleMacroKernel l_t l_tile_indices@(t:ts) l_kL@(k:ks) =
                                                 (shapeTimeShift $ kfShape $ head k)
         l_guard_tail = pShowUnrollGuardTail $ length ts
         k' = groupBy eqTileOpPKernelFunc k
-        l_kernels = pShowOverlapMacroKernels l_t l_spatial_params k'
+        l_kernels = pShowMacroKernels l_t l_spatial_params k'
     in  breakline ++ l_guard_head ++
         breakline ++ l_kernels ++
         breakline ++ l_guard_tail ++
-        pShowAllCondTileOverlapSingleMacroKernel l_t ts ks
+        pShowCondSingleMacroKernel l_t ts ks
 
--- pShowOverlapMacroKernels will show the macro kernels with the same tile_index
+-- pShowMacroKernels will show the macro kernels with the same tile_index
 -- All kernel functions are groupBy kfTileOp
-pShowOverlapMacroKernels :: String -> [PName] -> [[PKernelFunc]] -> String
-pShowOverlapMacroKernels _ _ [] = ""
-pShowOverlapMacroKernels l_t l_spatial_params l_kfss@(k:ks) =
+pShowMacroKernels :: String -> [PName] -> [[PKernelFunc]] -> String
+pShowMacroKernels _ _ [] = ""
+pShowMacroKernels l_t l_spatial_params l_kfss@(k:ks) =
     case (kfTileOp . head) k of
         PSerial -> concatMap (show . kfStmt) k ++ 
-                   pShowOverlapMacroKernels l_t l_spatial_params ks
+                   pShowMacroKernels l_t l_spatial_params ks
         PEXCLUSIVE -> pShowInclusiveMacroKernels PEXCLUSIVE l_t l_spatial_params k ++
-                      pShowOverlapMacroKernels l_t l_spatial_params ks
+                      pShowMacroKernels l_t l_spatial_params ks
         PINCLUSIVE ->  pShowInclusiveMacroKernels PINCLUSIVE l_t l_spatial_params k ++
-                      pShowOverlapMacroKernels l_t l_spatial_params ks
+                      pShowMacroKernels l_t l_spatial_params ks
 
 pShowInclusiveMacroKernels :: TileOp -> String -> [PName] -> [PKernelFunc] -> String
 pShowInclusiveMacroKernels _ _ _ [] = ""
@@ -129,5 +129,5 @@ pShowInclusiveMacroKernels l_tile_op l_t l_spatial_params l_kfs@(k:ks) =
     in  (breakline ++ "if (" ++ g ++ ") {" ++ 
          breakline ++ (show $ kfStmt k) ++ 
          breakline ++ l_tail ++ breakline ++ 
-         pShowOverlapMacroKernels l_t l_spatial_params ks)
+         pShowMacroKernels l_t l_spatial_params ks)
 

@@ -1,45 +1,29 @@
 #!/bin/bash
-CC = ../pochoir
+CC = ./pochoir
 ICC = icpc
-OPT_FLAGS = -DCHECK_SHAPE -rdynamic -ldl -O2 -DNDEBUG -Wall -Werror -unroll-aggressive -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x 
-POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h
-ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h
+OPT_FLAGS = -unroll-pointer 
+POCHOIR_DEBUG_FLAGS = -debug
+POCHOIR_LIB_FILES = "../pochoir.hpp ../pochoir_common.hpp ../pochoir_dloader.hpp ../pochoir_array.hpp ../pochoir_walk.hpp ../pochoir_walk_recursive.hpp ../pochoir_walk_loops.hpp ../pochoir_kernel.hpp ../pochoir_range.hpp"
 
-# FILTER_OUT(substring, array)
-# Filters out all instances of strings containing substring in array
-FILTER_OUT = $(foreach v,$(2),$(if $(findstring $(1),$(v)),,$(v)))
 
-# list all tb_*.cpp files and filter out any _pochoir/_kernel_info files
-TARGETS = \
-	$(call FILTER_OUT,_kernel_info,\
-	$(call FILTER_OUT,_pochoir,\
-	$(patsubst tb_%.cpp,%,$(wildcard tb_*.cpp)\
-)))
+#${CC} -o fib_gdb ${POCHOIR_DEBUG_FLAGS} fib.cpp
+fib : fib.cpp
+#   Phase-II compilation
+	${CC} -o fib ${OPT_FLAGS} fib.cpp	
+#	Phase-I compilation with debugging aid
+#	${CC} -o fib_gdb ${POCHOIR_DEBUG_FLAGS} fib.cpp 
 
-FLAG = DEFAULT
-ifdef DEBUG_POCHOIR
-	TARGETS := $(addsuffix _pochoir, $(TARGETS))
-	FLAG = DEBUG_POCHOIR
-endif
+overlap_tile_2D : tb_overlap_tile_2D.cpp 
+#   Phase-II compilation
+#	${CC} -o overlap_tile_2D ${OPT_FLAGS} tb_overlap_tile_2D.cpp
+#	Phase-I compilation with debugging aid
+	${CC} -o overlap_tile_2D_gdb ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_2D.cpp 
 
-ifdef DEBUG_ICC
-	TARGETS := $(addsuffix _gdb, $(TARGETS))
-	FLAG = DEBUG_ICC
-endif
-
-all: $(TARGETS)
-
-%: tb_%.cpp
-	${CC} -o $@ $(OPT_FLAGS) $<
-
-%_pochoir: tb_%.cpp
-	${CC} -o $@ $(POCHOIR_DEBUG_FLAGS) $<
-
-%_gdb: %_pochoir
-	${CC} -o $@ $(ICC_DEBUG_FLAGS) tb_$<.cpp
-
-check: all
-	python check.py $(FLAG)
+overlap_tile_3D : tb_overlap_tile_3D.cpp
+#   Phase-II compilation
+#	${CC} -o overlap_tile_3D ${OPT_FLAGS} tb_overlap_tile_3D.cpp
+#	Phase-I compilation with debugging aid
+	${CC} -o overlap_tile_3D_gdb ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_3D.cpp 
 
 clean: 
-	rm -f *.o *.i *_pochoir *_gdb *_pochoir.cpp *_kernel_info.cpp *_gen_kernel.cpp *_gen_kernel.so *_color.dat *.out *.csv $(TARGETS)
+	rm -f *.o *.i *_pochoir *_pochoir.cpp *.out *.dat *_kernel_info.cpp *_gen_kernel.cpp *.so *_gdb fib overlap_tile_2D overlap_tile_3D

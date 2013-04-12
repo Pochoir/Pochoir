@@ -73,8 +73,8 @@ Pochoir_Boundary_2D(aperiodic_2D, arr, t, i, j)
     return 0;
 Pochoir_Boundary_End
 
-#define N 66
-#define T 15 
+#define N 666
+#define T 600 
 
 int main(int argc, char * argv[])
 {
@@ -84,7 +84,6 @@ int main(int argc, char * argv[])
     double min_tdiff = INF;
     /* the 1D spatial dimension has 'N' points */
     // int N = 0, T = 0;
-    char pochoir_plan_file_name[100];
 
     if (argc < 3) {
         printf("argc < 3, quit! \n");
@@ -451,12 +450,17 @@ int main(int argc, char * argv[])
 
     /* end Pochoir_Kernel functions */
 
+#if 0
     leap_frog.Register_Tile_Kernels(g_exclusive_0, tile_3D_checkerboard_0);
     leap_frog.Register_Tile_Kernels(g_exclusive_1, tile_2D_checkerboard_1);
     leap_frog.Register_Tile_Kernels(g_inclusive_0, tile_1D_checkerboard_2);
     leap_frog.Register_Tile_Kernels(g_inclusive_1, tile_3D_checkerboard_3);
     leap_frog.Register_Tile_Kernels(g_tiny_inclusive_0, tile_2D_checkerboard_4);
     leap_frog.Register_Tile_Kernels(g_tiny_inclusive_1, tile_1D_checkerboard_5);
+#else
+    leap_frog.Register_Tile_Kernels(Default_Guard_2D, tile_3D_checkerboard_0);
+#endif
+
     leap_frog.Register_Array(a);
 
     /* initialization */
@@ -470,21 +474,15 @@ int main(int argc, char * argv[])
         }
     }
 
-    Pochoir_Plan<2> & l_plan = leap_frog.Gen_Plan(T);
-    sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat", N, T);
-    leap_frog.Store_Plan(pochoir_plan_file_name, l_plan);
-    // Pochoir_Plan<2> & ll_plan = leap_frog.Load_Plan(pochoir_plan_file_name);
     min_tdiff = INF;
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
-        leap_frog.Run(l_plan);
+        leap_frog.Run(T);
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
     fflush(stdout);
     printf("Pochoir time = %.6f ms\n", min_tdiff);
-    leap_frog.Destroy_Plan(l_plan);
-    // leap_frog.Destroy_Plan(ll_plan);
 
     min_tdiff = INF;
     /* cilk_for */
@@ -493,7 +491,9 @@ int main(int argc, char * argv[])
         for (int t = 1; t < T + 1; ++t) {
             cilk_for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
+#if 0
             if (g_exclusive_0(t-1, i, j)) {
+#endif
                 if ((t-1) % 2 == 0 && i % 2 == 0 && j % 2 == 0) {
 #if APP_DEBUG
                     printf("<k_0_0> : loop_b(%d, %d, %d)\n", t, i, j);
@@ -555,6 +555,7 @@ int main(int argc, char * argv[])
                         0.8 * b(t-1, i-1, j) + 0.85 * b(t-1, i, j) + 0.85 * b(t-1, i+1, j)
                       - 0.8 * b(t-1, i, j-1) - 0.85 * b(t-1, i, j) - 0.85 * b(t-1, i, j+1);
                 }
+#if 0
             } else if (g_exclusive_1(t-1, i, j)) {
                 if ((t-1) % 2 == 0 && i % 2 == 0) {
 #if APP_DEBUG
@@ -710,6 +711,7 @@ int main(int argc, char * argv[])
                       - 0.25 * b(t-1, i, j-1) - 0.255 * b(t-1, i, j) - 0.255 * b(t-1, i, j+1);
                 }
             }
+#endif
         } 
             }
         }
