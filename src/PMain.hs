@@ -94,7 +94,9 @@ ppopp (mode, showFile, userArgs) ((inFile, inDir):files) =
           exitFailure
        -- let envPath = ["-I" ++ pochoirLibPath] ++ ["-I" ++ cilkHeaderPath]
        let iccPPFile = inDir ++ getPPFile inFile
-       let ppFile = ["-o", iccPPFile]
+       let ppFile = if cc == "icc" 
+               then []
+               else ["-o", iccPPFile]
        let outFile = inDir ++ getPochoirFile inFile
        let kernelFile = rename "_kernel_info" inFile
        let ppFlags = if cc == "icc" 
@@ -108,6 +110,16 @@ ppopp (mode, showFile, userArgs) ((inFile, inDir):files) =
        let cmd = cc ++ " " ++ intercalate " " ppFlags
        putStrLn cmd
        system cmd
+       -- mv example.i example_pochoir.cpp
+       let conv = "iconv -f GBK -t UTF-8 " ++ iccPPFile ++ " -o " ++ iccPPFile ++ ".2"
+       putStrLn conv
+       system conv
+       let mv = "mv " ++ iccPPFile ++ ".2" ++ " " ++ iccPPFile
+       putStrLn mv
+       system mv
+       let cmd1 = "cp " ++ iccPPFile ++ " " ++ outFile
+       putStrLn cmd1
+       system cmd1
        -- a pass of pochoir compilation
        whilst (mode /= PDebug) $ do
            inh <- openFile iccPPFile ReadMode
