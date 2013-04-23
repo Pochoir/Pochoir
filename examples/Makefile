@@ -5,25 +5,29 @@ OPT_FLAGS = -unroll-pointer
 POCHOIR_DEBUG_FLAGS = -debug
 POCHOIR_LIB_FILES = "../pochoir.hpp ../pochoir_common.hpp ../pochoir_dloader.hpp ../pochoir_array.hpp ../pochoir_walk.hpp ../pochoir_walk_recursive.hpp ../pochoir_walk_loops.hpp ../pochoir_kernel.hpp ../pochoir_range.hpp"
 
+# FILTER_OUT(substring, array)
+# Filters out all instances of strings containing substring in array
+FILTER_OUT = $(foreach v,$(2),$(if $(findstring $(1),$(v)),,$(v)))
 
-#${CC} -o fib_gdb ${POCHOIR_DEBUG_FLAGS} fib.cpp
-fib : fib.cpp
-#   Phase-II compilation
-	${CC} -o fib ${OPT_FLAGS} fib.cpp	
-#	Phase-I compilation with debugging aid
-#	${CC} -o fib_gdb ${POCHOIR_DEBUG_FLAGS} fib.cpp 
+# list all tb_*.cpp files and filter out any _pochoir/_kernel_info files
+TARGETS = \
+	$(call FILTER_OUT,_kernel_info,\
+	$(call FILTER_OUT,_pochoir,\
+	$(patsubst tb_%.cpp,%,$(wildcard tb_*.cpp)\
+)))
 
-overlap_tile_2D : tb_overlap_tile_2D.cpp 
-#   Phase-II compilation
-#	${CC} -o overlap_tile_2D ${OPT_FLAGS} tb_overlap_tile_2D.cpp
-#	Phase-I compilation with debugging aid
-	${CC} -o overlap_tile_2D_gdb ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_2D.cpp 
+CXXFLAGS = $(OPT_FLAGS)
+ifdef DEBUG
+	CXXFLAGS = $(POCHOIR_DEBUG_FLAGS)
+endif
 
-overlap_tile_3D : tb_overlap_tile_3D.cpp
-#   Phase-II compilation
-#	${CC} -o overlap_tile_3D ${OPT_FLAGS} tb_overlap_tile_3D.cpp
-#	Phase-I compilation with debugging aid
-	${CC} -o overlap_tile_3D_gdb ${POCHOIR_DEBUG_FLAGS} tb_overlap_tile_3D.cpp 
+all: $(TARGETS)
+
+%: tb_%.cpp
+	${CC} -o $@ $(CXXFLAGS) $<
+
+check: all
+	python check.py
 
 clean: 
-	rm -f *.o *.i *_pochoir *_pochoir.cpp *.out *.dat *_kernel_info.cpp *_gen_kernel.cpp *.so *_gdb fib overlap_tile_2D overlap_tile_3D
+	rm -f *.o *.i *_pochoir *_pochoir.cpp *.out *.dat *_kernel_info.cpp *_gen_kernel.cpp *.so *_gdb $(TARGETS)

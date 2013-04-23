@@ -4,8 +4,10 @@ all : pochoir genstencils
 pochoir : ${PP_FILE} 
 	ghc -o pochoir -O --make PMain.hs
 	cp pochoir ..
+	cp pochoir ../examples
 genstencils : ${GEN_FILE} 
 	ghc -o genstencils -O --make PGenMain.hs
 	cp genstencils ..
+	cp genstencils ../examples
 clean: 
-	rm -f *.o *.hi pochoir genstencils
+	rm -f *.o *.hi pochoir genstencils ../pochoir ../genstencils ../examples/pochoir ../examples/genstencils
