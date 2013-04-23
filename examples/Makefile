@@ -12,9 +12,10 @@ FILTER_OUT = $(foreach v,$(2),$(if $(findstring $(1),$(v)),,$(v)))
 # list all tb_*.cpp files and filter out any _pochoir/_kernel_info files
 TARGETS = \
 	$(call FILTER_OUT,_kernel_info,\
+	$(call FILTER_OUT,_gen_kernel,\
 	$(call FILTER_OUT,_pochoir,\
 	$(patsubst tb_%.cpp,%,$(wildcard tb_*.cpp)\
-)))
+))))
 
 CXXFLAGS = $(OPT_FLAGS)
 ifdef DEBUG
