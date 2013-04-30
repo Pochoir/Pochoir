@@ -31,9 +31,10 @@ def check_correctness(name):
 
 if __name__ == "__main__":
     stencils = [os.path.splitext(filename)[0] for filename in glob.glob('*.cpp') if "tb_" in filename]
-    stencils = set([re.sub("_pochoir", "", stencil) for stencil in stencils])
-    stencils = set([re.sub("_kernel_info", "", stencil) for stencil in stencils])
-    stencils = set([re.sub("tb_", "", stencil) for stencil in stencils])
+    stencils = set([re.sub("_pochoir$", "", stencil) for stencil in stencils])
+    stencils = set([re.sub("_kernel_info$", "", stencil) for stencil in stencils])
+    stencils = set([re.sub("_gen_kernel$", "", stencil) for stencil in stencils])
+    stencils = set([re.sub("^tb_", "", stencil) for stencil in stencils])
 
     for stencil in sorted(stencils):
         check(stencil)
