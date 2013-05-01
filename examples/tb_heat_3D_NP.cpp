@@ -68,11 +68,23 @@ int main(int argc, char * argv[])
     T_SIZE = StrToInt(argv[2]);
     printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);
     Pochoir_Shape_3D heat_shape_3D[] = {{0, 0, 0, 0}, {-1, 1, 0, 0}, {-1, -1, 0, 0}, {-1, 0, 0, 0}, {-1, 0, 0, -1}, {-1, 0, 0, 1}, {-1, 0, 1, 0}, {-1, 0, -1, 0}};
-    Pochoir_3D heat_3D(heat_shape_3D);
+    Pochoir_3D heat_3D;
+
 	Pochoir_Array_3D(double) a(N_SIZE, N_SIZE, N_SIZE), b(N_SIZE, N_SIZE, N_SIZE);
     Pochoir_Domain I(1, N_SIZE-1), J(1, N_SIZE-1), K(1, N_SIZE-1);
-    heat_3D.Register_Array(a);
+
     b.Register_Shape(heat_shape_3D);
+
+    Pochoir_Kernel_3D_Begin(heat_3D_fn, t, i, j, k)
+       a(t, i, j, k) = 
+           0.125 * (a(t-1, i+1, j, k) - 2.0 * a(t-1, i, j, k) + a(t-1, i-1, j, k)) 
+         + 0.125 * (a(t-1, i, j+1, k) - 2.0 * a(t-1, i, j, k) + a(t-1, i, j-1, k)) 
+         + 0.125 * (a(t-1, i, j, k+1) - 2.0 * a(t-1, i, j, k) + a(t-1, i, j, k-1))
+         + a(t-1, i, j, k);
+    Pochoir_Kernel_3D_End(heat_3D_fn, heat_shape_3D)
+
+    heat_3D.Register_Tile_Kernels(Default_Guard_3D, heat_3D_fn);
+    heat_3D.Register_Array(a);
 
 	for (int i = 0; i < N_SIZE; ++i) {
 	for (int j = 0; j < N_SIZE; ++j) {
@@ -88,14 +100,6 @@ int main(int argc, char * argv[])
         b(0, i, j, k) = a(0, i, j, k);
         b(1, i, j, k) = 0;
 	} } }
-
-    Pochoir_Kernel_3D(heat_3D_fn, t, i, j, k)
-	   a(t, i, j, k) = 
-           0.125 * (a(t-1, i+1, j, k) - 2.0 * a(t-1, i, j, k) + a(t-1, i-1, j, k)) 
-         + 0.125 * (a(t-1, i, j+1, k) - 2.0 * a(t-1, i, j, k) + a(t-1, i, j-1, k)) 
-         + 0.125 * (a(t-1, i, j, k+1) - 2.0 * a(t-1, i, j, k) + a(t-1, i, j, k-1))
-         + a(t-1, i, j, k);
-    Pochoir_Kernel_End
 
     /* we have to bind arrayInUse and Shape together 
      * => One arrayInUse, one shape[] => One slope[]
