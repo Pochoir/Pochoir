@@ -67,12 +67,19 @@ int main(int argc, char * argv[])
     printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);
     Pochoir_Shape_2D heat_shape_2D[] = {{1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, -1, -1}, {0, 0, -1}, {0, 0, 1}, {0, 0, 0}};
 	Pochoir_Array<double, N_RANK> a(N_SIZE, N_SIZE), b(N_SIZE, N_SIZE);
-    Pochoir<N_RANK> heat_2D(heat_shape_2D);
+    Pochoir<N_RANK> heat_2D;
     Pochoir_Domain I(1, N_SIZE-1), J(1, N_SIZE-1);
 
-    heat_2D.Register_Array(a);
     heat_2D.Register_Domain(I, J);
     b.Register_Shape(heat_shape_2D);
+
+    printf("a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)\n");
+    Pochoir_Kernel_2D_Begin(heat_2D_fn, t, i, j)
+       a(t+1, i, j) = 0.125 * (a(t, i+1, j) - 2.0 * a(t, i, j) + a(t, i-1, j)) + 0.125 * (a(t, i, j+1) - 2.0 * a(t, i, j) + a(t, i, j-1)) + a(t, i, j);
+    Pochoir_Kernel_2D_End(heat_2D_fn, heat_shape_2D)
+
+    heat_2D.Register_Tile_Kernels(Default_Guard_2D, heat_2D_fn);
+    heat_2D.Register_Array(a);
 
 	for (int i = 0; i < N_SIZE; ++i) {
 	for (int j = 0; j < N_SIZE; ++j) {
@@ -87,11 +94,6 @@ int main(int argc, char * argv[])
         b(1, i, j) = 0;
 	} }
 
-	printf("a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)\n");
-    Pochoir_Kernel_2D(heat_2D_fn, t, i, j)
-	   a(t+1, i, j) = 0.125 * (a(t, i+1, j) - 2.0 * a(t, i, j) + a(t, i-1, j)) + 0.125 * (a(t, i, j+1) - 2.0 * a(t, i, j) + a(t, i, j-1)) + a(t, i, j);
-    Pochoir_Kernel_End
-
     /* we have to bind arrayInUse and Shape together 
      * => One arrayInUse, one shape[] => One slope[]
      * because each arrayInUse needs to know the slope to determine
@@ -100,6 +102,10 @@ int main(int argc, char * argv[])
      */
     for (int times = 0; times < TIMES; ++times) {
 	    gettimeofday(&start, 0);
+        // TODO(rodmk):
+        // removing the heat_2D_fn causes errors when generating the plan
+        // "No regBound??" get inserted into source code by PGenBasicParser.hs
+        // which isn't compilable C++
         heat_2D.Run(T_SIZE, heat_2D_fn);
 	    gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
