@@ -118,13 +118,9 @@ int main(int argc, char * argv[])
         b(1, i, j) = tmp;
 	} }
 
-    Pochoir_Plan<2> & l_plan = heat_2D.Gen_Plan(T);
-    sprintf(pochoir_plan_file_name, "pochoir_%d_%d.dat\0", N, T);
-    heat_2D.Store_Plan(pochoir_plan_file_name, l_plan);
-    // Pochoir_Plan<2> & ll_plan = heat_2D.Load_Plan(pochoir_plan_file_name);
 	gettimeofday(&start, 0);
     for (int times = 0; times < TIMES; ++times) {
-        heat_2D.Run(l_plan);
+        heat_2D.Run(T);
     }
 	gettimeofday(&end, 0);
 	std::cout << "Pochoir consumed time :" << 1.0e3 * tdiff(&end, &start)/TIMES << " ms" << std::endl;
