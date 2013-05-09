@@ -28,7 +28,7 @@ all: $(TARGETS)
 	${CC} -o $@ $(CXXFLAGS) $<
 
 check: all
-	python check.py
+	python check.py -v
 
 clean: 
 	rm -f *.o *.i *_pochoir *_pochoir.cpp *.out *.dat *_kernel_info.cpp *_gen_kernel.cpp *.so *_gdb $(TARGETS)

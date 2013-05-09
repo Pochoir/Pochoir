@@ -4,6 +4,14 @@ import re
 import glob
 import os
 import re
+import unittest
+
+class ExistenceTest(unittest.TestCase):
+    pass
+
+class TestTest(unittest.TestCase):
+    def test_test(self):
+        self.assertEqual(1, 1)
 
 def green(s):
     return '\033[1;32m%s\033[m' % s
@@ -18,13 +26,14 @@ def check(name):
     if check_existence(name) and check_correctness(name):
         log(green("PASS"), "%s correctness check" % name)
 
-def check_existence(name):
-    try:
-        with open(name):
-            return True
-    except IOError:
-        log(red("FAIL"), "%s not found" % name)
-        return False
+def tg_check_existence(name):
+    def check_existence(self):
+        try:
+            with open(name):
+                pass
+        except IOError:
+            self.assertTrue(False, "%s not found" % name)
+    return ("test_compiles_%s" % name, check_existence)
 
 def check_correctness(name):
     return True
@@ -37,4 +46,7 @@ if __name__ == "__main__":
     stencils = set([re.sub("^tb_", "", stencil) for stencil in stencils])
 
     for stencil in sorted(stencils):
-        check(stencil)
+        test_name, test = tg_check_existence(stencil)
+        setattr(ExistenceTest, test_name, test)
+
+    unittest.main()
