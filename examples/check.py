@@ -18,13 +18,6 @@ def get_benchmarks():
 def get_testcases():
     return [classname for (classname, c) in inspect.getmembers(sys.modules[__name__], inspect.isclass)]
 
-def file_exists(filename):
-    try:
-        with open(filename):
-            return True
-    except IOError:
-        return False
-
 # CONSOLE PRINTING UTILITY METHODS
 def green(s):
     return '\033[1;32m%s\033[m' % s
@@ -36,32 +29,72 @@ def log(*m):
     print >> sys.stderr, " ".join(m)
 
 # META TESTS
-class Test_Existence_Test(unittest.TestCase):
+class Unit_Test_Existence_Test(unittest.TestCase):
     pass
 
-def tg_test_test_existence(name):
+def tg_test_unit_test_existence(name):
     """
-    Generates a test that ensures that a test suite class exists
+    Generates a test that checks whether a unit test class exists
     for a given benchmark.
     """
-    def test_test_existence(self):
+    def test_unit_test_existence(self):
         for case in get_testcases():
             if name.lower() in case.lower():
                 return
         self.assertTrue(False, "no unit tests for %s" % name)
-    return ("test_test_existence_%s" % name, test_test_existence)
+    return ("test_%s" % name, test_unit_test_existence)
 
 # GENERAL TEST CLASSES
 class Existence_Test:
+    name = None
+
+    def file_exists(self):
+        try:
+            with open(self.name):
+                return True
+        except IOError:
+            return False
+
     def test_existence(self):
-        self.assertTrue(file_exists(self.name), "%s not found" % self.name)
+        self.assertTrue(self.name != None, "must specify name field!")
+        self.assertTrue(self.file_exists(), "%s binary not found" % self.name)
+
+class NTSize_Test:
+    name = None
+    ntsizes = None
+
+    def run_stencil(self, n_size, t_size):
+        proc = subprocess.Popen(["./%s" % self.name, str(n_size), str(t_size)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out = proc.communicate()[0]
+        # print out
+
+        if proc.returncode != 0:
+            return False
+
+        if "failed" in out.lower():
+            return False
+
+        return True
+
+    def test_benchmark(self):
+        self.assertTrue(self.name != None, "must specify name field!")
+        self.assertTrue(self.ntsizes != None, "must specify ntsizes field!")
+
+        for (n_size, t_size) in self.ntsizes:
+            self.assertTrue(
+                self.run_stencil(n_size, t_size), 
+                "%s execution failure for N_SIZE: %d, T_SIZE: %d" % (self.name, n_size, t_size)
+            )
+
+
 
 # BENCHMARK TEST CLASSES
 class Fib_Test(unittest.TestCase, Existence_Test):
     name = "fib"
 
-class Life_Test(unittest.TestCase, Existence_Test):
+class Life_Test(unittest.TestCase, Existence_Test, NTSize_Test):
     name = "life"
+    ntsizes = [(0, 0), (10, 0), (10, 10), (100, 10), (100, 100)]
 
 class Heat_1D_NP_Test(unittest.TestCase, Existence_Test):
     name = "heat_1D_NP"
@@ -98,7 +131,7 @@ if __name__ == "__main__":
     # to ensure that each benchmark in the examples directory 
     # has a corresponding test case
     for benchmark in get_benchmarks():
-        test_name, test = tg_test_test_existence(benchmark)
-        setattr(Test_Existence_Test, test_name, test)
+        test_name, test = tg_test_unit_test_existence(benchmark)
+        setattr(Unit_Test_Existence_Test, test_name, test)
 
     unittest.main()
