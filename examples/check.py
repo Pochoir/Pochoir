@@ -59,14 +59,13 @@ class Existence_Test:
         self.assertTrue(self.name != None, "must specify name field!")
         self.assertTrue(self.file_exists(), "%s binary not found" % self.name)
 
-class NTSize_Test:
+class Standard_Test:
     name = None
-    ntsizes = None
+    inputs = None
 
-    def run_stencil(self, n_size, t_size):
-        proc = subprocess.Popen(["./%s" % self.name, str(n_size), str(t_size)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    def run_stencil(self, inp):
+        proc = subprocess.Popen(["./%s" % self.name] + [str(i) for i in inp], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out = proc.communicate()[0]
-        # print out
 
         if proc.returncode != 0:
             return False
@@ -78,23 +77,22 @@ class NTSize_Test:
 
     def test_benchmark(self):
         self.assertTrue(self.name != None, "must specify name field!")
-        self.assertTrue(self.ntsizes != None, "must specify ntsizes field!")
+        self.assertTrue(self.inputs != None, "must specify inputs field!")
 
-        for (n_size, t_size) in self.ntsizes:
+        for inp in self.inputs:
             self.assertTrue(
-                self.run_stencil(n_size, t_size), 
-                "%s execution failure for N_SIZE: %d, T_SIZE: %d" % (self.name, n_size, t_size)
+                self.run_stencil(inp), 
+                "execution failure for %s %s" % (self.name, " ".join([str(i) for i in inp]))
             )
 
-
-
 # BENCHMARK TEST CLASSES
-class Fib_Test(unittest.TestCase, Existence_Test):
+class Fib_Test(unittest.TestCase, Existence_Test, Standard_Test):
     name = "fib"
+    inputs = [(0,), (10,), (25,)]
 
-class Life_Test(unittest.TestCase, Existence_Test, NTSize_Test):
+class Life_Test(unittest.TestCase, Existence_Test, Standard_Test):
     name = "life"
-    ntsizes = [(0, 0), (10, 0), (10, 10), (100, 10), (100, 100)]
+    inputs = [(0, 0), (10, 0), (10, 10), (100, 10), (100, 100)]
 
 class Heat_1D_NP_Test(unittest.TestCase, Existence_Test):
     name = "heat_1D_NP"
