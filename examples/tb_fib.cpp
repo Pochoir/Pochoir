@@ -37,11 +37,12 @@ fib : fib.cpp
 
 */
 
-
-
-
-/* test bench for 2D checkerboard style stencil in Pochoir
+/*  test bench for 2D checkerboard style stencil in Pochoir
+    this stencil uses the time dimension to represent the Nth
+    fibonacci number (and only the first element in the
+    spatial dimension to store this data)
  */
+
 #include <cstdio>
 #include <cstddef>
 // #include <iostream>
@@ -76,29 +77,17 @@ Pochoir_Boundary_1D(Pochoir_Aperiodic_1D, arr, t, i)
     return 0;
 Pochoir_Boundary_End
 
-//#define N 8000
-//#define T 1000
-
 int main(int argc, char * argv[])
 {
-    //const int BASE = 1024;
-    int t;
     struct timeval start, end;
     double min_tdiff = INF;
-    /* the 1D spatial dimension has 'N' points */
-    /* We can NOT capture normal variables for now! 
-     * - So to define the N, T as macros!
-     */
-    // int N = 0, T = 0;
-    //double umin, umax;
 
-    if (argc < 3) {
-        printf("argc < 3, quit! \n");
+    if (argc < 2) {
+        printf("argc < 2, quit! \n");
         exit(1);
     }
-    int N = StrToInt(argv[1]);
-    int T = StrToInt(argv[2]);
-    printf("N = %d, T = %d\n", N, T);
+    int T = StrToInt(argv[1]);
+    printf("T = %d\n", T);
 
     Pochoir_Shape_1D oned_3pt[] = {{0, 0}, {-1, 0}, {-1, -1}, {-1, 1}, {-2, 0}}; // TODO: ÇÐ¸îÓÐÎÊÌâ¡£¡£
     Pochoir_Array_1D(long) a(1);
@@ -109,12 +98,10 @@ int main(int argc, char * argv[])
     b.Register_Shape(oned_3pt);
     b.Register_Boundary(Pochoir_Aperiodic_1D);
 
-    double coeff0 = 1.0, coeff1 = 2.0;
     Pochoir_Kernel_1D_Begin(fib_kernel, t, i)
 #if APP_DEBUG
         printf("<k_exclusive_0_0> : a(%d, %d)\n", t, i);
 #endif
-        // a(t, i) = coeff0 * a(t-1, i) + coeff1 * a(t-2, i);
         a(t, i) = 1.0 * a(t-1, i) + 2.0 * a(t-2, i);
     Pochoir_Kernel_1D_End(fib_kernel, oned_3pt)
 
@@ -145,17 +132,15 @@ int main(int argc, char * argv[])
     for (int times = 0; times < TIMES; ++times) {
         gettimeofday(&start, 0);
         for (int t = 2; t < T + 2; ++t) {
-            b(t, 0) = coeff0 * b(t - 1, 0) + coeff1 * b(t - 2, 0);
+            b(t, 0) = 1.0 * b(t - 1, 0) + 2.0 * b(t - 2, 0);
         }
         gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
     printf("Parallel Loop time = %.6f ms\n", min_tdiff);
-//    std::cout << "Parallel Loop time : " << min_tdiff << " ms" << std::endl;
 
     /* check results! */
-    t = T;
-    check_result(t, 0, a(t, 0), b(t, 0));
+    check_result(T, 0, a(T, 0), b(T, 0));
 
     printf("max_diff = %f, when a = %f, b = %f\n", max_diff, diff_a, diff_b);
     printf("max_a = %f, max_b = %f\n", max_a, max_b);
