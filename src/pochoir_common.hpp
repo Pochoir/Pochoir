@@ -56,9 +56,15 @@ static inline int StrToInt(const std::string& s)
 #define BIT_TRICK 0
 #define INF 100000000
 #define SUPPORT_RANK 9
+#define DEFAULT_SPACE_CUT
+#define DEFAULT_TIME_CUT
+//#define COUNT_PROJECTIONS
+#define COUNT_TRIANGLE
+#define COUNT_TRAPEZOID
+//#define USE_PROJECTION
 
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#define min(a, b) ((a) < (b) ? (a) : (b))
+#define max_(a, b) ((a) > (b) ? (a) : (b))
+#define min_(a, b) ((a) < (b) ? (a) : (b))
 /* a bit tricky version of modulo operation, assuming a < 2 * b */
 #define pmod(a, b) ((a) - ((b) & -((a)>=(b))))
 #define pmod_lu(a, lb, ub) ((a) - (((ub)-(lb)) & -((a)>=(ub))))
