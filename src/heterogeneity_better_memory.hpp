@@ -749,7 +749,8 @@ private:
 	inline void heterogeneous_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, F const & f) ;
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 	template <typename F>
 	inline void homogeneous_modified_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
@@ -790,7 +791,8 @@ private:
 		//grid_info<N_RANK> const & grid, F const & f, int *) ;
 #endif
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 	template <typename F>
 	inline void homogeneous_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 

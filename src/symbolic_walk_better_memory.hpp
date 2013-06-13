@@ -638,7 +638,8 @@ inline void heterogeneity<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 
 //The routine does a homogeneous space cut for interior zoids. 
 template <int N_RANK> template <typename F>
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 inline void heterogeneity<N_RANK>::homogeneous_space_cut_interior(int t0, 
 				int t1, grid_info<N_RANK> const & grid, 
 				zoid_type * projection_zoid, F const & f)
@@ -655,7 +656,8 @@ inline void heterogeneity<N_RANK>::homogeneous_space_cut_interior(int t0,
         queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
     }
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 	int child_index = 0 ;
 #endif
     // set up the initial grid 
@@ -675,7 +677,8 @@ inline void heterogeneity<N_RANK>::homogeneous_space_cut_interior(int t0,
                     // assert all the sub-grid has done N_RANK spatial cuts 
                     assert(l_son->level == -1);
 					assert(child_index < projection_zoid->num_children) ;
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 					unsigned long index = projection_zoid->children [child_index] ;
 					zoid_type * child = &(m_zoids [index]) ;
 					child_index++ ; //looks like a race
@@ -691,8 +694,9 @@ inline void heterogeneity<N_RANK>::homogeneous_space_cut_interior(int t0,
 #else
                 // use cilk_spawn to spawn all the sub-grid 
                 pop_queue(curr_dep_pointer);
-				assert(child_index < projection_zoid->num_children) ;
-#ifndef NDEBUG
+				//assert(child_index < projection_zoid->num_children) ;
+//#ifndef NDEBUG
+#if 0
 				unsigned long index = projection_zoid->children [child_index] ;
 				zoid_type * child = &(m_zoids [index]) ;
 				child_index++ ; 
@@ -809,7 +813,8 @@ inline void heterogeneity<N_RANK>::homogeneous_space_cut_interior(int t0,
 
 //The routine does a homogeneous space cut for boundary zoids. 
 template <int N_RANK> template <typename F>
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 inline void heterogeneity<N_RANK>::homogeneous_space_cut_boundary(int t0, 
 				int t1, grid_info<N_RANK> const & grid, 
 				zoid_type * projection_zoid, F const & f)
@@ -826,7 +831,8 @@ inline void heterogeneity<N_RANK>::homogeneous_space_cut_boundary(int t0,
         queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
     }
 	
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 	int child_index = 0 ;
 #endif
     // set up the initial grid 
@@ -847,7 +853,8 @@ inline void heterogeneity<N_RANK>::homogeneous_space_cut_boundary(int t0,
                     // assert all the sub-grid has done N_RANK spatial cuts 
                     //assert(l_son->level == -1);
 					assert(child_index < projection_zoid->num_children) ;
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 					unsigned long index = projection_zoid->children [child_index] ;
 					zoid_type * child = &(m_zoids [index]) ;
 					child_index++ ; 
@@ -863,8 +870,9 @@ inline void heterogeneity<N_RANK>::homogeneous_space_cut_boundary(int t0,
 #else
                 // use cilk_spawn to spawn all the sub-grid 
                 pop_queue(curr_dep_pointer);
-				assert(child_index < projection_zoid->num_children) ;
-#ifndef NDEBUG
+				//assert(child_index < projection_zoid->num_children) ;
+//#ifndef NDEBUG
+#if 0
 				unsigned long index = projection_zoid->children [child_index] ;
 				zoid_type * child = &(m_zoids [index]) ;
 				child_index++ ; 
@@ -1029,7 +1037,8 @@ inline void heterogeneity<N_RANK>::homogeneous_space_cut_boundary(int t0,
 
 //This routine does a homogeneous space/time cut on interior zoids
 template <int N_RANK> template <typename F>
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 inline void heterogeneity<N_RANK>::homogeneous_space_time_cut_interior(int t0, 
 					int t1, grid_info<N_RANK> const & grid, 
 					zoid_type * projection_zoid, F const & f)
@@ -1042,14 +1051,15 @@ inline void heterogeneity<N_RANK>::homogeneous_space_time_cut_interior(int t0,
     bool sim_can_cut = false;
     grid_info<N_RANK> l_son_grid;
 
-	assert (projection_zoid) ;
-	assert (projection_zoid->height == lt) ;
+	//assert (projection_zoid) ;
+	//assert (projection_zoid->height == lt) ;
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
         lb = (grid.x1[i] - grid.x0[i]);
         tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 		zoid_type * z = projection_zoid ;
 		grid_info <N_RANK> & grid2 = z->info ;
 		int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
@@ -1096,7 +1106,8 @@ inline void heterogeneity<N_RANK>::homogeneous_space_time_cut_interior(int t0,
     if (sim_can_cut) 
 	{
         /* cut into space */
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
         homogeneous_space_cut_interior(t0, t1, grid, projection_zoid, f);
 #else
         homogeneous_space_cut_interior(t0, t1, grid, f);
@@ -1106,12 +1117,13 @@ inline void heterogeneity<N_RANK>::homogeneous_space_time_cut_interior(int t0,
 	{
         /* cut into time */
 		//assert (projection_zoid->children.size() == 2) ;
-		assert (projection_zoid->children [0]) ;
-		assert (projection_zoid->children [1]) ;
+		//assert (projection_zoid->children [0]) ;
+		//assert (projection_zoid->children [1]) ;
         assert(lt > dt_recursive_);
         int halflt = lt / 2;
         l_son_grid = grid;
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 		unsigned long index = projection_zoid->children [0] ;
         homogeneous_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
 					&(m_zoids [index]), f);
@@ -1126,7 +1138,8 @@ inline void heterogeneity<N_RANK>::homogeneous_space_time_cut_interior(int t0,
             l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
             l_son_grid.dx1[i] = grid.dx1[i];
         }
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 		index = projection_zoid->children [1] ;
         homogeneous_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
 					&(m_zoids [index]), f);
@@ -1145,7 +1158,8 @@ inline void heterogeneity<N_RANK>::homogeneous_space_time_cut_interior(int t0,
 
 //This routine does a homogeneous space/time cut on boundary zoid
 template <int N_RANK> template <typename F> 
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 inline void heterogeneity<N_RANK>::homogeneous_space_time_cut_boundary(int t0, 
 					int t1,	grid_info<N_RANK> const & grid, 
 					zoid_type * projection_zoid, F const & f)
@@ -1159,14 +1173,15 @@ inline void heterogeneity<N_RANK>::homogeneous_space_time_cut_boundary(int t0,
     grid_info<N_RANK> l_father_grid = grid, l_son_grid;
     int l_dt_stop;
 
-	assert (projection_zoid) ;
-	assert (projection_zoid->height == lt) ;
+	//assert (projection_zoid) ;
+	//assert (projection_zoid->height == lt) ;
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
         lb = (grid.x1[i] - grid.x0[i]);
         tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 		zoid_type * z = projection_zoid ;
 		grid_info <N_RANK> & grid2 = z->info ;
 		int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
@@ -1224,7 +1239,8 @@ inline void heterogeneity<N_RANK>::homogeneous_space_time_cut_boundary(int t0,
 	{
 		//cout << "space cut " << endl ;
         //cut into space 
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
         if (call_boundary) 
 		{
             homogeneous_space_cut_boundary(t0, t1, l_father_grid, 
@@ -1251,13 +1267,14 @@ inline void heterogeneity<N_RANK>::homogeneous_space_time_cut_boundary(int t0,
 		//cout << "time cut " << endl ;
         // cut into time 
 		//assert (projection_zoid->children.size() == 2) ;
-		assert (projection_zoid->children [0]) ;
-		assert (projection_zoid->children [1]) ;
+		//assert (projection_zoid->children [0]) ;
+		//assert (projection_zoid->children [1]) ;
 		
         int halflt = lt / 2;
         l_son_grid = l_father_grid;
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 		unsigned long index = projection_zoid->children [0] ;
         if (call_boundary) {
             homogeneous_space_time_cut_boundary(t0, t0+halflt, l_son_grid, 
@@ -1282,7 +1299,8 @@ inline void heterogeneity<N_RANK>::homogeneous_space_time_cut_boundary(int t0,
             l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
             l_son_grid.dx1[i] = l_father_grid.dx1[i];
         }
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 		index = projection_zoid->children [1] ;
         if (call_boundary) {
             homogeneous_space_time_cut_boundary(t0+halflt, t1, l_son_grid, 
@@ -1686,7 +1704,8 @@ inline void heterogeneity<N_RANK>::heterogeneous_space_time_cut_interior(int t0,
 		int index = __builtin_ffs(projection_zoid->geneity) ;
 		//cout << "zoid is homogeneous" << endl ;
 		//print_bits(&(projection_zoid->geneity), sizeof(word_type) * 8);
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 		return homogeneous_space_time_cut_interior(t0, t1,	grid, 
 								projection_zoid, (*m_clone_array) [index]) ; 
 #else
@@ -1800,7 +1819,8 @@ inline void heterogeneity<N_RANK>::heterogeneous_space_time_cut_boundary(int t0,
 		int index = __builtin_ffs(projection_zoid->geneity) ;
 		//cout << "zoid is homogeneous" << endl ;
 		//print_bits(&(projection_zoid->geneity), sizeof(word_type) * 8);
-#ifndef NDEBUG
+//#ifndef NDEBUG
+#if 0
 		return homogeneous_space_time_cut_boundary(t0, t1,	grid, 
 								projection_zoid, (*m_clone_array) [index]) ; 
 #else
