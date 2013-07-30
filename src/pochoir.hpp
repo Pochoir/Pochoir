@@ -27,8 +27,17 @@
 #define EXPR_STENCIL_HPP
 
 #include "pochoir_common.hpp"
+#include "pochoir_modified_cuts.hpp"
 #include "pochoir_walk_recursive.hpp"
+#include "projections.hpp"
 #include "pochoir_array.hpp"
+#include "clones_2d_diffusion.hpp"
+//#include "clones_2dwave.hpp"
+//#include "clones.hpp"
+#include "symbolic_walk_better_memory.hpp"
+#include "pochoir_modified_cuts_heterogeneity.hpp"
+//#include "symbolic_walk.hpp"
+
 /* assuming there won't be more than 10 Pochoir_Array in one Pochoir object! */
 #define ARRAY_SIZE 10
 template <int N_RANK>
@@ -53,8 +62,15 @@ class Pochoir {
         int shape_size_;
         int num_arr_;
         int arr_type_size_;
-
+		//eka - adding a pointer to pochoir array
+		Pochoir_Array<double, N_RANK> * arr_ ;
+		int resolution_ ;
     public:
+
+	void set_resolution(int r)
+	{
+		resolution_ = r ;
+	}
     template <size_t N_SIZE>
     Pochoir(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
         for (int i = 0; i < N_RANK; ++i) {
@@ -183,6 +199,8 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & arr) {
     arr.alloc_mem();
 #endif
     regArrayFlag = true;
+	//eka - storing a pointer to pochoir array
+	arr_ = &(arr) ;
 }
 
 template <int N_RANK> template <size_t N_SIZE>
@@ -205,8 +223,7 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
     toggle_ = depth + 1;
     for (int i = 0; i < N_SIZE; ++i) {
         for (int r = 0; r < N_RANK; ++r) {
-//             slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
-            slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[N_RANK-r]/(l_max_time_shift - shape[i].shift[0]))));
+            slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
         }
     }
 #if DEBUG 
@@ -397,7 +414,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f) {
 #pragma isat marker M2_begin
    // algor.sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
 #if 1
-    // printf("shorter_duo_sim_obase_bicut!\n");
+    printf("shorter_duo_sim_obase_bicut!\n");
     algor.shorter_duo_sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
 #else
     printf("stevenj!\n");
@@ -438,8 +455,66 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 //    fprintf(stderr, "Call sim_obase_bicut_P\n");
 #pragma isat marker M2_begin
 #if 1
-    // printf("shorter_duo_sim_obase_bicut_p!\n");
+    algor.set_time_step(timestep_);
+	algor.set_time_shift(time_shift_) ;
+	cout << "time_shift_ " << time_shift_ << " timestep " << timestep << endl ;
+#ifdef COUNT_PROJECTIONS
+    algor.compute_projections(0+time_shift_, timestep+time_shift_, logic_grid_) ;
+#endif
+    printf("shorter_duo_sim_obase_bicut_p!\n");
+#ifdef DEFAULT_SPACE_CUT
+	cout << "default space cut " << endl ;
+#else
+	cout << "modified space cut " << endl ;
+#endif
+
+#ifdef DEFAULT_TIME_CUT
+	cout << "default time cut " << endl ;
+#ifndef USE_PROJECTION
     algor.shorter_duo_sim_obase_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+#else
+	predicate <N_RANK> p (phys_grid_) ; 
+	p.set_resolution(resolution_) ;
+	heterogeneity<N_RANK> hg(algor, phys_grid_, 0) ;
+	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
+	hg.set_clone_array(&c1) ;
+	//hg.build_heterogeneity_dag(0, timestep, logic_grid_, p, 0) ;
+	hg.do_default_space_time_cuts(0+time_shift_, timestep+time_shift_,
+							logic_grid_, f, bf, p) ;
+#ifndef NDEBUG
+	cout << "calling print dag " << endl ;
+	hg.print_dag() ;
+	hg.print_heterogeneity() ;
+#endif
+
+#endif
+#else
+	cout << "pow2 time cut " << endl ;
+#ifndef USE_PROJECTION
+    algor.power_of_two_time_cut(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+#else
+	predicate <N_RANK> p (phys_grid_) ; 
+	p.set_resolution(resolution_) ;
+	heterogeneity<N_RANK> hg(algor, phys_grid_, 1) ;
+	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
+	hg.set_clone_array(&c1) ;
+	struct timeval start, end;
+	double compute_time = 0. ;
+	//hg.build_heterogeneity_dag_modified(0, timestep, logic_grid_, p, 0) ;
+	gettimeofday(&start, 0);
+	hg.do_power_of_two_time_cut(0+time_shift_, timestep+time_shift_,
+								logic_grid_, f, bf, p) ;
+	gettimeofday(&end, 0);
+	compute_time = tdiff(&end, &start) ;
+	std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
+#ifndef NDEBUG
+	cout << "calling print dag " << endl ;
+	hg.print_dag() ;
+	hg.print_heterogeneity() ;
+#endif
+
+#endif
+#endif
 #else
     printf("stevenj_p!\n");
     algor.stevenj_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);

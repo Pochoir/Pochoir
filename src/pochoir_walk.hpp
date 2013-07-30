@@ -33,6 +33,9 @@
 #include <cilk/cilk_api.h>
 #include <cilk/reducer_opadd.h>
 #include "pochoir_common.hpp"
+#include <map>
+#include <vector>
+#include <set>
 
 using namespace std;
 
@@ -362,7 +365,11 @@ struct power<1> {
 }; 
 
 template <int N_RANK>
+class heterogeneity ;
+
+template <int N_RANK>
 struct Algorithm {
+	//friend class heterogeneity<N_RANK> ;
 	private:
         /* different stencils will have different slopes */
         /* We cut coarser in internal region, finer at boundary
@@ -391,6 +398,41 @@ struct Algorithm {
         int slope_[N_RANK];
         int ulb_boundary[N_RANK], uub_boundary[N_RANK], lub_boundary[N_RANK];
         bool boundarySet, physGridSet, slopeSet;
+
+		int num_time_steps ; // # of time steps
+		int time_shift ; // depth of the stencil
+		vector<set<int> > m_1d[2] ; //vector indexed by point in space 
+		vector<map<int,int> > m_1d_map ; //vector indexed by point in space 
+		vector<set<int> > m_1d_index_by_length ; //vector indexed by length
+		vector<int> m_1d_proj_length ;
+		int num_projections_1d [2] ;
+		typedef struct
+		{
+			int x [4] ;     //the 4 x co-ordinates
+			int y [4] ;     //the 4 y co-ordinates
+			//type is
+			//	0 if both dimensions converge or both dimensions diverge
+			//	1 if one dimension converges and the other diverges 
+			//
+			bool type ; 
+			//octagon_type is
+			//	0 if x converges and y diverges
+			//	1 if x diverges and y converges
+			//
+			bool octagon_type ; 
+			int top_right ; //top right location of the rectangle
+		} proj_2d ;
+		vector<set<int>> m_2d_r [2] ;
+		int num_projections_2d_r [2] ;
+		vector<vector<proj_2d> > m_2d_o [2] ;
+		int num_projections_2d_o [2] ;
+		int num_triangles [N_RANK] ;
+        typedef struct {
+            int level; /* level is how many dimensions we have cut so far */
+            int t0, t1;
+            grid_info<N_RANK> grid;
+			char is_minimal ;
+        } queue_info_modified_cut ;
 	public:
 #if STAT
     /* sim_count_cut will be accessed outside Algorithm object */
@@ -428,6 +470,257 @@ struct Algorithm {
 
     }
 
+    ~Algorithm() 
+	{
+#ifdef COUNT_PROJECTIONS
+		unsigned long total_projections = 0 ;
+		int W = 0 ;  //max_width among all dimensions
+		int slope ;
+    	for (int i = 0 ; i < N_RANK ; i++)
+		{
+			cout << "dim " << i << " length " << phys_length_ [i] 
+				 << " slope " << slope_ [i] << endl ;
+			if (phys_length_ [i] > W)
+			{
+				W = phys_length_ [i] ;
+				slope = slope_ [i] ;
+			}
+		}
+		int Wn = W / (2 * slope) ;
+		if (N_RANK == 1)
+		{ 
+			int lgT = 8 * sizeof(int) - __builtin_clz(num_time_steps) - 1 ;
+			cout << "lg T " << lgT << endl ;
+			const int h = 1 * lgT ;
+			
+			if (m_1d [0].size() > 0)
+			{
+				cout << "zoid 0 " << endl ;
+				int count = 0 ;
+				for (int i = 0 ; i < m_1d [0].size() ; i++)
+				{
+					set <int> & s = m_1d [0] [i] ;
+					if (s.size() > h)
+					{
+					count++ ;
+					cout << "# of projs at i " << i << " = " << s.size() << endl ;
+					for (set <int> ::iterator it = s.begin() ; it != s.end() ; 
+																++it)
+					{
+						cout << i << "," << *it << endl ;
+					}
+					cout << endl ;
+					map <int, int> & m = m_1d_map [i] ;
+					for (map <int,int> ::iterator it = m.begin() ; 
+						 it != m.end() ; ++it)
+					{
+						cout << i << ", h " << it->second << " w " << it->first 
+							<< endl ;
+					}
+					
+					}
+				}
+				cout << "# of midpoints with proj > " << h << " " << count 
+					 << endl ;
+				/*
+				cout << "length , # of diff projs of length " << endl ;
+				for (int i = 0 ; i < m_1d_proj_length.size() ; i++)
+				{
+					if (m_1d_proj_length [i] > 0)
+					{
+						cout << i << "," << m_1d_proj_length [i] << endl ;
+					}
+				}
+				cout << "length, start indices for each length " << endl ;
+				for (int i = 0 ;  i < m_1d_index_by_length.size() ; i++)
+				{
+					set <int> & s = m_1d_index_by_length [i] ;
+					if (s.size() > 0)
+					{
+						cout << endl << " length " << i 
+						<< " # of cells " << s.size() << endl ;
+					}
+					for (set <int> ::iterator it = s.begin() ; it != s.end() ; 
+																++it)
+					{
+						cout << *it << "," ;
+					}
+				}
+			}*/
+			/*if (m_1d [1].size() > 0)
+			{
+				cout << "zoid 1 " << endl ;
+				for (int i = 0 ; i < m_1d [1].size() ; i++)
+				{
+					set <int> & s = m_1d [1] [i] ;
+					cout << "# of projs at i " << i << " = " << s.size() << endl ;
+					for (set <int> ::iterator it = s.begin() ; it != s.end() ; 
+																++it)
+					{
+						cout << i << "," << *it << endl ;
+					}
+				}
+			}*/
+			//cout << "(N, T, Wn, # of projections, " <<
+			//		"T % Wn, # of projections, Total) " 
+			cout << "(N, T, Wn, # of projections in upright triangle, " <<
+					"# of projections in inverted zoid, Total) " 
+			 << " (" << phys_length_ [0] << ","
+			 << num_time_steps << ","
+			 <<  Wn << "," 
+			 << num_projections_1d [0] << ","
+			 //<< num_time_steps % Wn << ","
+			 << num_projections_1d [1] << ","
+			 << num_projections_1d [0] + num_projections_1d [1] <<
+			") " << endl ;
+			/*
+			if (m_1d [2].size() > 0)
+			{
+				cout << "zoid 2 " << endl ;
+				cout << "(N, T, # of projections) " 
+				 << " (" << phys_length_ [0] << "," << num_time_steps << "," <<
+					 m_1d [2].size() << ") " << endl ;
+				multimap<unsigned long, unsigned long>::iterator pos = 
+							m_1d [2].begin();
+				cout << "slope " << slope_ [0] << endl ;
+				cout << "smallest length " << pos->first << endl ;
+				for (pos = m_1d [2].begin() ; pos != m_1d [2].end() ; pos++)
+				{
+					cout << pos->first << "," << pos->second << endl ;
+				}
+			}*/
+		}
+		else if (N_RANK == 2) 
+		{
+			cout << "(N1, N2, T, Wn, # rectangles, # octagons, Total, T % Wn,"<<
+				 "# rectangles, # octagons, Total, Grand total ) " 
+			<< " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
+			<< num_time_steps << "," 
+			<< Wn << "," 
+			<< num_projections_2d_r [0] << "," 
+			<< num_projections_2d_o [0] << ","
+			<< num_projections_2d_r [0] + num_projections_2d_o [0] << ","
+			<< num_time_steps % Wn << ","
+			<< num_projections_2d_r [1] << "," 
+			<< num_projections_2d_o [1] << ","
+			<< num_projections_2d_r [1] + num_projections_2d_o [1] << ","
+			<< num_projections_2d_r [0] + num_projections_2d_o [0] +
+				num_projections_2d_r [1] + num_projections_2d_o [1]
+			<< " ) " << endl ;
+
+			/*
+			{
+			cout << "(N1, N2, T, # of projections) " 
+			     << " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
+				<< num_time_steps << "," <<
+				 map_2d.size() << ") " << endl ;
+			cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
+				<< endl ;
+			//cout << "# of projections " << map_2d.size() << endl ;
+
+			typename multimap <unsigned long, projection_2d *>::iterator pos =  
+			//multimap <unsigned long, unsigned long>::iterator pos =  
+															map_2d.begin() ;
+			cout << "smallest area " << pos->first << endl ; 
+			for (pos = map_2d.begin() ; pos != map_2d.end() ; pos++)
+			{
+				//projection_2d & p = pos->second ;
+				projection_2d * p = pos->second ;
+				*/
+				/*cout << "Area " << p->area << " type " << p->type << 
+				" (x0, x1) " << "(" << p->x [0] << "," << p->x [1] << ") " <<
+				" (x2, x3) " << "(" << p->x [2] << "," << p->x [3] << ") " <<
+				" (y0, y1) " << "(" << p->y [0] << "," << p->y [1] << ") " <<
+				" (y2, y3) " << "(" << p->y [2] << "," << p->y [3] << ") " <<
+				 endl ;*/
+				/*
+				delete p ;
+				pos->second = 0 ;
+			}
+			}
+			*/
+			/*if (m_2d [0].size() > 0)
+			{
+			cout << "zoid 0" <<endl ;
+				 //m_2d [0].size() << ") " << endl ;
+			cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
+				<< endl ;
+
+			//typename multimap <unsigned long, proj_2d *>::iterator pos =  
+			//													m_2d [0].begin() ;
+			//for (; pos != m_2d [0].end() ; pos++)
+			
+			int max_length = 0 ;
+			for (int i = 0 ; i < m_2d[0].size() ; i++)
+			{
+				vector <proj_2d> & v = m_2d [0][i] ;
+				if (v.size() > max_length)
+				{
+					max_length = v.size() ;
+				}
+				if (v.size() > 0)
+				{
+					cout << i << " " << (m_2d [0]) [i].size() << endl ;
+				}
+				for (int j = 0 ; j < v.size() ; j++)
+				{
+					proj_2d & p = v [j] ;
+					cout << " type " << p.type << 
+				" (x0, x1) " << "(" << p.x [0] << "," << p.x [1] << ") " <<
+				" (x2, x3) " << "(" << p.x [2] << "," << p.x [3] << ") " <<
+				" (y0, y1) " << "(" << p.y [0] << "," << p.y [1] << ") " <<
+				" (y2, y3) " << "(" << p.y [2] << "," << p.y [3] << ") " <<
+					 endl ;
+				}
+			}
+			cout <<  " max_length " <<  max_length << endl ; 
+
+			}*/
+			/*
+			if (m_2d [1].size() > 0)
+			{
+			cout << "zoid 1" <<endl ;
+			cout << "(N1, N2, T, # of projections) " 
+			     << " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
+				<< num_time_steps << "," <<
+				 m_2d [1].size() << ") " << endl ;
+			cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
+				<< endl ;
+
+			typename multimap <unsigned long, proj_2d *>::iterator pos =  
+															m_2d [1].begin() ;
+			for (; pos != m_2d [1].end() ; pos++)
+			{
+				proj_2d * p = pos->second ;
+				delete p ;
+				pos->second = 0 ;
+			}
+			}
+			if (m_2d [2].size() > 0)
+			{
+			cout << "zoid 2" <<endl ;
+			cout << "(N1, N2, T, # of projections) " 
+			     << " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
+				<< num_time_steps << "," <<
+				 m_2d [2].size() << ") " << endl ;
+			cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
+				<< endl ;
+
+			typename multimap <unsigned long, proj_2d *>::iterator pos =  
+															m_2d [2].begin() ;
+			for (; pos != m_2d [2].end() ; pos++)
+			{
+				proj_2d * p = pos->second ;
+				delete p ;
+				pos->second = 0 ;
+			}
+			}
+			*/
+		}
+#endif
+    }
+
+
     /* README!!!: set_phys_grid()/set_stride() must be called before call to 
      * - walk_adaptive 
      * - walk_ncores_hybrid
@@ -440,18 +733,37 @@ struct Algorithm {
         for (int i = N_RANK-1; i >= 1; --i)
             dx_recursive_[i] = 1;
 #else
-        if (N_RANK == 3) {
-            dt_recursive_ = 3;
-            dx_recursive_[0] = 1000;
-            dx_recursive_[1] = dx_recursive_[2] = 3;
-        } else {
+#ifdef DEFAULT_TIME_CUT 
+//#if 1
         dt_recursive_ = (N_RANK == 1) ? 20 : ((N_RANK == 2) ? 40 : 5);
         dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((100 * sizeof(double))/arr_type_size)) : (int)floor(float((600 * sizeof(double))/arr_type_size));
 //        dx_recursive_[0] = 30;
         for (int i = N_RANK-1; i >= 1; --i)
             dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(100 * sizeof(double))/arr_type_size): 10;
-        }
+#else
+        dt_recursive_ = (N_RANK == 1) ? 128 : ((N_RANK == 2) ? 32 : 4);
+		int sigma_dt_times_two = 2 * slope_ [0] * dt_recursive_ ; 
+        dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((sigma_dt_times_two * sizeof(double))/arr_type_size)) : (int)floor(float((sigma_dt_times_two * sizeof(double))/arr_type_size));
+		if (N_RANK == 3)
+		{
+			dx_recursive_ [0] = (int)floor(float((32 * sigma_dt_times_two * sizeof(double))/arr_type_size));
+		}
+//        dx_recursive_[0] = 30;
+        for (int i = N_RANK-1; i >= 1; --i)
+            dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(2 * slope_ [i] * dt_recursive_ * sizeof(double))/arr_type_size): 2 * slope_ [i] * dt_recursive_ ;
 #endif
+#endif
+		//for counting projections, set dt and dx to 1
+		//dt_recursive_ = 1 ;
+		cout << "dt_recursive_" << dt_recursive_ << 
+				" dt_recursive_boundary_ " << dt_recursive_boundary_ << endl ; 
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			//dx_recursive_ [i] = 1 ;
+			cout << " dx_recursive [" << i << "]" << dx_recursive_[i]
+				<< " dx_recursive_boundary_[" << i << "]" 
+				<< dx_recursive_boundary_[i] << endl ;
+		}
 #if DEBUG
         printf("arr_type_size = %d\n", arr_type_size);
         printf("dt_thres = %d, ", dt_recursive_);
@@ -460,6 +772,22 @@ struct Algorithm {
         printf("dx_thres[%d] = %d\n", 0, dx_recursive_[0]);
 #endif
     }
+
+	void set_time_shift(int time_shift) 
+	{ 
+		this->time_shift = time_shift ; 
+	}
+
+	void set_time_step(int num_time_steps) 
+	{
+		this->num_time_steps = num_time_steps ;
+	}
+	//print projection
+	inline void print_projection(int t0, int t1, 
+								grid_info<N_RANK> const & grid,
+								const int index) ;
+	inline void compute_projections(int t0, int t1, 
+									grid_info<N_RANK> const grid) ;
     inline void push_queue(int dep, int level, int t0, int t1, grid_info<N_RANK> const & grid);
     inline queue_info & top_queue(int dep);
     inline void pop_queue(int dep);
@@ -470,6 +798,46 @@ struct Algorithm {
     void set_slope(int const slope[]);
     inline bool touch_boundary(int i, int lt, grid_info<N_RANK> & grid);
 
+	/* The following functions are for finding projections*/
+    inline void space_cut_interior_projections(int t0, int t1, 
+									grid_info<N_RANK> const grid,
+									const int index) ;
+    inline void space_cut_boundary_projections(int t0, int t1, 
+									grid_info<N_RANK> const grid,
+									const int index) ;
+    inline void space_time_cut_interior_projections(int t0, int t1, 
+								grid_info<N_RANK> const grid, const int index) ;
+    inline void space_time_cut_boundary_projections(int t0, int t1, 
+								grid_info<N_RANK> const grid, const int index) ;
+	/* The following functions are for modified space-time cut */
+    template <typename F>
+    inline void space_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+    template <typename F>
+    inline void space_time_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+
+    template <typename F, typename BF>
+    inline void space_cut_boundary(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+    template <typename F, typename BF>
+    inline void space_time_cut_boundary(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+
+    template <typename F>
+    inline void space_cut_interior_minimal(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+    template <typename F>
+    inline void space_time_cut_interior_minimal(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+
+    template <typename F, typename BF>
+    inline void space_cut_boundary_minimal(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+    template <typename F, typename BF>
+    inline void space_time_cut_boundary_minimal(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+
+    template <typename F>
+    inline void abnormal_region_space_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+    template <typename F>
+    inline void abnormal_region_space_time_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+    template <typename F, typename BF>
+    inline void abnormal_region_space_cut_boundary(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+    template <typename F, typename BF>
+    inline void abnormal_region_space_time_cut_boundary(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
     /* followings are the sim cut of both top and bottom bar */
     template <typename F>
     inline void shorter_duo_sim_obase_space_cut(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
@@ -480,7 +848,9 @@ struct Algorithm {
     inline void shorter_duo_sim_obase_space_cut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
     template <typename F, typename BF>
     inline void shorter_duo_sim_obase_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
-    template <typename F>
+    template <typename F, typename BF>
+    inline void power_of_two_time_cut(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+    /*template <typename F>
     inline void stevenj_space_cut(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename F, typename BF>
     inline void stevenj_space_cut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
@@ -492,9 +862,10 @@ struct Algorithm {
     inline void stevenj(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename F, typename BF>
     inline void stevenj_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+	*/
 
     /* followings are the sim cut of both top and bottom bar */
-    template <typename F>
+    /*template <typename F>
     inline void duo_sim_obase_space_cut(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename F>
     inline void duo_sim_obase_bicut(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
@@ -503,9 +874,9 @@ struct Algorithm {
     inline void duo_sim_obase_space_cut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
     template <typename F, typename BF>
     inline void duo_sim_obase_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
-
+	*/
     /* followings are sim cut only on bottom bar */
-    template <typename F>
+    /*template <typename F>
     inline void sim_obase_space_cut(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename F>
     inline void sim_obase_bicut(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
@@ -514,21 +885,22 @@ struct Algorithm {
     inline void sim_obase_space_cut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
     template <typename F, typename BF>
     inline void sim_obase_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
-
+	*/
     template <typename F> 
 	inline void base_case_kernel_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename BF> 
 	inline void base_case_kernel_boundary(int t0, int t1, grid_info<N_RANK> const grid, BF const & bf);
-    template <typename F> 
+    /*template <typename F> 
 	inline void walk_serial(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
-
+	*/
     /* all recursion-based algorithm */
-    template <typename F> 
+    /*template <typename F> 
     inline void walk_adaptive(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename F> 
     inline void walk_bicut(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+	*/
     /* recursive algorithm for obase */
-    template <typename F> 
+    /*template <typename F> 
     inline void obase_m(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename F> 
     inline void obase_adaptive(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
@@ -546,9 +918,10 @@ struct Algorithm {
     inline void obase_boundary_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
     template <typename F, typename BF> 
     inline void obase_bicut_boundary_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+	*/
 
     /* all loop-based algorithm */
-    template <typename F> 
+    /*template <typename F> 
     inline void cut_time(algor_type algor, int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename F> 
     inline void naive_cut_space_mp(int dim, int t0, int t1, grid_info<N_RANK> const grid, F const & f);
@@ -556,6 +929,7 @@ struct Algorithm {
     inline void naive_cut_space_ncores(int dim, int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename F> 
     inline void cut_space_ncores_boundary(int dim, int t0, int t1, grid_info<N_RANK> const grid, F const & f);
+	*/
 #if DEBUG 
 	void print_grid(FILE * fp, int t0, int t1, grid_info<N_RANK> const & grid);
 	void print_sync(FILE * fp);

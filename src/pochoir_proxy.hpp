@@ -38,21 +38,11 @@ class Pochoir_Proxy
 public:
     explicit Pochoir_Proxy(T * v) : ref_(v), val_(*v) { }
     explicit Pochoir_Proxy(T v) : val_(v), ref_(&val_) { }
-    Pochoir_Proxy() {
-        //val_ = T(0);
-        ref_ = & val_;
-    }
 
     operator T() const { // the implicit conversion makes a proxy just like the value itself
 	    return (*ref_);
     }
-    operator T* () {
-        return ref_;
-    }
     operator T& () {
-        return (*ref_);
-    }
-    inline T& operator() () {
         return (*ref_);
     }
     T * operator->() {
