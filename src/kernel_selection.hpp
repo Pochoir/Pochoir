@@ -29,22 +29,42 @@ template <int N_RANK>
 class kernel_selection
 {
 private:
-	//hash table of (key, kernel_index) pair
-	//continue from here
-	typedef unordered_multimap<unsigned long, char> leaf_kernel_table ;
-	typedef unordered_multimap<int, leaf_kernel_table> height_leaf_kernel_table;
+#ifndef NDEBUG
+template <int N_RANK>
+class zoid
+{
+	grid_info <N_RANK> info ;
+	int height ;
+	char kernel ;
+};
+	typedef zoid <N_RANK> zoid_type ;
+	//hash table of (leaf, kernel) pair
+	typedef unordered_map<unsigned long, zoid_type> leaf_kernel_table ;
+    typedef typename unordered_map<unsigned long, zoid_type>::iterator
+                    lk_table_iterator ;
+#else
+	//hash table of (leaf, kernel) pair
+	typedef unordered_map<unsigned long, char> leaf_kernel_table ;
+    typedef typename unordered_map<unsigned long, char>::iterator
+                    lk_table_iterator ;
+#endif
+	typedef unordered_map<int, leaf_kernel_table> height_leaf_kernel_table;
+    typedef typename unordered_map<int, leaf_kernel_table>::iterator
+                    hlk_table_iterator ;
 	//vector of geneity of leaves.
 	//vector <vector <int> > kernel_map ;
-	vector <ht_leaf_kernel_table> m_arr_height_leaf_kernel_table ;
+	vector <height_leaf_kernel_table> m_arr_height_leaf_kernel_table ;
+	int num_bits_dim ; //# of bits for bottom and top widths in a dimension
+	int num_bits_width ; //# of bits to store width
 
-	int min_leaf_height ;
+	//int min_leaf_height ;
 	Algorithm <N_RANK> & m_algo ; // a reference to Algorithm
 	pochoir_clone_array <N_RANK> * m_clone_array ; 
 	typedef typename Algorithm<N_RANK>::queue_info queue_info ;
 
 	void initialize(grid_info<N_RANK> const & grid, bool power_of_two)
 	{
-		int T = m_algo.num_time_steps ;
+		/*int T = m_algo.num_time_steps ;
 		int h = m_algo.dt_recursive_ ;
 
 		cout << " m_algo.dt_recursive_ " << m_algo.dt_recursive_ << endl ; 
@@ -89,7 +109,7 @@ private:
 		cout << " min leaf height " << min_leaf_height << endl ;
 		cout << " num heights " << num_heights << endl ;
 		kernel_map.reserve(num_heights) ;
-		kernel_map.resize(num_heights) ;
+		kernel_map.resize(num_heights) ; */
 
 		unsigned long volume = 1 ;
 		for (int i = 0 ; i < N_RANK ; i++)
@@ -97,14 +117,16 @@ private:
 			volume *= (grid.x1[i] - grid.x0[i]) ;		
 		}
 
-		for (int i = 0 ; i < num_heights ; i++)
+		/*for (int i = 0 ; i < num_heights ; i++)
 		{
 			kernel_map [i].reserve(volume) ;
 			kernel_map [i].resize(volume) ;
-		}
-		//continue from here. checkin before proceeding.
+		}*/
 		m_arr_height_leaf_kernel_table.reserve(volume) ; 
 		m_arr_height_leaf_kernel_table.resize(volume) ; 
+
+		num_bits_dim = sizeof (unsigned long) * 8 / N_RANK ;
+		num_bits_width = sizeof (unsigned long) * 8 / (2 * N_RANK) ;
 	}
 
 	template <typename F>
@@ -199,10 +221,22 @@ private:
 
 	~kernel_selection()
 	{
-		for (int i = 0 ; i < kernel_map.size() ; i++)
+		//continue from here
+		for (int i = 0 ; i < m_arr_height_leaf_kernel_table.size() ; i++)
+		{
+			height_leaf_kernel_table & table = 
+				m_arr_height_leaf_kernel_table [i] ;
+			for (int j = 0 ; j < table.size() ; j++)
+			{
+				table [j].clear() ;
+			}
+			table.clear() ;
+		}
+		m_arr_height_leaf_kernel_table.clear() ;
+		/*for (int i = 0 ; i < kernel_map.size() ; i++)
 		{
 			kernel_map [i].clear() ;
-		}
+		}*/
 	}
 	
 
@@ -212,19 +246,77 @@ private:
 	{
 		int T = t1 - t0 ;
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
-
-		int h = m_algo.dt_recursive_ ;
-		//k= ceil (lg (T / h))
-		int k = 8 * sizeof(int) - __builtin_clz((T - 1) / h) ;
-		//int k = floor(log2(T / h) + 0.5) ;
-		if (T <= h)
+		int W = 0 ;  //max_width among all dimensions
+		int slope ;
+		for (int i = 0 ; i < N_RANK ; i++)
 		{
-			k = 0 ;
+			if (m_algo.phys_length_ [i] > W)
+			{
+				W = m_algo.phys_length_ [i] ;
+				slope = m_algo.slope_ [i] ;
+			}		
 		}
+		//int h = m_algo.dt_recursive_ ;
+		//int Wn = W / (2 * slope) ;
+		//k= ceil (lg (T / h))
+		//int k = 8 * sizeof(int) - __builtin_clz((2 * slope * T - 1) / h) ;
+		//int k = floor(log2(T / h) + 0.5) ;
+		if (W >= 2 * slope * T)
+		{
+			symbolic_space_time_cut_boundary(t0, t1, grid, p) ;
+			heterogeneous_space_time_cut_boundary(t0, t1, grid, f, bf) ;
+		}
+		else
+		{
+			//choose h1 to be the normalized width
+			int h1 = W / (2 * slope) ;
+			int h2 = T - T / h1 * h1 ;
+			cout << "h1 " << h1 << " h2 " << h2 << endl ;
+			symbolic_space_time_cut_boundary(t0, t0 + h1, grid, p) ;
+			if (h2 > 0)
+			{
+				symbolic_space_time_cut_boundary(t0, t0 + h2, grid, p) ;
+			}
+
+#ifndef NDEBUG
+			//print contents
+			/*for (int i = 0 ; i < m_arr_height_leaf_kernel_table.size() ; i++)
+			{
+				height_leaf_kernel_table & table = 
+					m_arr_height_leaf_kernel_table [i] ;
+				for (hlk_table_iterator it = table.begin() ; it != table.end() ;
+																it++)
+				{
+					int h = it->first ;
+					leaf_kernel_table & table2 = it->second ;
+					for (lk_table_iterator it2 = table2.begin() ; 
+												it2 != table2.end(); it2++)
+					{
+						int kernel = it2->second ;
+						cout << " index " << i << " height " << h << " key " <<
+								it2->first << " kernel " << kernel << endl ;
+					}
+				}
+			}*/
+#endif
+			int m = T / h1 ;
+			for (int i = 0 ; i < m ; i++)
+			{
+				//cout << "t0 " << t0 << endl ;
+				heterogeneous_space_time_cut_boundary(t0, t0 + h1, grid, f, bf);
+				t0 += h1 ;
+			}
+			if (h2 > 0)
+			{
+				cout << "t0 " << t0 << endl ;
+				heterogeneous_space_time_cut_boundary(t0, t0 + h2, grid, f, bf);
+			}
+		}
+		/*
 		int two_to_the_k = 1 << k ;
 		int h1 = T / two_to_the_k ;
 		int h2 = (T + two_to_the_k - 1) / two_to_the_k ;
-		if (h1 + h2 <= h)
+		if (k > 0 && h1 + h2 <= h)
 		{
 			k-- ;
 			two_to_the_k = 1 << k ;
@@ -254,7 +346,28 @@ private:
 		}
 		cout << " h1 " << h1 << " h2 " << h2 
 			<< " h3 " << h3 << endl ;
+
+		//print contents
+		for (int i = 0 ; i < m_arr_height_leaf_kernel_table.size() ; i++)
+		{
+			height_leaf_kernel_table & table = 
+				m_arr_height_leaf_kernel_table [i] ;
+			for (hlk_table_iterator it = table.begin() ; it != table.end() ;
+															it++)
+			{
+				int h = it->first ;
+				leaf_kernel_table & table2 = it->second ;
+				for (lk_table_iterator it2 = table2.begin() ; 
+											it2 != table2.end(); it2++)
+				{
+					int kernel = it2->second ;
+					cout << " index " << i << " height " << h << " key " <<
+							it2->first << " kernel " << kernel << endl ;
+				}
+			}
+		}
 		heterogeneous_space_time_cut_boundary(t0, t1, grid, f, bf) ;
+		*/
 	}
 } ;
 
