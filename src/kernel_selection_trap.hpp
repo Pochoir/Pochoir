@@ -517,91 +517,7 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_interior(int t0,
 			//insert (height, leaf_kernel_table) pair
 			table.insert(std::pair<int, leaf_kernel_table>(lt, table2)) ;
 		}
-		//cout << "kernel " << kernel << endl ;
 	}
-	/*{
-		// base case
-		//determine the geneity of the leaf
-		word_type geneity = 0 ;
-		compute_geneity(lt, grid, geneity, f) ;
-		//print_bits(&(z->geneity), sizeof(word_type) * 8) ;
-		int index = 0, width = 1 ; 
-		int offset = 0 ;
-		unsigned long key = 0 ;
-	    for (int i = N_RANK-1; i >= 0; --i) 
-		{
-			int lb, tb;
-			lb = (grid.x1[i] - grid.x0[i]);
-			tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-			//index = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
-			//			index ;
-			index = pmod(grid.x0[i], phys_length_ [i]) * width + 
-						index ;
-			width = phys_length_ [i] ;
-			key = key << offset | lb ;
-			offset += num_bits_dim ;
-		}
-		int kernel = -1 ;
-		if (__builtin_popcount(geneity) == 1)
-		{
-			//zoid is homogeneous
-			kernel = __builtin_ffs(geneity) ;
-			//cout << "zoid is homogeneous" << endl ;
-			//kernel_map [index][centroid] = kernel ;
-		}
-		else
-		{
-			//kernel_map [index][centroid] = m_clone_array->clones.size() - 1 ;
-			kernel = m_clone_array->clones.size() - 1 ;
-		}
-		assert (kernel != -1) ;
-		assert (kernel < m_clone_array->clones.size()) ;
-		//int index = (lt + min_leaf_height - 1) / min_leaf_height ;
-		//index = index - (lt == 1) ;
-		height_leaf_kernel_table & table = 
-							m_arr_height_leaf_kernel_table [index] ;
-		//search the hash table with height as key.
-		std::pair<hlk_table_iterator, hlk_table_iterator> p = 
-											table.equal_range (lt) ;
-		if (p.first != p.second)
-		{
-			//height lt exists
-			//assert (p.second - p.first == 1) ; //only one height exists
-			hlk_table_iterator start = p.first ;
-			assert (start->first == lt) ;
-			leaf_kernel_table & table2 = start->second ;
-			std::pair<lk_table_iterator, lk_table_iterator> p2 = 
-											table2.equal_range (key) ;
-			if (p2.first != p2.second)
-			{
-				//(key,kernel) pair exists.
-				//only one (key,kernel) pair may exist
-				//assert (p2.second - p2.first == 1) ;
-				assert (p2.first->first == key) ;
-				assert (kernel == p2.first->second) ;
-				if(kernel != p2.first->second)
-				{
-					cout << "Error. Two different leaves have same key" << 
-							endl ;
-				}
-			}
-			else
-			{
-				//insert (key,kernel) pair
-				table2.insert(std::pair<unsigned long, char>(key, (char) kernel)) ;
-			}
-		}
-		else
-		{
-			//height lt doesn't exist.
-			leaf_kernel_table table2 ;
-			//insert (key,kernel) pair
-			table2.insert(std::pair<unsigned long, char>(key, (char) kernel)) ;
-			//insert (height, leaf_kernel_table) pair
-			table.insert(std::pair<int, leaf_kernel_table>(lt, table2)) ;
-		}
-		//cout << "kernel " << kernel << endl ;
-	}*/
 }
 
 
@@ -773,7 +689,9 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 								index ;
 						width = phys_length_ [i] ;
 						cout << "index " << index << " width " << width << endl ;
-						key = key << offset | lb ;
+						unsigned long dim_key = (unsigned long) lb << num_bits_width | tb ;
+						key = key << offset | dim_key ;
+						//key = key << offset | lb ;
 						offset += num_bits_dim ;
 					}
 					cout << "index " << index << " key " << key << endl ;
@@ -824,7 +742,6 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 			//insert (height, leaf_kernel_table) pair
 			table.insert(std::pair<int, leaf_kernel_table>(lt, table2)) ;
 		}
-		//cout << "kernel " << kernel << endl ;
 	}
 }
 
@@ -1251,23 +1168,6 @@ inline void kernel_selection<N_RANK>::heterogeneous_space_time_cut_interior(int 
 		assert (kernel != -1) ;
 		(*m_clone_array) [kernel] (t0, t1, grid);
 	}
-	/*{
-		//base case
-		int centroid = 0, width = 1 ; 
-	    for (int i = N_RANK-1; i >= 0; --i) 
-		{
-			centroid = pmod(grid.x0[i] + (p_lb [i] >> 1), phys_length_ [i]) * 
-						width + centroid ;
-			width = phys_length_ [i] ;
-		}
-		//int index = lt / min_leaf_height - 1 ;
-		int index = (lt + min_leaf_height - 1) / min_leaf_height ;
-		index = index - (lt == 1) ;
-		cout << " index " << index << endl ;
-		int kernel = kernel_map [index][centroid] ;
-		cout << "kernel index " << kernel << endl ;
-		(*m_clone_array) [kernel] (t0, t1, grid);
-	}*/
 }
 
 
@@ -1399,31 +1299,6 @@ inline void kernel_selection<N_RANK>::heterogeneous_space_time_cut_boundary(int 
 			(*m_clone_array) [kernel] (t0, t1, l_father_grid);
 		}
 	}
-	/*{
-		//base case
-		int centroid = 0, width = 1 ; 
-	    for (int i = N_RANK-1; i >= 0; --i) 
-		{
-			centroid = pmod(grid.x0[i] + (p_lb [i] >> 1), phys_length_ [i]) * 
-						width + centroid ;
-			width = phys_length_ [i] ;
-		}
-		cout << " lt " << lt << endl ;
-		cout << " centroid " << centroid << endl ;
-		int index = (lt + min_leaf_height - 1) / min_leaf_height ;
-		index = index - (lt == 1) ;
-		cout << " index " << index << endl ;
-		if (call_boundary) {
-			int kernel = kernel_map [0][centroid] ;
-			cout << "kernel index " << kernel << endl ;
-			base_case_kernel_boundary(t0, t1, l_father_grid, 
-								(*m_clone_array) [kernel]);
-		} else { 
-			int kernel = kernel_map [index][centroid] ;
-			cout << "kernel index " << kernel << endl ;
-			(*m_clone_array) [kernel] (t0, t1, l_father_grid);
-		}
-	}*/
 }
 #undef dx_recursive_boundary_  
 #undef dx_recursive_ 

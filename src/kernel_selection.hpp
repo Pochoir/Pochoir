@@ -64,64 +64,12 @@ class zoid
 
 	void initialize(grid_info<N_RANK> const & grid, bool power_of_two)
 	{
-		/*int T = m_algo.num_time_steps ;
-		int h = m_algo.dt_recursive_ ;
-
-		cout << " m_algo.dt_recursive_ " << m_algo.dt_recursive_ << endl ; 
-		//k = ceil (lg (T / h))
-		int k = 8 * sizeof(int) - __builtin_clz((T - 1) / h) ;
-		if (T <= h)
-		{
-			k = 0 ;
-		}
-		//int k = floor(log2(T / h) + 0.5) ;
-		//cout << " round(log2(T / h) + 0.5) " << round(log2(T / h) + 0.5) << endl;
-		int two_to_the_k = 1 << k ;
-		int h1 = T / two_to_the_k ;
-		int h2 = (T + two_to_the_k - 1) / two_to_the_k ;
-		if (h1 + h2 <= h)
-		{
-			k-- ;
-			two_to_the_k = 1 << k ;
-			h1 = T / two_to_the_k ;
-			h2 = (T + two_to_the_k - 1) / two_to_the_k ;
-		}
-		cout << "k " << k << endl ;
-		int h3 = 0 ;
-		int num_heights = 2 ;
-		min_leaf_height = h1 ;
-		if (h2 != h1)
-		{
-			num_heights = 3 ;
-			if (h2 > h)
-			{
-				h3 = (h2 + 1) / 2 ;
-				h2 /= 2 ;
-				min_leaf_height = h2 ;
-				if (h2 != h3)
-				{
-					num_heights = 4 ;
-				}
-			}
-		}
-		cout << " h1 " << h1 << " h2 " << h2 
-			<< " h3 " << h3 << endl ;
-		cout << " min leaf height " << min_leaf_height << endl ;
-		cout << " num heights " << num_heights << endl ;
-		kernel_map.reserve(num_heights) ;
-		kernel_map.resize(num_heights) ; */
-
 		unsigned long volume = 1 ;
 		for (int i = 0 ; i < N_RANK ; i++)
 		{
 			volume *= (grid.x1[i] - grid.x0[i]) ;		
 		}
 
-		/*for (int i = 0 ; i < num_heights ; i++)
-		{
-			kernel_map [i].reserve(volume) ;
-			kernel_map [i].resize(volume) ;
-		}*/
 		m_arr_height_leaf_kernel_table.reserve(volume) ; 
 		m_arr_height_leaf_kernel_table.resize(volume) ; 
 
@@ -221,7 +169,6 @@ class zoid
 
 	~kernel_selection()
 	{
-		//continue from here
 		for (int i = 0 ; i < m_arr_height_leaf_kernel_table.size() ; i++)
 		{
 			height_leaf_kernel_table & table = 
@@ -233,10 +180,6 @@ class zoid
 			table.clear() ;
 		}
 		m_arr_height_leaf_kernel_table.clear() ;
-		/*for (int i = 0 ; i < kernel_map.size() ; i++)
-		{
-			kernel_map [i].clear() ;
-		}*/
 	}
 	
 
@@ -256,11 +199,6 @@ class zoid
 				slope = m_algo.slope_ [i] ;
 			}		
 		}
-		//int h = m_algo.dt_recursive_ ;
-		//int Wn = W / (2 * slope) ;
-		//k= ceil (lg (T / h))
-		//int k = 8 * sizeof(int) - __builtin_clz((2 * slope * T - 1) / h) ;
-		//int k = floor(log2(T / h) + 0.5) ;
 		if (W >= 2 * slope * T)
 		{
 			symbolic_space_time_cut_boundary(t0, t1, grid, p) ;
@@ -302,72 +240,15 @@ class zoid
 			int m = T / h1 ;
 			for (int i = 0 ; i < m ; i++)
 			{
-				//cout << "t0 " << t0 << endl ;
 				heterogeneous_space_time_cut_boundary(t0, t0 + h1, grid, f, bf);
 				t0 += h1 ;
 			}
 			if (h2 > 0)
 			{
-				cout << "t0 " << t0 << endl ;
+				//cout << "t0 " << t0 << endl ;
 				heterogeneous_space_time_cut_boundary(t0, t0 + h2, grid, f, bf);
 			}
 		}
-		/*
-		int two_to_the_k = 1 << k ;
-		int h1 = T / two_to_the_k ;
-		int h2 = (T + two_to_the_k - 1) / two_to_the_k ;
-		if (k > 0 && h1 + h2 <= h)
-		{
-			k-- ;
-			two_to_the_k = 1 << k ;
-			h1 = T / two_to_the_k ;
-			h2 = (T + two_to_the_k - 1) / two_to_the_k ;
-		}
-		cout << "k " << k << endl ;
-		int h3 = 0 ;
-		cout << " h1 " << h1 << endl ;
-		symbolic_space_time_cut_boundary(t0, t0 + h1, grid, p) ;
-		if (h2 != h1)
-		{
-			if (h2 > h)
-			{
-				h3 = (h2 + 1) / 2 ;
-				h2 /= 2 ;
-				symbolic_space_time_cut_boundary(t0, t0 + h2, grid, p) ;
-				if (h2 != h3)
-				{
-					symbolic_space_time_cut_boundary(t0, t0 + h3, grid, p) ;
-				}
-			}
-			else
-			{
-				symbolic_space_time_cut_boundary(t0, t0 + h2, grid, p) ;
-			}
-		}
-		cout << " h1 " << h1 << " h2 " << h2 
-			<< " h3 " << h3 << endl ;
-
-		//print contents
-		for (int i = 0 ; i < m_arr_height_leaf_kernel_table.size() ; i++)
-		{
-			height_leaf_kernel_table & table = 
-				m_arr_height_leaf_kernel_table [i] ;
-			for (hlk_table_iterator it = table.begin() ; it != table.end() ;
-															it++)
-			{
-				int h = it->first ;
-				leaf_kernel_table & table2 = it->second ;
-				for (lk_table_iterator it2 = table2.begin() ; 
-											it2 != table2.end(); it2++)
-				{
-					int kernel = it2->second ;
-					cout << " index " << i << " height " << h << " key " <<
-							it2->first << " kernel " << kernel << endl ;
-				}
-			}
-		}
-		heterogeneous_space_time_cut_boundary(t0, t1, grid, f, bf) ;
-		*/
 	}
 } ;
 
