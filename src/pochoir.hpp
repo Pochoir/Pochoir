@@ -29,14 +29,23 @@
 #include "pochoir_common.hpp"
 #include "pochoir_modified_cuts.hpp"
 #include "pochoir_walk_recursive.hpp"
-#include "projections.hpp"
+#ifdef COUNT_PROJECTIONS
+//#include "projections.hpp"
+#endif
 #include "pochoir_array.hpp"
+//#include "clones_2d_heat.hpp"
 #include "clones_2d_diffusion.hpp"
 //#include "clones_2dwave.hpp"
 //#include "clones.hpp"
+
+#ifdef KERNEL_SELECTION
+#include "kernel_selection_trap.hpp"
+#include "kernel_selection_sawzoid.hpp"
+#elif defined GENEITY_TEST
 #include "symbolic_walk_better_memory.hpp"
 #include "pochoir_modified_cuts_heterogeneity.hpp"
 //#include "symbolic_walk.hpp"
+#endif
 
 /* assuming there won't be more than 10 Pochoir_Array in one Pochoir object! */
 #define ARRAY_SIZE 10
@@ -458,10 +467,22 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
     algor.set_time_step(timestep_);
 	algor.set_time_shift(time_shift_) ;
 	cout << "time_shift_ " << time_shift_ << " timestep " << timestep << endl ;
-#ifdef COUNT_PROJECTIONS
-    algor.compute_projections(0+time_shift_, timestep+time_shift_, logic_grid_) ;
+//#ifdef COUNT_PROJECTIONS
+//    algor.compute_projections(0+time_shift_, timestep+time_shift_, logic_grid_) ;
+//#endif
+#ifdef COARSEN_BASE_CASE_WRT_BOTTOM_SIDE
+	cout << "coarsen base case wrt bottom side " << endl ;
+#else
+	cout << "coarsen base case wrt shorter side " << endl ;
 #endif
-    printf("shorter_duo_sim_obase_bicut_p!\n");
+#ifdef KERNEL_SELECTION
+	cout << "kernel selection" << endl ;
+#endif
+#ifdef GENEITY_TEST
+	cout << "geneity testing" << endl ;
+#else
+	cout << "no geneity testing" << endl ;
+#endif
 #ifdef DEFAULT_SPACE_CUT
 	cout << "default space cut " << endl ;
 #else
@@ -471,38 +492,51 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #ifdef DEFAULT_TIME_CUT
 	cout << "default time cut " << endl ;
 #ifndef USE_PROJECTION
-    algor.shorter_duo_sim_obase_bicut_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+    algor.shorter_duo_sim_obase_bicut_p(time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #else
 	predicate <N_RANK> p (phys_grid_) ; 
 	p.set_resolution(resolution_) ;
-	heterogeneity<N_RANK> hg(algor, phys_grid_, 0) ;
 	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
+#ifdef KERNEL_SELECTION
+	kernel_selection_trap<N_RANK> ks(algor, phys_grid_, 0) ;
+	ks.set_clone_array(&c1) ;
+	ks.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
+							logic_grid_, f, bf, p) ;
+#else
+	heterogeneity<N_RANK> hg(algor, phys_grid_, 0) ;
 	hg.set_clone_array(&c1) ;
 	//hg.build_heterogeneity_dag(0, timestep, logic_grid_, p, 0) ;
-	hg.do_default_space_time_cuts(0+time_shift_, timestep+time_shift_,
+	hg.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
 							logic_grid_, f, bf, p) ;
 #ifndef NDEBUG
 	cout << "calling print dag " << endl ;
 	hg.print_dag() ;
 	hg.print_heterogeneity() ;
 #endif
+#endif
 
 #endif
 #else
 	cout << "pow2 time cut " << endl ;
 #ifndef USE_PROJECTION
-    algor.power_of_two_time_cut(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+    algor.power_of_two_time_cut(time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #else
 	predicate <N_RANK> p (phys_grid_) ; 
 	p.set_resolution(resolution_) ;
-	heterogeneity<N_RANK> hg(algor, phys_grid_, 1) ;
 	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
+#ifdef KERNEL_SELECTION
+    kernel_selection_sawzoid<N_RANK> ks(algor, phys_grid_, 0) ;
+    ks.set_clone_array(&c1) ;
+    ks.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
+                            logic_grid_, f, bf, p) ;
+#else
+	heterogeneity<N_RANK> hg(algor, phys_grid_, 1) ;
 	hg.set_clone_array(&c1) ;
 	struct timeval start, end;
 	double compute_time = 0. ;
 	//hg.build_heterogeneity_dag_modified(0, timestep, logic_grid_, p, 0) ;
 	gettimeofday(&start, 0);
-	hg.do_power_of_two_time_cut(0+time_shift_, timestep+time_shift_,
+	hg.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
 								logic_grid_, f, bf, p) ;
 	gettimeofday(&end, 0);
 	compute_time = tdiff(&end, &start) ;
@@ -511,6 +545,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	cout << "calling print dag " << endl ;
 	hg.print_dag() ;
 	hg.print_heterogeneity() ;
+#endif
 #endif
 
 #endif

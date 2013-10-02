@@ -40,7 +40,10 @@ do { \
     --queue_len_[_dep]; \
 } while(0)
 
-//#define COARSEN_BASE_CASE_WRT_BOTTOM_SIDE
+#if defined (TRAP) || !defined (KERNEL_SELECTION)
+//Coarsen base case wrt the bottom side
+#define COARSEN_BASE_CASE_WRT_BOTTOM_SIDE
+#endif
 
 #ifdef COARSEN_BASE_CASE_WRT_BOTTOM_SIDE
 //to do : merge the macros below and avoid redundance.

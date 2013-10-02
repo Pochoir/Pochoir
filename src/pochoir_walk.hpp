@@ -401,6 +401,7 @@ struct Algorithm {
 
 		int num_time_steps ; // # of time steps
 		int time_shift ; // depth of the stencil
+#ifdef COUNT_PROJECTIONS
 		vector<set<int> > m_1d[2] ; //vector indexed by point in space 
 		vector<map<int,int> > m_1d_map ; //vector indexed by point in space 
 		vector<set<int> > m_1d_index_by_length ; //vector indexed by length
@@ -426,13 +427,14 @@ struct Algorithm {
 		int num_projections_2d_r [2] ;
 		vector<vector<proj_2d> > m_2d_o [2] ;
 		int num_projections_2d_o [2] ;
-		int num_triangles [N_RANK] ;
         typedef struct {
-            int level; /* level is how many dimensions we have cut so far */
+            int level; // level is how many dimensions we have cut so far 
             int t0, t1;
             grid_info<N_RANK> grid;
 			char is_minimal ;
         } queue_info_modified_cut ;
+#endif
+		int num_triangles [N_RANK] ;
 	public:
 #if STAT
     /* sim_count_cut will be accessed outside Algorithm object */
@@ -472,6 +474,7 @@ struct Algorithm {
 
     ~Algorithm() 
 	{
+#if 0
 #ifdef COUNT_PROJECTIONS
 		unsigned long total_projections = 0 ;
 		int W = 0 ;  //max_width among all dimensions
@@ -718,6 +721,7 @@ struct Algorithm {
 			*/
 		}
 #endif
+#endif
     }
 
 
@@ -734,7 +738,6 @@ struct Algorithm {
             dx_recursive_[i] = 1;
 #else
 #ifdef DEFAULT_TIME_CUT 
-//#if 1
         dt_recursive_ = (N_RANK == 1) ? 20 : ((N_RANK == 2) ? 40 : 5);
         dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((100 * sizeof(double))/arr_type_size)) : (int)floor(float((600 * sizeof(double))/arr_type_size));
 //        dx_recursive_[0] = 30;
@@ -743,14 +746,14 @@ struct Algorithm {
 #else
         dt_recursive_ = (N_RANK == 1) ? 128 : ((N_RANK == 2) ? 32 : 4);
 		int sigma_dt_times_two = 2 * slope_ [0] * dt_recursive_ ; 
-        dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((sigma_dt_times_two * sizeof(double))/arr_type_size)) : (int)floor(float((sigma_dt_times_two * sizeof(double))/arr_type_size));
+        dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1  : (int)floor(float((sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1 ;
 		if (N_RANK == 3)
 		{
-			dx_recursive_ [0] = (int)floor(float((32 * sigma_dt_times_two * sizeof(double))/arr_type_size));
+			dx_recursive_ [0] = (int)floor(float((32 * sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1 ;
 		}
 //        dx_recursive_[0] = 30;
         for (int i = N_RANK-1; i >= 1; --i)
-            dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(2 * slope_ [i] * dt_recursive_ * sizeof(double))/arr_type_size): 2 * slope_ [i] * dt_recursive_ ;
+            dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(2 * slope_ [i] * dt_recursive_ * sizeof(double))/arr_type_size) - 1 : 2 * slope_ [i] * dt_recursive_ - 1 ;
 #endif
 #endif
 		//for counting projections, set dt and dx to 1

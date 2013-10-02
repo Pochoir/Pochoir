@@ -56,12 +56,19 @@ static inline int StrToInt(const std::string& s)
 #define BIT_TRICK 0
 #define INF 100000000
 #define SUPPORT_RANK 9
-//#define DEFAULT_SPACE_CUT
-//#define DEFAULT_TIME_CUT
+#define TRAP
+
+#if defined (TRAP)
+#define DEFAULT_SPACE_CUT
+#define DEFAULT_TIME_CUT
+#endif
+
 //#define COUNT_PROJECTIONS
-#define COUNT_TRIANGLE
-#define COUNT_TRAPEZOID
+//#define COUNT_TRIANGLE
+//#define COUNT_TRAPEZOID
 #define USE_PROJECTION
+#define GENEITY_TEST
+//#define KERNEL_SELECTION
 
 #define max_(a, b) ((a) > (b) ? (a) : (b))
 #define min_(a, b) ((a) < (b) ? (a) : (b))

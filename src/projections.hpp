@@ -1199,7 +1199,7 @@ inline void Algorithm<N_RANK>::compute_projections(int t0, int t1,
 }
 #endif
 
-template <int N_RANK> template <typename F, typename BF>
+/*template <int N_RANK> template <typename F, typename BF>
 inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1, 
 				grid_info<N_RANK> const grid, F const & f, BF const & bf) 
 {
@@ -1222,9 +1222,9 @@ inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1,
 	int h1 = 1 << index_msb ;
 	for (int i = 0 ; i < T / h1 ; i++)
 	{	
-		/*cout << "t0 " << t0 << " t1 " << t1 << 
+		cout << "t0 " << t0 << " t1 " << t1 << 
 			" h1 " << h1 << " t0 + h1 " <<
-			t0 + h1 << endl ;*/
+			t0 + h1 << endl ;
 		space_time_cut_boundary(t0, t0 + h1, grid, f, bf) ;
 		t0 += h1 ;
 	}
@@ -1236,9 +1236,9 @@ inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1,
 		//find index of most significant bit that is set
 		index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
 		int h = 1 << index_msb ;
-		/*cout << "t0 " << t0 << " t1 " << t1 << 
+		cout << "t0 " << t0 << " t1 " << t1 << 
 			" h " << h << " t0 + h " <<
-			t0 + h << endl ;*/
+			t0 + h << endl ;
 		space_time_cut_boundary(t0, t0 + h, grid, f, bf) ;
 		t0 += h ;
 		h2 = t1 - t0 ;
@@ -1248,15 +1248,17 @@ inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1,
 		//find index of most significant bit that is set
 		index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
 		int h = 1 << index_msb ;
-		/*cout << "t0 " << t0 << " t1 " << t1 << 
+		cout << "t0 " << t0 << " t1 " << t1 << 
 			" h " << h << " t0 + h " <<
-			t0 + h << endl ;*/
+			t0 + h << endl ;
 		bool abnormal = false ;
 		for (int i = 0 ; i < N_RANK ; i++)
 		{
-			num_triangles [i] = dx_recursive_ [i] / ((slope_ [i] * h) << 1) ;
+			int n = dx_recursive_ [i] / ((slope_ [i] * h) << 1) ;
+			num_triangles [i] = max(1, n) ;
 		}
 		abnormal_region_space_time_cut_boundary(t0, t0 + h, grid, f, bf) ;
+		//space_time_cut_boundary(t0, t0 + h, grid, f, bf) ;
 		t0 += h ;
 		h2 = t1 - t0 ;
 	}
@@ -1267,5 +1269,5 @@ inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1,
 		//base_case_kernel_boundary(t0, t0 + h2, grid, bf);
 		shorter_duo_sim_obase_bicut_p(t0, t0 + h2, grid, f, bf) ;
 	}
-}
+}*/
 #endif

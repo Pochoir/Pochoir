@@ -48,6 +48,7 @@ class zoid
 		{
 			children [i] = 0 ;
 		}
+		//cout << "resize done " << endl ;
 	}
 
 	//void add_child(zoid * child, int child_index)
@@ -208,6 +209,14 @@ class zoid
 #endif
 } ;
 
+// a compact representation of zoid
+class simple_zoid
+{
+	word_type geneity ;
+	int child_start_index ;
+	int child_end_index ;
+} ;
+
 /*
 template<>
 zoid<1>::zoid()
@@ -265,6 +274,23 @@ private:
 		}
 		m_projections.reserve(volume) ;
 		m_projections.resize(volume) ;
+#ifdef COUNT_PROJECTIONS
+		if (N_RANK == 1)
+		{
+			m_1d_count_proj_length_triangle.reserve(volume + 1) ;
+			m_1d_count_proj_length_triangle.resize(volume + 1) ;
+			m_1d_count_proj_length_trapezoid.reserve(volume + 1) ;
+			m_1d_count_proj_length_trapezoid.resize(volume + 1) ;
+
+			m_1d_index_by_length_triangle.reserve(volume + 1) ;
+			m_1d_index_by_length_triangle.resize(volume + 1) ;
+			m_1d_index_by_length_trapezoid.reserve(volume + 1) ;
+			m_1d_index_by_length_trapezoid.resize(volume + 1) ;
+
+			m_num_triangles = 0 ;
+			m_num_trapezoids = 0 ;
+		}
+#endif
 		//unsigned long P = volume / (1 << N_RANK) ; 
 		//int lgP = 8 * sizeof(unsigned long) - __builtin_clzl(P - 1) ;
 		//cout << "Expected # of projections P " << P  << " lg P " << lgP << endl ;
@@ -360,6 +386,84 @@ private:
 		vector<hash_table>().swap(m_projections) ; 
 	}
 
+	inline void print_statistics(int T)
+	{
+		cout << " Triangles " << endl ;
+		cout << "length , # of diff projs of length " << endl ;
+		int num_triangle_lengths = 0 ;
+		int num_trap_lengths = 0 ;
+		for (int i = 0 ; i < m_1d_count_proj_length_triangle.size() ; i++)
+		{
+			if (m_1d_count_proj_length_triangle [i] >= T)
+			{
+				num_triangle_lengths++ ; 
+				cout << i << " : " << m_1d_count_proj_length_triangle [i] << endl ;
+			}
+		}
+		cout << " # of triangle lengths > " << T << " : " << num_triangle_lengths << endl ;
+		cout << endl << endl << " Trapezoids " << endl ;
+		cout << "length , # of diff projs of length " << endl ;
+		for (int i = 0 ; i < m_1d_count_proj_length_trapezoid.size() ; i++)
+		{
+			if (m_1d_count_proj_length_trapezoid [i] >= T)
+			{
+				num_trap_lengths++ ;
+				cout << i << " : " << m_1d_count_proj_length_trapezoid [i] << endl ;
+			}
+		}
+		cout << " # of trapezoid lengths > " << T << " : " << num_trap_lengths << endl ;
+	}
+	/*{
+		cout << " Triangles " << endl ;
+		cout << "length , # of diff projs of length " << endl ;
+		for (int i = 0 ; i < m_1d_count_proj_length_triangle.size() ; i++)
+		{
+			if (m_1d_count_proj_length_triangle [i] > 0)
+			{
+				cout << i << " : " << m_1d_count_proj_length_triangle [i] << endl ;
+			}
+		}
+		for (int i = 0 ;  i < m_1d_index_by_length_triangle.size() ; i++)
+		{
+			set<unsigned long> & s = m_1d_index_by_length_triangle [i] ;
+			if (s.size() > 0)
+			{
+				cout << endl << " length " << i
+				<< " # of cells " << s.size() << endl ;
+			}
+			for (set<unsigned long> ::iterator it = s.begin() ; it != s.end() ;
+													++it)
+			{
+				cout << *it << "," ;
+			}
+		}
+
+		cout << endl << endl << " Trapezoids " << endl ;
+		cout << "length , # of diff projs of length " << endl ;
+		for (int i = 0 ; i < m_1d_count_proj_length_trapezoid.size() ; i++)
+		{
+			if (m_1d_count_proj_length_trapezoid [i] > 0)
+			{
+				cout << i << " : " << m_1d_count_proj_length_trapezoid [i] << endl ;
+			}
+		}
+		for (int i = 0 ;  i < m_1d_index_by_length_trapezoid.size() ; i++)
+		{
+			set<unsigned long> & s = m_1d_index_by_length_trapezoid [i] ;
+			if (s.size() > 0)
+			{
+				cout << endl << " length " << i
+				<< " # of cells " << s.size() << endl ;
+			}
+			for (set<unsigned long> ::iterator it = s.begin() ; it != s.end() ;
+													++it)
+			{
+				cout << *it << "," ;
+			}
+		}
+	
+	}*/
+
 	inline void destroy_heterogeneity_dag()
 	{
 		//delete m_head [0] ;
@@ -383,6 +487,8 @@ private:
 	{
 		assert (m_projections.size()) ;
 		hash_table & h = m_projections [centroid] ;
+		//cout << "searching hashtable" << endl ;
+		//cout << "size hashtable " << h.size() << endl ;
 		std::pair<hash_table_iterator, hash_table_iterator> p = 
 													h.equal_range (key) ;
 		
@@ -401,12 +507,12 @@ private:
 			{
 				//*zoid = z ;
 				index = start->second ;
+				//cout << "found entry" << endl ;
 				return true ;
 			}
 		}
-		//else
-		//{
-		//zoid_type * z = new zoid_type() ;
+		//cout << "not found entry" << endl ;
+		//cout << "pushing zoid" << endl ;
 		if (m_num_vertices > m_zoids.capacity())
 		{
 			cout << "# nodes of DAG " << m_num_vertices << " exceeds capacity " 				<< m_zoids.capacity() << endl ;
@@ -429,6 +535,53 @@ private:
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
 			<< " h " << height << endl ; 
+		}
+#endif
+#ifdef COUNT_PROJECTIONS
+		if (N_RANK == 1)
+		{
+			unsigned long lb = grid.x1 [0] - grid.x0 [0] ;
+			unsigned long tb = grid.x1[0] + grid.dx1[0] * height - 
+								(grid.x0[0] + grid.dx0[0] * height) ; 	
+			unsigned long length ;
+			unsigned long index ;
+			if (lb > tb)
+			{
+				length = lb ;
+				index = grid.x0 [0] ;
+			}
+			else
+			{
+				length = tb ;
+				index = grid.x0[0] + grid.dx0[0] * height ;
+			}
+			if (length > 0)
+			{
+				if (lb == 0 || tb == 0)
+				{
+					set <unsigned long> & s = 
+						m_1d_index_by_length_triangle [length] ;
+					if (s.find(index) == s.end())
+					{
+						//insert if index is not already in the set
+						m_num_triangles++ ;
+						m_1d_count_proj_length_triangle [length]++ ;
+						m_1d_index_by_length_triangle [length].insert(index) ;
+					}
+				}			
+				else
+				{
+					set <unsigned long> & s = 
+						m_1d_index_by_length_trapezoid [length] ;
+					if (s.find(index) == s.end())
+					{
+						//insert if index is not already in the set
+						m_num_trapezoids++ ;
+						m_1d_count_proj_length_trapezoid [length]++ ;
+						m_1d_index_by_length_trapezoid [length].insert(index) ;
+					}
+				}
+			}
 		}
 #endif
 		//*zoid = z ;
@@ -459,9 +612,6 @@ private:
 	{
 		color [node] = num_vertices ; //color node gray
 		zoid_type & z = m_zoids [node] ;
-		//cout << "visiting zoid " << z.id << " # children " 
-		//		<< z.num_children << endl;
-		//cout << "num_vertices " << num_vertices << endl ;
 		if (__builtin_popcount(z.geneity) == 1)
 		{
 			//do not store node's children
@@ -476,29 +626,20 @@ private:
 #ifndef NDEBUG
 			z1.info = z.info ;
 			z1.id = z.id ;
-			//z1.id = num_vertices - 1 ;
 #endif
 		}
 		else
 		{
-			//cout << "push back zoid " << z.id << endl ;
 			temp_zoids.push_back(z) ; //copy the zoid z
 			unsigned long index = num_vertices ; //index into the vector
 			num_vertices++ ;
-			//cout << "adding zoid " << z1.id << " # children " 
-			//	<< z1.num_children << endl;
 			assert (num_vertices == temp_zoids.size()) ;
-			//assert (z1.num_children == z.num_children) ;
-			//int num_children = z1.num_children ;
-			//unsigned long * children = z1.children ;
 			for (int i = 0 ; i < z.num_children ; i++)
 			{
 				zoid_type & z1 = temp_zoids [index] ;	
-				//cout << " child id in old DAG " << z.children [i] << endl ;
 				if (color [z.children [i]] == ULONG_MAX) //node is white
 				{
 					z1.children [i] = num_vertices ;
-					//cout << " visiting child " << z.children [i] << endl ;
 					dfs(z.children [i], temp_zoids, color, num_vertices) ;
 				}
 				else
@@ -506,15 +647,9 @@ private:
 					//node is already visited.
 					//assign the child's index 
 					z1.children [i] = color [z.children [i]] ;
-					//cout << " not visiting child " << z.children [i] << endl ;
 				}
 			}
-			//cout << "added zoid " << z1.id << " # children " 
-			//	<< z1.num_children << endl;
-			//assert (z1.num_children == z.num_children) ;
 		}
-		//cout << "visited zoid " << z.id << " # children " 
-		//	<< z.num_children << endl;
 	}
 
 	//remove children of all homogeneous nodes.
@@ -842,6 +977,16 @@ private:
 	pochoir_clone_array <N_RANK> * m_clone_array ; 
 	int num_bits_width ; //# of bits to store width
 	int num_bits_dim ; //# of bits for bottom and top widths in a dimension
+#ifdef COUNT_PROJECTIONS
+	// keeps a count of each projection length in 1D
+	vector<unsigned long> m_1d_count_proj_length_triangle ; 
+	vector<unsigned long> m_1d_count_proj_length_trapezoid ; 
+	//set of starting points for each projection length.
+    vector<set<unsigned long> > m_1d_index_by_length_triangle ;
+    vector<set<unsigned long> > m_1d_index_by_length_trapezoid ;
+	unsigned long m_num_triangles ;
+	unsigned long m_num_trapezoids ;
+#endif
 
 	public :
 
@@ -856,7 +1001,9 @@ private:
 		m_num_vertices = 0 ;
 		//m_num_projections = 0 ;
 		initialize(grid, power_of_two) ;
-		if (N_RANK == 1)
+		num_bits_dim = sizeof (unsigned long) * 8 / N_RANK ;
+		num_bits_width = sizeof (unsigned long) * 8 / (2 * N_RANK) ;
+		/*if (N_RANK == 1)
 		{
 			num_bits_width = sizeof (unsigned long) * 8 / 2 ;
 			num_bits_dim = sizeof (unsigned long) * 8 ; 
@@ -870,7 +1017,7 @@ private:
 		{
 			num_bits_width = sizeof (unsigned long) * 8 / 6 ;
 			num_bits_dim = sizeof (unsigned long) * 8 / 3 ; 
-		}	
+		}*/	
 	}
 
 
@@ -903,6 +1050,11 @@ private:
 		int index_msb = (sizeof(int) << 3) - __builtin_clz(Wn) - 1 ;
 		//h1 = 2^floor(lg(Wn)). The zoid with height h1 undergoes a space cut.
 		int h1 = 1 << index_msb ;
+		if (T < h1)
+		{
+			index_msb = (sizeof(int) << 3) - __builtin_clz(T) - 1 ;
+			h1 = 1 << index_msb ;
+		}
 		m_head.push_back (ULONG_MAX) ;
 		gettimeofday(&start, 0);
 		build_heterogeneity_dag_modified(t0, t0 + h1, grid, p, 0) ;
@@ -915,9 +1067,9 @@ private:
 			//find index of most significant bit that is set
 			index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
 			int h = 1 << index_msb ;
-			cout << "t0 " << t0 << " t1 " << t1 << 
-				" offset " << offset << " offset + h " <<
-				offset + h << endl ;
+			//cout << "t0 " << t0 << " t1 " << t1 << 
+			cout <<	" offset " << offset << " offset + h " <<
+				offset + h << " h " << h << endl ;
 			m_head.push_back (ULONG_MAX) ;
 			build_heterogeneity_dag_modified(offset, offset + h, grid,
 											p, index) ;
@@ -933,9 +1085,11 @@ private:
 		std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
 				<< "ms" << std::endl;
 		clear_projections() ;
+#ifdef GENEITY_TEST
 		compress_dag () ;
 		cout << "# vertices after compression" << m_num_vertices << endl ;
 		cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
+#endif
 		int m = T / h1 ;
 		for (int i = 0 ; i < m ; i++)
 		{
@@ -959,7 +1113,6 @@ private:
 			cout << "t0 " << t0 << " t1 " << t1 << 
 				" h " << h << " t0 + h " <<
 				t0 + h << endl ;
-			//space_time_cut_boundary(t0, t0 + h, grid, f, bf) ;
 			heterogeneous_modified_space_time_cut_boundary(t0, t0 + h, grid, 
 				&(m_zoids [m_head [index]]), f, bf) ;
 			t0 += h ;
@@ -971,13 +1124,15 @@ private:
 			//find index of most significant bit that is set
 			index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
 			int h = 1 << index_msb ;
-			/*cout << "t0 " << t0 << " t1 " << t1 << 
+			cout << "t0 " << t0 << " t1 " << t1 << 
 				" h " << h << " t0 + h " <<
-				t0 + h << endl ;*/
+				t0 + h << endl ;
 			bool abnormal = false ;
 			for (int i = 0 ; i < N_RANK ; i++)
 			{
-				m_algo.num_triangles [i] = m_algo.dx_recursive_ [i] / ((m_algo.slope_ [i] * h) << 1) ;
+				int num_triangles = m_algo.dx_recursive_ [i] / ((m_algo.slope_ [i] * h) << 1) ;
+				m_algo.num_triangles [i] = max(1, num_triangles) ;
+				cout << "num_triangles [ " << i << " ] " << m_algo.num_triangles [i] << endl ;
 			}
 			m_algo.abnormal_region_space_time_cut_boundary(t0, t0 + h, grid, f, bf) ;
 			t0 += h ;
@@ -1015,7 +1170,26 @@ private:
 			//max width is >= 2 * sigma * h implies the zoid is ready for space cuts
 			gettimeofday(&start, 0);
 			m_head.push_back (ULONG_MAX) ;
+#ifdef COUNT_PROJECTIONS 
+			if (N_RANK == 1)
+			{
+				grid_info<N_RANK> grid2 ;
+				int dx = slope * T ;
+				grid2.x0[0] = dx ;
+            	grid2.dx0[0] = -slope ;
+           		grid2.x1[0] = W - dx ;
+            	grid2.dx1[0] = slope ;
+				cout << "Trap  x0 " << dx << " x1 " << W - dx << " dx0 " <<
+					-slope << " dx1 " << slope << endl ;
+				build_heterogeneity_dag(t0, t1, grid2, p, 0) ;
+				cout << "# triangles " << m_num_triangles <<
+					" # of trapezoids " << m_num_trapezoids <<
+					" total " << m_num_triangles + m_num_trapezoids <<
+					endl ;
+			}
+#else
 			build_heterogeneity_dag(t0, t1, grid, p, 0) ;
+#endif
 			gettimeofday(&end, 0);
 			dag_time = tdiff(&end, &start) ;
 			//print_dag() ;
@@ -1026,11 +1200,17 @@ private:
 			std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
 					<< "ms" << std::endl;
 			clear_projections() ;
+#ifdef GENEITY_TEST
 			compress_dag () ;
 			cout << "# vertices after compression" << m_num_vertices << endl ;
 			cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
+#endif
+#ifdef COUNT_PROJECTIONS 
+			print_statistics(T) ;
+#else
 			heterogeneous_space_time_cut_boundary(t0, t1, grid, 
 											&(m_zoids [m_head [0]]), f, bf) ;
+#endif
 		}
 		else
 		{
@@ -1070,9 +1250,11 @@ private:
 					<< "ms" << std::endl;
 			clear_projections() ;
 			//print_dag() ;
+#ifdef GENEITY_TEST
 			compress_dag () ;
 			cout << "# vertices after compression" << m_num_vertices << endl ;
 			cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
+#endif
 			//print_dag() ;
 			int m = T / h1 ;
 			for (int i = 0 ; i < m ; i++)

@@ -499,9 +499,11 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_interior(
 											centroid, index, grid) ;
 											//centroid, &z, grid) ;
 	//cout << " index " << index << endl ;
+	//cout << " child index " << child_index << endl ;
 	zoid_type & z = m_zoids [index];
 	zoid_type & parent = m_zoids [parent_index] ;
 	//cout << "parent id " << parent.id << endl ;
+	//cout << "child id " << z.id << endl ;
 	//cout << "address of parent " << &parent << endl ;
 	//add the zoid as a child of the parent
 	parent.add_child(&z, child_index, index) ;
@@ -2040,6 +2042,8 @@ heterogeneous_modified_space_time_cut_interior(int t0,
 
 	assert (projection_zoid) ;
 	assert (projection_zoid->height == lt) ;
+
+#ifdef GENEITY_TEST
 	if (__builtin_popcount(projection_zoid->geneity) == 1)
 	{
 		//zoid is homogeneous
@@ -2055,6 +2059,8 @@ heterogeneous_modified_space_time_cut_interior(int t0,
 								(*m_clone_array) [index]) ; 
 #endif
 	}
+#endif
+
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
         lb = (grid.x1[i] - grid.x0[i]);
@@ -2157,8 +2163,22 @@ heterogeneous_modified_space_time_cut_interior(int t0,
     }
 	else 
 	{
+#ifdef GENEITY_TEST
         // base case
 		f(t0, t1, grid);
+#else
+		if (__builtin_popcount(projection_zoid->geneity) == 1)
+		{
+			//zoid is homogeneous
+			int index = __builtin_ffs(projection_zoid->geneity) ;
+			//cout << "zoid is homogeneous" << endl ;
+			(*m_clone_array) [index] (t0, t1, grid);
+		}
+		else
+		{
+			f(t0, t1, grid);
+		}
+#endif
 	}
 }
 
@@ -2176,6 +2196,8 @@ heterogeneous_modified_space_time_cut_boundary(int t0,
 
 	assert (projection_zoid) ;
 	assert (projection_zoid->height == lt) ;
+
+#ifdef GENEITY_TEST
 	if (__builtin_popcount(projection_zoid->geneity) == 1)
 	{
 		//zoid is homogeneous
@@ -2191,6 +2213,8 @@ heterogeneous_modified_space_time_cut_boundary(int t0,
 								(*m_clone_array) [index]) ; 
 #endif
 	}
+#endif
+
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
@@ -2332,12 +2356,35 @@ heterogeneous_modified_space_time_cut_boundary(int t0,
     } 
 	else
 	{
+#ifdef GENEITY_TEST
 		// base case
 		if (call_boundary) {
             base_case_kernel_boundary(t0, t1, l_father_grid, bf);
         } else { 
             f(t0, t1, l_father_grid);
         }
+#else
+		if (__builtin_popcount(projection_zoid->geneity) == 1)
+		{
+			//zoid is homogeneous
+			int index = __builtin_ffs(projection_zoid->geneity) ;
+			//cout << "zoid is homogeneous" << endl ;
+			if (call_boundary) {
+				base_case_kernel_boundary(t0, t1, l_father_grid, 
+										(*m_clone_array) [index]);
+			} else { 
+				(*m_clone_array) [index] (t0, t1, l_father_grid);
+			}
+		}
+		else
+		{
+			if (call_boundary) {
+				base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+			} else { 
+				f(t0, t1, l_father_grid);
+			}
+		}
+#endif
 	}
 }
 //The following code is not needed for now.

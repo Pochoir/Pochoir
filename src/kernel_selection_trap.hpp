@@ -1,7 +1,7 @@
 #ifndef KERNEL_SELECTION_TRAP_HPP
 #define KERNEL_SELECTION_TRAP_HPP
 
-#include "kernel_selection.hpp"
+#include "kernel_selection_trap_header.hpp"
 
 #define dx_recursive_boundary_  (m_algo.dx_recursive_boundary_)
 #define dx_recursive_ (m_algo.dx_recursive_)
@@ -15,7 +15,7 @@
 //do space cuts on grid and call the symbolic_space_time_cut_interior routine
 //The routine does a symbolic space cut for interior zoids. 
 template <int N_RANK> template <typename F>
-inline void kernel_selection<N_RANK>::symbolic_space_cut_interior(int t0, int t1, 
+inline void kernel_selection_trap<N_RANK>::symbolic_space_cut_interior(int t0, int t1, 
 				grid_info<N_RANK> const & grid, F const & f)
 {
     queue_info *l_father;
@@ -156,7 +156,7 @@ inline void kernel_selection<N_RANK>::symbolic_space_cut_interior(int t0, int t1
 //do space cuts on grid and call the symbolic_space_time_cut_boundary routine
 //The routine does a symbolic space cut for boundary zoids. 
 template <int N_RANK> template <typename F>
-inline void kernel_selection<N_RANK>::symbolic_space_cut_boundary(int t0, int t1, 
+inline void kernel_selection_trap<N_RANK>::symbolic_space_cut_boundary(int t0, int t1, 
 		grid_info<N_RANK> const & grid, F const & f)
 {
     queue_info *l_father;
@@ -343,7 +343,7 @@ inline void kernel_selection<N_RANK>::symbolic_space_cut_boundary(int t0, int t1
 
 //This routine does a symbolic space/time cut on interior zoids
 template <int N_RANK> template <typename F>
-inline void kernel_selection<N_RANK>::symbolic_space_time_cut_interior(int t0, 
+inline void kernel_selection_trap<N_RANK>::symbolic_space_time_cut_interior(int t0, 
 		int t1, grid_info<N_RANK> const & grid, F const & f)
 {
     const int lt = t1 - t0;
@@ -401,15 +401,14 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_interior(int t0,
 		{
 			int lb, tb;
 			lb = (grid.x1[i] - grid.x0[i]);
-			tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-			//index = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
-			//			index ;
-			index = pmod(grid.x0[i], phys_length_ [i]) * width + 
+			tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] *lt);
+			index = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
 						index ;
+			//index = pmod(grid.x0[i], phys_length_ [i]) * width + 
+			//			index ;
 			width = phys_length_ [i] ;
 			unsigned long dim_key = (unsigned long) lb << num_bits_width | tb ;
 			key = key << offset | dim_key ;
-			//key = key << offset | lb ;
 			offset += num_bits_dim ;
 		}
 		int kernel = -1 ;
@@ -418,18 +417,15 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_interior(int t0,
 			//zoid is homogeneous
 			kernel = __builtin_ffs(geneity) ;
 			//cout << "zoid is homogeneous" << endl ;
-			//kernel_map [index][centroid] = kernel ;
 		}
 		else
 		{
-			//kernel_map [index][centroid] = m_clone_array->clones.size() - 1 ;
 			kernel = m_clone_array->clones.size() - 1 ;
 		}
 		assert (kernel != -1) ;
 		assert (kernel < m_clone_array->clones.size()) ;
-		//int index = (lt + min_leaf_height - 1) / min_leaf_height ;
-		//index = index - (lt == 1) ;
-		height_leaf_kernel_table & table = 
+		leaf_kernel_table & table2 = m_arr_leaf_kernel_table [index] ;
+		/*height_leaf_kernel_table & table = 
 							m_arr_height_leaf_kernel_table [index] ;
 		//search the hash table with height as key.
 		std::pair<hlk_table_iterator, hlk_table_iterator> p = 
@@ -440,16 +436,31 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_interior(int t0,
 			//assert (p.second - p.first == 1) ; //only one height exists
 			hlk_table_iterator start = p.first ;
 			assert (start->first == lt) ;
-			leaf_kernel_table & table2 = start->second ;
+			leaf_kernel_table & table2 = start->second ;*/
 			std::pair<lk_table_iterator, lk_table_iterator> p2 = 
 											table2.equal_range (key) ;
-			if (p2.first != p2.second)
+			if (p2.first == p2.second)
+			{
+				//(key,kernel) pair doesn't exist.
+#ifndef NDEBUG
+				zoid_type z ;
+				z.kernel = kernel ;
+				z.info = grid ;
+				z.height = lt ;
+				//insert (key,zoid) pair
+				table2.insert(std::pair<unsigned long, zoid_type>(key, z)) ;
+#else
+				//insert (key,kernel) pair
+				table2.insert(std::pair<unsigned long, char>(key, (char) kernel)) ;
+#endif
+			}
+#ifndef NDEBUG
+			else
 			{
 				//(key,kernel) pair exists.
 				//only one (key,kernel) pair may exist
 				//assert (p2.second - p2.first == 1) ;
 				assert (p2.first->first == key) ;
-#ifndef NDEBUG
 				zoid_type & z = p2.first->second ;
 				if(kernel != (int) z.kernel)
 				{
@@ -474,31 +485,9 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_interior(int t0,
 						(int) z.kernel << endl ;
 					assert (kernel == (int) z.kernel) ;
 				}
-#else
-				if(kernel != p2.first->second)
-				{
-					cout << "Error. Two different leaves have same key" << 
-							endl ;
-					cout << "kernel " << kernel << " p2.first->second " <<
-						(int) p2.first->second << endl ;
-				}
-#endif
 			}
-			else
-			{
-#ifndef NDEBUG
-				zoid_type z ;
-				z.kernel = kernel ;
-				z.info = grid ;
-				z.height = lt ;
-				//insert (key,zoid) pair
-				table2.insert(std::pair<unsigned long, zoid_type>(key, z)) ;
-#else
-				//insert (key,kernel) pair
-				table2.insert(std::pair<unsigned long, char>(key, (char) kernel)) ;
 #endif
-			}
-		}
+		/*}
 		else
 		{
 			//height lt doesn't exist.
@@ -516,15 +505,15 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_interior(int t0,
 #endif
 			//insert (height, leaf_kernel_table) pair
 			table.insert(std::pair<int, leaf_kernel_table>(lt, table2)) ;
-		}
+		}*/
 	}
 }
 
 
 //This routine does a symbolic space/time cut on boundary zoid
 template <int N_RANK> template <typename F>
-inline void kernel_selection<N_RANK>::symbolic_space_time_cut_boundary(int t0, 
-		int t1,	grid_info<N_RANK> const & grid, F const & f)
+inline void kernel_selection_trap<N_RANK>::symbolic_space_time_cut_boundary(
+		int t0, int t1,	grid_info<N_RANK> const & grid, F const & f)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;
@@ -607,14 +596,13 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 			int lb, tb;
 			lb = (grid.x1[i] - grid.x0[i]);
 			tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-			//index = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
-			//			index ;
-			index = pmod(grid.x0[i], phys_length_ [i]) * width + 
+			index = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
 						index ;
+			//index = pmod(grid.x0[i], phys_length_ [i]) * width + 
+			//			index ;
 			width = phys_length_ [i] ;
 			unsigned long dim_key = (unsigned long) lb << num_bits_width | tb ;
 			key = key << offset | dim_key ;
-			//key = key << offset | lb ;
 			offset += num_bits_dim ;
 		}
 		int kernel = -1 ;
@@ -623,18 +611,15 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 			//zoid is homogeneous
 			kernel = __builtin_ffs(geneity) ;
 			//cout << "zoid is homogeneous" << endl ;
-			//kernel_map [index][centroid] = kernel ;
 		}
 		else
 		{
-			//kernel_map [index][centroid] = m_clone_array->clones.size() - 1 ;
 			kernel = m_clone_array->clones.size() - 1 ;
 		}
 		assert (kernel != -1) ;
 		assert (kernel < m_clone_array->clones.size()) ;
-		//int index = (lt + min_leaf_height - 1) / min_leaf_height ;
-		//index = index - (lt == 1) ;
-		height_leaf_kernel_table & table = 
+		leaf_kernel_table & table2 = m_arr_leaf_kernel_table [index] ;
+		/*height_leaf_kernel_table & table = 
 							m_arr_height_leaf_kernel_table [index] ;
 		//search the hash table with height as key.
 		std::pair<hlk_table_iterator, hlk_table_iterator> p = 
@@ -645,16 +630,31 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 			//assert (p.second - p.first == 1) ; //only one height exists
 			hlk_table_iterator start = p.first ;
 			assert (start->first == lt) ;
-			leaf_kernel_table & table2 = start->second ;
+			leaf_kernel_table & table2 = start->second ;*/
 			std::pair<lk_table_iterator, lk_table_iterator> p2 = 
 											table2.equal_range (key) ;
-			if (p2.first != p2.second)
+			if (p2.first == p2.second)
+			{
+				//(key,kernel) pair doesn't exist.
+#ifndef NDEBUG
+				zoid_type z ;
+				z.kernel = kernel ;
+				z.info = grid ;
+				z.height = lt ;
+				//insert (key,zoid) pair
+				table2.insert(std::pair<unsigned long, zoid_type>(key, z)) ;
+#else
+				//insert (key,kernel) pair
+				table2.insert(std::pair<unsigned long, char>(key, (char) kernel)) ;
+#endif
+			}
+#ifndef NDEBUG
+			else
 			{
 				//(key,kernel) pair exists.
 				//only one (key,kernel) pair may exist
 				//assert (p2.second - p2.first == 1) ;
 				assert (p2.first->first == key) ;
-#ifndef NDEBUG
 				zoid_type & z = p2.first->second ;
 				if(kernel != (int) z.kernel)
 				{
@@ -684,14 +684,13 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 						int tb = (g2.x1[i] + g2.dx1[i] * lt - g2.x0[i] - g2.dx0[i] * lt);
 						cout << " pmod(g2.x0[i], phys_length_ [i]) " << 
 								pmod(g2.x0[i], phys_length_ [i]) << endl ;
-						//index = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + index ;
-						index = pmod(g2.x0[i], phys_length_ [i]) * width + 
-								index ;
+						index = pmod(g2.x0[i] + (lb >> 1), phys_length_ [i]) * width + index ;
+						//index = pmod(g2.x0[i], phys_length_ [i]) * width + 
+						//		index ;
 						width = phys_length_ [i] ;
 						cout << "index " << index << " width " << width << endl ;
 						unsigned long dim_key = (unsigned long) lb << num_bits_width | tb ;
 						key = key << offset | dim_key ;
-						//key = key << offset | lb ;
 						offset += num_bits_dim ;
 					}
 					cout << "index " << index << " key " << key << endl ;
@@ -699,31 +698,9 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 						(int) z.kernel << endl ;
 					assert (kernel == (int) z.kernel) ;
 				}
-#else
-				if(kernel != p2.first->second)
-				{
-					cout << "Error. Two different leaves have same key" << 
-							endl ;
-					cout << "kernel " << kernel << " p2.first->second " <<
-						(int) p2.first->second << endl ;
-				}
-#endif
 			}
-			else
-			{
-#ifndef NDEBUG
-				zoid_type z ;
-				z.kernel = kernel ;
-				z.info = grid ;
-				z.height = lt ;
-				//insert (key,zoid) pair
-				table2.insert(std::pair<unsigned long, zoid_type>(key, z)) ;
-#else
-				//insert (key,kernel) pair
-				table2.insert(std::pair<unsigned long, char>(key, (char) kernel)) ;
 #endif
-			}
-		}
+		/*}
 		else
 		{
 			//height lt doesn't exist.
@@ -741,14 +718,14 @@ inline void kernel_selection<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 #endif
 			//insert (height, leaf_kernel_table) pair
 			table.insert(std::pair<int, leaf_kernel_table>(lt, table2)) ;
-		}
+		}*/
 	}
 }
 
 //The routine does a heterogeneous space cut for interior zoids. 
 template <int N_RANK> template <typename F>
-inline void kernel_selection<N_RANK>::heterogeneous_space_cut_interior(int t0, 
-				int t1, grid_info<N_RANK> const & grid, F const & f)
+inline void kernel_selection_trap<N_RANK>::heterogeneous_space_cut_interior(
+	int t0, int t1, grid_info<N_RANK> const & grid, F const & f)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -889,9 +866,8 @@ inline void kernel_selection<N_RANK>::heterogeneous_space_cut_interior(int t0,
 
 //The routine does a heterogeneous space cut for boundary zoids. 
 template <int N_RANK> template <typename F, typename BF>
-inline void kernel_selection<N_RANK>::heterogeneous_space_cut_boundary(int t0, 
-			int t1,	grid_info<N_RANK> const & grid, 
-			F const & f, BF const & bf)
+inline void kernel_selection_trap<N_RANK>::heterogeneous_space_cut_boundary(
+	int t0, int t1,	grid_info<N_RANK> const & grid, F const & f, BF const & bf)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -1081,8 +1057,8 @@ inline void kernel_selection<N_RANK>::heterogeneous_space_cut_boundary(int t0,
 
 //This routine does a heterogeneous space/time cut on interior zoids
 template <int N_RANK> template <typename F>
-inline void kernel_selection<N_RANK>::heterogeneous_space_time_cut_interior(int t0,
-				int t1, grid_info<N_RANK> const & grid, F const & f)
+inline void kernel_selection_trap<N_RANK>::heterogeneous_space_time_cut_interior
+	(int t0, int t1, grid_info<N_RANK> const & grid, F const & f)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false;
@@ -1126,28 +1102,25 @@ inline void kernel_selection<N_RANK>::heterogeneous_space_time_cut_interior(int 
     }
 	else 
 	{
-		//continue from here
 		// base case
 		int index = 0, width = 1 ; 
 		int offset = 0 ;
 		unsigned long key = 0 ;
 	    for (int i = N_RANK-1; i >= 0; --i) 
 		{
-			//index = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
+			index = pmod(grid.x0[i] + (p_lb [i]>> 1), phys_length_ [i]) * width 
+						+ index ;
+			//index = pmod(grid.x0[i], phys_length_ [i]) * width + 
 			//			index ;
-			index = pmod(grid.x0[i], phys_length_ [i]) * width + 
-						index ;
 			width = phys_length_ [i] ;
 			unsigned long dim_key = (unsigned long) p_lb [i] << num_bits_width 
 									| p_tb [i] ;
 			key = key << offset | dim_key ;
-			//key = key << offset | p_lb [i] ;
 			offset += num_bits_dim ;
 		}
 		int kernel = -1 ;
-		//int index = (lt + min_leaf_height - 1) / min_leaf_height ;
-		//index = index - (lt == 1) ;
-		height_leaf_kernel_table & table = 
+		leaf_kernel_table & table2 = m_arr_leaf_kernel_table [index] ;
+		/*height_leaf_kernel_table & table = 
 							m_arr_height_leaf_kernel_table [index] ;
 		//search the hash table with height as key.
 		std::pair<hlk_table_iterator, hlk_table_iterator> p = 
@@ -1155,7 +1128,7 @@ inline void kernel_selection<N_RANK>::heterogeneous_space_time_cut_interior(int 
 		assert (p.first != p.second) ;
 		hlk_table_iterator start = p.first ;
 		assert (start->first == lt) ;
-		leaf_kernel_table & table2 = start->second ;
+		leaf_kernel_table & table2 = start->second ;*/
 		std::pair<lk_table_iterator, lk_table_iterator> p2 = 
 										table2.equal_range (key) ;
 		assert (p2.first != p2.second) ;
@@ -1173,9 +1146,8 @@ inline void kernel_selection<N_RANK>::heterogeneous_space_time_cut_interior(int 
 
 //This routine does a heterogeneous space/time cut on boundary zoid
 template <int N_RANK> template <typename F, typename BF>
-inline void kernel_selection<N_RANK>::heterogeneous_space_time_cut_boundary(int t0,
-					int t1,	grid_info<N_RANK> const & grid, 
-					F const & f, BF const & bf)
+inline void kernel_selection_trap<N_RANK>::heterogeneous_space_time_cut_boundary
+(int t0, int t1,	grid_info<N_RANK> const & grid, F const & f, BF const & bf)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;
@@ -1257,21 +1229,20 @@ inline void kernel_selection<N_RANK>::heterogeneous_space_time_cut_boundary(int 
 		unsigned long key = 0 ;
 	    for (int i = N_RANK-1; i >= 0; --i) 
 		{
-			//index = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
+			index = pmod(grid.x0[i] + (p_lb[i] >> 1), phys_length_ [i]) * width 
+						+ index ;
+			//index = pmod(grid.x0[i], phys_length_ [i]) * width + 
 			//			index ;
-			index = pmod(grid.x0[i], phys_length_ [i]) * width + 
-						index ;
 			width = phys_length_ [i] ;
 			unsigned long dim_key = (unsigned long) p_lb [i] << num_bits_width 
 									| p_tb [i] ;
 			key = key << offset | dim_key ;
-			//key = key << offset | p_lb [i] ;
 			offset += num_bits_dim ;
 		}
 		int kernel = -1 ;
-		//int index = (lt + min_leaf_height - 1) / min_leaf_height ;
-		//index = index - (lt == 1) ;
-		height_leaf_kernel_table & table = 
+		leaf_kernel_table & table2 = 
+							m_arr_leaf_kernel_table [index] ;
+		/*height_leaf_kernel_table & table = 
 							m_arr_height_leaf_kernel_table [index] ;
 		//search the hash table with height as key.
 		std::pair<hlk_table_iterator, hlk_table_iterator> p = 
@@ -1279,7 +1250,7 @@ inline void kernel_selection<N_RANK>::heterogeneous_space_time_cut_boundary(int 
 		assert (p.first != p.second) ;
 		hlk_table_iterator start = p.first ;
 		assert (start->first == lt) ;
-		leaf_kernel_table & table2 = start->second ;
+		leaf_kernel_table & table2 = start->second ;*/
 		std::pair<lk_table_iterator, lk_table_iterator> p2 = 
 										table2.equal_range (key) ;
 		assert (p2.first != p2.second) ;
@@ -1307,4 +1278,5 @@ inline void kernel_selection<N_RANK>::heterogeneous_space_time_cut_boundary(int 
 #undef slope_ 
 #undef touch_boundary 
 #undef base_case_kernel_boundary
+#undef phys_length_ 
 #endif
