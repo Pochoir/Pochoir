@@ -204,17 +204,17 @@ public:
 
 	virtual void operator() (int t, int i)const
 	{
-		cout << "clone 0 boundary" << endl ;
+		//cout << "clone 0 boundary" << endl ;
 	}
 
 	virtual void operator() (int t, int i, int j)const
 	{
-		cout << "clone 0 boundary 2" << endl ;
+		//cout << "clone 0 boundary 2" << endl ;
 	}
 
 	virtual void operator() (int t0, int t1, grid_info<DIM> const & grid)const
 	{
-		cout << "clone 0 interior" << endl ;
+		//cout << "clone 0 interior" << endl ;
 	}
 };
 
@@ -1158,6 +1158,218 @@ public:
 	}
 } ;
 
+class pochoir_clone_2d_11 : public pochoir_clone<2>
+{
+	Pochoir_Array <double, 2> & a ;
+	predicate <2> & pred ;
+public:
+	pochoir_clone_2d_11(Pochoir_Array <double, 2> & array,
+						predicate <2> & p):a(array), pred(p)
+	{}
+
+	virtual void operator() (int t, int i, int j) const
+	{
+#define a(t, i, j) a.boundary(t, i, j)
+	double Dm = pred.Dm ;
+	double * c = pred.c ;
+	int Nx = pred.Nx ;
+	int Ny = pred.Ny ;
+	int P = pred.P ;
+	if ((i >= P && i <= Nx - P && j >= P && j <= Ny - P)) {
+	{a(t, i, j) = Dm * (a(t - 1, i + 1, j) - 2.0 * a(t - 1, i, j) + a(t - 1, i - 1, j)) + Dm * (a(t - 1, i, j + 1) - 2.0 * a(t - 1, i, j) + a(t - 1, i, j - 1)) + a(t - 1, i, j);
+
+	double dt = pred.dt ;
+	double t0_ = predicate<2>::t0_ ;
+	if (t * dt < 2 * t0_ && j == P + 1 && i >= pred.ix0 && i <= pred.ix1)
+	{
+		double ts = t * dt;
+		double omega = pred.omega ;
+		double decay = pred.decay ;
+		double g = cos(omega * ts) * exp(- (ts - t0_) * (ts - t0_) * decay);	/* Unrecognized! */
+		a(t, i, j) += g * dt;
+	
+	}
+	
+	}
+	} else {if ((j >= P && j <= Ny - P)) {
+	{int k;
+	if ((i < P)) {
+	{(static_cast < void > (0));
+	k = 2 * (P - i);
+	
+	}
+	} else {{(static_cast < void > (0));
+	k = 2 * (i - (Nx - P));
+	
+	}}
+	a(t, i, j) = Dm * c[k] * (c[k + 1] * (a(t - 1, i + 1, j) - a(t - 1, i, j)) - c[k - 1] * (a(t - 1, i, j) - a(t - 1, i - 1, j))) + Dm * (a(t - 1, i, j + 1) - 2.0 * a(t - 1, i, j) + a(t - 1, i, j - 1)) + a(t - 1, i, j);
+	
+	}
+	} else {if ((i >= P && i <= Nx - P)) {
+	{int k;
+	if ((j < P)) {
+	{(static_cast < void > (0));
+	k = 2 * (P - j);
+	
+	}
+	} else {{(static_cast < void > (0));
+	k = 2 * (j - (Ny - P));
+	
+	}}
+	a(t, i, j) = Dm * c[k] * (c[k + 1] * (a(t - 1, i, j + 1) - a(t - 1, i, j)) - c[k - 1] * (a(t - 1, i, j) - a(t - 1, i, j - 1))) + Dm * (a(t - 1, i + 1, j) - 2.0 * a(t - 1, i, j) + a(t - 1, i - 1, j)) + a(t - 1, i, j);
+	
+	}
+	} else {{int kx, ky;
+	if ((i < P)) {
+	{(static_cast < void > (0));
+	kx = 2 * (P - i);
+	
+	}
+	} else {{(static_cast < void > (0));
+	kx = 2 * (i - (Nx - P));
+	
+	}}
+	if ((j < P)) {
+	{(static_cast < void > (0));
+	ky = 2 * (P - j);
+	
+	}
+	} else {{(static_cast < void > (0));
+	ky = 2 * (j - (Ny - P));
+	
+	}}
+	a(t, i, j) = Dm * c[ky] * (c[ky + 1] * (a(t - 1, i, j + 1) - a(t - 1, i, j)) - c[ky - 1] * (a(t - 1, i, j) - a(t - 1, i, j - 1))) + Dm * c[kx] * (c[kx + 1] * (a(t - 1, i + 1, j) - a(t - 1, i, j)) - c[kx - 1] * (a(t - 1, i, j) - a(t - 1, i - 1, j))) + +a(t - 1, i, j);
+	
+	}}}}
+	
+#undef a(t, i, j)
+	}
+
+	virtual void operator() (int t0, int t1, grid_info<2> const & grid)const
+	{
+		double dt = pred.dt ;
+		double t0_ = predicate<2>::t0_ ;
+	grid_info<2> l_grid = grid;
+	double * iter5;
+	double * iter4;
+	double * iter3;
+	double * iter2;
+	double * iter1;
+	double * iter0;
+	
+	double * a_base = a.data();
+	const int l_a_total_size = a.total_size();
+	
+	int gap_a_1, gap_a_0;
+	const int l_stride_a_1 = a.stride(1), l_stride_a_0 = a.stride(0);
+
+	for (int t = t0; t < t1; ++t) { 
+	double * baseIter_1;
+	double * baseIter_0;
+	baseIter_0 = a_base + ((t) & 0x1) * l_a_total_size + (l_grid.x0[1]) * l_stride_a_1 + (l_grid.x0[0]) * l_stride_a_0;
+	baseIter_1 = a_base + ((t - 1) & 0x1) * l_a_total_size + (l_grid.x0[1]) * l_stride_a_1 + (l_grid.x0[0]) * l_stride_a_0;
+	iter0 = baseIter_0 + (0) * l_stride_a_1 + (0) * l_stride_a_0;
+	iter1 = baseIter_1 + (1) * l_stride_a_1 + (0) * l_stride_a_0;
+	iter2 = baseIter_1 + (0) * l_stride_a_1 + (0) * l_stride_a_0;
+	iter3 = baseIter_1 + (-1) * l_stride_a_1 + (0) * l_stride_a_0;
+	iter4 = baseIter_1 + (0) * l_stride_a_1 + (1) * l_stride_a_0;
+	iter5 = baseIter_1 + (0) * l_stride_a_1 + (-1) * l_stride_a_0;
+	
+	gap_a_1 = l_stride_a_1 + (l_grid.x0[0] - l_grid.x1[0]) * l_stride_a_0;
+	for (int i = l_grid.x0[1]; i < l_grid.x1[1]; ++i, 
+	iter0 += gap_a_1, 
+	iter1 += gap_a_1, 
+	iter2 += gap_a_1, 
+	iter3 += gap_a_1, 
+	iter4 += gap_a_1, 
+	iter5 += gap_a_1) {
+	
+	#pragma ivdep
+	for (int j = l_grid.x0[0]; j < l_grid.x1[0]; ++j, 
+	++iter0, 
+	++iter1, 
+	++iter2, 
+	++iter3, 
+	++iter4, 
+	++iter5) {
+
+	double Dm = pred.Dm ;
+	double * c = pred.c ;
+	int Nx = pred.Nx ;
+	int Ny = pred.Ny ;
+	int P = pred.P ;
+	if ((i >= P && i <= Nx - P && j >= P && j <= Ny - P)) {
+		(*iter0) = Dm * ((*iter1) - 2.0 * (*iter2) + (*iter3)) + Dm * ((*iter4) - 2.0 * (*iter2) + (*iter5)) + (*iter2);
+		if (t * dt < 2 * t0_ && j == P + 1 && i >= pred.ix0 && i <= pred.ix1)
+		{
+			double ts = t * dt;
+			double omega = pred.omega ;
+			double decay = pred.decay ;
+			double g = cos(omega * ts) * exp(- (ts - t0_) * (ts - t0_) * decay);
+			(*iter0) += g * dt;
+		}
+	} 
+	else {if ((j >= P && j <= Ny - P)) {
+	{int k;
+	if ((i < P)) {
+	{(static_cast < void > (0));
+	k = 2 * (P - i);
+	
+	}
+	} else {{(static_cast < void > (0));
+	k = 2 * (i - (Nx - P));
+	
+	}}
+	(*iter0) = Dm * c[k] * (c[k + 1] * ((*iter1) - (*iter2)) - c[k - 1] * ((*iter2) - (*iter3))) + Dm * ((*iter4) - 2.0 * (*iter2) + (*iter5)) + (*iter2);
+	
+	}
+	} else {if ((i >= P && i <= Nx - P)) {
+	{int k;
+	if ((j < P)) {
+	{(static_cast < void > (0));
+	k = 2 * (P - j);
+	
+	}
+	} else {{(static_cast < void > (0));
+	k = 2 * (j - (Ny - P));
+	
+	}}
+	(*iter0) = Dm * c[k] * (c[k + 1] * ((*iter4) - (*iter2)) - c[k - 1] * ((*iter2) - (*iter5))) + Dm * ((*iter1) - 2.0 * (*iter2) + (*iter3)) + (*iter2);
+	
+	}
+	} else {{int kx, ky;
+	if ((i < P)) {
+	{(static_cast < void > (0));
+	kx = 2 * (P - i);
+	
+	}
+	} else {{(static_cast < void > (0));
+	kx = 2 * (i - (Nx - P));
+	
+	}}
+	if ((j < P)) {
+	{(static_cast < void > (0));
+	ky = 2 * (P - j);
+	
+	}
+	} else {{(static_cast < void > (0));
+	ky = 2 * (j - (Ny - P));
+	
+	}}
+	(*iter0) = Dm * c[ky] * (c[ky + 1] * ((*iter4) - (*iter2)) - c[ky - 1] * ((*iter2) - (*iter5))) + Dm * c[kx] * (c[kx + 1] * ((*iter1) - (*iter2)) - c[kx - 1] * ((*iter2) - (*iter3))) + +(*iter2);
+	
+	}}}}
+	
+	} } /* end for (sub-trapezoid) */ 
+	/* Adjust sub-trapezoid! */
+	for (int i = 0; i < 2; ++i) {
+		l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+	}
+	} /* end for t */
+	}
+
+} ;
+
 template <int DIM>
 class pochoir_clone_array
 {
@@ -1208,6 +1420,7 @@ pochoir_clone_array<2>::pochoir_clone_array(Pochoir_Array <double, 2> & array,
 		clones.push_back(new pochoir_clone_2d_8 (array, p)) ;
 		clones.push_back(new pochoir_clone_2d_9 (array, p)) ;
 		clones.push_back(new pochoir_clone_2d_10 (array, p)) ;
+		clones.push_back(new pochoir_clone_2d_11 (array, p)) ;
 }
 
 #endif
