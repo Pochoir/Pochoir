@@ -459,15 +459,11 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_interior(
 		unsigned long dim_key = (unsigned long) lb << num_bits_width | tb ;
 		key = key << offset | dim_key ;
 		offset += num_bits_dim ;
-		//bottom_volume = bottom_volume * (lb + 1) ;
-		//int tb_closed = (tb - grid.dx1 [i] + grid.dx0 [i]) ; 
-		//top_volume = top_volume * (tb + 1) ;
 		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
 			 << " x1 [" << i << "] " << grid.x1 [i] 
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
 			<< " lt " << lt << endl ;*/
-        //bool cut_lb = (lb < tb);
         thres = (slope_[i] * lt);
 		int short_side ;
 		bool space_cut = false ;
@@ -480,7 +476,6 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_interior(
 			short_side = tb ;
 		}
 		num_subzoids [i] = 0 ;
-		//if (short_side >= (thres << 1) && short_side > dx_recursive_[i])
 		if (short_side >= (thres << 1) && lb > dx_recursive_[i])
 		{
 			space_cut = true ;
@@ -497,7 +492,6 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_interior(
 	unsigned long index ;
 	bool projection_exists = check_and_create_projection (key, lt, 
 											centroid, index, grid) ;
-											//centroid, &z, grid) ;
 	//cout << " index " << index << endl ;
 	//cout << " child index " << child_index << endl ;
 	zoid_type & z = m_zoids [index];
@@ -567,7 +561,7 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_boundary(
     grid_info<N_RANK> l_father_grid = grid, l_son_grid;
     int l_dt_stop;
 
-	int centroid = 0, width = 1 ; //, bottom_volume = 1, top_volume = 1 ;
+	int centroid = 0, width = 1 ; 
 	int offset = 0, total_num_subzoids = 1 ;
 	int num_subzoids [N_RANK] ;
 	unsigned long key = 0 ;
@@ -605,7 +599,6 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_boundary(
 			limit = dx_recursive_[i] ;
 		}
 		num_subzoids [i] = 0 ;
-		//if (short_side >= (thres << 1) && short_side > limit)
 		if (short_side >= (thres << 1) && lb > limit)
 		{
 			space_cut = true ;
@@ -650,7 +643,7 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_boundary(
 	{
         l_dt_stop = dt_recursive_;
 	}
-	cost = 0 ; 
+	double divide_and_conquer_cost = 0 ; 
     if (sim_can_cut) 
 	{
 		//cout << "space cut " << endl ;
@@ -659,12 +652,12 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_boundary(
         if (call_boundary) 
 		{
             symbolic_modified_space_cut_boundary(t0, t1, l_father_grid, index, 
-												 f, num_subzoids, cost);
+												 f, num_subzoids, divide_and_conquer_cost);
         }
 		else
 		{
             symbolic_modified_space_cut_interior(t0, t1, l_father_grid, index, 
-												f, num_subzoids, cost);
+												f, num_subzoids, divide_and_conquer_cost);
 		}
     } 
 	else if (lt > l_dt_stop)  //time cut
@@ -675,10 +668,10 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_boundary(
         int halflt = lt / 2;
         l_son_grid = l_father_grid;
         if (call_boundary) {
-            symbolic_modified_space_time_cut_boundary(t0, t0+halflt, l_son_grid, 													index, 0, cost, f);
+            symbolic_modified_space_time_cut_boundary(t0, t0+halflt, l_son_grid, 													index, 0, divide_and_conquer_cost, f);
         } else {
             symbolic_modified_space_time_cut_interior(t0, t0+halflt, l_son_grid,
-													index, 0, cost, f);
+													index, 0, divide_and_conquer_cost, f);
         }
 
         for (int i = 0; i < N_RANK; ++i) {
@@ -689,16 +682,16 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_boundary(
         }
         if (call_boundary) {
             symbolic_modified_space_time_cut_boundary(t0+halflt, t1, l_son_grid,
-													index, 1, cost, f);
+													index, 1, divide_and_conquer_cost, f);
         } else {
             symbolic_modified_space_time_cut_interior(t0+halflt, t1, l_son_grid,
-													index, 1, cost, f);
+													index, 1, divide_and_conquer_cost, f);
         }
     } 
 	// base case
 	//determine the looping cost on the zoid
 	struct timeval start, end;
-	double time_loop = 0. ;
+	double loop_cost = 0. ;
 	gettimeofday(&start, 0);
 	if (call_boundary) 
 	{
@@ -709,10 +702,18 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_boundary(
 		f(t0, t1, l_father_grid);
 	}
 	gettimeofday(&end, 0);
-	compute_geneity(lt, l_father_grid, z.geneity, f) ;
-	//print_bits(&(z->geneity), sizeof(word_type) * 8) ;
-	//update the geneity of the parent.
-	m_zoids [parent_index].geneity |= m_zoids [index].geneity ;
+	loop_cost = tdiff(&end, &start) ;
+	//store the decision for the zoid  and update the cost of parent
+	if (divide_and_conquer_cost < loop_cost)
+	{
+		decision = 1 ;
+		cost += divide_and_conquer_cost ;
+	}
+	else
+	{
+		decision = 0 ;
+		cost += loop_cost ;
+	}
 }
 
 template <int N_RANK> template <typename F>
