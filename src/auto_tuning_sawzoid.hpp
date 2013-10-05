@@ -13,7 +13,7 @@
 #ifndef POCHOIR_MODIFIED_CUTS_HETEROGENEITY_HPP 
 #define POCHOIR_MODIFIED_CUTS_HETEROGENEITY_HPP 
 
-#include "heterogeneity_better_memory.hpp"
+#include "auto_tuning_header.hpp"
 
 #define dx_recursive_boundary_  (m_algo.dx_recursive_boundary_)
 #define dx_recursive_ (m_algo.dx_recursive_)
@@ -25,9 +25,9 @@
 #define base_case_kernel_boundary m_algo.base_case_kernel_boundary
 
 template <int N_RANK> template <typename F>
-inline void heterogeneity<N_RANK>::symbolic_modified_space_cut_interior(int t0,
+inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_interior(int t0,
 			int t1, grid_info<N_RANK> const & grid, unsigned long parent_index, 
-			F const & f, int * num_zoids)
+			F const & f, int * num_zoids, double & rcost, double & ncost)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -54,8 +54,9 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_cut_interior(int t0,
                     queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
                     // assert all the sub-grid has done N_RANK spatial cuts 
                     assert(l_son->level == -1);
-                    symbolic_modified_space_time_cut_interior(l_son->t0, 
-						l_son->t1, l_son->grid, parent_index, child_index, f);
+                    symbolic_sawzoid_space_time_cut_interior(l_son->t0, 
+						l_son->t1, l_son->grid, parent_index, child_index, 
+						rcost, ncost, f);
 					child_index++ ;
                 } // end cilk_for 
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
@@ -63,8 +64,9 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_cut_interior(int t0,
 #else
                 // use cilk_spawn to spawn all the sub-grid 
                 pop_queue(curr_dep_pointer);
-				symbolic_modified_space_time_cut_interior(l_father->t0, 
-					l_father->t1, l_father->grid, parent_index, child_index, f);
+				symbolic_sawzoid_space_time_cut_interior(l_father->t0, 
+					l_father->t1, l_father->grid, parent_index, child_index, 
+					rcost, ncost, f);
 				child_index++ ;
 #endif
             } else {
@@ -204,12 +206,12 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_cut_interior(int t0,
     } // end for (curr_dep < N_RANK+1) 
 }
 
-/* Boundary space cut. Uses modified space cut.
+/* Boundary space cut. Uses sawzoid space cut.
  */
 template <int N_RANK> template <typename F>
-inline void heterogeneity<N_RANK>::symbolic_modified_space_cut_boundary(int t0,
+inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_boundary(int t0,
 		int t1, grid_info<N_RANK> const & grid, unsigned long parent_index, 
-		F const & f, int * num_zoids)
+		F const & f, int * num_zoids, double & rcost, double & ncost)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -237,8 +239,9 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_cut_boundary(int t0,
                     queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
                     // assert all the sub-grid has done N_RANK spatial cuts 
                     //assert(l_son->level == -1);
-                    symbolic_modified_space_time_cut_boundary(l_son->t0, 
-						l_son->t1, l_son->grid, parent_index, child_index, f);
+                    symbolic_sawzoid_space_time_cut_boundary(l_son->t0, 
+						l_son->t1, l_son->grid, parent_index, child_index, 
+						rcost, ncost, f);
 					child_index++ ; //this can be a race.
                 } // end cilk_for 
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
@@ -246,8 +249,9 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_cut_boundary(int t0,
 #else
                 // use cilk_spawn to spawn all the sub-grid 
                 pop_queue(curr_dep_pointer);
-				symbolic_modified_space_time_cut_boundary(l_father->t0, 
-					l_father->t1, l_father->grid, parent_index, child_index, f);
+				symbolic_sawzoid_space_time_cut_boundary(l_father->t0, 
+					l_father->t1, l_father->grid, parent_index, child_index,
+					rcost, ncost, f);
 				child_index++ ; 
 #endif
             } else {
@@ -436,9 +440,10 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_cut_boundary(int t0,
 }
 
 template <int N_RANK> template <typename F>
-inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_interior(
+inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		int t0, int t1, grid_info<N_RANK> const & grid, 
-		unsigned long parent_index, int child_index, F const & f)
+		unsigned long parent_index, int child_index, 
+		double & rcost, double & ncost, F const & f)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false;
@@ -505,28 +510,39 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_interior(
 	
 	if (projection_exists)
 	{ 
-		//update the geneity of the parent.
-		parent.geneity |= z.geneity ;
+		//Add the cost of the zoid to the parent.
+		rcost += 0 ; //set redundant cost to 0.
+		ncost += z.cost ;  //set necessary cost 
 		//a zoid with the projection already exists. return
 		return ;
 	}
+	double divide_and_conquer_cost = 0 ;
+	struct timeval start, end ;
+	bool divide_and_conquer = false ;
     if (sim_can_cut) 
 	{
+		double rcost1 = 0, ncost1 = 0 ;
+		divide_and_conquer = true ;
+		gettimeofday(&start, 0);
 		z.resize_children(total_num_subzoids) ;
         /* cut into space */
-		symbolic_modified_space_cut_interior(t0, t1, grid, index, f, 
-											num_subzoids);
+		symbolic_sawzoid_space_cut_interior(t0, t1, grid, index, f, 
+										num_subzoids, rcost1, ncost1) ;
+		gettimeofday(&end, 0);
+		divide_and_conquer_cost = tdiff(&end, &start) - rcost1 + ncost1 ;
     } 
 	else if (lt > dt_recursive_) 
 	{
+		double rcost1 = 0, ncost1 = 0 ;
+		divide_and_conquer = true ;
+		gettimeofday(&start, 0);
 		z.resize_children(2) ;
         /* cut into time */
         assert(lt > dt_recursive_);
         int halflt = lt / 2;
         l_son_grid = grid;
-        //symbolic_space_time_cut_interior(t0, t0+halflt, l_son_grid, z, 0, f);
-        symbolic_modified_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
-				index, 0, f);
+        symbolic_sawzoid_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
+				index, 0, rcost1, ncost1, f);
 
         for (int i = 0; i < N_RANK; ++i) {
             l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
@@ -534,27 +550,43 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_interior(
             l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
             l_son_grid.dx1[i] = grid.dx1[i];
         }
-        //symbolic_space_time_cut_interior(t0+halflt, t1, l_son_grid, z, 1, f);
-        symbolic_modified_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
-				index, 1, f);
+        symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
+				index, 1, rcost1, ncost1, f);
+
+		gettimeofday(&end, 0);
+		divide_and_conquer_cost += tdiff(&end, &start) - rcost1 + ncost1 ;
     } 
-	else 
+    // base case
+	//determine the looping cost on the zoid
+	struct timeval start, end;
+	double loop_cost = 0. ;
+	gettimeofday(&start, 0);
+	f(t0, t1, grid);
+	gettimeofday(&end, 0);
+	loop_cost = tdiff(&end, &start) ;
+	//store the decision for the zoid  and pass the redundant cost 
+	//to the parent
+	if (divide_and_conquer && divide_and_conquer_cost < loop_cost)
 	{
-        // base case
-		//determine the geneity of the leaf
-		compute_geneity(lt, grid, z.geneity, f) ;
-		//print_bits(&(z->geneity), sizeof(word_type) * 8) ;
+		decision = 1 ;
+		rcost += loop_cost ;
+		z.cost = divide_and_conquer_cost ;
 	}
-	//update the geneity of the parent.
-	m_zoids [parent_index].geneity |= m_zoids [index].geneity ;
-	//parent->geneity |= z->geneity ;
+	else
+	{
+		decision = 0 ;
+		rcost += divide_and_conquer_cost ;
+		z.cost = loop_cost ;
+	}
+	//set necessary cost to zero since parent's timer includes the same.
+	ncost += 0 ; 
 }
 
 template <int N_RANK> template <typename F>
-inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_boundary(
+inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 		int t0, int t1,	grid_info<N_RANK> const & grid, 
 		unsigned long parent_index, int child_index, 
-		double & cost, F const & f)
+		double & rcost, double & ncost, F const & f)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;
@@ -631,7 +663,8 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_boundary(
 	if (projection_exists)
 	{ 
 		//Add the cost of the zoid to the parent.
-		cost += z.cost ;
+		rcost += 0 ; //set redundant cost to 0.
+		ncost += z.cost ;  //set necessary cost 
 		//a zoid with the projection already exists. return
 		return ;
 	}
@@ -643,35 +676,45 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_boundary(
 	{
         l_dt_stop = dt_recursive_;
 	}
-	double divide_and_conquer_cost = 0 ; 
+	double divide_and_conquer_cost = 0 ;
+	struct timeval start, end ;
+	bool divide_and_conquer = false ;
     if (sim_can_cut) 
 	{
+		double rcost1 = 0, ncost1 = 0 ;
+		divide_and_conquer = true ;
+		gettimeofday(&start, 0);
 		//cout << "space cut " << endl ;
 		z.resize_children(total_num_subzoids) ;
         //cut into space 
         if (call_boundary) 
 		{
-            symbolic_modified_space_cut_boundary(t0, t1, l_father_grid, index, 
-												 f, num_subzoids, divide_and_conquer_cost);
+            symbolic_sawzoid_space_cut_boundary(t0, t1, l_father_grid, index, 
+							 f, num_subzoids, rcost1, ncost1);
         }
 		else
 		{
-            symbolic_modified_space_cut_interior(t0, t1, l_father_grid, index, 
-												f, num_subzoids, divide_and_conquer_cost);
+            symbolic_sawzoid_space_cut_interior(t0, t1, l_father_grid, index, 
+							f, num_subzoids, rcost1, ncost1);
 		}
+		gettimeofday(&end, 0);
+		divide_and_conquer_cost = tdiff(&end, &start) - rcost1 + ncost1 ;
     } 
 	else if (lt > l_dt_stop)  //time cut
 	{
+		double rcost1 = 0, ncost1 = 0 ;
+		divide_and_conquer = true ;
+		gettimeofday(&start, 0);
 		//cout << "time cut " << endl ;
 		z.resize_children(2) ;
         // cut into time 
         int halflt = lt / 2;
         l_son_grid = l_father_grid;
         if (call_boundary) {
-            symbolic_modified_space_time_cut_boundary(t0, t0+halflt, l_son_grid, 													index, 0, divide_and_conquer_cost, f);
+            symbolic_sawzoid_space_time_cut_boundary(t0, t0+halflt, l_son_grid, 										index, 0, rcost1, ncost1, f);
         } else {
-            symbolic_modified_space_time_cut_interior(t0, t0+halflt, l_son_grid,
-													index, 0, divide_and_conquer_cost, f);
+            symbolic_sawzoid_space_time_cut_interior(t0, t0+halflt, l_son_grid,
+										index, 0, rcost1, ncost1, f);
         }
 
         for (int i = 0; i < N_RANK; ++i) {
@@ -681,12 +724,14 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_boundary(
             l_son_grid.dx1[i] = l_father_grid.dx1[i];
         }
         if (call_boundary) {
-            symbolic_modified_space_time_cut_boundary(t0+halflt, t1, l_son_grid,
-													index, 1, divide_and_conquer_cost, f);
+            symbolic_sawzoid_space_time_cut_boundary(t0+halflt, t1, l_son_grid,
+										index, 1, rcost1, ncost1, f);
         } else {
-            symbolic_modified_space_time_cut_interior(t0+halflt, t1, l_son_grid,
-													index, 1, divide_and_conquer_cost, f);
+            symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid,
+										index, 1, rcost1, ncost1, f);
         }
+		gettimeofday(&end, 0);
+		divide_and_conquer_cost += tdiff(&end, &start) - rcost1 + ncost1 ;
     } 
 	// base case
 	//determine the looping cost on the zoid
@@ -703,258 +748,29 @@ inline void heterogeneity<N_RANK>::symbolic_modified_space_time_cut_boundary(
 	}
 	gettimeofday(&end, 0);
 	loop_cost = tdiff(&end, &start) ;
-	//store the decision for the zoid  and update the cost of parent
-	if (divide_and_conquer_cost < loop_cost)
+	//store the decision for the zoid  and pass the redundant cost 
+	//to the parent
+	if (divide_and_conquer && divide_and_conquer_cost < loop_cost)
 	{
 		decision = 1 ;
-		cost += divide_and_conquer_cost ;
+		rcost += loop_cost ;
+		z.cost = divide_and_conquer_cost ;
 	}
 	else
 	{
 		decision = 0 ;
-		cost += loop_cost ;
+		rcost += divide_and_conquer_cost ;
+		z.cost = loop_cost ;
 	}
+	//set necessary cost to zero since parent's timer includes the same.
+	ncost += 0 ; 
 }
 
+// sawzoid space cuts. 
 template <int N_RANK> template <typename F>
-//#ifndef NDEBUG
-#if 0
-inline void heterogeneity<N_RANK>::homogeneous_modified_space_cut_interior(
+inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
 				int t0, int t1, grid_info<N_RANK> const & grid, 
 				zoid_type * projection_zoid, F const & f)
-				//zoid_type * projection_zoid, F const & f, int * num_zoids)
-#else
-inline void heterogeneity<N_RANK>::homogeneous_modified_space_cut_interior(
-				int t0, int t1, grid_info<N_RANK> const & grid, 
-				F const & f)
-				//F const & f, int * num_zoids)
-#endif
-{
-    queue_info *l_father;
-    queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
-    int queue_head_[2], queue_tail_[2], queue_len_[2];
-
-    for (int i = 0; i < 2; ++i) {
-        queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
-    }
-
-//#ifndef NDEBUG
-#if 0
-	int child_index = 0 ;
-#endif
-	//assert (projection_zoid) ;
-    // set up the initial grid 
-    push_queue(0, N_RANK-1, t0, t1, grid);
-    for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
-        const int curr_dep_pointer = (curr_dep & 0x1);
-        while (queue_len_[curr_dep_pointer] > 0) {
-            top_queue(curr_dep_pointer, l_father);
-            if (l_father->level < 0) {
-                // spawn all the grids in circular_queue_[curr_dep][] 
-#if USE_CILK_FOR 
-                // use cilk_for to spawn all the sub-grid 
-// #pragma cilk_grainsize = 1
-                cilk_for (int j = 0; j < queue_len_[curr_dep_pointer]; ++j) {
-                    int i = pmod((queue_head_[curr_dep_pointer]+j), ALGOR_QUEUE_SIZE);
-                    queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
-                    // assert all the sub-grid has done N_RANK spatial cuts 
-                    assert(l_son->level == -1);
-//#ifndef NDEBUG
-#if 0
-					assert(child_index < projection_zoid->num_children) ;
-					unsigned long index = projection_zoid->children [child_index] ;
-					zoid_type * child = &(m_zoids [index]) ;
-					child_index++ ; //looks like a race
-                    homogeneous_modified_space_time_cut_interior(l_son->t0, 
-						l_son->t1, l_son->grid, child, f);
-#else
-                    homogeneous_modified_space_time_cut_interior(l_son->t0, 
-						l_son->t1, l_son->grid, f);
-#endif
-                } // end cilk_for 
-                queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
-                queue_len_[curr_dep_pointer] = 0;
-#else
-                // use cilk_spawn to spawn all the sub-grid 
-                pop_queue(curr_dep_pointer);
-				//assert(child_index < projection_zoid->num_children) ;
-//#ifndef NDEBUG
-#if 0
-				unsigned long index = projection_zoid->children [child_index] ;
-				zoid_type * child = &(m_zoids [index]) ;
-				child_index++ ;
-                if (queue_len_[curr_dep_pointer] == 0)
-				{
-                    homogeneous_modified_space_time_cut_interior(l_father->t0,
- 							l_father->t1, l_father->grid, child, f);
-				}
-                else
-				{
-                    cilk_spawn homogeneous_modified_space_time_cut_interior(
-						l_father->t0, l_father->t1, l_father->grid, child, f) ;
-				}
-#else
-                if (queue_len_[curr_dep_pointer] == 0)
-				{
-                    homogeneous_modified_space_time_cut_interior(l_father->t0,
- 							l_father->t1, l_father->grid, f);
-				}
-                else
-				{
-                    cilk_spawn homogeneous_modified_space_time_cut_interior(
-						l_father->t0, l_father->t1, l_father->grid, f) ;
-				}
-#endif
-#endif
-            } else {
-                // performing a space cut on dimension 'level' 
-                pop_queue(curr_dep_pointer);
-                const grid_info<N_RANK> l_father_grid = l_father->grid;
-                const int t0 = l_father->t0, t1 = l_father->t1;
-                const int lt = (t1 - t0);
-                const int level = l_father->level;
-                const int thres = slope_[level] * lt;
-                const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
-                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
-                const bool cut_lb = (lb < tb);
-				const bool can_cut = CAN_CUT_I ;
-                //if (num_zoids [level] == 0) {
-                if (! can_cut) {
-                    // if we can't cut into this dimension, just directly push 
-                    // it into the circular queue 
-                    //
-                    push_queue(curr_dep_pointer, level-1, t0, t1, 
-							l_father_grid) ;
-                } else  {
-                    /* can_cut! */
-                    if (cut_lb) {
-                        grid_info<N_RANK> l_son_grid = l_father_grid;
-                        const int l_start = (l_father_grid.x0[level]);
-                        const int l_end = (l_father_grid.x1[level]);
-
-                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
-                        l_son_grid.x0[level] = l_start ;
-                        l_son_grid.dx0[level] = l_father_grid.dx0[level] ;
-                        l_son_grid.x1[level] = l_start ;
-                        l_son_grid.dx1[level] = slope_[level] ;
-                        push_queue(next_dep_pointer, level-1, t0, t1, 
-									l_son_grid) ;
-
-                        l_son_grid.x0[level] = l_end ;
-                        l_son_grid.dx0[level] = -slope_[level];
-                        l_son_grid.x1[level] = l_end ;
-                        l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
-                        push_queue(next_dep_pointer, level-1, t0, t1, 
-									l_son_grid) ;
-						const int cut_more = ((lb - (thres << 2)) >= 0) ;
-						if (cut_more)
-						//if (num_zoids [level] == 5)
-						{
-							const int offset = (thres << 1) ;
-							l_son_grid.x0[level] = l_start ;
-	                        l_son_grid.dx0[level] = slope_[level];
-    	                    l_son_grid.x1[level] = l_start + offset ;
-        	                l_son_grid.dx1[level] = -slope_[level] ;
-            	            push_queue(curr_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-							
-							l_son_grid.x0[level] = l_end - offset ;
-	                        l_son_grid.dx0[level] = slope_[level];
-    	                    l_son_grid.x1[level] = l_end ;
-        	                l_son_grid.dx1[level] = -slope_[level] ;
-            	            push_queue(curr_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-
-							l_son_grid.x0[level] = l_start + offset ;
-	                        l_son_grid.dx0[level] = -slope_[level] ;
-    	                    l_son_grid.x1[level] = l_end - offset ;
-        	                l_son_grid.dx1[level] = slope_[level] ;
-            	            push_queue(next_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-						}
-						else
-						{
-							l_son_grid.x0[level] = l_start ;
-	                        l_son_grid.dx0[level] = slope_[level];
-    	                    l_son_grid.x1[level] = l_end;
-        	                l_son_grid.dx1[level] = -slope_[level] ;
-            	            push_queue(curr_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-						}
-                    } /* end if (cut_lb) */
-                    else {
-                        /* cut_tb */
-                        grid_info<N_RANK> l_son_grid = l_father_grid;
-                        const int l_start = (l_father_grid.x0[level]);
-                        const int l_end = (l_father_grid.x1[level]);
-						const int offset = (thres << 1) ;
-
-                        l_son_grid.x0[level] = l_start;
-                        l_son_grid.dx0[level] = l_father_grid.dx0[level];
-                        l_son_grid.x1[level] = l_start + offset;
-                        l_son_grid.dx1[level] = -slope_[level];
-                        push_queue(curr_dep_pointer, level-1, t0, t1, 
-									l_son_grid) ;
-
-                        l_son_grid.x0[level] = l_end - offset ;
-                        l_son_grid.dx0[level] = slope_[level];
-                        l_son_grid.x1[level] = l_end;
-                        l_son_grid.dx1[level] = l_father_grid.dx1[level];
-                        push_queue(curr_dep_pointer, level-1, t0, t1, 
-									l_son_grid);
-
-                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
-						const int cut_more = ((tb - (thres << 2)) >= 0) ;
-						if (cut_more)
-						//if (num_zoids [level] == 5)
-						{
-							l_son_grid.x0[level] = l_start + offset ;
-                            l_son_grid.dx0[level] = -slope_[level];
-							l_son_grid.x1[level] = l_start + offset;
-                        	l_son_grid.dx1[level] = slope_[level];
-                        	push_queue(next_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-
-							l_son_grid.x0[level] = l_end - offset ;
-                        	l_son_grid.dx0[level] = -slope_[level];
-							l_son_grid.x1[level] = l_end - offset ;
-                            l_son_grid.dx1[level] = slope_[level];
-                        	push_queue(next_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-
-							l_son_grid.x0[level] = l_start + offset ;
-                            l_son_grid.dx0[level] = slope_[level];
-                            l_son_grid.x1[level] = l_end - offset ;
-                            l_son_grid.dx1[level] = -slope_[level];
-                            push_queue(curr_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-						}
-						else
-						{
-                        	l_son_grid.x0[level] = l_start + offset ;
-                        	l_son_grid.dx0[level] = -slope_[level];
-                        	l_son_grid.x1[level] = l_end - offset ;
-                        	l_son_grid.dx1[level] = slope_[level];
-                        	push_queue(next_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-						}
-                    } /* end else (cut_tb) */
-                } // end if (can_cut) 
-            } // end if (performing a space cut) 
-        } // end while (queue_len_[curr_dep] > 0) 
-#if !USE_CILK_FOR
-        cilk_sync;
-#endif
-        assert(queue_len_[curr_dep_pointer] == 0);
-    } // end for (curr_dep < N_RANK+1) 
-}
-
-// modified space cuts. 
-template <int N_RANK> template <typename F>
-inline void heterogeneity<N_RANK>::heterogeneous_modified_space_cut_interior(
-				int t0, int t1, grid_info<N_RANK> const & grid, 
-				zoid_type * projection_zoid, F const & f)
-				//zoid_type * projection_zoid, F const & f, int * num_zoids)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -986,7 +802,7 @@ inline void heterogeneity<N_RANK>::heterogeneous_modified_space_cut_interior(
 					unsigned long index = projection_zoid->children [child_index] ;
 					zoid_type * child = &(m_zoids [index]) ;
 					child_index++ ; //looks like a race
-                    heterogeneous_modified_space_time_cut_interior(l_son->t0, 
+                    sawzoid_space_time_cut_interior(l_son->t0, 
 						l_son->t1, l_son->grid, child, f);
                 } // end cilk_for 
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
@@ -1000,12 +816,12 @@ inline void heterogeneity<N_RANK>::heterogeneous_modified_space_cut_interior(
 				child_index++ ;
                 if (queue_len_[curr_dep_pointer] == 0)
 				{
-                    heterogeneous_modified_space_time_cut_interior(l_father->t0,
+                    sawzoid_space_time_cut_interior(l_father->t0,
  							l_father->t1, l_father->grid, child, f);
 				}
                 else
 				{
-                    cilk_spawn heterogeneous_modified_space_time_cut_interior(
+                    cilk_spawn sawzoid_space_time_cut_interior(
 						l_father->t0, l_father->t1, l_father->grid, child, f) ;
 				}
 #endif
@@ -1152,642 +968,10 @@ inline void heterogeneity<N_RANK>::heterogeneous_modified_space_cut_interior(
     } // end for (curr_dep < N_RANK+1) 
 }
 
-template <int N_RANK> template <typename F>
-//#ifndef NDEBUG
-#if 0
-inline void heterogeneity<N_RANK>::homogeneous_modified_space_cut_boundary(
-	int t0, int t1,	grid_info<N_RANK> const & grid, 
-	zoid_type * projection_zoid, F const & f)
-	//zoid_type * projection_zoid, F const & f, int * num_zoids)
-#else
-inline void heterogeneity<N_RANK>::homogeneous_modified_space_cut_boundary(
-	int t0, int t1,	grid_info<N_RANK> const & grid, 
-	F const & f)
-	//F const & f, int * num_zoids)
-#endif
-{
-    queue_info *l_father;
-    queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
-    int queue_head_[2], queue_tail_[2], queue_len_[2];
-
-    for (int i = 0; i < 2; ++i) {
-        queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
-    }
-	
-//#ifndef NDEBUG
-#if 0
-	int child_index = 0 ;
-#endif
-	//assert (projection_zoid) ;
-    // set up the initial grid 
-    push_queue(0, N_RANK-1, t0, t1, grid);
-    for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
-        const int curr_dep_pointer = (curr_dep & 0x1);
-        while (queue_len_[curr_dep_pointer] > 0) {
-            top_queue(curr_dep_pointer, l_father);
-            if (l_father->level < 0) {
-                // spawn all the grids in circular_queue_[curr_dep][] 
-#if USE_CILK_FOR 
-                // use cilk_for to spawn all the sub-grid 
-// #pragma cilk_grainsize = 1
-				
-                cilk_for (int j = 0; j < queue_len_[curr_dep_pointer]; ++j) {
-                    int i = pmod((queue_head_[curr_dep_pointer]+j), ALGOR_QUEUE_SIZE);
-                    queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
-                    // assert all the sub-grid has done N_RANK spatial cuts 
-                    //assert(l_son->level == -1);
-//#ifndef NDEBUG
-#if 0
-					assert(child_index < projection_zoid->num_children) ;
-					unsigned long index = projection_zoid->children [child_index] ;
-					zoid_type * child = &(m_zoids [index]) ;
-					child_index++ ;
-                    homogeneous_modified_space_time_cut_boundary(l_son->t0, 
-						l_son->t1, l_son->grid, child, f, bf);
-#else
-                    homogeneous_modified_space_time_cut_boundary(l_son->t0, 
-						l_son->t1, l_son->grid, f, bf);
-#endif
-                } // end cilk_for 
-                queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
-                queue_len_[curr_dep_pointer] = 0;
-#else
-                // use cilk_spawn to spawn all the sub-grid 
-                pop_queue(curr_dep_pointer);
-//#ifndef NDEBUG
-#if 0
-				assert(child_index < projection_zoid->num_children) ;
-				unsigned long index = projection_zoid->children [child_index] ;
-				zoid_type * child = &(m_zoids [index]) ;
-				child_index++ ;
-                if (queue_len_[curr_dep_pointer] == 0) {
-                    homogeneous_modified_space_time_cut_boundary(l_father->t0,
-						l_father->t1, l_father->grid, child, f);
-                } else {
-                    cilk_spawn homogeneous_modified_space_time_cut_boundary(
-						l_father->t0, l_father->t1, l_father->grid, child, f);
-                }
-#else
-                if (queue_len_[curr_dep_pointer] == 0) {
-                    homogeneous_modified_space_time_cut_boundary(l_father->t0,
-						l_father->t1, l_father->grid, f);
-                } else {
-                    cilk_spawn homogeneous_modified_space_time_cut_boundary(
-						l_father->t0, l_father->t1, l_father->grid, f);
-                }
-#endif
-#endif
-            } else {
-                // performing a space cut on dimension 'level' 
-                pop_queue(curr_dep_pointer);
-                grid_info<N_RANK> l_father_grid = l_father->grid;
-                const int t0 = l_father->t0, t1 = l_father->t1;
-                const int lt = (t1 - t0);
-                const int level = l_father->level;
-                const int thres = slope_[level] * lt;
-                const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
-                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
-                const bool cut_lb = (lb < tb);
-                const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
-				const bool can_cut = CAN_CUT_B ;
-                //if (num_zoids [level] == 0) {
-                if (! can_cut) {
-                    // if we can't cut into this dimension, just directly push
-                    // it into the circular queue
-                    //
-                    push_queue(curr_dep_pointer, level-1, t0, t1, 
-							l_father_grid) ;
-                } else  {
-                    /* can_cut */
-                    if (cut_lb) {
-                        grid_info<N_RANK> l_son_grid = l_father_grid;
-                        const int l_start = (l_father_grid.x0[level]);
-                        const int l_end = (l_father_grid.x1[level]);
-
-                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
-                        l_son_grid.x0[level] = l_start ;
-                        l_son_grid.dx0[level] = l_father_grid.dx0[level] ;
-                        l_son_grid.x1[level] = l_start ;
-                        l_son_grid.dx1[level] = slope_[level] ;
-                        push_queue(next_dep_pointer, level-1, t0, t1, 
-											l_son_grid) ;
-
-                        l_son_grid.x0[level] = l_end ;
-                        l_son_grid.dx0[level] = -slope_[level];
-                        l_son_grid.x1[level] = l_end ;
-                        l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
-                        push_queue(next_dep_pointer, level-1, t0, t1, 
-											l_son_grid) ;
-
-						const int cut_more = ((lb - (thres << 2)) >= 0) ;
-						if (cut_more)
-						//if (num_zoids [level] == 5)
-						{
-							const int offset = (thres << 1) ;
-							l_son_grid.x0[level] = l_start ;
-	                        l_son_grid.dx0[level] = slope_[level];
-    	                    l_son_grid.x1[level] = l_start + offset;
-        	                l_son_grid.dx1[level] = -slope_[level] ;
-            	            push_queue(curr_dep_pointer, level-1, t0, 
-									t1, l_son_grid) ;
-
-							
-							l_son_grid.x0[level] = l_end - offset ;
-	                        l_son_grid.dx0[level] = slope_[level];
-    	                    l_son_grid.x1[level] = l_end ;
-        	                l_son_grid.dx1[level] = -slope_[level] ;
-            	            push_queue(curr_dep_pointer, level-1, t0, 
-									t1, l_son_grid) ;
-
-							l_son_grid.x0[level] = l_start + offset;
-	                        l_son_grid.dx0[level] = -slope_[level];
-    	                    l_son_grid.x1[level] = l_end - offset ;
-        	                l_son_grid.dx1[level] = slope_[level] ;
-            	            push_queue(next_dep_pointer, level-1, t0, 
-									t1, l_son_grid);
-						}
-						else
-						{
-							l_son_grid.x0[level] = l_start ;
-	                        l_son_grid.dx0[level] = slope_[level];
-    	                    l_son_grid.x1[level] = l_end;
-        	                l_son_grid.dx1[level] = -slope_[level] ;
-            	            push_queue(curr_dep_pointer, level-1, t0, 
-									t1, l_son_grid);
-						}
-                    } /* end if (cut_lb) */
-                    else { /* cut_tb */
-                        if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
-                            grid_info<N_RANK> l_son_grid = l_father_grid;
-                            const int l_start = (l_father_grid.x0[level]);
-                            const int l_end = (l_father_grid.x1[level]);
-                            const int next_dep_pointer = (curr_dep + 1) & 0x1;
-							const int cut_more = ((lb - (thres << 2)) >= 0) ;
-							if (cut_more)
-							//if (num_zoids [level] == 5)
-							{
-								const int offset = (thres << 1) ;
-                            	l_son_grid.x0[level] = l_start ;
-                            	l_son_grid.dx0[level] = slope_[level];
-                            	l_son_grid.x1[level] = l_start + offset ;
-                            	l_son_grid.dx1[level] = -slope_[level];
-                            	push_queue(curr_dep_pointer, level-1, 
-									t0, t1, l_son_grid) ;
-
-                            	l_son_grid.x0[level] = l_end - offset ;
-                            	l_son_grid.dx0[level] = slope_[level];
-                            	l_son_grid.x1[level] = l_end ;
-                            	l_son_grid.dx1[level] = -slope_[level];
-                            	push_queue(curr_dep_pointer, level-1, 
-									t0, t1, l_son_grid) ;
-
-                            	l_son_grid.x0[level] = l_start + offset ;
-                            	l_son_grid.dx0[level] = -slope_[level];
-                            	l_son_grid.x1[level] = l_end - offset ;
-                            	l_son_grid.dx1[level] = slope_[level];
-                            	push_queue(next_dep_pointer, level-1, 
-									t0, t1, l_son_grid);
-							}
-							else
-							{
-                            	l_son_grid.x0[level] = l_start ;
-                            	l_son_grid.dx0[level] = slope_[level];
-                            	l_son_grid.x1[level] = l_end ;
-                            	l_son_grid.dx1[level] = -slope_[level];
-                            	push_queue(curr_dep_pointer, level-1, 
-									t0, t1, l_son_grid);
-							}
-                            l_son_grid.x0[level] = l_end ;
-                            l_son_grid.dx0[level] = -slope_[level];
-                            l_son_grid.x1[level] = l_end ;
-                            l_son_grid.dx1[level] = slope_[level];
-                            push_queue(next_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-						} else  {
-							/* cut_tb */
-							grid_info<N_RANK> l_son_grid = l_father_grid;
-							const int l_start = (l_father_grid.x0[level]);
-							const int l_end = (l_father_grid.x1[level]);
-							const int offset = (thres << 1) ;
-
-							l_son_grid.x0[level] = l_start;
-							l_son_grid.dx0[level] = l_father_grid.dx0[level];
-							l_son_grid.x1[level] = l_start + offset;
-							l_son_grid.dx1[level] = -slope_[level];
-							push_queue(curr_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-
-							l_son_grid.x0[level] = l_end - offset ;
-							l_son_grid.dx0[level] = slope_[level];
-							l_son_grid.x1[level] = l_end;
-							l_son_grid.dx1[level] = l_father_grid.dx1[level];
-							push_queue(curr_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-
-							const int next_dep_pointer = (curr_dep + 1) & 0x1;
-							const int cut_more = ((tb - (thres << 2)) >= 0) ;
-							if (cut_more)
-							//if (num_zoids [level] == 5)
-							{
-								l_son_grid.x0[level] = l_start + offset ;
-								l_son_grid.dx0[level] = -slope_[level];
-								l_son_grid.x1[level] = l_start + offset;
-								l_son_grid.dx1[level] = slope_[level];
-								push_queue(next_dep_pointer, level-1, 
-									t0, t1, l_son_grid) ;
-
-								l_son_grid.x0[level] = l_end - offset ;
-								l_son_grid.dx0[level] = -slope_[level];
-								l_son_grid.x1[level] = l_end - offset ;
-								l_son_grid.dx1[level] = slope_[level];
-								push_queue(next_dep_pointer, level-1, 
-									t0, t1, l_son_grid) ;
-
-								l_son_grid.x0[level] = l_start + offset ;
-								l_son_grid.dx0[level] = slope_[level];
-								l_son_grid.x1[level] = l_end - offset ;
-								l_son_grid.dx1[level] = -slope_[level];
-								push_queue(curr_dep_pointer, level-1, 
-									t0, t1, l_son_grid);
-							}
-							else
-							{
-								l_son_grid.x0[level] = l_start + offset ;
-								l_son_grid.dx0[level] = -slope_[level];
-								l_son_grid.x1[level] = l_end - offset ;
-								l_son_grid.dx1[level] = slope_[level];
-								push_queue(next_dep_pointer, level-1, 
-									t0, t1, l_son_grid);
-							}
-						}                   
-                    } /* end if (cut_tb) */
-                }// end if (can_cut) 
-            } // end if (performing a space cut) 
-        } // end while (queue_len_[curr_dep] > 0) 
-#if !USE_CILK_FOR
-        cilk_sync;
-#endif
-        assert(queue_len_[curr_dep_pointer] == 0);
-    } // end for (curr_dep < N_RANK+1) 
-}
-
-template <int N_RANK> template <typename F>
-//#ifndef NDEBUG
-#if 0
-inline void heterogeneity<N_RANK>::
-homogeneous_modified_space_time_cut_interior(int t0, 
-					int t1, grid_info<N_RANK> const & grid, 
-					zoid_type * projection_zoid, F const & f)
-#else
-inline void heterogeneity<N_RANK>::
-homogeneous_modified_space_time_cut_interior(int t0, 
-					int t1, grid_info<N_RANK> const & grid, F const & f)
-#endif
-{
-    const int lt = t1 - t0;
-    bool sim_can_cut = false;
-    grid_info<N_RANK> l_son_grid;
-	int num_subzoids [N_RANK] ;
-
-	//assert (projection_zoid) ;
-	//assert (projection_zoid->height == lt) ;
-    for (int i = N_RANK-1; i >= 0; --i) {
-        int lb, thres, tb;
-        lb = (grid.x1[i] - grid.x0[i]);
-        tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-
-//#ifndef NDEBUG
-#if 0
-		zoid_type * z = projection_zoid ;
-		grid_info <N_RANK> & grid2 = z->info ;
-		int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
-		int x1 = pmod(grid.x1 [i], phys_length_ [i]) ;
-
-		int x0_ = pmod(grid2.x0 [i], phys_length_ [i]) ;
-		int x1_ = pmod(grid2.x1 [i], phys_length_ [i]) ;
-
-		int x2 = pmod(grid.x0[i] + grid.dx0[i] * lt, phys_length_ [i]) ;
-		int x3 = pmod(grid.x1[i] + grid.dx1[i] * lt, phys_length_ [i]) ;
-
-		int x2_ = pmod(grid2.x0[i] + grid2.dx0[i] * lt, phys_length_ [i]) ;
-		int x3_ = pmod(grid2.x1[i] + grid2.dx1[i] * lt, phys_length_ [i]) ;
-
-		if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_)
-		{
-			cout << "zoid and proj zoid differ " << endl ;
-			cout << " x0 [" << i << "] " << grid.x0 [i] 
-			 << " x1 [" << i << "] " << grid.x1 [i] 
-			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
-			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-			<< " lt " << lt << endl ;
-			cout << "\nzoid " << z->id << " height " << z->height <<
-				" num children " << z->num_children <<
-				//" num children " << z->children.size() <<
-				" num_parents " << z->parents.size() << " geneity " ;
-			print_bits(&(z->geneity), sizeof(word_type) * 8);
-			int h = z->height ;
-			for (int i = N_RANK - 1 ; i >= 0 ; i--)
-			{
-				cout << " x0 [" << i << "] " << grid2.x0 [i]
-				 << " x1 [" << i << "] " << grid2.x1 [i]
-				<< " x2 [" << i << "] " << grid2.x0[i] + grid2.dx0[i] * h
-				<< " x3 [" << i << "] " << grid2.x1[i] + grid2.dx1[i] * h
-				<< " h " << h << endl ;
-			}
-			assert(0) ;
-		}
-#endif
-        bool cut_lb = (lb < tb);
-        thres = (slope_[i] * lt);
-        sim_can_cut = SIM_CAN_CUT_I ;
-		/*int short_side ;
-		//bool space_cut = false ;
-		if (lb < tb)
-		{
-			short_side = lb ;
-		}
-		else
-		{
-			short_side = tb ;
-		}
-		num_subzoids [i] = 0 ;
-		if (short_side >= (thres << 1) && short_side > dx_recursive_[i])
-		{
-			//space_cut = true ;
-			sim_can_cut = true ;
-			num_subzoids [i] = 3 ;
-			//if (short_side - (thres << 2) >= 0)
-			if (short_side >= (thres << 2))
-			{
-				num_subzoids [i]= 5 ;
-			}
-		}
-        //sim_can_cut |= space_cut ;*/
-    }
-    if (sim_can_cut) 
-	{
-        /* cut into space */
-//#ifndef NDEBUG
-#if 0
-        homogeneous_modified_space_cut_interior(t0, t1, grid, projection_zoid, 
-												f) ;
-												//f, num_subzoids) ;
-#else
-        //homogeneous_modified_space_cut_interior(t0, t1, grid, f, num_subzoids);
-        homogeneous_modified_space_cut_interior(t0, t1, grid, f) ;
-#endif
-    } 
-	else if (lt > dt_recursive_) 
-	{
-        /* cut into time */
-		//assert (projection_zoid->children [0]) ;
-		//assert (projection_zoid->children [1]) ;
-        assert(lt > dt_recursive_);
-        int halflt = lt / 2;
-        l_son_grid = grid;
-//#ifndef NDEBUG
-#if 0
-		unsigned long index = projection_zoid->children [0] ;
-        homogeneous_modified_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
-					&(m_zoids [index]), f);
-#else
-        homogeneous_modified_space_time_cut_interior(t0, t0+halflt, l_son_grid, f);
-#endif
-
-        for (int i = 0; i < N_RANK; ++i) {
-            l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
-            l_son_grid.dx0[i] = grid.dx0[i];
-            l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
-            l_son_grid.dx1[i] = grid.dx1[i];
-        }
-//#ifndef NDEBUG
-#if 0
-		index = projection_zoid->children [1] ;
-        homogeneous_modified_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
-					&(m_zoids [index]), f);
-#else
-        homogeneous_modified_space_time_cut_interior(t0+halflt, t1, l_son_grid, f);
-#endif
-    } 
-	else 
-	{
-        // base case
-		f(t0, t1, grid);
-	}
-}
-
-template <int N_RANK> template <typename F> 
-//#ifndef NDEBUG
-#if 0
-inline void heterogeneity<N_RANK>::
-homogeneous_modified_space_time_cut_boundary(int t0, 
-					int t1,	grid_info<N_RANK> const & grid, 
-					zoid_type * projection_zoid, F const & f)
-#else
-inline void heterogeneity<N_RANK>::
-homogeneous_modified_space_time_cut_boundary(
-	int t0, int t1,	grid_info<N_RANK> const & grid, F const & f)
-#endif
-{
-    const int lt = t1 - t0;
-    bool sim_can_cut = false, call_boundary = false;
-    grid_info<N_RANK> l_father_grid = grid, l_son_grid;
-    int l_dt_stop;
-	int num_subzoids [N_RANK] ;
-
-	//assert (projection_zoid) ;
-	//assert (projection_zoid->height == lt) ;
-    for (int i = N_RANK-1; i >= 0; --i) {
-        int lb, thres, tb;
-        bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
-        lb = (grid.x1[i] - grid.x0[i]);
-        tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-//#ifndef NDEBUG
-#if 0
-		zoid_type * z = projection_zoid ;
-		grid_info <N_RANK> & grid2 = z->info ;
-		int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
-		int x1 = pmod(grid.x1 [i], phys_length_ [i]) ;
-
-		int x0_ = pmod(grid2.x0 [i], phys_length_ [i]) ;
-		int x1_ = pmod(grid2.x1 [i], phys_length_ [i]) ;
-
-		int x2 = pmod(grid.x0[i] + grid.dx0[i] * lt, phys_length_ [i]) ;
-		int x3 = pmod(grid.x1[i] + grid.dx1[i] * lt, phys_length_ [i]) ;
-
-		int x2_ = pmod(grid2.x0[i] + grid2.dx0[i] * lt, phys_length_ [i]) ;
-		int x3_ = pmod(grid2.x1[i] + grid2.dx1[i] * lt, phys_length_ [i]) ;
-
-		if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_)
-		{
-			cout << "zoid and proj zoid differ " << endl ;
-			cout << " x0 [" << i << "] " << grid.x0 [i] 
-			 << " x1 [" << i << "] " << grid.x1 [i] 
-			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
-			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-			<< " lt " << lt << endl ;
-			cout << "\nzoid " << z->id << " height " << z->height <<
-				//" num children " << z->children.size() <<
-				" num children " << z->num_children <<
-				" num_parents " << z->parents.size() << " geneity " ;
-			print_bits(&(z->geneity), sizeof(word_type) * 8);
-			int h = z->height ;
-			for (int i = N_RANK - 1 ; i >= 0 ; i--)
-			{
-				cout << " x0 [" << i << "] " << grid2.x0 [i]
-				 << " x1 [" << i << "] " << grid2.x1 [i]
-				<< " x2 [" << i << "] " << grid2.x0[i] + grid2.dx0[i] * h
-				<< " x3 [" << i << "] " << grid2.x1[i] + grid2.dx1[i] * h
-				<< " h " << h << endl ;
-			}
-			assert(0) ;
-		}
-#endif
-        thres = slope_[i] * lt ;
-        bool cut_lb = (lb < tb);
-        sim_can_cut = SIM_CAN_CUT_B ;
-        call_boundary |= l_touch_boundary;
-		/*
-		int short_side ;
-		bool space_cut = false ;
-		if (lb < tb)
-		{
-			short_side = lb ;
-		}
-		else
-		{
-			short_side = tb ;
-		}
-		int limit ;
-		if (l_touch_boundary)
-		{
-			limit = dx_recursive_boundary_[i] ;
-		}
-		else
-		{
-			limit = dx_recursive_[i] ;
-		}
-		num_subzoids [i] = 0 ;
-		if (short_side >= (thres << 1) && short_side > limit)
-		{
-			space_cut = true ;
-			num_subzoids [i] = 3 ;
-			if (short_side - (thres << 2) >= 0)
-			{
-				num_subzoids [i] = 5 ;
-			}
-		}
-        sim_can_cut |= space_cut ;*/
-    }
-    if (call_boundary)
-	{
-        l_dt_stop = dt_recursive_boundary_;
-	}
-    else
-	{
-        l_dt_stop = dt_recursive_;
-	}
-    if (sim_can_cut) 
-	{
-		//cout << "space cut " << endl ;
-        //cut into space 
-//#ifndef NDEBUG
-#if 0
-        if (call_boundary) 
-		{
-            homogeneous_modified_space_cut_boundary(t0, t1, l_father_grid, 
-											projection_zoid, f) ;
-											//projection_zoid, f, num_subzoids);
-        }
-		else
-		{
-            homogeneous_modified_space_cut_interior(t0, t1, l_father_grid, 
-											projection_zoid, f) ;
-											//projection_zoid, f, num_subzoids);
-		}
-#else
-        if (call_boundary) 
-		{
-            homogeneous_modified_space_cut_boundary(t0, t1, l_father_grid, 
-													f) ;
-													//f, num_subzoids);
-        }
-		else
-		{
-            homogeneous_modified_space_cut_interior(t0, t1, l_father_grid, 
-													f) ;
-													//f, num_subzoids);
-		}
-#endif
-    } 
-	else if (lt > l_dt_stop)  //time cut
-	{
-		//cout << "time cut " << endl ;
-        // cut into time 
-		//assert (projection_zoid->children [0]) ;
-		//assert (projection_zoid->children [1]) ;
-		
-        int halflt = lt / 2;
-        l_son_grid = l_father_grid;
-
-//#ifndef NDEBUG
-#if 0
-		unsigned long index = projection_zoid->children [0] ;
-        if (call_boundary) {
-            homogeneous_modified_space_time_cut_boundary(t0, t0+halflt, 
-					l_son_grid, &(m_zoids [index]), f);
-        } else {
-            homogeneous_modified_space_time_cut_interior(t0, t0+halflt, 
-					l_son_grid, &(m_zoids [index]), f);
-        }
-#else
-        if (call_boundary) {
-            homogeneous_modified_space_time_cut_boundary(t0, t0+halflt, l_son_grid, f);
-        } else {
-            homogeneous_modified_space_time_cut_interior(t0, t0+halflt, l_son_grid, f);
-        }
-#endif
-
-        for (int i = 0; i < N_RANK; ++i) {
-            l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
-            l_son_grid.dx0[i] = l_father_grid.dx0[i];
-            l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
-            l_son_grid.dx1[i] = l_father_grid.dx1[i];
-        }
-//#ifndef NDEBUG
-#if 0
-		index = projection_zoid->children [1] ;
-        if (call_boundary) {
-            homogeneous_modified_space_time_cut_boundary(t0+halflt, t1, 
-					l_son_grid, &(m_zoids [index]), f);
-        } else {
-            homogeneous_modified_space_time_cut_interior(t0+halflt, t1, 
-					l_son_grid, &(m_zoids [index]), f);
-        }
-#else
-        if (call_boundary) {
-            homogeneous_modified_space_time_cut_boundary(t0+halflt, t1, l_son_grid, f);
-        } else {
-            homogeneous_modified_space_time_cut_interior(t0+halflt, t1, l_son_grid, f);
-        }
-#endif
-    } 
-	else
-	{
-		// base case
-		if (call_boundary) {
-            base_case_kernel_boundary(t0, t1, l_father_grid, f);
-        } else { 
-            f(t0, t1, l_father_grid);
-        }
-	}
-}
-
 template <int N_RANK> template <typename F, typename BF>
-inline void heterogeneity<N_RANK>::heterogeneous_modified_space_cut_boundary(
+inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
 	int t0, int t1,	grid_info<N_RANK> const & grid, 
 	zoid_type * projection_zoid, F const & f, BF const & bf)
-	//zoid_type * projection_zoid, F const & f, BF const & bf, int * num_zoids)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -1820,7 +1004,7 @@ inline void heterogeneity<N_RANK>::heterogeneous_modified_space_cut_boundary(
 					unsigned long index = projection_zoid->children [child_index] ;
 					zoid_type * child = &(m_zoids [index]) ;
 					child_index++ ;
-                    heterogeneous_modified_space_time_cut_boundary(l_son->t0, 
+                    sawzoid_space_time_cut_boundary(l_son->t0, 
 						l_son->t1, l_son->grid, child, f, bf);
                 } // end cilk_for 
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
@@ -1833,10 +1017,10 @@ inline void heterogeneity<N_RANK>::heterogeneous_modified_space_cut_boundary(
 				zoid_type * child = &(m_zoids [index]) ;
 				child_index++ ;
                 if (queue_len_[curr_dep_pointer] == 0) {
-                    heterogeneous_modified_space_time_cut_boundary(l_father->t0,
+                    sawzoid_space_time_cut_boundary(l_father->t0,
 						l_father->t1, l_father->grid, child, f, bf);
                 } else {
-                    cilk_spawn heterogeneous_modified_space_time_cut_boundary(
+                    cilk_spawn sawzoid_space_time_cut_boundary(
 						l_father->t0, l_father->t1, l_father->grid, child, f, bf);
                 }
 #endif
@@ -2035,8 +1219,8 @@ inline void heterogeneity<N_RANK>::heterogeneous_modified_space_cut_boundary(
 }
 
 template <int N_RANK> template <typename F>
-inline void heterogeneity<N_RANK>::
-heterogeneous_modified_space_time_cut_interior(int t0,
+inline void auto_tune<N_RANK>::
+sawzoid_space_time_cut_interior(int t0,
 				int t1, grid_info<N_RANK> const & grid, 
 				zoid_type * projection_zoid, F const & f)
 {
@@ -2047,25 +1231,13 @@ heterogeneous_modified_space_time_cut_interior(int t0,
 
 	assert (projection_zoid) ;
 	assert (projection_zoid->height == lt) ;
-
-#ifdef GENEITY_TEST
-	if (__builtin_popcount(projection_zoid->geneity) == 1)
+	if (projection_zoid->decision == 0)
 	{
-		//zoid is homogeneous
-		int index = __builtin_ffs(projection_zoid->geneity) ;
-		//cout << "zoid is homogeneous" << endl ;
-		//print_bits(&(projection_zoid->geneity), sizeof(word_type) * 8);
-//#ifndef NDEBUG
-#if 0
-		return homogeneous_modified_space_time_cut_interior(t0, t1,	grid, 
-								projection_zoid, (*m_clone_array) [index]) ; 
-#else
-		return homogeneous_modified_space_time_cut_interior(t0, t1,	grid, 
-								(*m_clone_array) [index]) ; 
-#endif
+		//loop
+		f(t0, t1, grid);
+		return ;
 	}
-#endif
-
+	
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
         lb = (grid.x1[i] - grid.x0[i]);
@@ -2114,46 +1286,23 @@ heterogeneous_modified_space_time_cut_interior(int t0,
         bool cut_lb = (lb < tb);
         thres = (slope_[i] * lt);
         sim_can_cut = SIM_CAN_CUT_I ;
-		/*int short_side ;
-		bool space_cut = false ;
-		if (lb < tb)
-		{
-			short_side = lb ;
-		}
-		else
-		{
-			short_side = tb ;
-		}
-		num_subzoids [i] = 0 ;
-		if (short_side >= (thres << 1) && short_side > dx_recursive_[i])
-		{
-			space_cut = true ;
-			num_subzoids [i] = 3 ;
-			if (short_side - (thres << 2) >= 0)
-			{
-				num_subzoids [i]= 5 ;
-			}
-		}
-        sim_can_cut |= space_cut ;*/
     }
     if (sim_can_cut) 
 	{
         /* cut into space */
-        heterogeneous_modified_space_cut_interior(t0, t1, grid, projection_zoid,
+        sawzoid_space_cut_interior(t0, t1, grid, projection_zoid,
 												f) ;
-												//f, num_subzoids) ;
     } 
 	else if (lt > dt_recursive_) 
 	{
         /* cut into time */
-		//assert (projection_zoid->children.size() == 2) ;
 		assert (projection_zoid->children [0]) ;
 		assert (projection_zoid->children [1]) ;
         assert(lt > dt_recursive_);
         int halflt = lt / 2;
         l_son_grid = grid;
 		unsigned long index = projection_zoid->children [0] ;
-        heterogeneous_modified_space_time_cut_interior(t0, t0+halflt, 
+        sawzoid_space_time_cut_interior(t0, t0+halflt, 
 									l_son_grid, &(m_zoids [index]), f);
 
         for (int i = 0; i < N_RANK; ++i) {
@@ -2163,33 +1312,14 @@ heterogeneous_modified_space_time_cut_interior(int t0,
             l_son_grid.dx1[i] = grid.dx1[i];
         }
 		index = projection_zoid->children [1] ;
-        heterogeneous_modified_space_time_cut_interior(t0+halflt, t1, 
+        sawzoid_space_time_cut_interior(t0+halflt, t1, 
 								l_son_grid, &(m_zoids [index]), f);
     }
-	else 
-	{
-#ifdef GENEITY_TEST
-        // base case
-		f(t0, t1, grid);
-#else
-		if (__builtin_popcount(projection_zoid->geneity) == 1)
-		{
-			//zoid is homogeneous
-			int index = __builtin_ffs(projection_zoid->geneity) ;
-			//cout << "zoid is homogeneous" << endl ;
-			(*m_clone_array) [index] (t0, t1, grid);
-		}
-		else
-		{
-			f(t0, t1, grid);
-		}
-#endif
-	}
 }
 
 template <int N_RANK> template <typename F, typename BF>
-inline void heterogeneity<N_RANK>::
-heterogeneous_modified_space_time_cut_boundary(int t0,
+inline void auto_tune<N_RANK>::
+sawzoid_space_time_cut_boundary(int t0,
 					int t1,	grid_info<N_RANK> const & grid, 
 					zoid_type * projection_zoid, F const & f, BF const & bf)
 {
@@ -2201,24 +1331,6 @@ heterogeneous_modified_space_time_cut_boundary(int t0,
 
 	assert (projection_zoid) ;
 	assert (projection_zoid->height == lt) ;
-
-#ifdef GENEITY_TEST
-	if (__builtin_popcount(projection_zoid->geneity) == 1)
-	{
-		//zoid is homogeneous
-		int index = __builtin_ffs(projection_zoid->geneity) ;
-		//cout << "zoid is homogeneous" << endl ;
-		//print_bits(&(projection_zoid->geneity), sizeof(word_type) * 8);
-//#ifndef NDEBUG
-#if 0
-		return homogeneous_modified_space_time_cut_boundary(t0, t1,	grid, 
-								projection_zoid, (*m_clone_array) [index]) ; 
-#else
-		return homogeneous_modified_space_time_cut_boundary(t0, t1,	grid, 
-								(*m_clone_array) [index]) ; 
-#endif
-	}
-#endif
 
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
@@ -2269,37 +1381,19 @@ heterogeneous_modified_space_time_cut_boundary(int t0,
 		bool cut_lb = (lb < tb);
 		sim_can_cut = SIM_CAN_CUT_B ;
         call_boundary |= l_touch_boundary;
-		/*int short_side ;
-		bool space_cut = false ;
-		if (lb < tb)
-		{
-			short_side = lb ;
-		}
-		else
-		{
-			short_side = tb ;
-		}
-		int limit ;
-		if (l_touch_boundary)
-		{
-			limit = dx_recursive_boundary_[i] ;
-		}
-		else
-		{
-			limit = dx_recursive_[i] ;
-		}
-		num_subzoids [i] = 0 ;
-		if (short_side >= (thres << 1) && short_side > limit)
-		{
-			space_cut = true ;
-			num_subzoids [i] = 3 ;
-			if (short_side - (thres << 2) >= 0)
-			{
-				num_subzoids [i] = 5 ;
-			}
-		}
-        sim_can_cut |= space_cut ;*/
     }
+	
+	if (projection_zoid->decision == 0)
+	{
+		//loop
+		if (call_boundary) {
+            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+        } else { 
+            f(t0, t1, l_father_grid);
+        }
+		return ;
+	}
+
     if (call_boundary)
 	{
         l_dt_stop = dt_recursive_boundary_;
@@ -2314,22 +1408,19 @@ heterogeneous_modified_space_time_cut_boundary(int t0,
         //cut into space 
         if (call_boundary) 
 		{
-            heterogeneous_modified_space_cut_boundary(t0, t1, l_father_grid, 
+            sawzoid_space_cut_boundary(t0, t1, l_father_grid, 
 										projection_zoid, f, bf) ;
-										//projection_zoid, f, bf, num_subzoids);
         }
 		else
 		{
-            heterogeneous_modified_space_cut_interior(t0, t1, l_father_grid, 
+            sawzoid_space_cut_interior(t0, t1, l_father_grid, 
 										projection_zoid, f) ;
-										//projection_zoid, f, num_subzoids);
 		}
     } 
 	else if (lt > l_dt_stop)  //time cut
 	{
 		//cout << "time cut " << endl ;
         // cut into time 
-		//assert (projection_zoid->children.size() == 2) ;
 		assert (projection_zoid->children [0]) ;
 		assert (projection_zoid->children [1]) ;
 		
@@ -2337,10 +1428,10 @@ heterogeneous_modified_space_time_cut_boundary(int t0,
         l_son_grid = l_father_grid;
 		unsigned long index = projection_zoid->children [0] ;
         if (call_boundary) {
-            heterogeneous_modified_space_time_cut_boundary(t0, t0+halflt, 
+            sawzoid_space_time_cut_boundary(t0, t0+halflt, 
 								l_son_grid, &(m_zoids [index]), f, bf);
         } else {
-            heterogeneous_modified_space_time_cut_interior(t0, t0+halflt, 
+            sawzoid_space_time_cut_interior(t0, t0+halflt, 
 								l_son_grid, &(m_zoids [index]), f);
         }
 
@@ -2352,51 +1443,19 @@ heterogeneous_modified_space_time_cut_boundary(int t0,
         }
 		index = projection_zoid->children [1] ;
         if (call_boundary) {
-            heterogeneous_modified_space_time_cut_boundary(t0+halflt, t1, 
+            sawzoid_space_time_cut_boundary(t0+halflt, t1, 
 								l_son_grid, &(m_zoids [index]), f, bf);
         } else {
-            heterogeneous_modified_space_time_cut_interior(t0+halflt, t1, 
+            sawzoid_space_time_cut_interior(t0+halflt, t1, 
 								l_son_grid, &(m_zoids [index]), f);
         }
     } 
-	else
-	{
-#ifdef GENEITY_TEST
-		// base case
-		if (call_boundary) {
-            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-        } else { 
-            f(t0, t1, l_father_grid);
-        }
-#else
-		if (__builtin_popcount(projection_zoid->geneity) == 1)
-		{
-			//zoid is homogeneous
-			int index = __builtin_ffs(projection_zoid->geneity) ;
-			//cout << "zoid is homogeneous" << endl ;
-			if (call_boundary) {
-				base_case_kernel_boundary(t0, t1, l_father_grid, 
-										(*m_clone_array) [index]);
-			} else { 
-				(*m_clone_array) [index] (t0, t1, l_father_grid);
-			}
-		}
-		else
-		{
-			if (call_boundary) {
-				base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-			} else { 
-				f(t0, t1, l_father_grid);
-			}
-		}
-#endif
-	}
 }
 //The following code is not needed for now.
 
 /* This is the version for boundary region cut! */
 //template <int N_RANK> template <typename F, typename BF>
-//inline void heterogeneity<N_RANK>::abnormal_space_time_cut_boundary(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
+//inline void auto_tune<N_RANK>::abnormal_space_time_cut_boundary(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
 //{
 //    const int lt = t1 - t0;
 //    bool sim_can_cut = false, call_boundary = false;
@@ -2494,7 +1553,7 @@ heterogeneous_modified_space_time_cut_boundary(int t0,
 //}
 
 template <int N_RANK> template <typename F>
-inline void heterogeneity<N_RANK>::symbolic_abnormal_space_time_cut_boundary(
+inline void auto_tune<N_RANK>::symbolic_abnormal_space_time_cut_boundary(
 		int t0, int t1,	grid_info<N_RANK> const & grid, 
 		unsigned long parent_index, int child_index, F const & f)
 {
@@ -2645,7 +1704,7 @@ inline void heterogeneity<N_RANK>::symbolic_abnormal_space_time_cut_boundary(
 
 /* This is the version for interior region cut! */
 //template <int N_RANK> template <typename F>
-//inline void heterogeneity<N_RANK>::abnormal_space_time_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
+//inline void auto_tune<N_RANK>::abnormal_space_time_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
 //{
 //    const int lt = t1 - t0;
 //    bool sim_can_cut = false;
@@ -2710,7 +1769,7 @@ inline void heterogeneity<N_RANK>::symbolic_abnormal_space_time_cut_boundary(
 //}
 
 template <int N_RANK> template <typename F>
-inline void heterogeneity<N_RANK>::symbolic_abnormal_space_time_cut_interior(
+inline void auto_tune<N_RANK>::symbolic_abnormal_space_time_cut_interior(
 		int t0, int t1, grid_info<N_RANK> const & grid, 
 		unsigned long parent_index, int child_index, F const & f)
 {
@@ -2818,7 +1877,7 @@ inline void heterogeneity<N_RANK>::symbolic_abnormal_space_time_cut_interior(
 }
 
 //template <int N_RANK> template <typename F, typename BF>
-//inline void heterogeneity<N_RANK>::abnormal_space_cut_boundary(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
+//inline void auto_tune<N_RANK>::abnormal_space_cut_boundary(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
 //{
 //    queue_info *l_father;
 //    queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -3028,7 +2087,7 @@ inline void heterogeneity<N_RANK>::symbolic_abnormal_space_time_cut_interior(
 //}
 
 template <int N_RANK> template <typename F>
-inline void heterogeneity<N_RANK>::symbolic_abnormal_space_cut_boundary(
+inline void auto_tune<N_RANK>::symbolic_abnormal_space_cut_boundary(
 		int t0, int t1, grid_info<N_RANK> const & grid, 
 		unsigned long parent_index, F const & f)
 {
@@ -3241,7 +2300,7 @@ inline void heterogeneity<N_RANK>::symbolic_abnormal_space_cut_boundary(
 }
 
 //template <int N_RANK> template <typename F>
-//inline void heterogeneity<N_RANK>::abnormal_space_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
+//inline void auto_tune<N_RANK>::abnormal_space_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
 //{
 //    queue_info *l_father;
 //    queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -3455,7 +2514,7 @@ inline void heterogeneity<N_RANK>::symbolic_abnormal_space_cut_boundary(
 //}
 
 template <int N_RANK> template <typename F>
-inline void heterogeneity<N_RANK>::symbolic_abnormal_space_cut_interior(
+inline void auto_tune<N_RANK>::symbolic_abnormal_space_cut_interior(
 				int t0, int t1, grid_info<N_RANK> const & grid, 
 				unsigned long parent_index, F const & f)
 {

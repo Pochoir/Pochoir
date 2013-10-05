@@ -65,6 +65,7 @@ class zoid
 		decision = 0 ; //0 for loop
 		children = 0 ;
 		num_children = 0 ;
+		cost = 0 ;
 #ifndef NDEBUG
 		id = ULONG_MAX ;
 #endif
@@ -77,6 +78,7 @@ class zoid
 		{
 			delete [] children ;
 			decision = z.decision ;
+			cost = z.cost ;
 			num_children = z.num_children ;
 			children = 0 ;
 			height = z.height ;
@@ -103,6 +105,7 @@ class zoid
 	zoid(const zoid & z)
 	{
 		decision = z.decision ;
+		cost = z.cost ;
 		num_children = z.num_children ;
 		//cout << "zoid : copy const for zoid " << z.id << " # children" << 
 		//		num_children << endl ;
@@ -139,6 +142,7 @@ class zoid
 		//cout << "zoid : destructor for zoid " << id << endl ;
 		num_children = 0 ;
 		decision = 0 ; // 0 for looping
+		cost = 0 ;
 		delete [] children ;
 		children = 0 ;
 	}
@@ -148,17 +152,17 @@ class zoid
 	int height ;
 	unsigned long * children ;  
 	int num_children ;
+	double cost ;
 #ifndef NDEBUG
 	grid_info <N_RANK> info ;
 	unsigned long id ; //id of the zoid.
 	vector<unsigned long> parents ;
-	double cost ;
 #endif
 } ;
 
 
 template <int N_RANK>
-class auto_tuning
+class auto_tune
 {
 private:
 	typedef zoid <N_RANK> zoid_type ;
@@ -208,7 +212,7 @@ private:
 	}
 
 	template <typename F>
-	inline void build_heterogeneity_dag_trap(int t0, int t1, 
+	inline void build_auto_tune_dag_trap(int t0, int t1, 
 						grid_info<N_RANK> const & grid, F const & f, int index)
 	{
 		assert (m_head [index] == ULONG_MAX) ;
@@ -228,7 +232,7 @@ private:
 	} 
 
 	template <typename F>
-	inline void build_heterogeneity_dag_sawzoid(int t0, int t1, 
+	inline void build_auto_tune_dag_sawzoid(int t0, int t1, 
 						grid_info<N_RANK> const & grid, F const & f, int index)
 	{
 		assert (m_head [index] == ULONG_MAX) ;
@@ -244,7 +248,7 @@ private:
 		assert (m_num_vertices == m_zoids.size()) ;
 		m_head [index] = m_num_vertices ;
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
-		symbolic_modified_space_time_cut_boundary(t0, t1, grid, 
+		symbolic_sawzoid_space_time_cut_boundary(t0, t1, grid, 
 										m_num_vertices - 1, 0, f) ;
 	}
 
@@ -341,7 +345,7 @@ private:
 	
 	}*/
 
-	inline void destroy_heterogeneity_dag()
+	inline void destroy_auto_tune_dag()
 	{
 		//delete m_head [0] ;
 		//delete m_head [1] ;
@@ -681,23 +685,26 @@ private:
 		grid_info<N_RANK> const & grid, unsigned long, F const & f) ;
 
 	template <typename F>
-	inline void symbolic_modified_space_time_cut_boundary(int t0, int t1,  
+	inline void symbolic_sawzoid_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, unsigned long,
-		int child_index, F const & f) ;
+		int child_index, double &, double &, F const & f) ;
 
 	template <typename F>
-	inline void symbolic_modified_space_time_cut_interior(int t0, int t1, 
+	inline void symbolic_sawzoid_space_time_cut_interior(int t0, int t1, 
 		grid_info<N_RANK> const & grid, unsigned long,
-		int child_index, F const & f) ;
+		int child_index, double &, double &, F const & f) ;
 
 	template <typename F>
-	inline void symbolic_modified_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *) ;
+	inline void symbolic_sawzoid_space_cut_boundary(int t0, int t1,
+		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *,
+		double &, double &) ;
 
 	template <typename F>
-	inline void symbolic_modified_space_cut_interior(int t0, int t1,
-		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *) ;
+	inline void symbolic_sawzoid_space_cut_interior(int t0, int t1,
+		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *,
+		double &, double &) ;
 
+#if 0
 	template <typename F>
 	inline void symbolic_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, unsigned long,
@@ -715,28 +722,28 @@ private:
 	template <typename F>
 	inline void symbolic_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, unsigned long, F const & f) ;
+#endif
 
 	template <typename F, typename BF>
-	inline void heterogeneous_modified_space_time_cut_boundary(int t0, int t1,  
+	inline void auto_tune_sawzoid_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f, BF const & bf) ;
 
 	template <typename F>
-	inline void heterogeneous_modified_space_time_cut_interior(int t0, int t1, 
+	inline void auto_tune_sawzoid_space_time_cut_interior(int t0, int t1, 
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, F const & f) ;
 
 	template <typename F, typename BF>
-	inline void heterogeneous_modified_space_cut_boundary(int t0, int t1,
+	inline void auto_tune_sawzoid_space_cut_boundary(int t0, int t1,
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f, BF const & bf) ;
-		//F const & f, BF const & bf, int *) ;
 
 	template <typename F>
-	inline void heterogeneous_modified_space_cut_interior(int t0, int t1,
+	inline void auto_tune_sawzoid_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f) ;
-		//F const & f, int *) ;
 
+#if 0
 	template <typename F, typename BF>
 	inline void heterogeneous_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
@@ -754,84 +761,6 @@ private:
 	template <typename F>
 	inline void heterogeneous_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, F const & f) ;
-
-//#ifndef NDEBUG
-#if 0
-	template <typename F>
-	inline void homogeneous_modified_space_time_cut_boundary(int t0, int t1,  
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
-		F const & f) ;
-
-	template <typename F>
-	inline void homogeneous_modified_space_time_cut_interior(int t0, int t1, 
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, F const & f) ;
-
-	template <typename F>
-	inline void homogeneous_modified_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
-		F const & f) ;
-		//F const & f, int *) ;
-
-	template <typename F>
-	inline void homogeneous_modified_space_cut_interior(int t0, int t1,
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
-		F const & f) ;
-		//F const & f, int *) ;
-#else
-	template <typename F>
-	inline void homogeneous_modified_space_time_cut_boundary(int t0, int t1,  
-		grid_info<N_RANK> const & grid, F const & f) ;
-
-	template <typename F>
-	inline void homogeneous_modified_space_time_cut_interior(int t0, int t1, 
-		grid_info<N_RANK> const & grid, F const & f) ;
-
-	template <typename F>
-	inline void homogeneous_modified_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const & grid, F const & f) ;
-		//grid_info<N_RANK> const & grid, F const & f, int *) ;
-
-	template <typename F>
-	inline void homogeneous_modified_space_cut_interior(int t0, int t1,
-		grid_info<N_RANK> const & grid, F const & f) ;
-		//grid_info<N_RANK> const & grid, F const & f, int *) ;
-#endif
-
-//#ifndef NDEBUG
-#if 0
-	template <typename F>
-	inline void homogeneous_space_time_cut_boundary(int t0, int t1,  
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
-		F const & f) ;
-
-	template <typename F>
-	inline void homogeneous_space_time_cut_interior(int t0, int t1, 
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, F const & f) ;
-
-	template <typename F>
-	inline void homogeneous_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
-		F const & f) ;
-
-	template <typename F>
-	inline void homogeneous_space_cut_interior(int t0, int t1,
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, F const & f) ;
-#else
-	template <typename F>
-	inline void homogeneous_space_time_cut_boundary(int t0, int t1,  
-		grid_info<N_RANK> const & grid, F const & f) ;
-
-	template <typename F>
-	inline void homogeneous_space_time_cut_interior(int t0, int t1, 
-		grid_info<N_RANK> const & grid, F const & f) ;
-
-	template <typename F>
-	inline void homogeneous_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const & grid, F const & f) ;
-
-	template <typename F>
-	inline void homogeneous_space_cut_interior(int t0, int t1,
-		grid_info<N_RANK> const & grid, F const & f) ;
 #endif
 
 	vector<zoid_type> m_zoids ; //the array of all nodes in the DAG
@@ -861,7 +790,7 @@ private:
 
 	public :
 
-	heterogeneity(Algorithm<N_RANK> & alg, grid_info<N_RANK> const & grid,
+	auto_tune(Algorithm<N_RANK> & alg, grid_info<N_RANK> const & grid,
 				  bool power_of_two):m_algo(alg)
 	{
 		m_head.reserve(2) ;
@@ -892,10 +821,10 @@ private:
 	}
 
 
-	~heterogeneity()
+	~auto_tune()
 	{
 		//delete all zoids and clear the projections
-		destroy_heterogeneity_dag() ;
+		destroy_auto_tune_dag() ;
 	}
 
 	template <typename F, typename BF, typename P>
@@ -928,12 +857,12 @@ private:
 		}
 		m_head.push_back (ULONG_MAX) ;
 		gettimeofday(&start, 0);
-		build_heterogeneity_dag_sawzoid(t0, t0 + h1, grid, p, 0) ;
+		build_auto_tune_dag_sawzoid(t0, t0 + h1, grid, p, 0) ;
 		int offset = t0 + T / h1 * h1 ;
 		int h2 = t1 - offset ;
 		int index = 1 ;
-		//while (h2 > 1)
-		while (h2 > m_algo.dt_recursive_)
+		while (h2 > 1)
+		//while (h2 > m_algo.dt_recursive_)
 		{
 			//find index of most significant bit that is set
 			index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
@@ -942,7 +871,7 @@ private:
 			cout <<	" offset " << offset << " offset + h " <<
 				offset + h << " h " << h << endl ;
 			m_head.push_back (ULONG_MAX) ;
-			build_heterogeneity_dag_sawzoid(offset, offset + h, grid,
+			build_auto_tune_dag_sawzoid(offset, offset + h, grid,
 											p, index) ;
 			offset += h ;
 			h2 = t1 - offset ;
@@ -957,7 +886,7 @@ private:
 				<< "ms" << std::endl;
 		clear_projections() ;
 #ifdef GENEITY_TEST
-		compress_dag () ;
+		//compress_dag () ;
 		cout << "# vertices after compression" << m_num_vertices << endl ;
 		cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
 #endif
@@ -967,7 +896,7 @@ private:
 			/*cout << "t0 " << t0 << " t1 " << t1 << 
 				" h1 " << h1 << " t0 + h1 " <<
 				t0 + h1 << endl ;*/
-			heterogeneous_modified_space_time_cut_boundary(t0, t0 + h1, grid, 
+			auto_tune_sawzoid_space_time_cut_boundary(t0, t0 + h1, grid, 
 				&(m_zoids [m_head [0]]), f, bf) ;
 			t0 += h1 ;
 		}
@@ -975,8 +904,8 @@ private:
 		h2 = t1 - t0 ;
 		index = 1 ;
 		//time cuts happen only if height > dt_recursive_
-		while (h2 > m_algo.dt_recursive_)
-		//while (h2 > 1)
+		//while (h2 > m_algo.dt_recursive_)
+		while (h2 > 1)
 		{
 			//find index of most significant bit that is set
 			index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
@@ -984,13 +913,13 @@ private:
 			cout << "t0 " << t0 << " t1 " << t1 << 
 				" h " << h << " t0 + h " <<
 				t0 + h << endl ;
-			heterogeneous_modified_space_time_cut_boundary(t0, t0 + h, grid, 
+			auto_tune_sawzoid_space_time_cut_boundary(t0, t0 + h, grid, 
 				&(m_zoids [m_head [index]]), f, bf) ;
 			t0 += h ;
 			h2 = t1 - t0 ;
 			index++ ;
 		}
-		while (h2 > 1)
+		/*while (h2 > 1)
 		{
 			//find index of most significant bit that is set
 			index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
@@ -1015,7 +944,7 @@ private:
 				 " t0 + h " << t0 + h2 << endl ;
 			//base_case_kernel_boundary(t0, t0 + h2, grid, bf);
 			m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h2, grid, f, bf) ;
-		}
+		}*/
 	}
 
 	template <typename F, typename BF, typename P>
@@ -1052,14 +981,14 @@ private:
             	grid2.dx1[0] = slope ;
 				cout << "Trap  x0 " << dx << " x1 " << W - dx << " dx0 " <<
 					-slope << " dx1 " << slope << endl ;
-				build_heterogeneity_dag_trap(t0, t1, grid2, p, 0) ;
+				build_auto_tune_dag_trap(t0, t1, grid2, p, 0) ;
 				cout << "# triangles " << m_num_triangles <<
 					" # of trapezoids " << m_num_trapezoids <<
 					" total " << m_num_triangles + m_num_trapezoids <<
 					endl ;
 			}
 #else
-			build_heterogeneity_dag_trap(t0, t1, grid, p, 0) ;
+			build_auto_tune_dag_trap(t0, t1, grid, p, 0) ;
 #endif
 			gettimeofday(&end, 0);
 			dag_time = tdiff(&end, &start) ;
@@ -1103,7 +1032,7 @@ private:
 			struct timeval start, end;
 			gettimeofday(&start, 0);
 			m_head.push_back (ULONG_MAX) ;
-			build_heterogeneity_dag_trap(t0, t0 + h1, grid, p, 0) ;
+			build_auto_tune_dag_trap(t0, t0 + h1, grid, p, 0) ;
 			gettimeofday(&end, 0);
 			dag_time = tdiff(&end, &start) ;
 			cout << " t0 + T / h1 * h1  " << t0 + T / h1 * h1 << endl ;
@@ -1111,7 +1040,7 @@ private:
 			{
 				gettimeofday(&start, 0);
 				m_head.push_back (ULONG_MAX) ;
-				build_heterogeneity_dag_trap(t0 + T / h1 * h1, t1, grid, p, 1) ;
+				build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid, p, 1) ;
 				gettimeofday(&end, 0);
 				dag_time += tdiff(&end, &start) ;
 			}
@@ -1139,7 +1068,7 @@ private:
 			{
 				cout << "t0 " << t0 << endl ;
 				/*gettimeofday(&start, 0);
-				build_heterogeneity_dag_trap(t0, t0 + h2, grid, p, 1) ;
+				build_auto_tune_dag_trap(t0, t0 + h2, grid, p, 1) ;
 				gettimeofday(&end, 0);
 				dag_time += tdiff(&end, &start) ;*/
 				//print_dag() ;
@@ -1153,7 +1082,7 @@ private:
 
 template<>
 template <typename F>
-void heterogeneity<1>::compute_geneity(int h, grid_info<1> const & grid, 
+void auto_tune<1>::compute_geneity(int h, grid_info<1> const & grid, 
 					word_type & geneity, F const & f)
 {
 	int lb = grid.x1[0] - grid.x0[0] ;
@@ -1183,7 +1112,7 @@ void heterogeneity<1>::compute_geneity(int h, grid_info<1> const & grid,
 
 template<>
 template <typename F>
-void heterogeneity<2>::compute_geneity(int h, grid_info<2> const & grid, 
+void auto_tune<2>::compute_geneity(int h, grid_info<2> const & grid, 
 					word_type & geneity, F const & f)
 {
 	//cout << "comp geneity " << endl ;
