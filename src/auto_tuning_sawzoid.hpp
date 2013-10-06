@@ -208,10 +208,11 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_interior(int t0,
 
 /* Boundary space cut. Uses sawzoid space cut.
  */
-template <int N_RANK> template <typename F>
+template <int N_RANK> template <typename F, typename BF> 
 inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_boundary(int t0,
 		int t1, grid_info<N_RANK> const & grid, unsigned long parent_index, 
-		F const & f, int * num_zoids, double & rcost, double & ncost)
+		F const & f, BF const & bf, int * num_zoids, double & rcost, 
+		double & ncost)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -241,7 +242,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_boundary(int t0,
                     //assert(l_son->level == -1);
                     symbolic_sawzoid_space_time_cut_boundary(l_son->t0, 
 						l_son->t1, l_son->grid, parent_index, child_index, 
-						rcost, ncost, f);
+						rcost, ncost, f, bf);
 					child_index++ ; //this can be a race.
                 } // end cilk_for 
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
@@ -251,7 +252,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_boundary(int t0,
                 pop_queue(curr_dep_pointer);
 				symbolic_sawzoid_space_time_cut_boundary(l_father->t0, 
 					l_father->t1, l_father->grid, parent_index, child_index,
-					rcost, ncost, f);
+					rcost, ncost, f, bf);
 				child_index++ ; 
 #endif
             } else {
@@ -493,20 +494,20 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		}
         sim_can_cut |= space_cut ;
     }
-	//cout << "centroid " << centroid << " key " << key << endl ;
+	cout << "centroid " << centroid << " key " << key << endl ;
 	unsigned long index ;
 	bool projection_exists = check_and_create_projection (key, lt, 
 											centroid, index, grid) ;
-	//cout << " index " << index << endl ;
+	cout << " index " << index << endl ;
 	//cout << " child index " << child_index << endl ;
 	zoid_type & z = m_zoids [index];
 	zoid_type & parent = m_zoids [parent_index] ;
-	//cout << "parent id " << parent.id << endl ;
-	//cout << "child id " << z.id << endl ;
+	cout << "parent id " << parent.id << endl ;
+	cout << "child id " << z.id << endl ;
 	//cout << "address of parent " << &parent << endl ;
 	//add the zoid as a child of the parent
 	parent.add_child(&z, child_index, index) ;
-	//print_dag() ;
+	assert (index < m_zoids.size()) ;
 	
 	if (projection_exists)
 	{ 
@@ -516,6 +517,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		//a zoid with the projection already exists. return
 		return ;
 	}
+	print_dag() ;
 	double divide_and_conquer_cost = 0 ;
 	struct timeval start, end ;
 	bool divide_and_conquer = false ;
@@ -558,7 +560,6 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
     } 
     // base case
 	//determine the looping cost on the zoid
-	struct timeval start, end;
 	double loop_cost = 0. ;
 	gettimeofday(&start, 0);
 	f(t0, t1, grid);
@@ -568,13 +569,13 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	//to the parent
 	if (divide_and_conquer && divide_and_conquer_cost < loop_cost)
 	{
-		decision = 1 ;
+		z.decision = 1 ;
 		rcost += loop_cost ;
 		z.cost = divide_and_conquer_cost ;
 	}
 	else
 	{
-		decision = 0 ;
+		z.decision = 0 ;
 		rcost += divide_and_conquer_cost ;
 		z.cost = loop_cost ;
 	}
@@ -582,11 +583,11 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	ncost += 0 ; 
 }
 
-template <int N_RANK> template <typename F>
+template <int N_RANK> template <typename F, typename BF>
 inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 		int t0, int t1,	grid_info<N_RANK> const & grid, 
 		unsigned long parent_index, int child_index, 
-		double & rcost, double & ncost, F const & f)
+		double & rcost, double & ncost, F const & f, BF const & bf)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;
@@ -647,19 +648,18 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 		offset += num_bits_dim ;
         call_boundary |= l_touch_boundary;
     }
-	//cout << "centroid " << centroid << " key " << key << endl ;
+	cout << "centroid " << centroid << " key " << key << endl ;
 	unsigned long index ;
 	bool projection_exists = check_and_create_projection (key, lt, 
-											centroid, index, l_father_grid) ;
-	//cout << " index " << index << endl ;
+									centroid, index, l_father_grid) ;
+	cout << " index " << index << endl ;
 	zoid_type & z = m_zoids [index] ;
 	zoid_type & parent = m_zoids [parent_index] ;
 	//cout << "parent id " << parent.id << endl ;
 	//cout << "address of parent " << &parent << endl ;
 	//add the zoid as a child of the parent
 	parent.add_child(&z, child_index, index) ;
-	//print_dag() ;
-	
+	assert (index < m_zoids.size()) ;
 	if (projection_exists)
 	{ 
 		//Add the cost of the zoid to the parent.
@@ -668,6 +668,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 		//a zoid with the projection already exists. return
 		return ;
 	}
+	print_dag() ;
     if (call_boundary)
 	{
         l_dt_stop = dt_recursive_boundary_;
@@ -690,7 +691,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
         if (call_boundary) 
 		{
             symbolic_sawzoid_space_cut_boundary(t0, t1, l_father_grid, index, 
-							 f, num_subzoids, rcost1, ncost1);
+							 f, bf, num_subzoids, rcost1, ncost1);
         }
 		else
 		{
@@ -711,7 +712,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
         int halflt = lt / 2;
         l_son_grid = l_father_grid;
         if (call_boundary) {
-            symbolic_sawzoid_space_time_cut_boundary(t0, t0+halflt, l_son_grid, 										index, 0, rcost1, ncost1, f);
+            symbolic_sawzoid_space_time_cut_boundary(t0, t0+halflt, l_son_grid, 										index, 0, rcost1, ncost1, f, bf);
         } else {
             symbolic_sawzoid_space_time_cut_interior(t0, t0+halflt, l_son_grid,
 										index, 0, rcost1, ncost1, f);
@@ -725,7 +726,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
         }
         if (call_boundary) {
             symbolic_sawzoid_space_time_cut_boundary(t0+halflt, t1, l_son_grid,
-										index, 1, rcost1, ncost1, f);
+										index, 1, rcost1, ncost1, f, bf);
         } else {
             symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid,
 										index, 1, rcost1, ncost1, f);
@@ -735,7 +736,6 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
     } 
 	// base case
 	//determine the looping cost on the zoid
-	struct timeval start, end;
 	double loop_cost = 0. ;
 	gettimeofday(&start, 0);
 	if (call_boundary) 
@@ -752,13 +752,13 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 	//to the parent
 	if (divide_and_conquer && divide_and_conquer_cost < loop_cost)
 	{
-		decision = 1 ;
+		z.decision = 1 ;
 		rcost += loop_cost ;
 		z.cost = divide_and_conquer_cost ;
 	}
 	else
 	{
-		decision = 0 ;
+		z.decision = 0 ;
 		rcost += divide_and_conquer_cost ;
 		z.cost = loop_cost ;
 	}
@@ -1265,7 +1265,7 @@ sawzoid_space_time_cut_interior(int t0,
 				//" num children " << z->children.size() <<
 				" num children " << z->num_children <<
 				" num_parents " << z->parents.size() << " geneity " ;
-			print_bits(&(z->geneity), sizeof(word_type) * 8);
+			//print_bits(&(z->geneity), sizeof(word_type) * 8);
 			int h = z->height ;
 			for (int i = N_RANK - 1 ; i >= 0 ; i--)
 			{
@@ -1359,7 +1359,7 @@ sawzoid_space_time_cut_boundary(int t0,
 				//" num children " << z->children.size() <<
 				" num children " << z->num_children <<
 				" num_parents " << z->parents.size() << " geneity " ;
-			print_bits(&(z->geneity), sizeof(word_type) * 8);
+			//print_bits(&(z->geneity), sizeof(word_type) * 8);
 			int h = z->height ;
 			for (int i = N_RANK - 1 ; i >= 0 ; i--)
 			{

@@ -61,7 +61,7 @@ class zoid
 	
 	zoid() 
 	{
-		//cout << "zoid : constructor " << endl ;
+		cout << "zoid : constructor " << endl ;
 		decision = 0 ; //0 for loop
 		children = 0 ;
 		num_children = 0 ;
@@ -73,7 +73,7 @@ class zoid
 	
 	zoid & operator = (const zoid & z)
 	{
-		//cout << "zoid : assignment op for zoid " << z.id << endl ;
+		cout << "zoid : assignment op for zoid " << z.id << endl ;
 		if (this != &z)
 		{
 			delete [] children ;
@@ -107,8 +107,8 @@ class zoid
 		decision = z.decision ;
 		cost = z.cost ;
 		num_children = z.num_children ;
-		//cout << "zoid : copy const for zoid " << z.id << " # children" << 
-		//		num_children << endl ;
+		cout << "zoid : copy const for zoid " << z.id << " # children" << 
+				num_children << endl ;
 		children = 0 ;
 		height = z.height ;
 		if (num_children > 0)
@@ -139,12 +139,13 @@ class zoid
 	//destructor for zoid
 	~zoid()
 	{
-		//cout << "zoid : destructor for zoid " << id << endl ;
+		cout << "zoid : destructor for zoid " << id << endl ;
 		num_children = 0 ;
 		decision = 0 ; // 0 for looping
 		cost = 0 ;
 		delete [] children ;
 		children = 0 ;
+		cout << "zoid : end destructor for zoid " << id << endl ;
 	}
 	
 	private :
@@ -179,6 +180,7 @@ private:
 		}
 		m_projections.reserve(volume) ;
 		m_projections.resize(volume) ;
+		cout << "volume " << volume << endl ;
 #ifdef COUNT_PROJECTIONS
 		if (N_RANK == 1)
 		{
@@ -231,9 +233,10 @@ private:
 		symbolic_space_time_cut_boundary(t0, t1, grid, m_num_vertices - 1, 0, f) ;
 	} 
 
-	template <typename F>
+	template <typename F, typename BF>
 	inline void build_auto_tune_dag_sawzoid(int t0, int t1, 
-						grid_info<N_RANK> const & grid, F const & f, int index)
+						grid_info<N_RANK> const & grid, F const & f, 
+						BF const & bf, int index)
 	{
 		assert (m_head [index] == ULONG_MAX) ;
 		assert (m_projections.size()) ;
@@ -248,8 +251,9 @@ private:
 		assert (m_num_vertices == m_zoids.size()) ;
 		m_head [index] = m_num_vertices ;
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
+		double rcost = 0, ncost = 0 ;
 		symbolic_sawzoid_space_time_cut_boundary(t0, t1, grid, 
-										m_num_vertices - 1, 0, f) ;
+						m_num_vertices - 1, 0, rcost, ncost, f, bf) ;
 	}
 
 	template <typename F>
@@ -258,13 +262,19 @@ private:
 
 	inline void clear_projections()
 	{
+		cout << "begin clear proj" << endl ;
+		cout << " size of array of hash table " << m_projections.size() << endl ;
 		for (int i = 0 ; i < m_projections.size() ; i++)
 		{
+			cout << "size of hash table " << i << " : " 
+				<< m_projections [i].size() << endl ;
 			m_projections [i].clear() ;		//clear the projections
 		}
+		cout << "done clearing contents " << endl ;
 		m_projections.clear() ;
 		//empty the projections vector.
 		vector<hash_table>().swap(m_projections) ; 
+		cout << "end clear proj" << endl ;
 	}
 
 	inline void print_statistics(int T)
@@ -368,25 +378,21 @@ private:
 	{
 		assert (m_projections.size()) ;
 		hash_table & h = m_projections [centroid] ;
+		cout << "centroid : "  << centroid << endl ;
+		assert (centroid < m_projections.size()) ;
 		//cout << "searching hashtable" << endl ;
 		//cout << "size hashtable " << h.size() << endl ;
 		std::pair<hash_table_iterator, hash_table_iterator> p = 
 													h.equal_range (key) ;
 		
 		//hash_table iterator has two elements, first and second.
-		//atmost one zoid can exist at a centroid with a given 
-		//top volume + bottom volume
 		for (hash_table_iterator start = p.first ; start != p.second ; start++)
-		//if (p.first != p.second)
 		{
 			assert (start->first == key) ;
 			assert (start->second < m_num_vertices) ;
 			zoid_type * z = &(m_zoids [start->second]) ;
-			//zoid_type * z = start->second ;
-			//assert (z->height == height) ;
 			if (z->height == height) 
 			{
-				//*zoid = z ;
 				index = start->second ;
 				//cout << "found entry" << endl ;
 				return true ;
@@ -468,19 +474,19 @@ private:
 		//*zoid = z ;
 		//h.insert(std::pair<unsigned long, zoid_type *>(key, z)) ;
 		h.insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
-		//cout << "inserted key" << endl ;
+		cout << "inserted key" << endl ;
 		index = m_num_vertices ;
-		//cout << "created zoid " << m_zoids [index].id << endl ;
+		cout << "created zoid " << m_zoids [index].id << endl ;
 		m_num_vertices++ ;
 		assert (m_num_vertices == m_zoids.size()) ;
 		
 		return false ;
 	}
 
-	void set_clone_array(pochoir_clone_array <N_RANK> * clone_array)
+	/*void set_clone_array(pochoir_clone_array <N_RANK> * clone_array)
 	{
 		m_clone_array = clone_array ;
-	}
+	}*/
 
 	void dfs(unsigned long node, vector <zoid_type> & temp_zoids,
 			 vector<unsigned long> & color, unsigned long & num_vertices)
@@ -593,9 +599,10 @@ private:
 				cout << "\nzoid " << z->id << " height " << z->height <<
 					//" num children " << z->children.size() << 
 					" num children " << z->num_children << 
-					" num_parents " << z->parents.size() << " geneity " ;
-					//" num_parents " << z->num_parents << " geneity " ;
-				print_bits(&(z->geneity), sizeof(word_type) * 8);
+					" num_parents " << z->parents.size() << 
+					" cost " << z->cost << endl ;
+					//" num_parents " << z->parents.size() << " geneity " ;
+				//print_bits(&(z->geneity), sizeof(word_type) * 8);
 				grid_info <N_RANK> & grid = z->info ;
 				int h = z->height ;
 				for (int i = N_RANK - 1 ; i >= 0 ; i--)
@@ -606,7 +613,7 @@ private:
 					<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * h
 					<< " h " << h << endl ; 
 				}
-				if (z->geneity == 0)
+				/*if (z->geneity == 0)
 				{
 					int bottom_volume = 1, top_volume = 1 ;
 					for (int i = 0 ; i < N_RANK ; i++)
@@ -624,7 +631,7 @@ private:
 						cout << "Error : geneity is 0 " << endl ;
 						assert (z->geneity) ;
 					}
-				}
+				}*/
 				//if (z->num_parents > 1)
 				vector<unsigned long> & v = z->parents ;
 				cout << "parents " << endl ;
@@ -684,20 +691,20 @@ private:
 	inline void symbolic_abnormal_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, unsigned long, F const & f) ;
 
-	template <typename F>
+	template <typename F, typename BF>
 	inline void symbolic_sawzoid_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, unsigned long,
-		int child_index, double &, double &, F const & f) ;
+		int child_index, double &, double &, F const & f, BF const & bf) ;
 
 	template <typename F>
 	inline void symbolic_sawzoid_space_time_cut_interior(int t0, int t1, 
 		grid_info<N_RANK> const & grid, unsigned long,
 		int child_index, double &, double &, F const & f) ;
 
-	template <typename F>
+	template <typename F, typename BF>
 	inline void symbolic_sawzoid_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *,
-		double &, double &) ;
+		grid_info<N_RANK> const & grid, unsigned long, F const & f, 
+		BF const & bf, int *, double &, double &) ;
 
 	template <typename F>
 	inline void symbolic_sawzoid_space_cut_interior(int t0, int t1,
@@ -725,21 +732,21 @@ private:
 #endif
 
 	template <typename F, typename BF>
-	inline void auto_tune_sawzoid_space_time_cut_boundary(int t0, int t1,  
+	inline void sawzoid_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f, BF const & bf) ;
 
 	template <typename F>
-	inline void auto_tune_sawzoid_space_time_cut_interior(int t0, int t1, 
+	inline void sawzoid_space_time_cut_interior(int t0, int t1, 
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, F const & f) ;
 
 	template <typename F, typename BF>
-	inline void auto_tune_sawzoid_space_cut_boundary(int t0, int t1,
+	inline void sawzoid_space_cut_boundary(int t0, int t1,
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f, BF const & bf) ;
 
 	template <typename F>
-	inline void auto_tune_sawzoid_space_cut_interior(int t0, int t1,
+	inline void sawzoid_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f) ;
 
@@ -774,7 +781,7 @@ private:
 	const int NUM_BITS_IN_INT = 8 * sizeof(int) ;
 	typedef typename Algorithm<N_RANK>::queue_info queue_info ;
 	set<word_type> m_heterogeneity ;
-	pochoir_clone_array <N_RANK> * m_clone_array ; 
+	//pochoir_clone_array <N_RANK> * m_clone_array ; 
 	int num_bits_width ; //# of bits to store width
 	int num_bits_dim ; //# of bits for bottom and top widths in a dimension
 #ifdef COUNT_PROJECTIONS
@@ -827,9 +834,9 @@ private:
 		destroy_auto_tune_dag() ;
 	}
 
-	template <typename F, typename BF, typename P>
+	template <typename F, typename BF>
     inline void do_power_of_two_time_cut(int t0, int t1,
-        grid_info<N_RANK> const & grid, F const & f, BF const & bf, P const & p)
+        grid_info<N_RANK> const & grid, F const & f, BF const & bf)
 	{
 		int T = t1 - t0 ;
 		int W = 0 ;  //max_width among all dimensions
@@ -857,11 +864,14 @@ private:
 		}
 		m_head.push_back (ULONG_MAX) ;
 		gettimeofday(&start, 0);
-		build_auto_tune_dag_sawzoid(t0, t0 + h1, grid, p, 0) ;
+		build_auto_tune_dag_sawzoid(t0, t0 + h1, grid, f, bf, 0) ;
+#ifndef NDEBUG
+		print_dag() ;
+#endif
 		int offset = t0 + T / h1 * h1 ;
 		int h2 = t1 - offset ;
 		int index = 1 ;
-		while (h2 > 1)
+		while (h2 >= 1)
 		//while (h2 > m_algo.dt_recursive_)
 		{
 			//find index of most significant bit that is set
@@ -872,7 +882,10 @@ private:
 				offset + h << " h " << h << endl ;
 			m_head.push_back (ULONG_MAX) ;
 			build_auto_tune_dag_sawzoid(offset, offset + h, grid,
-											p, index) ;
+											f, bf, index) ;
+#ifndef NDEBUG
+		print_dag() ;
+#endif
 			offset += h ;
 			h2 = t1 - offset ;
 			index++ ;
@@ -893,10 +906,10 @@ private:
 		int m = T / h1 ;
 		for (int i = 0 ; i < m ; i++)
 		{
-			/*cout << "t0 " << t0 << " t1 " << t1 << 
+			cout << "t0 " << t0 << " t1 " << t1 << 
 				" h1 " << h1 << " t0 + h1 " <<
-				t0 + h1 << endl ;*/
-			auto_tune_sawzoid_space_time_cut_boundary(t0, t0 + h1, grid, 
+				t0 + h1 << endl ;
+			sawzoid_space_time_cut_boundary(t0, t0 + h1, grid, 
 				&(m_zoids [m_head [0]]), f, bf) ;
 			t0 += h1 ;
 		}
@@ -905,7 +918,7 @@ private:
 		index = 1 ;
 		//time cuts happen only if height > dt_recursive_
 		//while (h2 > m_algo.dt_recursive_)
-		while (h2 > 1)
+		while (h2 >= 1)
 		{
 			//find index of most significant bit that is set
 			index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
@@ -913,7 +926,7 @@ private:
 			cout << "t0 " << t0 << " t1 " << t1 << 
 				" h " << h << " t0 + h " <<
 				t0 + h << endl ;
-			auto_tune_sawzoid_space_time_cut_boundary(t0, t0 + h, grid, 
+			sawzoid_space_time_cut_boundary(t0, t0 + h, grid, 
 				&(m_zoids [m_head [index]]), f, bf) ;
 			t0 += h ;
 			h2 = t1 - t0 ;
