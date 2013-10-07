@@ -34,17 +34,20 @@
 #endif
 #include "pochoir_array.hpp"
 //#include "clones_2d_heat.hpp"
-#include "clones_2d_diffusion.hpp"
+//#include "clones_2d_diffusion.hpp"
 //#include "clones_2dwave.hpp"
-//#include "clones.hpp"
+#include "clones.hpp"
 
 #ifdef KERNEL_SELECTION
 #include "kernel_selection_trap.hpp"
 #include "kernel_selection_sawzoid.hpp"
 #elif defined GENEITY_TEST
 #include "symbolic_walk_better_memory.hpp"
+//#include "geneity_problem_trap.hpp"
 #include "pochoir_modified_cuts_heterogeneity.hpp"
 //#include "symbolic_walk.hpp"
+#elif defined AUTO_TUNE
+#include "auto_tuning_sawzoid.hpp"
 #endif
 
 /* assuming there won't be more than 10 Pochoir_Array in one Pochoir object! */
@@ -480,8 +483,9 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #endif
 #ifdef GENEITY_TEST
 	cout << "geneity testing" << endl ;
-#else
-	cout << "no geneity testing" << endl ;
+#endif
+#ifdef AUTO_TUNE
+	cout << "auto tune" << endl ;
 #endif
 #ifdef DEFAULT_SPACE_CUT
 	cout << "default space cut " << endl ;
@@ -489,7 +493,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	cout << "modified space cut " << endl ;
 #endif
 
-#ifdef DEFAULT_TIME_CUT
+#ifdef TRAP
 	cout << "default time cut " << endl ;
 #ifndef USE_PROJECTION
     algor.shorter_duo_sim_obase_bicut_p(time_shift_, timestep+time_shift_, logic_grid_, f, bf);
@@ -502,8 +506,9 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	ks.set_clone_array(&c1) ;
 	ks.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
 							logic_grid_, f, bf, p) ;
-#else
-	heterogeneity<N_RANK> hg(algor, phys_grid_, 0) ;
+#elif defined GENEITY_TEST
+	//heterogeneity<N_RANK> hg(algor, phys_grid_, 0) ;
+	geneity_problem<N_RANK> hg(algor, phys_grid_, 0) ;
 	hg.set_clone_array(&c1) ;
 	//hg.build_heterogeneity_dag(0, timestep, logic_grid_, p, 0) ;
 	hg.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
@@ -521,15 +526,18 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #ifndef USE_PROJECTION
     algor.power_of_two_time_cut(time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #else
+#ifdef KERNEL_SELECTION
 	predicate <N_RANK> p (phys_grid_) ; 
 	p.set_resolution(resolution_) ;
 	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
-#ifdef KERNEL_SELECTION
     kernel_selection_sawzoid<N_RANK> ks(algor, phys_grid_, 0) ;
     ks.set_clone_array(&c1) ;
     ks.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
                             logic_grid_, f, bf, p) ;
-#else
+#elif defined GENEITY_TEST
+	predicate <N_RANK> p (phys_grid_) ; 
+	p.set_resolution(resolution_) ;
+	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
 	heterogeneity<N_RANK> hg(algor, phys_grid_, 1) ;
 	hg.set_clone_array(&c1) ;
 	struct timeval start, end;
@@ -546,6 +554,16 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	hg.print_dag() ;
 	hg.print_heterogeneity() ;
 #endif
+#elif defined AUTO_TUNE
+	auto_tune<N_RANK> at(algor, phys_grid_, 1) ;
+	struct timeval start, end;
+	double compute_time = 0. ;
+	gettimeofday(&start, 0);
+	at.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
+								logic_grid_, f, bf) ;
+	gettimeofday(&end, 0);
+	compute_time = tdiff(&end, &start) ;
+	std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
 #endif
 
 #endif

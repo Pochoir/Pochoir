@@ -56,7 +56,7 @@ static inline int StrToInt(const std::string& s)
 #define BIT_TRICK 0
 #define INF 100000000
 #define SUPPORT_RANK 9
-#define TRAP
+//#define TRAP
 
 #if defined (TRAP)
 #define DEFAULT_SPACE_CUT
@@ -67,8 +67,9 @@ static inline int StrToInt(const std::string& s)
 //#define COUNT_TRIANGLE
 //#define COUNT_TRAPEZOID
 #define USE_PROJECTION
-#define GENEITY_TEST
+//#define GENEITY_TEST
 //#define KERNEL_SELECTION
+#define AUTO_TUNE
 
 #define max_(a, b) ((a) > (b) ? (a) : (b))
 #define min_(a, b) ((a) < (b) ? (a) : (b))
