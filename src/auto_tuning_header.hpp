@@ -61,7 +61,7 @@ class zoid
 	
 	zoid() 
 	{
-		cout << "zoid : constructor " << endl ;
+		//cout << "zoid : constructor " << endl ;
 		decision = 0 ; //0 for loop
 		children = 0 ;
 		num_children = 0 ;
@@ -73,7 +73,7 @@ class zoid
 	
 	zoid & operator = (const zoid & z)
 	{
-		cout << "zoid : assignment op for zoid " << z.id << endl ;
+		//cout << "zoid : assignment op for zoid " << z.id << endl ;
 		if (this != &z)
 		{
 			delete [] children ;
@@ -107,8 +107,8 @@ class zoid
 		decision = z.decision ;
 		cost = z.cost ;
 		num_children = z.num_children ;
-		cout << "zoid : copy const for zoid " << z.id << " # children" << 
-				num_children << endl ;
+		//cout << "zoid : copy const for zoid " << z.id << " # children" << 
+		//		num_children << endl ;
 		children = 0 ;
 		height = z.height ;
 		if (num_children > 0)
@@ -139,13 +139,13 @@ class zoid
 	//destructor for zoid
 	~zoid()
 	{
-		cout << "zoid : destructor for zoid " << id << endl ;
+		//cout << "zoid : destructor for zoid " << id << endl ;
 		num_children = 0 ;
 		decision = 0 ; // 0 for looping
 		cost = 0 ;
 		delete [] children ;
 		children = 0 ;
-		cout << "zoid : end destructor for zoid " << id << endl ;
+		//cout << "zoid : end destructor for zoid " << id << endl ;
 	}
 	
 	private :
@@ -181,23 +181,6 @@ private:
 		m_projections.reserve(volume) ;
 		m_projections.resize(volume) ;
 		cout << "volume " << volume << endl ;
-#ifdef COUNT_PROJECTIONS
-		if (N_RANK == 1)
-		{
-			m_1d_count_proj_length_triangle.reserve(volume + 1) ;
-			m_1d_count_proj_length_triangle.resize(volume + 1) ;
-			m_1d_count_proj_length_trapezoid.reserve(volume + 1) ;
-			m_1d_count_proj_length_trapezoid.resize(volume + 1) ;
-
-			m_1d_index_by_length_triangle.reserve(volume + 1) ;
-			m_1d_index_by_length_triangle.resize(volume + 1) ;
-			m_1d_index_by_length_trapezoid.reserve(volume + 1) ;
-			m_1d_index_by_length_trapezoid.resize(volume + 1) ;
-
-			m_num_triangles = 0 ;
-			m_num_trapezoids = 0 ;
-		}
-#endif
 		//unsigned long P = volume / (1 << N_RANK) ; 
 		//int lgP = 8 * sizeof(unsigned long) - __builtin_clzl(P - 1) ;
 		//cout << "Expected # of projections P " << P  << " lg P " << lgP << endl ;
@@ -262,19 +245,19 @@ private:
 
 	inline void clear_projections()
 	{
-		cout << "begin clear proj" << endl ;
-		cout << " size of array of hash table " << m_projections.size() << endl ;
+		//cout << "begin clear proj" << endl ;
+		//cout << " size of array of hash table " << m_projections.size() << endl ;
 		for (int i = 0 ; i < m_projections.size() ; i++)
 		{
-			cout << "size of hash table " << i << " : " 
-				<< m_projections [i].size() << endl ;
+			//cout << "size of hash table " << i << " : " 
+			//	<< m_projections [i].size() << endl ;
 			m_projections [i].clear() ;		//clear the projections
 		}
-		cout << "done clearing contents " << endl ;
+		//cout << "done clearing contents " << endl ;
 		m_projections.clear() ;
 		//empty the projections vector.
 		vector<hash_table>().swap(m_projections) ; 
-		cout << "end clear proj" << endl ;
+		//cout << "end clear proj" << endl ;
 	}
 
 	inline void print_statistics(int T)
@@ -378,7 +361,7 @@ private:
 	{
 		assert (m_projections.size()) ;
 		hash_table & h = m_projections [centroid] ;
-		cout << "centroid : "  << centroid << endl ;
+		//cout << "centroid : "  << centroid << endl ;
 		assert (centroid < m_projections.size()) ;
 		//cout << "searching hashtable" << endl ;
 		//cout << "size hashtable " << h.size() << endl ;
@@ -424,59 +407,12 @@ private:
 			<< " h " << height << endl ; 
 		}
 #endif
-#ifdef COUNT_PROJECTIONS
-		if (N_RANK == 1)
-		{
-			unsigned long lb = grid.x1 [0] - grid.x0 [0] ;
-			unsigned long tb = grid.x1[0] + grid.dx1[0] * height - 
-								(grid.x0[0] + grid.dx0[0] * height) ; 	
-			unsigned long length ;
-			unsigned long index ;
-			if (lb > tb)
-			{
-				length = lb ;
-				index = grid.x0 [0] ;
-			}
-			else
-			{
-				length = tb ;
-				index = grid.x0[0] + grid.dx0[0] * height ;
-			}
-			if (length > 0)
-			{
-				if (lb == 0 || tb == 0)
-				{
-					set <unsigned long> & s = 
-						m_1d_index_by_length_triangle [length] ;
-					if (s.find(index) == s.end())
-					{
-						//insert if index is not already in the set
-						m_num_triangles++ ;
-						m_1d_count_proj_length_triangle [length]++ ;
-						m_1d_index_by_length_triangle [length].insert(index) ;
-					}
-				}			
-				else
-				{
-					set <unsigned long> & s = 
-						m_1d_index_by_length_trapezoid [length] ;
-					if (s.find(index) == s.end())
-					{
-						//insert if index is not already in the set
-						m_num_trapezoids++ ;
-						m_1d_count_proj_length_trapezoid [length]++ ;
-						m_1d_index_by_length_trapezoid [length].insert(index) ;
-					}
-				}
-			}
-		}
-#endif
 		//*zoid = z ;
 		//h.insert(std::pair<unsigned long, zoid_type *>(key, z)) ;
 		h.insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
-		cout << "inserted key" << endl ;
+		//cout << "inserted key" << endl ;
 		index = m_num_vertices ;
-		cout << "created zoid " << m_zoids [index].id << endl ;
+		//cout << "created zoid " << m_zoids [index].id << endl ;
 		m_num_vertices++ ;
 		assert (m_num_vertices == m_zoids.size()) ;
 		
@@ -653,9 +589,9 @@ private:
 					zoid_type * child = &(m_zoids [index]);
 					if (index && child && color [child->id] == 0)
 					{
+						assert (child->id < m_num_vertices) ;
 						color [child->id] = 1 ;
 						que.push_back(index) ;
-						//que.push_back(child) ;
 					}
 				}
 			}
@@ -865,9 +801,11 @@ private:
 		m_head.push_back (ULONG_MAX) ;
 		gettimeofday(&start, 0);
 		build_auto_tune_dag_sawzoid(t0, t0 + h1, grid, f, bf, 0) ;
-#ifndef NDEBUG
-		print_dag() ;
-#endif
+		if (m_zoids [m_head [0]].decision != 0)
+		{
+			cout << " decided to divide and conquer " << endl ;
+		}
+
 		int offset = t0 + T / h1 * h1 ;
 		int h2 = t1 - offset ;
 		int index = 1 ;
@@ -883,13 +821,13 @@ private:
 			m_head.push_back (ULONG_MAX) ;
 			build_auto_tune_dag_sawzoid(offset, offset + h, grid,
 											f, bf, index) ;
-#ifndef NDEBUG
-		print_dag() ;
-#endif
 			offset += h ;
 			h2 = t1 - offset ;
 			index++ ;
 		}
+#ifndef NDEBUG
+		print_dag() ;
+#endif
 		//do not build dag if h2 = 1. Use the white clone.
 		gettimeofday(&end, 0);
 		dag_time = tdiff(&end, &start) ;

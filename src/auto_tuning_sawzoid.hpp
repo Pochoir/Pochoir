@@ -10,8 +10,8 @@
  *         Author:  Eka Palamadai, epn@mit.edu
  * ============================================================================
  */
-#ifndef POCHOIR_MODIFIED_CUTS_HETEROGENEITY_HPP 
-#define POCHOIR_MODIFIED_CUTS_HETEROGENEITY_HPP 
+#ifndef AUTO_TUNING_SAWZOID_HPP 
+#define AUTO_TUNING_SAWZOID_HPP 
 
 #include "auto_tuning_header.hpp"
 
@@ -494,16 +494,16 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		}
         sim_can_cut |= space_cut ;
     }
-	cout << "centroid " << centroid << " key " << key << endl ;
+	//cout << "centroid " << centroid << " key " << key << endl ;
 	unsigned long index ;
 	bool projection_exists = check_and_create_projection (key, lt, 
 											centroid, index, grid) ;
-	cout << " index " << index << endl ;
+	//cout << " index " << index << endl ;
 	//cout << " child index " << child_index << endl ;
 	zoid_type & z = m_zoids [index];
 	zoid_type & parent = m_zoids [parent_index] ;
-	cout << "parent id " << parent.id << endl ;
-	cout << "child id " << z.id << endl ;
+	//cout << "parent id " << parent.id << endl ;
+	//cout << "child id " << z.id << endl ;
 	//cout << "address of parent " << &parent << endl ;
 	//add the zoid as a child of the parent
 	parent.add_child(&z, child_index, index) ;
@@ -512,12 +512,12 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	if (projection_exists)
 	{ 
 		//Add the cost of the zoid to the parent.
-		rcost += 0 ; //set redundant cost to 0.
+		//rcost += 0 ; //set redundant cost to 0.
 		ncost += z.cost ;  //set necessary cost 
 		//a zoid with the projection already exists. return
 		return ;
 	}
-	print_dag() ;
+	//print_dag() ;
 	double divide_and_conquer_cost = 0 ;
 	struct timeval start, end ;
 	bool divide_and_conquer = false ;
@@ -531,7 +531,23 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		symbolic_sawzoid_space_cut_interior(t0, t1, grid, index, f, 
 										num_subzoids, rcost1, ncost1) ;
 		gettimeofday(&end, 0);
-		divide_and_conquer_cost = tdiff(&end, &start) - rcost1 + ncost1 ;
+		double diff = tdiff(&end, &start) ;
+		divide_and_conquer_cost = diff - rcost1 + ncost1 ;
+		assert (divide_and_conquer_cost >= 0.) ;
+		if (divide_and_conquer_cost < (double) 0.)
+		{
+			cout << "ht " << lt << "diff " << diff << "rcost " << rcost1 << " ncost " << ncost1 << endl ;
+			
+    		for (int i = N_RANK-1; i >= 0; --i) 
+			{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+			assert (0);
+		}
     } 
 	else if (lt > dt_recursive_) 
 	{
@@ -556,7 +572,22 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 				index, 1, rcost1, ncost1, f);
 
 		gettimeofday(&end, 0);
-		divide_and_conquer_cost += tdiff(&end, &start) - rcost1 + ncost1 ;
+		double diff = tdiff(&end, &start) ;
+		divide_and_conquer_cost = diff - rcost1 + ncost1 ;
+		
+		if (divide_and_conquer_cost < (double) 0)
+		{
+			cout << "ht " << lt << " diff " << diff << " rcost " << rcost1 << " ncost " << ncost1 << endl ;
+    		for (int i = N_RANK-1; i >= 0; --i) 
+			{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+			assert (0);
+		}
     } 
     // base case
 	//determine the looping cost on the zoid
@@ -567,20 +598,22 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	loop_cost = tdiff(&end, &start) ;
 	//store the decision for the zoid  and pass the redundant cost 
 	//to the parent
+	cout << "ht " << t1 - t0 << "divide n conquer cost " << 
+		divide_and_conquer_cost << " loop cost " << loop_cost << endl ;
 	if (divide_and_conquer && divide_and_conquer_cost < loop_cost)
 	{
-		z.decision = 1 ;
+		m_zoids [index].decision = 1 ;
 		rcost += loop_cost ;
-		z.cost = divide_and_conquer_cost ;
+		m_zoids [index].cost = divide_and_conquer_cost ;
 	}
 	else
 	{
-		z.decision = 0 ;
+		m_zoids [index].decision = 0 ;
 		rcost += divide_and_conquer_cost ;
-		z.cost = loop_cost ;
+		m_zoids [index].cost = loop_cost ;
 	}
 	//set necessary cost to zero since parent's timer includes the same.
-	ncost += 0 ; 
+	//ncost += 0 ; 
 }
 
 template <int N_RANK> template <typename F, typename BF>
@@ -648,11 +681,11 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 		offset += num_bits_dim ;
         call_boundary |= l_touch_boundary;
     }
-	cout << "centroid " << centroid << " key " << key << endl ;
+	//cout << "centroid " << centroid << " key " << key << endl ;
 	unsigned long index ;
 	bool projection_exists = check_and_create_projection (key, lt, 
 									centroid, index, l_father_grid) ;
-	cout << " index " << index << endl ;
+	//cout << " index " << index << endl ;
 	zoid_type & z = m_zoids [index] ;
 	zoid_type & parent = m_zoids [parent_index] ;
 	//cout << "parent id " << parent.id << endl ;
@@ -663,12 +696,12 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 	if (projection_exists)
 	{ 
 		//Add the cost of the zoid to the parent.
-		rcost += 0 ; //set redundant cost to 0.
+		//rcost += 0 ; //set redundant cost to 0.
 		ncost += z.cost ;  //set necessary cost 
 		//a zoid with the projection already exists. return
 		return ;
 	}
-	print_dag() ;
+	//print_dag() ;
     if (call_boundary)
 	{
         l_dt_stop = dt_recursive_boundary_;
@@ -699,7 +732,21 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 							f, num_subzoids, rcost1, ncost1);
 		}
 		gettimeofday(&end, 0);
-		divide_and_conquer_cost = tdiff(&end, &start) - rcost1 + ncost1 ;
+		double diff = tdiff(&end, &start) ;
+		divide_and_conquer_cost = diff - rcost1 + ncost1 ;
+		if (divide_and_conquer_cost < (double) 0)
+		{
+			cout << "ht " << lt << " diff " << diff << " rcost " << rcost1 << " ncost " << ncost1 << endl ;
+    		for (int i = N_RANK-1; i >= 0; --i) 
+			{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+			assert (0);
+		}
     } 
 	else if (lt > l_dt_stop)  //time cut
 	{
@@ -732,7 +779,21 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 										index, 1, rcost1, ncost1, f);
         }
 		gettimeofday(&end, 0);
-		divide_and_conquer_cost += tdiff(&end, &start) - rcost1 + ncost1 ;
+		double diff = tdiff(&end, &start) ;
+		divide_and_conquer_cost = diff - rcost1 + ncost1 ;
+		if (divide_and_conquer_cost < (double) 0)
+		{
+			cout << "ht " << lt << " diff " << diff << " rcost " << rcost1 << " ncost " << ncost1 << endl ;
+    		for (int i = N_RANK-1; i >= 0; --i) 
+			{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+			assert (0);
+		}
     } 
 	// base case
 	//determine the looping cost on the zoid
@@ -750,20 +811,22 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 	loop_cost = tdiff(&end, &start) ;
 	//store the decision for the zoid  and pass the redundant cost 
 	//to the parent
+	cout << "ht " << t1 - t0 << "divide n conquer cost " << 
+		divide_and_conquer_cost << " loop cost " << loop_cost << endl ;
 	if (divide_and_conquer && divide_and_conquer_cost < loop_cost)
 	{
-		z.decision = 1 ;
+		m_zoids [index].decision = 1 ;
 		rcost += loop_cost ;
-		z.cost = divide_and_conquer_cost ;
+		m_zoids [index].cost = divide_and_conquer_cost ;
 	}
 	else
 	{
-		z.decision = 0 ;
+		m_zoids [index].decision = 0 ;
 		rcost += divide_and_conquer_cost ;
-		z.cost = loop_cost ;
+		m_zoids [index].cost = loop_cost ;
 	}
 	//set necessary cost to zero since parent's timer includes the same.
-	ncost += 0 ; 
+	//ncost += 0 ; 
 }
 
 // sawzoid space cuts. 
@@ -1234,6 +1297,15 @@ sawzoid_space_time_cut_interior(int t0,
 	if (projection_zoid->decision == 0)
 	{
 		//loop
+		cout << "ht of base case " << t1 - t0 << endl ;
+		for (int i = N_RANK - 1 ; i >= 0 ; i--)
+		{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+				<< " lt " << lt << endl ;
+		}
 		f(t0, t1, grid);
 		return ;
 	}
@@ -1385,6 +1457,15 @@ sawzoid_space_time_cut_boundary(int t0,
 	
 	if (projection_zoid->decision == 0)
 	{
+		cout << "ht of base case " << t1 - t0 << endl ;
+		for (int i = N_RANK - 1 ; i >= 0 ; i--)
+		{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+				<< " lt " << lt << endl ;
+		}
 		//loop
 		if (call_boundary) {
             base_case_kernel_boundary(t0, t1, l_father_grid, bf);
