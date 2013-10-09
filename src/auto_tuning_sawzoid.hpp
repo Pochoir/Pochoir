@@ -519,22 +519,26 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	}
 	//print_dag() ;
 	double divide_and_conquer_cost = 0 ;
-	struct timeval start, end ;
+	//struct timeval start, end ;
+	struct timespec start, end;
 	bool divide_and_conquer = false ;
     if (sim_can_cut) 
 	{
 		double rcost1 = 0, ncost1 = 0 ;
 		divide_and_conquer = true ;
-		gettimeofday(&start, 0);
+		//gettimeofday(&start, 0);
+		clock_gettime(CLOCK_MONOTONIC, &start);
 		z.resize_children(total_num_subzoids) ;
         /* cut into space */
 		symbolic_sawzoid_space_cut_interior(t0, t1, grid, index, f, 
 										num_subzoids, rcost1, ncost1) ;
-		gettimeofday(&end, 0);
-		double diff = tdiff(&end, &start) ;
+		//gettimeofday(&end, 0);
+		clock_gettime(CLOCK_MONOTONIC, &end);
+		//double diff = tdiff(&end, &start) ;
+		double diff = tdiff2(&end, &start) ;
 		divide_and_conquer_cost = diff - rcost1 + ncost1 ;
 		assert (divide_and_conquer_cost >= 0.) ;
-		if (divide_and_conquer_cost < (double) 0.)
+		/*if (divide_and_conquer_cost < (double) 0.)
 		{
 			cout << "ht " << lt << "diff " << diff << "rcost " << rcost1 << " ncost " << ncost1 << endl ;
 			
@@ -547,13 +551,14 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 				<< " lt " << lt << endl ;
 			}
 			assert (0);
-		}
+		}*/
     } 
 	else if (lt > dt_recursive_) 
 	{
 		double rcost1 = 0, ncost1 = 0 ;
 		divide_and_conquer = true ;
-		gettimeofday(&start, 0);
+		//gettimeofday(&start, 0);
+		clock_gettime(CLOCK_MONOTONIC, &start);
 		z.resize_children(2) ;
         /* cut into time */
         assert(lt > dt_recursive_);
@@ -571,11 +576,14 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
         symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
 				index, 1, rcost1, ncost1, f);
 
-		gettimeofday(&end, 0);
-		double diff = tdiff(&end, &start) ;
+		//gettimeofday(&end, 0);
+		clock_gettime(CLOCK_MONOTONIC, &end);
+		//double diff = tdiff(&end, &start) ;
+		double diff = tdiff2(&end, &start) ;
 		divide_and_conquer_cost = diff - rcost1 + ncost1 ;
 		
-		if (divide_and_conquer_cost < (double) 0)
+		assert (divide_and_conquer_cost >= 0.) ;
+		/*if (divide_and_conquer_cost < (double) 0)
 		{
 			cout << "ht " << lt << " diff " << diff << " rcost " << rcost1 << " ncost " << ncost1 << endl ;
     		for (int i = N_RANK-1; i >= 0; --i) 
@@ -587,19 +595,22 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 				<< " lt " << lt << endl ;
 			}
 			assert (0);
-		}
+		}*/
     } 
     // base case
 	//determine the looping cost on the zoid
 	double loop_cost = 0. ;
-	gettimeofday(&start, 0);
+	//gettimeofday(&start, 0);
+	clock_gettime(CLOCK_MONOTONIC, &start) ;
 	f(t0, t1, grid);
-	gettimeofday(&end, 0);
-	loop_cost = tdiff(&end, &start) ;
+	//gettimeofday(&end, 0);
+	clock_gettime(CLOCK_MONOTONIC, &end) ;
+	//loop_cost = tdiff(&end, &start) ;
+	loop_cost = tdiff2(&end, &start) ;
 	//store the decision for the zoid  and pass the redundant cost 
 	//to the parent
-	cout << "ht " << t1 - t0 << "divide n conquer cost " << 
-		divide_and_conquer_cost << " loop cost " << loop_cost << endl ;
+	//cout << "ht " << t1 - t0 << "divide n conquer cost " << 
+	//	divide_and_conquer_cost << " loop cost " << loop_cost << endl ;
 	if (divide_and_conquer && divide_and_conquer_cost < loop_cost)
 	{
 		m_zoids [index].decision = 1 ;
@@ -711,13 +722,15 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
         l_dt_stop = dt_recursive_;
 	}
 	double divide_and_conquer_cost = 0 ;
-	struct timeval start, end ;
+	//struct timeval start, end ;
+	struct timespec start, end ;
 	bool divide_and_conquer = false ;
     if (sim_can_cut) 
 	{
 		double rcost1 = 0, ncost1 = 0 ;
 		divide_and_conquer = true ;
-		gettimeofday(&start, 0);
+		//gettimeofday(&start, 0);
+		clock_gettime(CLOCK_MONOTONIC, &start) ;
 		//cout << "space cut " << endl ;
 		z.resize_children(total_num_subzoids) ;
         //cut into space 
@@ -731,10 +744,13 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
             symbolic_sawzoid_space_cut_interior(t0, t1, l_father_grid, index, 
 							f, num_subzoids, rcost1, ncost1);
 		}
-		gettimeofday(&end, 0);
-		double diff = tdiff(&end, &start) ;
+		//gettimeofday(&end, 0);
+		clock_gettime(CLOCK_MONOTONIC, &end) ;
+		//double diff = tdiff(&end, &start) ;
+		double diff = tdiff2(&end, &start) ;
 		divide_and_conquer_cost = diff - rcost1 + ncost1 ;
-		if (divide_and_conquer_cost < (double) 0)
+		assert (divide_and_conquer_cost >= 0.) ;
+		/*if (divide_and_conquer_cost < (double) 0)
 		{
 			cout << "ht " << lt << " diff " << diff << " rcost " << rcost1 << " ncost " << ncost1 << endl ;
     		for (int i = N_RANK-1; i >= 0; --i) 
@@ -746,13 +762,14 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 				<< " lt " << lt << endl ;
 			}
 			assert (0);
-		}
+		}*/
     } 
 	else if (lt > l_dt_stop)  //time cut
 	{
 		double rcost1 = 0, ncost1 = 0 ;
 		divide_and_conquer = true ;
-		gettimeofday(&start, 0);
+		//gettimeofday(&start, 0);
+		clock_gettime(CLOCK_MONOTONIC, &start) ;
 		//cout << "time cut " << endl ;
 		z.resize_children(2) ;
         // cut into time 
@@ -778,10 +795,13 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
             symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid,
 										index, 1, rcost1, ncost1, f);
         }
-		gettimeofday(&end, 0);
-		double diff = tdiff(&end, &start) ;
+		//gettimeofday(&end, 0);
+		clock_gettime(CLOCK_MONOTONIC, &end) ;
+		//double diff = tdiff(&end, &start) ;
+		double diff = tdiff2(&end, &start) ;
 		divide_and_conquer_cost = diff - rcost1 + ncost1 ;
-		if (divide_and_conquer_cost < (double) 0)
+		assert (divide_and_conquer_cost >= 0.) ;
+		/*if (divide_and_conquer_cost < (double) 0)
 		{
 			cout << "ht " << lt << " diff " << diff << " rcost " << rcost1 << " ncost " << ncost1 << endl ;
     		for (int i = N_RANK-1; i >= 0; --i) 
@@ -793,12 +813,13 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 				<< " lt " << lt << endl ;
 			}
 			assert (0);
-		}
+		}*/
     } 
 	// base case
 	//determine the looping cost on the zoid
 	double loop_cost = 0. ;
-	gettimeofday(&start, 0);
+	//gettimeofday(&start, 0);
+	clock_gettime(CLOCK_MONOTONIC, &start) ;
 	if (call_boundary) 
 	{
 		base_case_kernel_boundary(t0, t1, l_father_grid, bf);
@@ -807,12 +828,14 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 	{ 
 		f(t0, t1, l_father_grid);
 	}
-	gettimeofday(&end, 0);
-	loop_cost = tdiff(&end, &start) ;
+	//gettimeofday(&end, 0);
+	clock_gettime(CLOCK_MONOTONIC, &end) ;
+	//loop_cost = tdiff(&end, &start) ;
+	loop_cost = tdiff2(&end, &start) ;
 	//store the decision for the zoid  and pass the redundant cost 
 	//to the parent
-	cout << "ht " << t1 - t0 << "divide n conquer cost " << 
-		divide_and_conquer_cost << " loop cost " << loop_cost << endl ;
+	//cout << "ht " << t1 - t0 << "divide n conquer cost " << 
+	//	divide_and_conquer_cost << " loop cost " << loop_cost << endl ;
 	if (divide_and_conquer && divide_and_conquer_cost < loop_cost)
 	{
 		m_zoids [index].decision = 1 ;
@@ -1297,7 +1320,7 @@ sawzoid_space_time_cut_interior(int t0,
 	if (projection_zoid->decision == 0)
 	{
 		//loop
-		cout << "ht of base case " << t1 - t0 << endl ;
+		/*cout << "ht of base case " << t1 - t0 << endl ;
 		for (int i = N_RANK - 1 ; i >= 0 ; i--)
 		{
 				cout << " x0 [" << i << "] " << grid.x0 [i] 
@@ -1305,7 +1328,7 @@ sawzoid_space_time_cut_interior(int t0,
 				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
 				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
 				<< " lt " << lt << endl ;
-		}
+		}*/
 		f(t0, t1, grid);
 		return ;
 	}
@@ -1457,7 +1480,7 @@ sawzoid_space_time_cut_boundary(int t0,
 	
 	if (projection_zoid->decision == 0)
 	{
-		cout << "ht of base case " << t1 - t0 << endl ;
+		/*cout << "ht of base case " << t1 - t0 << endl ;
 		for (int i = N_RANK - 1 ; i >= 0 ; i--)
 		{
 				cout << " x0 [" << i << "] " << grid.x0 [i] 
@@ -1465,7 +1488,7 @@ sawzoid_space_time_cut_boundary(int t0,
 				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
 				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
 				<< " lt " << lt << endl ;
-		}
+		}*/
 		//loop
 		if (call_boundary) {
             base_case_kernel_boundary(t0, t1, l_father_grid, bf);

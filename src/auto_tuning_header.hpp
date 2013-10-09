@@ -20,6 +20,7 @@
 #include <deque>
 #include <unordered_map>
 #include <climits> 
+#include <time.h>
 using namespace std ;
 
 typedef unsigned int word_type ;
