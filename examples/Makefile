@@ -1,7 +1,7 @@
 #!/bin/bash
 CC = ../pochoir
 ICC = icpc
-OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x
+OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -lrt
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x
 #ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h  
 ICC_DEBUG_FLAGS = -O3 -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h  
@@ -30,7 +30,21 @@ heat_NP_zero : tb_heat_2D_NP_zero.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o heat_2D_NP_zero ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_NP_zero.cpp
 
-heat_P : tb_heat_2D_P.cpp
+2d_diffusion_loop : 2d_diffusion_loop.cpp
+#   Phase-II compilation
+	${CC} -o 2d_diffusion_loop ${OPT_FLAGS} 2d_diffusion_loop.cpp
+#	${ICC} -o heat_2D_P_gdb ${ICC_DEBUG_FLAGS} tb_heat_2D_P_pochoir.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o heat_2D_P ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_P.cpp
+
+2d_diffusion : 2d_diffusion.cpp
+#   Phase-II compilation
+	${CC} -o 2d_diffusion ${OPT_FLAGS} 2d_diffusion.cpp
+#	${ICC} -o heat_2D_P_gdb ${ICC_DEBUG_FLAGS} tb_heat_2D_P_pochoir.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o heat_2D_P ${POCHOIR_DEBUG_FLAGS} tb_heat_2D_P.cpp
+
+heat_2D_P : tb_heat_2D_P.cpp
 #   Phase-II compilation
 	${CC} -o heat_2D_P ${OPT_FLAGS} tb_heat_2D_P.cpp
 #	${ICC} -o heat_2D_P_gdb ${ICC_DEBUG_FLAGS} tb_heat_2D_P_pochoir.cpp
