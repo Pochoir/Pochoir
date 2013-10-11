@@ -27,7 +27,7 @@
 template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_interior(int t0,
 			int t1, grid_info<N_RANK> const & grid, unsigned long parent_index, 
-			F const & f, int * num_zoids, double & rcost, double & ncost)
+			F const & f, int * num_zoids, double & redundant_time, double & projected_time)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -56,7 +56,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_interior(int t0,
                     assert(l_son->level == -1);
                     symbolic_sawzoid_space_time_cut_interior(l_son->t0, 
 						l_son->t1, l_son->grid, parent_index, child_index, 
-						rcost, ncost, f);
+						redundant_time, projected_time, f);
 					child_index++ ;
                 } // end cilk_for 
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
@@ -66,7 +66,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_interior(int t0,
                 pop_queue(curr_dep_pointer);
 				symbolic_sawzoid_space_time_cut_interior(l_father->t0, 
 					l_father->t1, l_father->grid, parent_index, child_index, 
-					rcost, ncost, f);
+					redundant_time, projected_time, f);
 				child_index++ ;
 #endif
             } else {
@@ -211,8 +211,8 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_interior(int t0,
 template <int N_RANK> template <typename F, typename BF> 
 inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_boundary(int t0,
 		int t1, grid_info<N_RANK> const & grid, unsigned long parent_index, 
-		F const & f, BF const & bf, int * num_zoids, double & rcost, 
-		double & ncost)
+		F const & f, BF const & bf, int * num_zoids, double & redundant_time, 
+		double & projected_time)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -242,7 +242,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_boundary(int t0,
                     //assert(l_son->level == -1);
                     symbolic_sawzoid_space_time_cut_boundary(l_son->t0, 
 						l_son->t1, l_son->grid, parent_index, child_index, 
-						rcost, ncost, f, bf);
+						redundant_time, projected_time, f, bf);
 					child_index++ ; //this can be a race.
                 } // end cilk_for 
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
@@ -252,7 +252,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_boundary(int t0,
                 pop_queue(curr_dep_pointer);
 				symbolic_sawzoid_space_time_cut_boundary(l_father->t0, 
 					l_father->t1, l_father->grid, parent_index, child_index,
-					rcost, ncost, f, bf);
+					redundant_time, projected_time, f, bf);
 				child_index++ ; 
 #endif
             } else {
@@ -444,7 +444,7 @@ template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		int t0, int t1, grid_info<N_RANK> const & grid, 
 		unsigned long parent_index, int child_index, 
-		double & rcost, double & ncost, F const & f)
+		double & redundant_time, double & projected_time, F const & f)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false;
@@ -494,59 +494,55 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		}
         sim_can_cut |= space_cut ;
     }
-	//cout << "centroid " << centroid << " key " << key << endl ;
-	unsigned long index ;
 	struct timespec start, end;
 	clock_gettime(CLOCK_MONOTONIC, &start);
+	unsigned long index ;
 	bool projection_exists = check_and_create_projection (key, lt, 
 											centroid, index, grid) ;
-	clock_gettime(CLOCK_MONOTONIC, &end);
-	rcost += tdiff2(&end, &start) ;
-	//cout << " index " << index << endl ;
-	//cout << " child index " << child_index << endl ;
 	zoid_type & z = m_zoids [index];
 	zoid_type & parent = m_zoids [parent_index] ;
-	//cout << "parent id " << parent.id << endl ;
-	//cout << "child id " << z.id << endl ;
-	//cout << "address of parent " << &parent << endl ;
 	//add the zoid as a child of the parent
 	parent.add_child(&z, child_index, index) ;
 	assert (index < m_zoids.size()) ;
 	
 	if (projection_exists)
 	{ 
-		//Add the cost of the zoid to the parent.
-		//rcost += 0 ; //set redundant cost to 0.
-		//ncost += z.cost ;  //set necessary cost 
+		//Add the projected time of the zoid to that of the parent.
+		//projected_time += z.time ;  //set necessary time 
 		if (z.decision == 0)
 		{
-			ncost += z.loop_cost ;
+			clock_gettime(CLOCK_MONOTONIC, &end);
+			redundant_time += tdiff2(&end, &start) ;
+			projected_time += z.loop_time ;
 		}
 		else if (z.decision == 1)
 		{
-			ncost += z.divide_and_conquer_cost ;
+			clock_gettime(CLOCK_MONOTONIC, &end);
+			redundant_time += tdiff2(&end, &start) ;
+			projected_time += z.divide_and_conquer_time ;
 		}
 		//a zoid with the projection already exists. return
 		return ;
 	}
 	//print_dag() ;
 	bool divide_and_conquer = false ;
-	double divide_and_conquer_cost = 0 ;
-	double rcost1 = 0, ncost1 = 0 ;
+	double divide_and_conquer_time = 0 ;
+	double redundant_time1 = 0, projected_time1 = 0 ;
+	struct timespec start1, end1 ;
     if (sim_can_cut) 
 	{
 		divide_and_conquer = true ;
 		z.resize_children(total_num_subzoids) ;
         /* cut into space */
-		clock_gettime(CLOCK_MONOTONIC, &start);
+		clock_gettime(CLOCK_MONOTONIC, &start1);
 		symbolic_sawzoid_space_cut_interior(t0, t1, grid, index, f, 
-										num_subzoids, rcost1, ncost1) ;
-		clock_gettime(CLOCK_MONOTONIC, &end);
-		double diff = tdiff2(&end, &start) ;
-		divide_and_conquer_cost = diff - rcost1 + ncost1 ;
-		assert (divide_and_conquer_cost >= 0.) ;
+							num_subzoids, redundant_time1, projected_time1) ;
+		clock_gettime(CLOCK_MONOTONIC, &end1);
+		double diff = tdiff2(&end1, &start1) ;
+		divide_and_conquer_time = diff - redundant_time1 + projected_time1 ;
+		assert (divide_and_conquer_time >= 0.) ;
     } 
-	else if (lt > dt_recursive_) 
+	else if (lt > dt_recursive_)
 	{
 		divide_and_conquer = true ;
 		z.resize_children(2) ;
@@ -554,9 +550,9 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
         assert(lt > dt_recursive_);
         int halflt = lt / 2;
         l_son_grid = grid;
-		clock_gettime(CLOCK_MONOTONIC, &start);
+		clock_gettime(CLOCK_MONOTONIC, &start1);
         symbolic_sawzoid_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
-				index, 0, rcost1, ncost1, f);
+				index, 0, redundant_time1, projected_time1, f);
 
         for (int i = 0; i < N_RANK; ++i) {
             l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
@@ -565,48 +561,49 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
             l_son_grid.dx1[i] = grid.dx1[i];
         }
         symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
-				index, 1, rcost1, ncost1, f);
+				index, 1, redundant_time1, projected_time1, f);
 
-		clock_gettime(CLOCK_MONOTONIC, &end);
-		double diff = tdiff2(&end, &start) ;
-		divide_and_conquer_cost = diff - rcost1 + ncost1 ;
-		
-		assert (divide_and_conquer_cost >= 0.) ;
-    } 
+		clock_gettime(CLOCK_MONOTONIC, &end1);
+		double diff = tdiff2(&end1, &start1) ;
+		divide_and_conquer_time = diff - redundant_time1 + projected_time1 ;
+		assert (divide_and_conquer_time >= 0.) ;
+    }
     // base case
-	//determine the looping cost on the zoid
-	double loop_cost = 0. ;
-	clock_gettime(CLOCK_MONOTONIC, &start) ;
+	//determine the looping time on the zoid
+	double loop_time = 0. ;
+	clock_gettime(CLOCK_MONOTONIC, &start1) ;
 	f(t0, t1, grid);
-	clock_gettime(CLOCK_MONOTONIC, &end) ;
-	loop_cost = tdiff2(&end, &start) ;
-	//store the decision for the zoid and pass the redundant cost 
+	clock_gettime(CLOCK_MONOTONIC, &end1) ;
+	loop_time = tdiff2(&end1, &start1) ;
+	//store the decision for the zoid and pass the redundant time 
 	//to the parent
-	//cout << "ht " << t1 - t0 << "divide n conquer cost " << 
-	//	divide_and_conquer_cost << " loop cost " << loop_cost << endl ;
-	if (divide_and_conquer && divide_and_conquer_cost < loop_cost)
+	//cout << "ht " << t1 - t0 << "divide n conquer time " << 
+	//	divide_and_conquer_time << " loop time " << loop_time << endl ;
+	double necessary_time = 0 ;
+	if (divide_and_conquer && divide_and_conquer_time < loop_time)
 	{
 		m_zoids [index].decision = 1 ;
-		rcost += loop_cost ;
-		//m_zoids [index].cost = divide_and_conquer_cost ;
+		necessary_time = divide_and_conquer_time ;
 	}
 	else
 	{
 		m_zoids [index].decision = 0 ;
-		rcost += divide_and_conquer_cost - ncost1 ;
-		//m_zoids [index].cost = loop_cost ;
+		necessary_time = loop_time ;
 	}
-	m_zoids [index].divide_and_conquer_cost = divide_and_conquer_cost ;
-	m_zoids [index].loop_cost = loop_cost ;
-	//set necessary cost to zero since parent's timer includes the same.
-	//ncost += 0 ; 
+	m_zoids [index].divide_and_conquer_time = divide_and_conquer_time ;
+	m_zoids [index].loop_time = loop_time ;
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	double total_time = tdiff2(&end, &start) ;
+	//projected_time is not a real runtime. 
+	//so subtract the projected_time from the redundant time.
+	redundant_time += total_time - necessary_time - projected_time1 ;
 }
 
 template <int N_RANK> template <typename F, typename BF>
 inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
-		int t0, int t1,	grid_info<N_RANK> const & grid, 
-		unsigned long parent_index, int child_index, 
-		double & rcost, double & ncost, F const & f, BF const & bf)
+int t0, int t1,	grid_info<N_RANK> const & grid, 
+unsigned long parent_index, int child_index, 
+double & redundant_time, double & projected_time, F const & f, BF const & bf)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;
@@ -673,28 +670,25 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 	clock_gettime(CLOCK_MONOTONIC, &start);
 	bool projection_exists = check_and_create_projection (key, lt, 
 									centroid, index, l_father_grid) ;
-	clock_gettime(CLOCK_MONOTONIC, &end);
-	rcost += tdiff2(&end, &start) ;
-	//cout << " index " << index << endl ;
 	zoid_type & z = m_zoids [index] ;
 	zoid_type & parent = m_zoids [parent_index] ;
-	//cout << "parent id " << parent.id << endl ;
-	//cout << "address of parent " << &parent << endl ;
 	//add the zoid as a child of the parent
 	parent.add_child(&z, child_index, index) ;
 	assert (index < m_zoids.size()) ;
 	if (projection_exists)
 	{ 
-		//Add the cost of the zoid to the parent.
-		//rcost += 0 ; //set redundant cost to 0.
-		//ncost += z.cost ;  //set necessary cost 
+		//Add the time of the zoid to the parent.
 		if (z.decision == 0)
 		{
-			ncost += z.loop_cost ;
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			redundant_time += tdiff2(&end, &start) ;
+			projected_time += z.loop_time ;
 		}
 		else if (z.decision == 1)
 		{
-			ncost += z.divide_and_conquer_cost ;
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			redundant_time += tdiff2(&end, &start) ;
+			projected_time += z.divide_and_conquer_time ;
 		}
 		//a zoid with the projection already exists. return
 		return ;
@@ -708,30 +702,31 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 	{
         l_dt_stop = dt_recursive_;
 	}
-	double divide_and_conquer_cost = 0 ;
-	double rcost1 = 0, ncost1 = 0 ;
+	double divide_and_conquer_time = 0 ;
+	double redundant_time1 = 0, projected_time1 = 0 ;
 	bool divide_and_conquer = false ;
+	struct timespec start1, end1 ;
     if (sim_can_cut) 
 	{
 		divide_and_conquer = true ;
 		z.resize_children(total_num_subzoids) ;
 		//cout << "space cut " << endl ;
         //cut into space 
-		clock_gettime(CLOCK_MONOTONIC, &start) ;
+		clock_gettime(CLOCK_MONOTONIC, &start1) ;
         if (call_boundary) 
 		{
             symbolic_sawzoid_space_cut_boundary(t0, t1, l_father_grid, index, 
-							 f, bf, num_subzoids, rcost1, ncost1);
+							 f, bf, num_subzoids, redundant_time1, projected_time1);
         }
 		else
 		{
             symbolic_sawzoid_space_cut_interior(t0, t1, l_father_grid, index, 
-							f, num_subzoids, rcost1, ncost1);
+							f, num_subzoids, redundant_time1, projected_time1);
 		}
-		clock_gettime(CLOCK_MONOTONIC, &end) ;
-		double diff = tdiff2(&end, &start) ;
-		divide_and_conquer_cost = diff - rcost1 + ncost1 ;
-		assert (divide_and_conquer_cost >= 0.) ;
+		clock_gettime(CLOCK_MONOTONIC, &end1) ;
+		double diff = tdiff2(&end1, &start1) ;
+		divide_and_conquer_time = diff - redundant_time1 + projected_time1 ;
+		assert (divide_and_conquer_time >= 0.) ;
     } 
 	else if (lt > l_dt_stop)  //time cut
 	{
@@ -741,12 +736,12 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
         // cut into time 
         int halflt = lt / 2;
         l_son_grid = l_father_grid;
-		clock_gettime(CLOCK_MONOTONIC, &start) ;
+		clock_gettime(CLOCK_MONOTONIC, &start1) ;
         if (call_boundary) {
-            symbolic_sawzoid_space_time_cut_boundary(t0, t0+halflt, l_son_grid, 										index, 0, rcost1, ncost1, f, bf);
+            symbolic_sawzoid_space_time_cut_boundary(t0, t0+halflt, l_son_grid, 										index, 0, redundant_time1, projected_time1, f, bf);
         } else {
             symbolic_sawzoid_space_time_cut_interior(t0, t0+halflt, l_son_grid,
-										index, 0, rcost1, ncost1, f);
+										index, 0, redundant_time1, projected_time1, f);
         }
 
         for (int i = 0; i < N_RANK; ++i) {
@@ -757,20 +752,20 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
         }
         if (call_boundary) {
             symbolic_sawzoid_space_time_cut_boundary(t0+halflt, t1, l_son_grid,
-										index, 1, rcost1, ncost1, f, bf);
+										index, 1, redundant_time1, projected_time1, f, bf);
         } else {
             symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid,
-										index, 1, rcost1, ncost1, f);
+										index, 1, redundant_time1, projected_time1, f);
         }
-		clock_gettime(CLOCK_MONOTONIC, &end) ;
-		double diff = tdiff2(&end, &start) ;
-		divide_and_conquer_cost = diff - rcost1 + ncost1 ;
-		assert (divide_and_conquer_cost >= 0.) ;
+		clock_gettime(CLOCK_MONOTONIC, &end1) ;
+		double diff = tdiff2(&end1, &start1) ;
+		divide_and_conquer_time = diff - redundant_time1 + projected_time1 ;
+		assert (divide_and_conquer_time >= 0.) ;
     } 
 	// base case
-	//determine the looping cost on the zoid
-	double loop_cost = 0. ;
-	clock_gettime(CLOCK_MONOTONIC, &start) ;
+	//determine the looping time on the zoid
+	double loop_time = 0. ;
+	clock_gettime(CLOCK_MONOTONIC, &start1) ;
 	if (call_boundary) 
 	{
 		base_case_kernel_boundary(t0, t1, l_father_grid, bf);
@@ -779,28 +774,30 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 	{ 
 		f(t0, t1, l_father_grid);
 	}
-	clock_gettime(CLOCK_MONOTONIC, &end) ;
-	loop_cost = tdiff2(&end, &start) ;
-	//store the decision for the zoid  and pass the redundant cost 
+	clock_gettime(CLOCK_MONOTONIC, &end1) ;
+	loop_time = tdiff2(&end1, &start1) ;
+	//store the decision for the zoid  and pass the redundant time 
 	//to the parent
-	//cout << "ht " << t1 - t0 << "divide n conquer cost " << 
-	//	divide_and_conquer_cost << " loop cost " << loop_cost << endl ;
-	if (divide_and_conquer && divide_and_conquer_cost < loop_cost)
+	//cout << "ht " << t1 - t0 << "divide n conquer time " << 
+	//	divide_and_conquer_time << " loop time " << loop_time << endl ;
+	double necessary_time = 0 ;
+	if (divide_and_conquer && divide_and_conquer_time < loop_time)
 	{
 		m_zoids [index].decision = 1 ;
-		rcost += loop_cost ;
-		//m_zoids [index].cost = divide_and_conquer_cost ;
+		necessary_time = divide_and_conquer_time ;
 	}
 	else
 	{
 		m_zoids [index].decision = 0 ;
-		rcost += divide_and_conquer_cost - ncost1 ;
-		//m_zoids [index].cost = loop_cost ;
+		necessary_time = loop_time ;
 	}
-	m_zoids [index].divide_and_conquer_cost = divide_and_conquer_cost ;
-	m_zoids [index].loop_cost = loop_cost ;
-	//set necessary cost to zero since parent's timer includes the same.
-	//ncost += 0 ; 
+	m_zoids [index].divide_and_conquer_time = divide_and_conquer_time ;
+	m_zoids [index].loop_time = loop_time ;
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	double total_time = tdiff2(&end, &start) ;
+	//projected_time is not a real runtime. 
+	//so subtract the projected_time from the redundant time.
+	redundant_time += total_time - necessary_time - projected_time1 ;
 }
 
 // sawzoid space cuts. 

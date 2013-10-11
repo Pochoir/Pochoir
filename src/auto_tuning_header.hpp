@@ -66,9 +66,9 @@ class zoid
 		decision = 0 ; //0 for loop
 		children = 0 ;
 		num_children = 0 ;
-		//cost = 0 ;
-		divide_and_conquer_cost = 0 ;
-		loop_cost = 0 ;
+		//time = 0 ;
+		divide_and_conquer_time = 0 ;
+		loop_time = 0 ;
 //#ifndef NDEBUG
 		id = ULONG_MAX ;
 //#endif
@@ -81,9 +81,9 @@ class zoid
 		{
 			delete [] children ;
 			decision = z.decision ;
-			//cost = z.cost ;
-			divide_and_conquer_cost = z.divide_and_conquer_cost ;
-			loop_cost = z.loop_cost ;
+			//time = z.time ;
+			divide_and_conquer_time = z.divide_and_conquer_time ;
+			loop_time = z.loop_time ;
 			num_children = z.num_children ;
 			children = 0 ;
 			height = z.height ;
@@ -110,9 +110,9 @@ class zoid
 	zoid(const zoid & z)
 	{
 		decision = z.decision ;
-		//cost = z.cost ;
-		divide_and_conquer_cost = z.divide_and_conquer_cost ;
-		loop_cost = z.loop_cost ;
+		//time = z.time ;
+		divide_and_conquer_time = z.divide_and_conquer_time ;
+		loop_time = z.loop_time ;
 		num_children = z.num_children ;
 		//cout << "zoid : copy const for zoid " << z.id << " # children" << 
 		//		num_children << endl ;
@@ -149,9 +149,9 @@ class zoid
 		//cout << "zoid : destructor for zoid " << id << endl ;
 		num_children = 0 ;
 		decision = 0 ; // 0 for looping
-		//cost = 0 ;
-		divide_and_conquer_cost = 0 ;
-		loop_cost = 0 ;
+		//time = 0 ;
+		divide_and_conquer_time = 0 ;
+		loop_time = 0 ;
 		delete [] children ;
 		children = 0 ;
 		//cout << "zoid : end destructor for zoid " << id << endl ;
@@ -163,9 +163,9 @@ class zoid
 	int height ;
 	unsigned long * children ;  
 	int num_children ;
-	//double cost ;
-	double divide_and_conquer_cost ;
-	double loop_cost ;
+	//double time ;
+	double divide_and_conquer_time ;
+	double loop_time ;
 //#ifndef NDEBUG
 	grid_info <N_RANK> info ;
 	unsigned long id ; //id of the zoid.
@@ -246,12 +246,12 @@ private:
 		assert (m_num_vertices == m_zoids.size()) ;
 		m_head [index] = m_num_vertices ;
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
-		double rcost = 0, ncost = 0 ;
+		double rtime = 0, ntime = 0 ;
 		symbolic_sawzoid_space_time_cut_boundary(t0, t1, grid, 
-						m_num_vertices - 1, 0, rcost, ncost, f, bf) ;
+						m_num_vertices - 1, 0, rtime, ntime, f, bf) ;
 		cout << " decision of head [" << index << " ] " << 
 			m_zoids [m_head [index]].decision 
-			<< " divide n conquer cost " << m_zoids [m_head [index]].divide_and_conquer_cost << " loop cost " << m_zoids [m_head [index]].loop_cost << endl ;
+			<< " divide n conquer time " << m_zoids [m_head [index]].divide_and_conquer_time << " loop time " << m_zoids [m_head [index]].loop_time << endl ;
 	}
 
 	template <typename F>
@@ -552,9 +552,9 @@ private:
 					" num children " << z->num_children << 
 					" num_parents " << z->parents.size() << 
 					" decision " << z->decision << 
-					//" cost " << z->cost << endl ;
-					" divide n conquer cost " << z->divide_and_conquer_cost  <<
-					" loop cost " << z->loop_cost << endl ;
+					//" time " << z->time << endl ;
+					" divide n conquer time " << z->divide_and_conquer_time  <<
+					" loop time " << z->loop_time << endl ;
 					//" num_parents " << z->parents.size() << " geneity " ;
 				//print_bits(&(z->geneity), sizeof(word_type) * 8);
 				grid_info <N_RANK> & grid = z->info ;

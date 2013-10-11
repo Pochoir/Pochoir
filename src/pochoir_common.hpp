@@ -27,6 +27,7 @@
 #define POCHOIR_COMMON_H
 
 #include <sys/time.h>
+#include <time.h>
 #include <cstdio>
 #include <cmath>
 #include <cstdlib>
@@ -41,6 +42,12 @@
 static inline double tdiff (struct timeval *a, struct timeval *b)
 {
 	    return a->tv_sec - b->tv_sec + 1e-6 * (a->tv_usec - b->tv_usec);
+}
+
+static inline double tdiff2 (struct timespec *end, struct timespec *start)
+{
+		return end->tv_sec - start->tv_sec + 1e-9 * 
+								(end->tv_nsec - start->tv_nsec) ;
 }
 
 static inline int StrToInt(const std::string& s)
