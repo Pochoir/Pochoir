@@ -54,9 +54,9 @@ class zoid
 		if (this != child)
 		{
 			children [pos] = index ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 			child->add_parent(this->id) ;
-//#endif
+#endif
 		}
 	}
 	
@@ -66,12 +66,12 @@ class zoid
 		decision = 0 ; //0 for loop
 		children = 0 ;
 		num_children = 0 ;
-		//time = 0 ;
+		time = 0 ;
+#ifndef NDEBUG
 		divide_and_conquer_time = 0 ;
 		loop_time = 0 ;
-//#ifndef NDEBUG
 		id = ULONG_MAX ;
-//#endif
+#endif
 	};
 	
 	zoid & operator = (const zoid & z)
@@ -81,9 +81,11 @@ class zoid
 		{
 			delete [] children ;
 			decision = z.decision ;
-			//time = z.time ;
+			time = z.time ;
+#ifndef NDEBUG
 			divide_and_conquer_time = z.divide_and_conquer_time ;
 			loop_time = z.loop_time ;
+#endif
 			num_children = z.num_children ;
 			children = 0 ;
 			height = z.height ;
@@ -95,14 +97,14 @@ class zoid
 					children [i] = z.children [i] ;
 				}
 			}
-//#ifndef NDEBUG
+#ifndef NDEBUG
 			id = z.id ;
 			info = z.info ;
 			for (int i = 0 ; i < z.parents.size() ; i++)
 			{
 				parents.push_back(z.parents [i]) ;
 			}
-//#endif
+#endif
 		}
 		return *this ;
 	}
@@ -110,9 +112,11 @@ class zoid
 	zoid(const zoid & z)
 	{
 		decision = z.decision ;
-		//time = z.time ;
+		time = z.time ;
+#ifndef NDEBUG
 		divide_and_conquer_time = z.divide_and_conquer_time ;
 		loop_time = z.loop_time ;
+#endif
 		num_children = z.num_children ;
 		//cout << "zoid : copy const for zoid " << z.id << " # children" << 
 		//		num_children << endl ;
@@ -126,22 +130,22 @@ class zoid
 				children [i] = z.children [i] ;
 			}
 		}
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		id = z.id ;
 		info = z.info ;
 		for (int i = 0 ; i < z.parents.size() ; i++)
 		{
 			parents.push_back(z.parents [i]) ;
 		}
-//#endif
+#endif
 	}
 
 
 	int add_parent(unsigned long parent_id)
 	{
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		parents.push_back(parent_id) ;
-//#endif
+#endif
 	}
 	//destructor for zoid
 	~zoid()
@@ -149,9 +153,11 @@ class zoid
 		//cout << "zoid : destructor for zoid " << id << endl ;
 		num_children = 0 ;
 		decision = 0 ; // 0 for looping
-		//time = 0 ;
+		time = 0 ;
+#ifndef NDEBUG
 		divide_and_conquer_time = 0 ;
 		loop_time = 0 ;
+#endif
 		delete [] children ;
 		children = 0 ;
 		//cout << "zoid : end destructor for zoid " << id << endl ;
@@ -163,14 +169,14 @@ class zoid
 	int height ;
 	unsigned long * children ;  
 	int num_children ;
-	//double time ;
-	double divide_and_conquer_time ;
-	double loop_time ;
-//#ifndef NDEBUG
+	double time ;
+#ifndef NDEBUG
 	grid_info <N_RANK> info ;
 	unsigned long id ; //id of the zoid.
 	vector<unsigned long> parents ;
-//#endif
+	double divide_and_conquer_time ;
+	double loop_time ;
+#endif
 } ;
 
 
@@ -217,9 +223,9 @@ private:
 		//create a dummy head
 		m_zoids.push_back(zoid_type ()) ;
 		zoid_type & dummy_head = m_zoids [m_num_vertices] ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		dummy_head.id = m_num_vertices ;
-//#endif
+#endif
 		dummy_head.resize_children(1) ;
 		m_num_vertices++ ;
 		assert (m_num_vertices == m_zoids.size()) ;
@@ -238,9 +244,9 @@ private:
 		//create a dummy head
 		m_zoids.push_back(zoid_type ()) ;
 		zoid_type & dummy_head = m_zoids [m_num_vertices] ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		dummy_head.id = m_num_vertices ;
-//#endif
+#endif
 		dummy_head.resize_children(1) ;
 		m_num_vertices++ ;
 		assert (m_num_vertices == m_zoids.size()) ;
@@ -249,9 +255,9 @@ private:
 		double rtime = 0, ntime = 0 ;
 		symbolic_sawzoid_space_time_cut_boundary(t0, t1, grid, 
 						m_num_vertices - 1, 0, rtime, ntime, f, bf) ;
-		cout << " decision of head [" << index << " ] " << 
-			m_zoids [m_head [index]].decision 
-			<< " divide n conquer time " << m_zoids [m_head [index]].divide_and_conquer_time << " loop time " << m_zoids [m_head [index]].loop_time << endl ;
+		//cout << " decision of head [" << index << " ] " << 
+		//	m_zoids [m_head [index]].decision 
+		//	<< " divide n conquer time " << m_zoids [m_head [index]].divide_and_conquer_time << " loop time " << m_zoids [m_head [index]].loop_time << endl ;
 	}
 
 	template <typename F>
@@ -407,7 +413,7 @@ private:
 		zoid_type & z = m_zoids [m_num_vertices] ;
 		z.height = height ;
 		//assert (m_num_vertices == m_num_projections) ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		z.info = grid ;
 		z.id = m_num_vertices ;
 		//m_num_projections ;
@@ -421,7 +427,7 @@ private:
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
 			<< " h " << height << endl ; 
 		}*/
-//#endif
+#endif
 		//*zoid = z ;
 		//h.insert(std::pair<unsigned long, zoid_type *>(key, z)) ;
 		h.insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
@@ -513,7 +519,7 @@ private:
 		m_num_vertices = num_vertices ;
 	}
 
-//#ifndef NDEBUG
+#ifndef NDEBUG
 	void print_dag()
 	{
 		cout << "# vertices " << m_num_vertices << endl ;
@@ -625,7 +631,7 @@ private:
 			print_bits(&(*begin), sizeof(word_type) * 8);
 		}
 	}
-//#endif
+#endif
 
 	template <typename F>
 	inline void symbolic_abnormal_space_time_cut_boundary(int t0, int t1,  
