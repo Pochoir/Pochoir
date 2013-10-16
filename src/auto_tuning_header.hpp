@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <climits> 
 #include <time.h>
+#include <cstring>
 using namespace std ;
 
 typedef unsigned int word_type ;
@@ -163,9 +164,10 @@ class zoid
 		//cout << "zoid : end destructor for zoid " << id << endl ;
 	}
 	
+	const int NUM_BITS_DECISION = sizeof(unsigned short) * 8 ;
 	private :
 	//char decision ;
-	short decision ;
+	unsigned short decision ;
 	int height ;
 	unsigned long * children ;  
 	int num_children ;
@@ -179,6 +181,39 @@ class zoid
 #endif
 } ;
 
+// a compact representation of zoid
+class simple_zoid
+{
+public :
+	simple_zoid()
+	{
+		decision = 0 ;
+		children = 0 ;
+	}
+
+	~simple_zoid()
+	{
+		decision = 0 ;
+		delete [] children ;
+		children = 0 ;
+	}
+
+	void resize_and_copy_children(int size, unsigned long * src)
+	{
+		assert (size >= 0) ;
+		assert (children == 0) ;
+		children = new unsigned long [size];
+		for (int i = 0 ; i < size ; i++)
+		{
+			children [i] = src [i] ;
+		}
+	}
+	const int NUM_BITS_DECISION = sizeof(unsigned short) * 8 ;
+private :
+    unsigned short decision ;
+	unsigned long * children ;
+} ;
+
 
 template <int N_RANK>
 class auto_tune
@@ -189,8 +224,47 @@ private:
 	typedef typename unordered_multimap<unsigned long, unsigned long>::iterator 
 					hash_table_iterator ;
 
+	void flush_cache()
+	{
+		const int size = 20*1024*1024; // Allocate 20M. 
+		//char *c = (char *)malloc(size);
+		//for (int i = 0; i < 0xffff; i++)
+		//cilk_for (int j = 0; j < size; j++)
+		//	c[j] = (rand() % 1024)*j;
+				//c[j] = i*j;
+		//free (c) ;
+		int r = rand() % 1024 ;
+		memset(m_cache, r, size) ;
+	}
+
+	void create_simple_zoids()
+	{
+		cout << "num bits decision " << sizeof(unsigned short) * 8 << endl ;
+		assert (m_num_vertices == m_zoids.size()) ;
+		m_simple_zoids.reserve (m_num_vertices) ;
+		m_simple_zoids.resize (m_num_vertices) ;
+		for (int i = 0 ; i < m_num_vertices ; i++)
+		{
+			simple_zoid & dest = m_simple_zoids [i] ;
+			zoid_type & src = m_zoids [i] ;
+			dest.decision = src.decision ;
+			if (src.num_children > 0)
+			{
+				dest.resize_and_copy_children(src.num_children, src.children) ;
+			}
+		}
+		//clear the contents of m_zoids.
+		m_zoids.clear() ;
+		vector<zoid_type> ().swap(m_zoids) ;
+	}
+
 	void initialize(grid_info<N_RANK> const & grid, bool power_of_two)
 	{
+
+		const int size = 20*1024*1024; // Allocate 20M. 
+		m_cache = new char [size];
+		memset(m_cache, 0, size) ;
+
 		unsigned long volume = 1 ;
 		for (int i = 0 ; i < N_RANK ; i++)
 		{
@@ -372,6 +446,7 @@ private:
 		m_heterogeneity.clear() ;
 		m_zoids.clear() ;
 		vector<zoid_type>().swap(m_zoids) ; //empty the zoids vector
+		delete [] m_cache ;
 	}
 	
 	//key is the bottom volume + top volume.
@@ -693,21 +768,26 @@ private:
 
 	template <typename F, typename BF>
 	inline void sawzoid_space_time_cut_boundary(int t0, int t1,  
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
+		grid_info<N_RANK> const & grid, simple_zoid * projection_zoid, 
+		//grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f, BF const & bf) ;
 
 	template <typename F>
 	inline void sawzoid_space_time_cut_interior(int t0, int t1, 
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, F const & f) ;
+		grid_info<N_RANK> const & grid, simple_zoid * projection_zoid, 
+		//grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
+		F const & f) ;
 
 	template <typename F, typename BF>
 	inline void sawzoid_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
+		grid_info<N_RANK> const & grid, simple_zoid * projection_zoid, 
+		//grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f, BF const & bf) ;
 
 	template <typename F>
 	inline void sawzoid_space_cut_interior(int t0, int t1,
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
+		grid_info<N_RANK> const & grid, simple_zoid * projection_zoid, 
+		//grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f) ;
 
 #if 0
@@ -730,7 +810,11 @@ private:
 		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, F const & f) ;
 #endif
 
+	inline bool touch_boundary(int i, int lt,
+                grid_info<N_RANK> & grid, unsigned short & decision) ;
+	char * m_cache ;
 	vector<zoid_type> m_zoids ; //the array of all nodes in the DAG
+	vector<simple_zoid> m_simple_zoids ; //a compact array of nodes in the DAG
 	vector<hash_table> m_projections ; //the array of hashtable of <key, zoid index>
 	//zoid_type * m_head [2] ; // the start nodes of the dag
 	//unsigned long m_head [2] ; // the indices of start nodes in the dag
@@ -809,7 +893,8 @@ private:
 				slope = m_algo.slope_ [i] ;
 			}
 		}
-		struct timeval start, end;
+		//struct timeval start, end;
+		struct timespec start, end;
 		double dag_time = 0. ;
 
 		//find index of most significant bit that is set
@@ -823,12 +908,9 @@ private:
 			h1 = 1 << index_msb ;
 		}
 		m_head.push_back (ULONG_MAX) ;
-		gettimeofday(&start, 0);
+		clock_gettime(CLOCK_MONOTONIC, &start) ;
+		//gettimeofday(&start, 0);
 		build_auto_tune_dag_sawzoid(t0, t0 + h1, grid, f, bf, 0) ;
-		if (m_zoids [m_head [0]].decision != 0)
-		{
-			cout << " decided to divide and conquer " << endl ;
-		}
 
 		int offset = t0 + T / h1 * h1 ;
 		int h2 = t1 - offset ;
@@ -853,8 +935,10 @@ private:
 		print_dag() ;
 #endif
 		//do not build dag if h2 = 1. Use the white clone.
-		gettimeofday(&end, 0);
-		dag_time = tdiff(&end, &start) ;
+		clock_gettime(CLOCK_MONOTONIC, &end) ;
+		//gettimeofday(&end, 0);
+		//dag_time = tdiff(&end, &start) ;
+		dag_time = tdiff2(&end, &start) ;
 		cout << "# vertices " << m_num_vertices << endl ;
 		cout << "DAG capacity " << m_zoids.capacity() << endl ;
 		std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
@@ -865,6 +949,10 @@ private:
 		cout << "# vertices after compression" << m_num_vertices << endl ;
 		cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
 #endif
+		create_simple_zoids() ;
+		double compute_time = 0. ;
+		clock_gettime(CLOCK_MONOTONIC, &start) ;
+		//gettimeofday(&start, 0);
 		int m = T / h1 ;
 		for (int i = 0 ; i < m ; i++)
 		{
@@ -872,7 +960,8 @@ private:
 				" h1 " << h1 << " t0 + h1 " <<
 				t0 + h1 << endl ;
 			sawzoid_space_time_cut_boundary(t0, t0 + h1, grid, 
-				&(m_zoids [m_head [0]]), f, bf) ;
+				&(m_simple_zoids [m_head [0]]), f, bf) ;
+				//&(m_zoids [m_head [0]]), f, bf) ;
 			t0 += h1 ;
 		}
 
@@ -889,11 +978,17 @@ private:
 				" h " << h << " t0 + h " <<
 				t0 + h << endl ;
 			sawzoid_space_time_cut_boundary(t0, t0 + h, grid, 
-				&(m_zoids [m_head [index]]), f, bf) ;
+				&(m_simple_zoids [m_head [index]]), f, bf) ;
+				//&(m_zoids [m_head [index]]), f, bf) ;
 			t0 += h ;
 			h2 = t1 - t0 ;
 			index++ ;
 		}
+		//gettimeofday(&end, 0);
+		clock_gettime(CLOCK_MONOTONIC, &end) ;
+		compute_time = tdiff2(&end, &start) ;
+		std::cout << "Compute time :" << 1.0e3 * compute_time
+				<< "ms" << std::endl;
 		/*while (h2 > 1)
 		{
 			//find index of most significant bit that is set
