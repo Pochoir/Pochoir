@@ -1442,11 +1442,13 @@ sawzoid_space_time_cut_boundary(int t0,
 	}
 	else
 	{
-		assert (projection_zoid->decision == 0) ;
 		//loop
 		if (call_boundary) {
+			assert (projection_zoid->decision == 
+					1 << zoid<N_RANK>::NUM_BITS_DECISION - 1) ;
             base_case_kernel_boundary(t0, t1, l_father_grid, bf);
         } else { 
+			assert (projection_zoid->decision == 0) ;
             f(t0, t1, l_father_grid);
         }
 	}
