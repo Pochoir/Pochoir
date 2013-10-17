@@ -731,7 +731,7 @@ struct Algorithm {
      * - walk_ncores_boundary
      */
     inline void set_thres(int arr_type_size) {
-#if 0
+#if 1
         dt_recursive_ = 1;
         dx_recursive_[0] = 1;
         for (int i = N_RANK-1; i >= 1; --i)
@@ -744,14 +744,17 @@ struct Algorithm {
         for (int i = N_RANK-1; i >= 1; --i)
             dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(100 * sizeof(double))/arr_type_size): 10;
 #else
-        dt_recursive_ = (N_RANK == 1) ? 128 : ((N_RANK == 2) ? 32 : 4);
+        dt_recursive_ = (N_RANK == 1) ? 64 : ((N_RANK == 2) ? 32 : 4);
 		int sigma_dt_times_two = 2 * slope_ [0] * dt_recursive_ ; 
         dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1  : (int)floor(float((sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1 ;
+		if (N_RANK == 1)
+		{
+			dx_recursive_ [0] = 511 ;
+		}
 		if (N_RANK == 3)
 		{
 			dx_recursive_ [0] = (int)floor(float((32 * sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1 ;
 		}
-//        dx_recursive_[0] = 30;
         for (int i = N_RANK-1; i >= 1; --i)
             dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(2 * slope_ [i] * dt_recursive_ * sizeof(double))/arr_type_size) - 1 : 2 * slope_ [i] * dt_recursive_ - 1 ;
 #endif
