@@ -34,19 +34,20 @@
 #endif
 #include "pochoir_array.hpp"
 //#include "clones_2d_heat.hpp"
-//#include "clones_2d_diffusion.hpp"
+#include "clones_2d_diffusion.hpp"
 //#include "clones_2dwave.hpp"
-#include "clones.hpp"
+//#include "clones.hpp"
 
 #ifdef KERNEL_SELECTION
 #include "kernel_selection_trap.hpp"
 #include "kernel_selection_sawzoid.hpp"
 #elif defined GENEITY_TEST
-#include "symbolic_walk_better_memory.hpp"
-//#include "geneity_problem_trap.hpp"
-#include "pochoir_modified_cuts_heterogeneity.hpp"
+//#include "symbolic_walk_better_memory.hpp"
+#include "geneity_problem_trap.hpp"
+//#include "pochoir_modified_cuts_heterogeneity.hpp"
 //#include "symbolic_walk.hpp"
 #elif defined AUTO_TUNE
+//#include "auto_tuning_trap.hpp"
 #include "auto_tuning_sawzoid.hpp"
 #endif
 
@@ -498,15 +499,18 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #ifndef USE_PROJECTION
     algor.shorter_duo_sim_obase_bicut_p(time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #else
+#ifdef KERNEL_SELECTION
 	predicate <N_RANK> p (phys_grid_) ; 
 	p.set_resolution(resolution_) ;
 	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
-#ifdef KERNEL_SELECTION
 	kernel_selection_trap<N_RANK> ks(algor, phys_grid_, 0) ;
 	ks.set_clone_array(&c1) ;
 	ks.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
 							logic_grid_, f, bf, p) ;
 #elif defined GENEITY_TEST
+	predicate <N_RANK> p (phys_grid_) ; 
+	p.set_resolution(resolution_) ;
+	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
 	//heterogeneity<N_RANK> hg(algor, phys_grid_, 0) ;
 	geneity_problem<N_RANK> hg(algor, phys_grid_, 0) ;
 	hg.set_clone_array(&c1) ;
@@ -518,6 +522,18 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	hg.print_dag() ;
 	hg.print_heterogeneity() ;
 #endif
+#elif defined AUTO_TUNE
+	auto_tune<N_RANK> at(algor, phys_grid_, 1) ;
+	struct timeval start, end;
+	double compute_time = 0. ;
+	gettimeofday(&start, 0);
+	at.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
+								logic_grid_, f, bf) ;
+	gettimeofday(&end, 0);
+	compute_time = tdiff(&end, &start) ;
+	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
+
+	at.print_dag() ;
 #endif
 
 #endif
@@ -548,7 +564,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 								logic_grid_, f, bf, p) ;
 	gettimeofday(&end, 0);
 	compute_time = tdiff(&end, &start) ;
-	std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
+	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
 #ifndef NDEBUG
 	cout << "calling print dag " << endl ;
 	hg.print_dag() ;
@@ -563,7 +579,9 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 								logic_grid_, f, bf) ;
 	gettimeofday(&end, 0);
 	compute_time = tdiff(&end, &start) ;
-	std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
+	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
+
+	//at.print_dag() ;
 #endif
 
 #endif
