@@ -69,8 +69,9 @@ class zoid
 		num_children = 0 ;
 		time = 0 ;
 #ifndef NDEBUG
-		divide_and_conquer_time = 0 ;
-		loop_time = 0 ;
+		stime = 0 ;
+		ttime = 0 ;
+		ltime = 0 ;
 		id = ULONG_MAX ;
 #endif
 	};
@@ -84,8 +85,9 @@ class zoid
 			decision = z.decision ;
 			time = z.time ;
 #ifndef NDEBUG
-			divide_and_conquer_time = z.divide_and_conquer_time ;
-			loop_time = z.loop_time ;
+			stime = z.stime ;
+			ttime = z.ttime ;
+			ltime = z.ltime ;
 #endif
 			num_children = z.num_children ;
 			children = 0 ;
@@ -115,8 +117,9 @@ class zoid
 		decision = z.decision ;
 		time = z.time ;
 #ifndef NDEBUG
-		divide_and_conquer_time = z.divide_and_conquer_time ;
-		loop_time = z.loop_time ;
+		stime = z.stime ;
+		ttime = z.ttime ;
+		ltime = z.ltime ;
 #endif
 		num_children = z.num_children ;
 		//cout << "zoid : copy const for zoid " << z.id << " # children" << 
@@ -156,8 +159,9 @@ class zoid
 		decision = 0 ; // 0 for looping
 		time = 0 ;
 #ifndef NDEBUG
-		divide_and_conquer_time = 0 ;
-		loop_time = 0 ;
+		stime = 0 ;
+		ttime = 0 ;
+		ltime = 0 ;
 #endif
 		delete [] children ;
 		children = 0 ;
@@ -176,8 +180,9 @@ class zoid
 	grid_info <N_RANK> info ;
 	unsigned long id ; //id of the zoid.
 	vector<unsigned long> parents ;
-	double divide_and_conquer_time ;
-	double loop_time ;
+	double stime ;
+	double ttime ;
+	double ltime ;
 #endif
 } ;
 
@@ -266,10 +271,13 @@ private:
 		memset(m_cache, 0, size) ;
 
 		unsigned long volume = 1 ;
+		m_space_cut_mask = 0 ;
 		for (int i = 0 ; i < N_RANK ; i++)
 		{
 			volume *= (grid.x1[i] - grid.x0[i]) ;		
+			m_space_cut_mask |= 1 << i + 1 ;
 		}
+		cout << "space cut mask " << m_space_cut_mask << endl ;
 		m_projections.reserve(volume) ;
 		m_projections.resize(volume) ;
 		cout << "volume " << volume << endl ;
@@ -329,9 +337,17 @@ private:
 		double rtime = 0, ntime = 0 ;
 		symbolic_sawzoid_space_time_cut_boundary(t0, t1, grid, 
 						m_num_vertices - 1, 0, rtime, ntime, f, bf) ;
-		//cout << " decision of head [" << index << " ] " << 
-		//	m_zoids [m_head [index]].decision 
-		//	<< " divide n conquer time " << m_zoids [m_head [index]].divide_and_conquer_time << " loop time " << m_zoids [m_head [index]].loop_time << endl ;
+#ifndef NDEBUG
+		cout << " decision of head [" << index << " ] " << 
+			m_zoids [m_head [index]].decision 
+			<< " time for space cut " << m_zoids [m_head [index]].stime << 
+			" time for time cut " << m_zoids [m_head [index]].ttime << 
+			" time to loop " << m_zoids [m_head [index]].ltime << endl ;
+#endif
+		cout << " decision of head [" << index << "] : " << 
+			m_zoids [m_head [index]].decision 
+			<< " time " << m_zoids [m_head [index]].time * 1.0e3 << "ms" <<
+			endl ;
 	}
 
 	template <typename F>
@@ -634,8 +650,9 @@ private:
 					" num_parents " << z->parents.size() << 
 					" decision " << z->decision << 
 					//" time " << z->time << endl ;
-					" divide n conquer time " << z->divide_and_conquer_time  <<
-					" loop time " << z->loop_time << endl ;
+					" time for space cut " << z->stime  <<
+					" time for time cut " << z->ttime  <<
+					" time for loop " << z->ltime << endl ;
 					//" num_parents " << z->parents.size() << " geneity " ;
 				//print_bits(&(z->geneity), sizeof(word_type) * 8);
 				grid_info <N_RANK> & grid = z->info ;
@@ -813,6 +830,7 @@ private:
 	inline bool touch_boundary(int i, int lt,
                 grid_info<N_RANK> & grid, unsigned short & decision) ;
 	char * m_cache ;
+	unsigned short m_space_cut_mask ;
 	vector<zoid_type> m_zoids ; //the array of all nodes in the DAG
 	vector<simple_zoid> m_simple_zoids ; //a compact array of nodes in the DAG
 	vector<hash_table> m_projections ; //the array of hashtable of <key, zoid index>
