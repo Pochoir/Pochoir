@@ -914,7 +914,7 @@ private:
 		//struct timeval start, end;
 		struct timespec start, end;
 		double dag_time = 0. ;
-
+		double expected_run_time = 0 ;
 		//find index of most significant bit that is set
 		int Wn = W / (slope << 1) ;
 		int index_msb = (sizeof(int) << 3) - __builtin_clz(Wn) - 1 ;
@@ -931,6 +931,7 @@ private:
 		build_auto_tune_dag_sawzoid(t0, t0 + h1, grid, f, bf, 0) ;
 
 		int offset = t0 + T / h1 * h1 ;
+		expected_run_time += m_zoids[m_head[0]].time * 1e3 * T / h1 ;
 		int h2 = t1 - offset ;
 		int index = 1 ;
 		while (h2 >= 1)
@@ -945,6 +946,7 @@ private:
 			m_head.push_back (ULONG_MAX) ;
 			build_auto_tune_dag_sawzoid(offset, offset + h, grid,
 											f, bf, index) ;
+			expected_run_time += m_zoids[m_head[index]].time * 1e3 ;
 			offset += h ;
 			h2 = t1 - offset ;
 			index++ ;
@@ -961,6 +963,7 @@ private:
 		cout << "DAG capacity " << m_zoids.capacity() << endl ;
 		std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
 				<< "ms" << std::endl;
+		cout << "Expected run time " << expected_run_time << "ms" << endl ;
 		clear_projections() ;
 #ifdef GENEITY_TEST
 		//compress_dag () ;
