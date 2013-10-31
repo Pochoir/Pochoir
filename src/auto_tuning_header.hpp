@@ -169,6 +169,7 @@ class zoid
 	}
 	
 	const int NUM_BITS_DECISION = sizeof(unsigned short) * 8 ;
+	const double FUZZ = 1. ;
 	private :
 	//char decision ;
 	unsigned short decision ;
@@ -281,6 +282,10 @@ private:
 		m_projections.reserve(volume) ;
 		m_projections.resize(volume) ;
 		cout << "volume " << volume << endl ;
+
+		m_array.reserve(volume) ;
+		m_array.resize(volume) ;
+		
 		//unsigned long P = volume / (1 << N_RANK) ; 
 		//int lgP = 8 * sizeof(unsigned long) - __builtin_clzl(P - 1) ;
 		//cout << "Expected # of projections P " << P  << " lg P " << lgP << endl ;
@@ -293,6 +298,14 @@ private:
 		{
 			m_zoids.reserve(volume / 8) ;
 			cout << "Expected # of projections P " << volume / 8 << endl ;
+		}
+	}
+
+	inline copy_data(double * dest, double * src, unsigned long length)
+	{
+		for (unsigned long i = 0 ; i < length ; i++)
+		{
+			*dest++ = *src++ ;
 		}
 	}
 
@@ -830,6 +843,7 @@ private:
 	inline bool touch_boundary(int i, int lt,
                 grid_info<N_RANK> & grid, unsigned short & decision) ;
 	char * m_cache ;
+	vector<double> m_array ;
 	unsigned short m_space_cut_mask ;
 	vector<zoid_type> m_zoids ; //the array of all nodes in the DAG
 	vector<simple_zoid> m_simple_zoids ; //a compact array of nodes in the DAG
@@ -863,30 +877,10 @@ private:
 				  bool power_of_two):m_algo(alg)
 	{
 		m_head.reserve(2) ;
-		//m_head.push_back (ULONG_MAX) ;
-		//m_head.push_back (ULONG_MAX) ;
-		//m_head [0] = ULONG_MAX ;
-		//m_head [1] = ULONG_MAX ;
 		m_num_vertices = 0 ;
-		//m_num_projections = 0 ;
 		initialize(grid, power_of_two) ;
 		num_bits_dim = sizeof (unsigned long) * 8 / N_RANK ;
 		num_bits_width = sizeof (unsigned long) * 8 / (2 * N_RANK) ;
-		/*if (N_RANK == 1)
-		{
-			num_bits_width = sizeof (unsigned long) * 8 / 2 ;
-			num_bits_dim = sizeof (unsigned long) * 8 ; 
-		}
-		else if (N_RANK == 2)
-		{
-			num_bits_width = sizeof (unsigned long) * 8 / 4 ;
-			num_bits_dim = sizeof (unsigned long) * 8 / 2 ; 
-		}
-		else if (N_RANK == 3)
-		{
-			num_bits_width = sizeof (unsigned long) * 8 / 6 ;
-			num_bits_dim = sizeof (unsigned long) * 8 / 3 ; 
-		}*/	
 	}
 
 
@@ -898,19 +892,24 @@ private:
 
 	template <typename F, typename BF>
     inline void do_power_of_two_time_cut(int t0, int t1,
-        grid_info<N_RANK> const & grid, F const & f, BF const & bf)
+        grid_info<N_RANK> const & grid, F const & f, BF const & bf,
+		Pochoir_Array<double, N_RANK> * array)
 	{
 		int T = t1 - t0 ;
 		int W = 0 ;  //max_width among all dimensions
 		int slope ;
+		unsigned long volume = 1 ;
 		for (int i = 0 ; i < N_RANK ; i++)
 		{
+			volume *= m_algo.phys_length_ [i] ;
 			if (m_algo.phys_length_ [i] > W)
 			{
 				W = m_algo.phys_length_ [i] ;
 				slope = m_algo.slope_ [i] ;
 			}
 		}
+		//back up data
+		copy_data(&(m_array[0]), array->data(), volume) ;
 		//struct timeval start, end;
 		struct timespec start, end;
 		double dag_time = 0. ;
@@ -931,7 +930,7 @@ private:
 		build_auto_tune_dag_sawzoid(t0, t0 + h1, grid, f, bf, 0) ;
 
 		int offset = t0 + T / h1 * h1 ;
-		expected_run_time += m_zoids[m_head[0]].time * 1e3 * T / h1 ;
+		expected_run_time += m_zoids[m_head[0]].time * (int) (T / h1) ;
 		int h2 = t1 - offset ;
 		int index = 1 ;
 		while (h2 >= 1)
@@ -946,7 +945,7 @@ private:
 			m_head.push_back (ULONG_MAX) ;
 			build_auto_tune_dag_sawzoid(offset, offset + h, grid,
 											f, bf, index) ;
-			expected_run_time += m_zoids[m_head[index]].time * 1e3 ;
+			expected_run_time += m_zoids[m_head[index]].time ;
 			offset += h ;
 			h2 = t1 - offset ;
 			index++ ;
@@ -954,8 +953,9 @@ private:
 #ifndef NDEBUG
 		print_dag() ;
 #endif
-		//do not build dag if h2 = 1. Use the white clone.
 		clock_gettime(CLOCK_MONOTONIC, &end) ;
+		//copy data back.
+		copy_data(array->data(), &(m_array[0]), volume) ;
 		//gettimeofday(&end, 0);
 		//dag_time = tdiff(&end, &start) ;
 		dag_time = tdiff2(&end, &start) ;
@@ -963,7 +963,7 @@ private:
 		cout << "DAG capacity " << m_zoids.capacity() << endl ;
 		std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
 				<< "ms" << std::endl;
-		cout << "Expected run time " << expected_run_time << "ms" << endl ;
+		cout << "Expected run time " << expected_run_time * 1e3 << "ms" << endl;
 		clear_projections() ;
 #ifdef GENEITY_TEST
 		//compress_dag () ;

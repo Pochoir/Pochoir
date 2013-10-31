@@ -125,8 +125,11 @@ size_t ArraySize (Pochoir_Shape<N_RANK> (& arr)[N]) { return N; }
 #define USE_CILK_FOR 0
 #define BICUT 1
 #define STAT 0
+
+#ifdef CHECK_SHAPE
 static bool inRun = false;
 static int home_cell_[9];
+#endif
 
 static inline void klein(int & new_i, int & new_j, grid_info<2> const & grid) {
     int l_arr_size_1 = grid.x1[1] - grid.x0[1];

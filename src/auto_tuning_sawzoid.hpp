@@ -27,55 +27,6 @@
 #define ulb_boundary m_algo.ulb_boundary
 #define lub_boundary m_algo.lub_boundary
 
-//template <int N_RANK>
-//inline bool auto_tune<N_RANK>::touch_boundary(int i, int lt, 
-//						grid_info<N_RANK> & grid,
-//						unsigned short & decision) 
-//{
-//    bool interior = false;
-//    if (grid.x0[i] >= uub_boundary[i] 
-//     && grid.x0[i] + grid.dx0[i] * lt >= uub_boundary[i]) {
-//#if (KLEIN == 0)
-//#if 1
-//        /* this is for NON klein bottle */
-//        interior = true;
-//        /* by this branch, we are assuming the shape is NOT a Klein bottle */
-//        grid.x0[i] -= phys_length_[i];
-//        grid.x1[i] -= phys_length_[i];
-//		decision |= 1 << zoid<N_RANK>::NUM_BITS_DECISION - 2 - i ;
-//		cout << "decision " << decision << endl ;
-//#else
-//        interior = false;
-//#endif
-//#else
-//        /* this is for klein bottle! */
-//#if 1
-//#if DEBUG
-//        fprintf(stderr, "Before klein_region: \n");
-//        print_grid(stderr, 0, lt, grid);
-//#endif
-//        interior = true;
-////        fprintf(stderr, "call klein_region!\n");
-//        klein_region(grid, phys_grid_);
-//#if DEBUG
-//        fprintf(stderr, "After klein_region: \n");
-//        print_grid(stderr, 0, lt, grid);
-//#endif
-//#else
-//        interior = false;
-//#endif
-//#endif
-//    } else if (grid.x1[i] <= ulb_boundary[i] 
-//            && grid.x1[i] + grid.dx1[i] * lt <= ulb_boundary[i]
-//            && grid.x0[i] >= lub_boundary[i]
-//            && grid.x0[i] + grid.dx0[i] * lt >= lub_boundary[i]) {
-//        interior = true;
-//    } else {
-//        interior = false;
-//    }
-//    return !interior;
-//}
-
 template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_interior(int t0,
 			int t1, grid_info<N_RANK> const & grid, unsigned long parent_index, 
@@ -656,7 +607,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	//store the decision for the zoid and pass the redundant time 
 	//to the parent
 	if (divide_and_conquer && 
-		necessary_time + projected_time1 < loop_time)
+		necessary_time + projected_time1 < zoid_type::FUZZ * loop_time)
 	{
 		m_zoids [index].decision |= decision ;
 		projected_time += projected_time1 ;
@@ -894,7 +845,7 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
 	//store the decision for the zoid  and pass the redundant time 
 	//to the parent
 	if (divide_and_conquer && 
-		necessary_time + projected_time1 < loop_time)
+		necessary_time + projected_time1 < zoid_type::FUZZ * loop_time)
 	{
 		m_zoids [index].decision |= decision ;
 		projected_time += projected_time1 ;

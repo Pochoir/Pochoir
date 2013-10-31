@@ -185,11 +185,13 @@ struct meta_grid_boundary <3, BF>{
                 int new_j = pmod_lu(j, initial_grid.x0[1], initial_grid.x1[1]);
         for (int k = grid.x0[0]; k < grid.x1[0]; ++k) {
             int new_k = pmod_lu(k, initial_grid.x0[0], initial_grid.x1[0]);
+#ifdef CHECK_SHAPE
                 do {
                     home_cell_[3] = inRun ? new_k : 0;
                     home_cell_[2] = inRun ? new_j : 0;
                     home_cell_[1] = inRun ? new_i : 0;
                 } while (0);
+#endif
                 bf(t, new_i, new_j, new_k);
         } } }
 	} 
@@ -209,10 +211,12 @@ struct meta_grid_boundary <2, BF>{
                 int new_i = i, new_j = j;
                 klein(new_i, new_j, initial_grid);
 #endif
+#ifdef CHECK_SHAPE
                 do {
                     home_cell_[2] = inRun ? new_j : 0;
                     home_cell_[1] = inRun ? new_i : 0;
                 } while (0);
+#endif
                 bf(t, new_i, new_j);
 			} }
 	} 
@@ -223,9 +227,11 @@ struct meta_grid_boundary <1, BF>{
 	static inline void single_step(int t, grid_info<1> const & grid, grid_info<1> const & initial_grid, BF const & bf) {
 		for (int i = grid.x0[0]; i < grid.x1[0]; ++i) {
             int new_i = pmod_lu(i, initial_grid.x0[0], initial_grid.x1[0]);
+#ifdef CHECK_SHAPE
             do {
                 home_cell_[1] = inRun ? new_i : 0;
             } while (0);
+#endif
 		    bf(t, new_i);
         }
 	} 
@@ -724,6 +730,14 @@ struct Algorithm {
 #endif
     }
 
+    inline void set_thres_auto_tuning() 
+	{
+        dt_recursive_ = 1;
+        dx_recursive_[0] = 1;
+        for (int i = N_RANK-1; i >= 1; --i)
+            dx_recursive_[i] = 1;
+		cout << "Reset all base cases to 1 for auto-tuning" << endl ;
+	}
 
     /* README!!!: set_phys_grid()/set_stride() must be called before call to 
      * - walk_adaptive 
@@ -731,7 +745,7 @@ struct Algorithm {
      * - walk_ncores_boundary
      */
     inline void set_thres(int arr_type_size) {
-#if 1
+#if 0
         dt_recursive_ = 1;
         dx_recursive_[0] = 1;
         for (int i = N_RANK-1; i >= 1; --i)
@@ -753,7 +767,8 @@ struct Algorithm {
 		}
 		if (N_RANK == 3)
 		{
-			dx_recursive_ [0] = (int)floor(float((32 * sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1 ;
+			//dx_recursive_ [0] = (int)floor(float((32 * sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1 ;
+			dx_recursive_ [0] = 511 ;
 		}
         for (int i = N_RANK-1; i >= 1; --i)
             dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(2 * slope_ [i] * dt_recursive_ * sizeof(double))/arr_type_size) - 1 : 2 * slope_ [i] * dt_recursive_ - 1 ;
@@ -995,7 +1010,9 @@ template <int N_RANK> template <typename BF>
 inline void Algorithm<N_RANK>::base_case_kernel_boundary(int t0, int t1, grid_info<N_RANK> const grid, BF const & bf) {
 	grid_info<N_RANK> l_grid = grid;
 	for (int t = t0; t < t1; ++t) {
+#ifdef CHECK_SHAPE
         home_cell_[0] = t;
+#endif
 		/* execute one single time step */
 		meta_grid_boundary<N_RANK, BF>::single_step(t, l_grid, phys_grid_, bf);
 
