@@ -528,40 +528,53 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	}
 	//print_dag() ;
 
+    // base case
+	//determine the looping time on the zoid
+	clock_gettime(CLOCK_MONOTONIC, &start1) ;
+	f(t0, t1, grid);
+	clock_gettime(CLOCK_MONOTONIC, &end1) ;
+	double loop_time_with_penalty = tdiff2(&end1, &start1) ;
+
+	//flush_cache() ;
+    // base case
+	//determine the looping time on the zoid
+	clock_gettime(CLOCK_MONOTONIC, &start1) ;
+	f(t0, t1, grid);
+	clock_gettime(CLOCK_MONOTONIC, &end1) ;
+	double loop_time = tdiff2(&end1, &start1) ;
+//#ifndef NDEBUG
+	m_zoids [index].ltime = loop_time ;
+//#endif
+	m_zoids [index].cache_penalty_time = loop_time_with_penalty - loop_time ;
+
 	bool divide_and_conquer = false ;
-	double necessary_time = 0, projected_time1 = 0 ;
     if (sim_can_cut) 
 	{
 		assert (decision) ;
 		divide_and_conquer = true ; 
-		double elapsed_time = 0, rtime = 0, ptime = 0 ;
 		z.resize_children(total_num_subzoids) ;
-        /* cut into space */
-		clock_gettime(CLOCK_MONOTONIC, &start1);
-		symbolic_sawzoid_space_cut_interior(t0, t1, grid, index, f, 
-							num_subzoids, rtime, ptime) ;
-		clock_gettime(CLOCK_MONOTONIC, &end1);
-		elapsed_time = tdiff2(&end1, &start1) - rtime ;
-		assert (elapsed_time >= 0.) ;
-		assert (ptime >= 0.) ;
-
-		necessary_time = elapsed_time ;
-		projected_time1 = ptime ;
-		//decision = 2 ;
-#ifndef NDEBUG
-		m_zoids [index].stime = elapsed_time + ptime ;
-#endif
-    }
+	}
 	else if (lt > dt_recursive_)
 	{
 		divide_and_conquer = true ;
 		z.resize_children(2) ;
-		double elapsed_time = 0, rtime = 0, ptime = 0 ;
+		decision = 1 ;
+	}
+	double elapsed_time = 0, rtime = 0, ptime = 0 ;
+	double necessary_time = 0, projected_time1 = 0 ;
+	clock_gettime(CLOCK_MONOTONIC, &start1);
+    if (sim_can_cut) 
+	{
+        /* cut into space */
+		symbolic_sawzoid_space_cut_interior(t0, t1, grid, index, f, 
+							num_subzoids, rtime, ptime) ;
+		//decision = 2 ;
+    }
+	else if (lt > dt_recursive_)
+	{
         /* cut into time */
-        assert(lt > dt_recursive_);
         int halflt = lt / 2;
         l_son_grid = grid;
-		clock_gettime(CLOCK_MONOTONIC, &start1);
         symbolic_sawzoid_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
 				index, 0, rtime, ptime, f);
 
@@ -573,45 +586,33 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
         }
         symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
 				index, 1, rtime, ptime, f);
-
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
-		elapsed_time = tdiff2(&end1, &start1) - rtime ;
-		assert (elapsed_time >= 0.) ;
-		assert (ptime >= 0.) ;
-
-		//if space cut didn't happen or 
-		//   space cut happened and time for time cut < time for space cut
-		//then reset the necessary and projected times.
-		if ((sim_can_cut && 
-			elapsed_time + ptime < necessary_time + projected_time1)
-			|| !sim_can_cut)
-		{
-			necessary_time = elapsed_time ;
-			projected_time1 = ptime ;
-			decision = 1 ;
-		}
-#ifndef NDEBUG
-		m_zoids [index].ttime = elapsed_time + ptime ;
-#endif
     }
-	//flush_cache() ;
-    // base case
-	//determine the looping time on the zoid
-	clock_gettime(CLOCK_MONOTONIC, &start1) ;
-	f(t0, t1, grid);
-	clock_gettime(CLOCK_MONOTONIC, &end1) ;
-	double loop_time = tdiff2(&end1, &start1) ;
-#ifndef NDEBUG
-	m_zoids [index].ltime = loop_time ;
-#endif
+	clock_gettime(CLOCK_MONOTONIC, &end1);
+	elapsed_time = tdiff2(&end1, &start1) - rtime ;
+	assert (elapsed_time >= 0.) ;
+	assert (ptime >= 0.) ;
+
+	projected_time1 = ptime ;
+//#ifndef NDEBUG
+	if (sim_can_cut)
+	{
+		m_zoids [index].stime = elapsed_time + ptime ;
+	}
+	else if (lt > dt_recursive_)
+	{
+		m_zoids [index].ttime = elapsed_time + ptime ;
+	}
+//#endif
+
 	//store the decision for the zoid and pass the redundant time 
 	//to the parent
 	if (divide_and_conquer && 
-		necessary_time + projected_time1 < zoid_type::FUZZ * loop_time)
+		elapsed_time + projected_time1 < zoid_type::FUZZ * loop_time)
 	{
 		m_zoids [index].decision |= decision ;
+		necessary_time = elapsed_time ;
 		projected_time += projected_time1 ;
-		m_zoids [index].time = necessary_time + projected_time1 ;
+		m_zoids [index].time = elapsed_time + projected_time1 ;
 	}
 	else
 	{
@@ -725,6 +726,38 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
 	}
 	//print_dag() ;
 
+	//flush_cache() ;
+	// base case
+	//determine the looping time on the zoid
+	clock_gettime(CLOCK_MONOTONIC, &start1) ;
+	if (call_boundary) 
+	{
+		base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+	} 
+	else 
+	{ 
+		f(t0, t1, l_father_grid);
+	}
+	clock_gettime(CLOCK_MONOTONIC, &end1) ;
+	double loop_time_with_penalty = tdiff2(&end1, &start1) ;
+	
+	//determine the looping time on the zoid
+	clock_gettime(CLOCK_MONOTONIC, &start1) ;
+	if (call_boundary) 
+	{
+		base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+	} 
+	else 
+	{ 
+		f(t0, t1, l_father_grid);
+	}
+	clock_gettime(CLOCK_MONOTONIC, &end1) ;
+	double loop_time = tdiff2(&end1, &start1) ;
+//#ifndef NDEBUG
+	m_zoids [index].ltime = loop_time ;
+//#endif
+	m_zoids [index].cache_penalty_time = loop_time_with_penalty - loop_time ;
+
     if (call_boundary)
 	{
 		z.decision |= (unsigned short) 1 << 
@@ -735,17 +768,26 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
 	{
         l_dt_stop = dt_recursive_;
 	}
-	double projected_time1 = 0, necessary_time = 0 ;
 	bool divide_and_conquer = false ;
     if (sim_can_cut) 
 	{
 		assert (decision) ;
 		divide_and_conquer = true ;
 		z.resize_children(total_num_subzoids) ;
-		double elapsed_time = 0, rtime = 0, ptime = 0 ;
+	}
+	else if (lt > l_dt_stop)  //time cut
+	{
+		divide_and_conquer = true ;
+		z.resize_children(2) ;
+		decision = 1 ;
+	}
+	double projected_time1 = 0, necessary_time = 0 ;
+	double elapsed_time = 0, rtime = 0, ptime = 0 ;
+	clock_gettime(CLOCK_MONOTONIC, &start1) ;
+    if (sim_can_cut) 
+	{
 		//cout << "space cut " << endl ;
         //cut into space 
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
     	for (int i = N_RANK-1; i >= 0; --i) {
         	touch_boundary(i, lt, l_father_grid) ;
     	}
@@ -759,27 +801,13 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
             symbolic_sawzoid_space_cut_interior(t0, t1, l_father_grid, index, 
 						f, num_subzoids, rtime, ptime);
 		}
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
-		elapsed_time = tdiff2(&end1, &start1) - rtime ;
-		assert (elapsed_time >= 0.) ;
-		assert (ptime >= 0.) ;
-
-		necessary_time = elapsed_time ;
-		projected_time1 = ptime ;
 		//decision = 2 ;
-#ifndef NDEBUG
-		m_zoids [index].stime = elapsed_time + ptime ;
-#endif
     } 
 	else if (lt > l_dt_stop)  //time cut
 	{
-		divide_and_conquer = true ;
-		double elapsed_time = 0, rtime = 0, ptime = 0 ;
-		z.resize_children(2) ;
         // cut into time 
         int halflt = lt / 2;
         l_son_grid = l_father_grid;
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
     	for (int i = N_RANK-1; i >= 0; --i) {
         	touch_boundary(i, lt, l_father_grid) ;
     	}
@@ -803,53 +831,33 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
             symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid,
 							index, 1, rtime, ptime, f);
         }
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
-		elapsed_time = tdiff2(&end1, &start1) - rtime ;
-		assert (elapsed_time >= 0.) ;
-		assert (ptime >= 0.) ;
-
-		//if space cut didn't happen or 
-		//   space cut happened and time for time cut < time for space cut
-		//then reset the necessary and projected times.
-		if ((sim_can_cut && 
-			elapsed_time + ptime < necessary_time + projected_time1)
-			|| !sim_can_cut)
-		{
-			necessary_time = elapsed_time ;
-			projected_time1 = ptime ;
-			decision = 1 ;
-		}
-#ifndef NDEBUG
-		m_zoids [index].ttime = elapsed_time + ptime ;
-#endif
     } 
-
-	//flush_cache() ;
-	// base case
-	//determine the looping time on the zoid
-	clock_gettime(CLOCK_MONOTONIC, &start1) ;
-	if (call_boundary) 
-	{
-		base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-	} 
-	else 
-	{ 
-		f(t0, t1, l_father_grid);
-	}
 	clock_gettime(CLOCK_MONOTONIC, &end1) ;
-	double loop_time = tdiff2(&end1, &start1) ;
-#ifndef NDEBUG
-	m_zoids [index].ltime = loop_time ;
-#endif
-
+	elapsed_time = tdiff2(&end1, &start1) - rtime ;
+	assert (elapsed_time >= 0.) ;
+	assert (ptime >= 0.) ;
+	projected_time1 = ptime ;
+//#ifndef NDEBUG
+	if (sim_can_cut)
+	{
+		m_zoids [index].stime = elapsed_time + ptime ;
+	}
+	else if (lt > l_dt_stop)  //time cut
+	{
+		m_zoids [index].ttime = elapsed_time + ptime ;
+	}
+//#endif
+	
+	
 	//store the decision for the zoid  and pass the redundant time 
 	//to the parent
 	if (divide_and_conquer && 
-		necessary_time + projected_time1 < zoid_type::FUZZ * loop_time)
+		elapsed_time + projected_time1 < zoid_type::FUZZ * loop_time)
 	{
 		m_zoids [index].decision |= decision ;
+		necessary_time = elapsed_time ;
 		projected_time += projected_time1 ;
-		m_zoids [index].time = necessary_time + projected_time1 ;
+		m_zoids [index].time = elapsed_time + projected_time1 ;
 	}
 	else
 	{
