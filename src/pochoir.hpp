@@ -33,7 +33,7 @@
 //#include "projections.hpp"
 #endif
 #include "pochoir_array.hpp"
-//#include "clones_2d_heat.hpp"
+#include "clones_2d_heat.hpp"
 //#include "clones_2d_diffusion.hpp"
 //#include "clones_2d_output.hpp"
 //#include "clones_2dwave.hpp"
@@ -43,13 +43,14 @@
 #include "kernel_selection_trap.hpp"
 #include "kernel_selection_sawzoid.hpp"
 #elif defined GENEITY_TEST
-//#include "symbolic_walk_better_memory.hpp"
-#include "geneity_problem_trap.hpp"
+#include "symbolic_walk_better_memory.hpp"
+//#include "geneity_problem_trap.hpp"
 //#include "pochoir_modified_cuts_heterogeneity.hpp"
 //#include "symbolic_walk.hpp"
 #elif defined AUTO_TUNE
 //#include "auto_tuning_trap.hpp"
-#include "auto_tuning_sawzoid.hpp"
+//#include "auto_tuning_sawzoid.hpp"
+#include "auto_tuning_arbitrary_cuts_sawzoid.hpp"
 //#include "dag_sawzoid.hpp"
 #endif
 
@@ -479,6 +480,16 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
     algor.set_time_step(timestep_);
 	algor.set_time_shift(time_shift_) ;
 	cout << "time_shift_ " << time_shift_ << " timestep " << timestep << endl ;
+	grid_info <N_RANK> grid = logic_grid_ ;
+	for (int i = N_RANK - 1 ; i >= 0 ; i--)
+	{
+		cout << " x0 [" << i << "] " << grid.x0 [i] 
+			<< " x1 [" << i << "] " << grid.x1 [i] 
+			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * timestep_
+			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * timestep_
+			<< endl ; 
+	}
+	
 //#ifdef COUNT_PROJECTIONS
 //    algor.compute_projections(0+time_shift_, timestep+time_shift_, logic_grid_) ;
 //#endif
@@ -520,10 +531,10 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #elif defined GENEITY_TEST
 	predicate <N_RANK> p (phys_grid_) ; 
 	p.set_resolution(resolution_) ;
-	p.set_output_file(outputFile_) ;
+	//p.set_output_file(outputFile_) ;
 	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
-	//heterogeneity<N_RANK> hg(algor, phys_grid_, 0) ;
-	geneity_problem<N_RANK> hg(algor, phys_grid_, 0) ;
+	heterogeneity<N_RANK> hg(algor, phys_grid_, 0) ;
+	//geneity_problem<N_RANK> hg(algor, phys_grid_, 0) ;
 	hg.set_clone_array(&c1) ;
 	//hg.build_heterogeneity_dag(0, timestep, logic_grid_, p, 0) ;
 	hg.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
