@@ -479,28 +479,6 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		key <<= num_bits_width ;
 		key |= tb ;
 		
-		/*int num_bits_lb = 0, num_bits_tb = 0 ;
-		assert (lb >= 0) ;
-		assert (tb >= 0) ;
-		if (lb != 0)
-		{
-			num_bits_lb = NUM_BITS_KEY - __builtin_clzl(lb) ;
-		}
-		key = key | (unsigned long) lb << (offset - num_bits_lb) ;
-		cout << " offset " << offset << endl ;
-		offset -= num_bits_width ;
-		if (tb != 0)
-		{
-			num_bits_tb = NUM_BITS_KEY - __builtin_clzl(tb) ;
-		}
-		key = key | (unsigned long) tb << (offset - num_bits_tb) ;
-		offset -= num_bits_width ;
-		assert (offset >= 0) ;
-		cout << " key " << key << endl ;*/
-		
-		/*unsigned long dim_key = (unsigned long) lb << num_bits_width | tb ;
-		key = key << offset | dim_key ;
-		offset += num_bits_dim ;*/
 		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
 			 << " x1 [" << i << "] " << grid.x1 [i] 
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
@@ -745,35 +723,6 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
 		key <<= num_bits_width ;
 		key |= tb ;
 
-		/*int num_bits_lb = 0, num_bits_tb = 0 ;
-		assert (lb >= 0) ;
-		assert (tb >= 0) ;
-		cout << " offset " << offset << endl ;
-		if (lb != 0)
-		{
-			num_bits_lb = NUM_BITS_KEY - __builtin_clzl(lb) ;
-		}
-		cout << " lb " << lb << " num_bits_lb " << num_bits_lb << endl ;
-		key = key | (unsigned long) lb << (offset - num_bits_lb) ;
-		cout << " key " << key << endl ;
-		print_bits (&key, NUM_BITS_KEY) ;
-		offset -= num_bits_width ;
-		if (tb != 0)
-		{
-			num_bits_tb = NUM_BITS_KEY - __builtin_clzl(tb) ;
-		}
-		cout << " offset " << offset << endl ;
-		cout << " tb " << tb << " num_bits_tb " << num_bits_tb << endl ;
-		key = key | (unsigned long) tb << (offset - num_bits_tb) ;
-		offset -= num_bits_width ;
-		assert (offset >= 0) ;*/
-		
-		/*unsigned long dim_key = (unsigned long) lb << num_bits_width | tb ;
-		unsigned long dim_key = (unsigned long) lb << num_bits_width ;
-		key = key << offset | dim_key ;
-		offset += num_bits_dim ;*/
-		//cout << " key " << key << endl ;
-		//print_bits (&key, NUM_BITS_KEY) ;
         call_boundary |= l_touch_boundary;
     }
 	unsigned long index ;
@@ -1032,17 +981,17 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
                 pop_queue(curr_dep_pointer);
                 const grid_info<N_RANK> l_father_grid = l_father->grid;
                 const int t0 = l_father->t0, t1 = l_father->t1;
-                const int lt = (t1 - t0);
                 const int level = l_father->level;
                 const int thres = slope_[level] * lt;
+                /*const int lt = (t1 - t0);
                 const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
-				const bool can_cut = CAN_CUT_I ;
+				const bool can_cut = CAN_CUT_I ;*/
 				//const bool can_cut = (cut_lb ? (lb >= 2 * thres) : 
 				//								(tb >= 2 * thres)) ;
-				if (! can_cut) {
-				//if ((projection_zoid->decision & 1 << level + 1) == 0) {
+				//if (! can_cut) {
+				if ((projection_zoid->decision & 1 << level + 1) == 0) {
                     // if we can't cut into this dimension, just directly push 
                     // it into the circular queue 
                     //
@@ -1051,8 +1000,8 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
                 } else  {
 					assert ((projection_zoid->decision & 1 << level + 1) != 0) ;
                     /* can_cut! */
-                    if (cut_lb) {
-					//if (projection_zoid->decision & 1 << level + 1 + N_RANK) {
+                    //if (cut_lb) {
+					if (projection_zoid->decision & 1 << level + 1 + N_RANK) {
                         grid_info<N_RANK> l_son_grid = l_father_grid;
                         const int l_start = (l_father_grid.x0[level]);
                         const int l_end = (l_father_grid.x1[level]);
@@ -1071,10 +1020,10 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
                         l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
                         push_queue(next_dep_pointer, level-1, t0, t1, 
 									l_son_grid) ;
-						const int cut_more = ((lb - (thres << 2)) >= 0) ;
-						if (cut_more)
-						//if (projection_zoid->decision & 
-						//			1 << level + 1 + 2 * N_RANK)
+						//const int cut_more = ((lb - (thres << 2)) >= 0) ;
+						//if (cut_more)
+						if (projection_zoid->decision & 
+									1 << level + 1 + 2 * N_RANK)
 						{
 							const int offset = (thres << 1) ;
 							l_son_grid.x0[level] = l_start ;
@@ -1130,10 +1079,10 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
 									l_son_grid);
 
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
-						const int cut_more = ((tb - (thres << 2)) >= 0) ;
-						if (cut_more)
-						//if (projection_zoid->decision & 
-						//			1 << level + 1 + 2 * N_RANK)
+						//const int cut_more = ((tb - (thres << 2)) >= 0) ;
+						//if (cut_more)
+						if (projection_zoid->decision & 
+									1 << level + 1 + 2 * N_RANK)
 						{
 							l_son_grid.x0[level] = l_start + offset ;
                             l_son_grid.dx0[level] = -slope_[level];
@@ -1240,20 +1189,20 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
                 pop_queue(curr_dep_pointer);
                 grid_info<N_RANK> l_father_grid = l_father->grid;
                 const int t0 = l_father->t0, t1 = l_father->t1;
-                const int lt = (t1 - t0);
                 const int level = l_father->level;
                 const int thres = slope_[level] * lt;
+                /*const int lt = (t1 - t0);
                 const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
 //#define touch_boundary m_algo.touch_boundary
                 const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
 //#undef touch_boundary
-				const bool can_cut = CAN_CUT_B ;
+				const bool can_cut = CAN_CUT_B ;*/
 				//const bool can_cut = (cut_lb ? (lb >= 2 * thres) : 
 				//							  (tb >= 2 * thres)) ;
-                if (! can_cut) {
-				//if ((projection_zoid->decision & 1 << level + 1) == 0) {
+                //if (! can_cut) {
+				if ((projection_zoid->decision & 1 << level + 1) == 0) {
                 //if (num_zoids [level] == 0) {
                     // if we can't cut into this dimension, just directly push
                     // it into the circular queue
@@ -1263,8 +1212,8 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
                 } else  {
 					assert ((projection_zoid->decision & 1 << level + 1) != 0) ;
                     /* can_cut */
-                    if (cut_lb) {
-					//if (projection_zoid->decision & 1 << level + 1 + N_RANK) {
+                    //if (cut_lb) {
+					if (projection_zoid->decision & 1 << level + 1 + N_RANK) {
                         grid_info<N_RANK> l_son_grid = l_father_grid;
                         const int l_start = (l_father_grid.x0[level]);
                         const int l_end = (l_father_grid.x1[level]);
@@ -1284,10 +1233,10 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
                         push_queue(next_dep_pointer, level-1, t0, t1, 
 											l_son_grid) ;
 
-						const int cut_more = ((lb - (thres << 2)) >= 0) ;
-						if (cut_more)
-						//if (projection_zoid->decision & 
-						//			1 << level + 1 + 2 * N_RANK)
+						//const int cut_more = ((lb - (thres << 2)) >= 0) ;
+						//if (cut_more)
+						if (projection_zoid->decision & 
+									1 << level + 1 + 2 * N_RANK)
 						{
 							const int offset = (thres << 1) ;
 							l_son_grid.x0[level] = l_start ;
@@ -1323,17 +1272,17 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
 						}
                     } /* end if (cut_lb) */
                     else { /* cut_tb */
-                        if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
-						//if (projection_zoid->decision & 
-						//			1 << level + 1 + 3 * N_RANK) {
+                        //if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
+						if (projection_zoid->decision & 
+									1 << level + 1 + 3 * N_RANK) {
                             grid_info<N_RANK> l_son_grid = l_father_grid;
                             const int l_start = (l_father_grid.x0[level]);
                             const int l_end = (l_father_grid.x1[level]);
                             const int next_dep_pointer = (curr_dep + 1) & 0x1;
-							const int cut_more = ((lb - (thres << 2)) >= 0) ;
-							if (cut_more)
-							//if (projection_zoid->decision & 
-							//		1 << level + 1 + 2 * N_RANK)
+							//const int cut_more = ((lb - (thres << 2)) >= 0) ;
+							//if (cut_more)
+							if (projection_zoid->decision & 
+									1 << level + 1 + 2 * N_RANK)
 							{
 								const int offset = (thres << 1) ;
                             	l_son_grid.x0[level] = l_start ;
@@ -1394,10 +1343,10 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
 								t1, l_son_grid) ;
 
 							const int next_dep_pointer = (curr_dep + 1) & 0x1;
-							const int cut_more = ((tb - (thres << 2)) >= 0) ;
-							if (cut_more)
-							//if (projection_zoid->decision & 
-							//		1 << level + 1 + 2 * N_RANK)
+							//const int cut_more = ((tb - (thres << 2)) >= 0) ;
+							//if (cut_more)
+							if (projection_zoid->decision & 
+									1 << level + 1 + 2 * N_RANK)
 							{
 								l_son_grid.x0[level] = l_start + offset ;
 								l_son_grid.dx0[level] = -slope_[level];
