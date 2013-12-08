@@ -72,26 +72,18 @@ int main(int argc, char * argv[])
     printf("N1 = %d, N2 = %d, N3 = %d, T_SIZE = %d\n", N1, N2, N3 , T_SIZE);
     Pochoir_Shape_3D heat_shape_3D[] = {{0, 0, 0, 0}, {-1, 1, 0, 0}, {-1, -1, 0, 0}, {-1, 0, 0, 0}, {-1, 0, 0, -1}, {-1, 0, 0, 1}, {-1, 0, 1, 0}, {-1, 0, -1, 0}};
     Pochoir_3D heat_3D(heat_shape_3D);
-	//Pochoir_Array_3D(double) a(N1, N2, N3), b(N1+2, N2+2, N3+2);
-	Pochoir_Array_3D(double) a(N1, N2, N3), b(N1, N2, N3);
+	Pochoir_Array_3D(double) a(N1, N2, N3) ;
+	//Pochoir_Array_3D(double) b(N1, N2, N3);
     heat_3D.Register_Array(a);
-    b.Register_Shape(heat_shape_3D);
+    //b.Register_Shape(heat_shape_3D);
 
 	for (int i = 0; i < N1; ++i) {
 	for (int j = 0; j < N2; ++j) {
     for (int k = 0; k < N3; ++k) {
-        /*if (i == 0 || i == N1-1
-            || j == 0 || j == N2-1
-            || k == 0 || k == N3-1) {
-            a(0, i, j, k) = a(1, i, j, k) = 0;
-        } else {*/
-            a(0, i, j, k) = 1.0 * (rand() % BASE); 
-            a(1, i, j, k) = 0; 
-        //}
-        b(0, i, j, k) = a(0, i, j, k);
-        b(1, i, j, k) = 0;
-        //b(0, i+1, j+1, k+1) = a(0, i, j, k);
-        //b(1, i+1, j+1, k+1) = 0;
+        a(0, i, j, k) = 1.0 * (rand() % BASE); 
+        a(1, i, j, k) = 0; 
+        //b(0, i, j, k) = a(0, i, j, k);
+        //b(1, i, j, k) = 0;
 	} } }
 
     Pochoir_Kernel_3D(heat_3D_fn, t, i, j, k)
@@ -109,8 +101,7 @@ int main(int argc, char * argv[])
      * value function
      */
     a.Register_Boundary(heat_bv_3D);
-    b.Register_Boundary(heat_bv_3D);
-    //heat_3D.Register_Domain(I, J, K);
+    //b.Register_Boundary(heat_bv_3D);
 
 #if 1
     for (int times = 0; times < TIMES; ++times) {
@@ -122,7 +113,7 @@ int main(int argc, char * argv[])
 	std::cout << "Pochoir ET: consumed time :" << min_tdiff << "ms" << std::endl;
 
 #endif
-#if 1
+#if 0
     min_tdiff = INF;
     /* cilk_for + zero-padding */
     for (int times = 0; times < TIMES; ++times) {
