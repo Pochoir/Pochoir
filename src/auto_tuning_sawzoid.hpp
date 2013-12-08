@@ -23,6 +23,7 @@
 #define touch_boundary m_algo.touch_boundary
 #define phys_length_ m_algo.phys_length_
 #define base_case_kernel_boundary m_algo.base_case_kernel_boundary
+#define base_case_kernel_boundary_rectangle m_algo.base_case_kernel_boundary_rectangle
 #define uub_boundary m_algo.uub_boundary
 #define ulb_boundary m_algo.ulb_boundary
 #define lub_boundary m_algo.lub_boundary
@@ -458,21 +459,48 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	clock_gettime(CLOCK_MONOTONIC, &start);
 
 	int centroid = 0, width = 1 ; 
-	int offset = 0, total_num_subzoids = 1 ;
+	//int offset = 0 ;
+	int offset = NUM_BITS_KEY ;
+	int total_num_subzoids = 1 ;
 	int num_subzoids [N_RANK] ;
 	unsigned long key = 0 ;
 	unsigned short decision = 0 ;
     for (int i = N_RANK-1; i >= 0; --i) {
-        int lb, thres, tb;
+        unsigned long lb, tb ; 
+		int thres ;
         lb = (grid.x1[i] - grid.x0[i]);
         tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
 		centroid = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
 					centroid ;
-		width = phys_length_ [i] ;
+		width *= phys_length_ [i] ;
 
-		unsigned long dim_key = (unsigned long) lb << num_bits_width | tb ;
+		key <<= num_bits_width ;
+		key |= lb ;
+		key <<= num_bits_width ;
+		key |= tb ;
+		
+		/*int num_bits_lb = 0, num_bits_tb = 0 ;
+		assert (lb >= 0) ;
+		assert (tb >= 0) ;
+		if (lb != 0)
+		{
+			num_bits_lb = NUM_BITS_KEY - __builtin_clzl(lb) ;
+		}
+		key = key | (unsigned long) lb << (offset - num_bits_lb) ;
+		cout << " offset " << offset << endl ;
+		offset -= num_bits_width ;
+		if (tb != 0)
+		{
+			num_bits_tb = NUM_BITS_KEY - __builtin_clzl(tb) ;
+		}
+		key = key | (unsigned long) tb << (offset - num_bits_tb) ;
+		offset -= num_bits_width ;
+		assert (offset >= 0) ;
+		cout << " key " << key << endl ;*/
+		
+		/*unsigned long dim_key = (unsigned long) lb << num_bits_width | tb ;
 		key = key << offset | dim_key ;
-		offset += num_bits_dim ;
+		offset += num_bits_dim ;*/
 		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
 			 << " x1 [" << i << "] " << grid.x1 [i] 
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
@@ -493,6 +521,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		}
 		num_subzoids [i] = 0 ;
 		if (short_side >= (thres << 1) && lb > dx_recursive_[i])
+		//if (short_side >= 2 * thres) 
 		{
 			space_cut = true ;
 			//set if a space cut can happen in dimension i
@@ -530,22 +559,21 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 
     // base case
 	//determine the looping time on the zoid
-	clock_gettime(CLOCK_MONOTONIC, &start1) ;
+	/*clock_gettime(CLOCK_MONOTONIC, &start1) ;
 	f(t0, t1, grid);
 	clock_gettime(CLOCK_MONOTONIC, &end1) ;
-	double loop_time_with_penalty = tdiff2(&end1, &start1) ;
+	double loop_time_with_penalty = tdiff2(&end1, &start1) ;*/
 
-	//flush_cache() ;
     // base case
 	//determine the looping time on the zoid
 	clock_gettime(CLOCK_MONOTONIC, &start1) ;
 	f(t0, t1, grid);
 	clock_gettime(CLOCK_MONOTONIC, &end1) ;
 	double loop_time = tdiff2(&end1, &start1) ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 	m_zoids [index].ltime = loop_time ;
-//#endif
-	m_zoids [index].cache_penalty_time = loop_time_with_penalty - loop_time ;
+#endif
+	//m_zoids [index].cache_penalty_time = loop_time_with_penalty - loop_time ;
 
 	bool divide_and_conquer = false ;
     if (sim_can_cut) 
@@ -593,7 +621,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	assert (ptime >= 0.) ;
 
 	projected_time1 = ptime ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 	if (sim_can_cut)
 	{
 		m_zoids [index].stime = elapsed_time + ptime ;
@@ -602,7 +630,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	{
 		m_zoids [index].ttime = elapsed_time + ptime ;
 	}
-//#endif
+#endif
 
 	//store the decision for the zoid and pass the redundant time 
 	//to the parent
@@ -637,22 +665,26 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
     int l_dt_stop;
 
 	int centroid = 0, width = 1 ; 
-	int offset = 0, total_num_subzoids = 1 ;
+	//int offset = 0 ;
+	int offset = NUM_BITS_KEY ;
+	int total_num_subzoids = 1 ;
 	int num_subzoids [N_RANK] ;
 	unsigned long key = 0 ;
 	unsigned short decision = 0 ;
+	bool initial_cut = 1 ;	
 
 	struct timespec start, end;
 	struct timespec start1, end1 ;
 	clock_gettime(CLOCK_MONOTONIC, &start);
 
     for (int i = N_RANK-1; i >= 0; --i) {
-        int lb, thres, tb;
+        unsigned long lb, tb;
+        int thres;
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
         lb = (grid.x1[i] - grid.x0[i]);
 		centroid = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
 					centroid ;
-		width = phys_length_ [i] ;
+		width *= phys_length_ [i] ;
         tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
 		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
 			 << " x1 [" << i << "] " << grid.x1 [i] 
@@ -664,6 +696,10 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
 		{ 
 			//set if initial cut on the dimension 
 			decision |= 1 << i + 1 + 3 * N_RANK ;
+		}
+		else
+		{
+			initial_cut = 0 ;
 		}
 		int short_side ;
 		bool space_cut = false ;
@@ -688,6 +724,7 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
 		}
 		num_subzoids [i] = 0 ;
 		if (short_side >= (thres << 1) && lb > limit)
+		//if (short_side >= 2 * thres) 
 		{
 			space_cut = true ;
 			//set if a space cut can be done in dimension i
@@ -702,9 +739,41 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
 			total_num_subzoids *= num_subzoids [i] ;
 		}
         sim_can_cut |= space_cut ;
-		unsigned long dim_key = (unsigned long) lb << num_bits_width | tb ;
+		
+		key <<= num_bits_width ;
+		key |= lb ;
+		key <<= num_bits_width ;
+		key |= tb ;
+
+		/*int num_bits_lb = 0, num_bits_tb = 0 ;
+		assert (lb >= 0) ;
+		assert (tb >= 0) ;
+		cout << " offset " << offset << endl ;
+		if (lb != 0)
+		{
+			num_bits_lb = NUM_BITS_KEY - __builtin_clzl(lb) ;
+		}
+		cout << " lb " << lb << " num_bits_lb " << num_bits_lb << endl ;
+		key = key | (unsigned long) lb << (offset - num_bits_lb) ;
+		cout << " key " << key << endl ;
+		print_bits (&key, NUM_BITS_KEY) ;
+		offset -= num_bits_width ;
+		if (tb != 0)
+		{
+			num_bits_tb = NUM_BITS_KEY - __builtin_clzl(tb) ;
+		}
+		cout << " offset " << offset << endl ;
+		cout << " tb " << tb << " num_bits_tb " << num_bits_tb << endl ;
+		key = key | (unsigned long) tb << (offset - num_bits_tb) ;
+		offset -= num_bits_width ;
+		assert (offset >= 0) ;*/
+		
+		/*unsigned long dim_key = (unsigned long) lb << num_bits_width | tb ;
+		unsigned long dim_key = (unsigned long) lb << num_bits_width ;
 		key = key << offset | dim_key ;
-		offset += num_bits_dim ;
+		offset += num_bits_dim ;*/
+		//cout << " key " << key << endl ;
+		//print_bits (&key, NUM_BITS_KEY) ;
         call_boundary |= l_touch_boundary;
     }
 	unsigned long index ;
@@ -725,38 +794,64 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
 		return ;
 	}
 	//print_dag() ;
-
-	//flush_cache() ;
-	// base case
-	//determine the looping time on the zoid
-	clock_gettime(CLOCK_MONOTONIC, &start1) ;
-	if (call_boundary) 
-	{
-		base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-	} 
-	else 
-	{ 
-		f(t0, t1, l_father_grid);
-	}
-	clock_gettime(CLOCK_MONOTONIC, &end1) ;
-	double loop_time_with_penalty = tdiff2(&end1, &start1) ;
+	double loop_time = 0. ;
+	double loop_time_with_penalty = 0. ;
 	
-	//determine the looping time on the zoid
-	clock_gettime(CLOCK_MONOTONIC, &start1) ;
-	if (call_boundary) 
+	/*if (N_RANK == 1 && decision & 1 << 1 + 3 * N_RANK) 
 	{
-		base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-	} 
-	else 
-	{ 
-		f(t0, t1, l_father_grid);
+		cout << "rectangle 2 " << endl ;
+		clock_gettime(CLOCK_MONOTONIC, &start1) ;
+		base_case_kernel_boundary_rectangle(t0, t1, l_father_grid, bf);
+		clock_gettime(CLOCK_MONOTONIC, &end1) ;
+		loop_time_with_penalty = tdiff2(&end1, &start1) ;
+
+		clock_gettime(CLOCK_MONOTONIC, &start1) ;
+		base_case_kernel_boundary_rectangle(t0, t1, l_father_grid, bf);
+		clock_gettime(CLOCK_MONOTONIC, &end1) ;
+		loop_time = tdiff2(&end1, &start1) ;
 	}
-	clock_gettime(CLOCK_MONOTONIC, &end1) ;
-	double loop_time = tdiff2(&end1, &start1) ;
-//#ifndef NDEBUG
+	else
+	{*/
+		// base case
+		//determine the looping time on the zoid
+		/*clock_gettime(CLOCK_MONOTONIC, &start1) ;
+		if (call_boundary) 
+		{
+			base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+		} 
+		else 
+		{ 
+			f(t0, t1, l_father_grid);
+		}
+		clock_gettime(CLOCK_MONOTONIC, &end1) ;
+		loop_time_with_penalty = tdiff2(&end1, &start1) ;*/
+		
+		//determine the looping time on the zoid
+		if (initial_cut)
+		{
+			//do not loop at the root.
+			//for larger problems, looping at the root will be slow.
+			loop_time = ULONG_MAX ;
+		}
+		else
+		{
+			clock_gettime(CLOCK_MONOTONIC, &start1) ;
+			if (call_boundary)
+			{
+				base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+			} 
+			else 
+			{ 
+				f(t0, t1, l_father_grid);
+			}
+			clock_gettime(CLOCK_MONOTONIC, &end1) ;
+			loop_time = tdiff2(&end1, &start1) ;
+		}
+	//}
+#ifndef NDEBUG
 	m_zoids [index].ltime = loop_time ;
-//#endif
-	m_zoids [index].cache_penalty_time = loop_time_with_penalty - loop_time ;
+#endif
+	//m_zoids [index].cache_penalty_time = loop_time_with_penalty - loop_time ;
 
     if (call_boundary)
 	{
@@ -837,7 +932,7 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
 	assert (elapsed_time >= 0.) ;
 	assert (ptime >= 0.) ;
 	projected_time1 = ptime ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 	if (sim_can_cut)
 	{
 		m_zoids [index].stime = elapsed_time + ptime ;
@@ -846,7 +941,7 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
 	{
 		m_zoids [index].ttime = elapsed_time + ptime ;
 	}
-//#endif
+#endif
 	
 	
 	//store the decision for the zoid  and pass the redundant time 
@@ -936,16 +1031,18 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
                 // performing a space cut on dimension 'level' 
                 pop_queue(curr_dep_pointer);
                 const grid_info<N_RANK> l_father_grid = l_father->grid;
-                //const int t0 = l_father->t0, t1 = l_father->t1;
-                //const int lt = (t1 - t0);
+                const int t0 = l_father->t0, t1 = l_father->t1;
+                const int lt = (t1 - t0);
                 const int level = l_father->level;
                 const int thres = slope_[level] * lt;
-                //const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
-                //const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
-                //const bool cut_lb = (lb < tb);
-				//const bool can_cut = CAN_CUT_I ;
-				//if (! can_cut) {
-				if ((projection_zoid->decision & 1 << level + 1) == 0) {
+                const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
+                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
+                const bool cut_lb = (lb < tb);
+				const bool can_cut = CAN_CUT_I ;
+				//const bool can_cut = (cut_lb ? (lb >= 2 * thres) : 
+				//								(tb >= 2 * thres)) ;
+				if (! can_cut) {
+				//if ((projection_zoid->decision & 1 << level + 1) == 0) {
                     // if we can't cut into this dimension, just directly push 
                     // it into the circular queue 
                     //
@@ -954,8 +1051,8 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
                 } else  {
 					assert ((projection_zoid->decision & 1 << level + 1) != 0) ;
                     /* can_cut! */
-                    //if (cut_lb) {
-					if (projection_zoid->decision & 1 << level + 1 + N_RANK) {
+                    if (cut_lb) {
+					//if (projection_zoid->decision & 1 << level + 1 + N_RANK) {
                         grid_info<N_RANK> l_son_grid = l_father_grid;
                         const int l_start = (l_father_grid.x0[level]);
                         const int l_end = (l_father_grid.x1[level]);
@@ -974,10 +1071,10 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
                         l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
                         push_queue(next_dep_pointer, level-1, t0, t1, 
 									l_son_grid) ;
-						//const int cut_more = ((lb - (thres << 2)) >= 0) ;
-						//if (cut_more)
-						if (projection_zoid->decision & 
-									1 << level + 1 + 2 * N_RANK)
+						const int cut_more = ((lb - (thres << 2)) >= 0) ;
+						if (cut_more)
+						//if (projection_zoid->decision & 
+						//			1 << level + 1 + 2 * N_RANK)
 						{
 							const int offset = (thres << 1) ;
 							l_son_grid.x0[level] = l_start ;
@@ -1033,10 +1130,10 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
 									l_son_grid);
 
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
-						//const int cut_more = ((tb - (thres << 2)) >= 0) ;
-						//if (cut_more)
-						if (projection_zoid->decision & 
-									1 << level + 1 + 2 * N_RANK)
+						const int cut_more = ((tb - (thres << 2)) >= 0) ;
+						if (cut_more)
+						//if (projection_zoid->decision & 
+						//			1 << level + 1 + 2 * N_RANK)
 						{
 							l_son_grid.x0[level] = l_start + offset ;
                             l_son_grid.dx0[level] = -slope_[level];
@@ -1142,19 +1239,21 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
                 // performing a space cut on dimension 'level' 
                 pop_queue(curr_dep_pointer);
                 grid_info<N_RANK> l_father_grid = l_father->grid;
-                //const int t0 = l_father->t0, t1 = l_father->t1;
-                //const int lt = (t1 - t0);
+                const int t0 = l_father->t0, t1 = l_father->t1;
+                const int lt = (t1 - t0);
                 const int level = l_father->level;
                 const int thres = slope_[level] * lt;
-                //const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
-                //const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
-                //const bool cut_lb = (lb < tb);
+                const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
+                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
+                const bool cut_lb = (lb < tb);
 //#define touch_boundary m_algo.touch_boundary
-                //const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
+                const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
 //#undef touch_boundary
-				//const bool can_cut = CAN_CUT_B ;
-                //if (! can_cut) {
-				if ((projection_zoid->decision & 1 << level + 1) == 0) {
+				const bool can_cut = CAN_CUT_B ;
+				//const bool can_cut = (cut_lb ? (lb >= 2 * thres) : 
+				//							  (tb >= 2 * thres)) ;
+                if (! can_cut) {
+				//if ((projection_zoid->decision & 1 << level + 1) == 0) {
                 //if (num_zoids [level] == 0) {
                     // if we can't cut into this dimension, just directly push
                     // it into the circular queue
@@ -1164,8 +1263,8 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
                 } else  {
 					assert ((projection_zoid->decision & 1 << level + 1) != 0) ;
                     /* can_cut */
-                    //if (cut_lb) {
-					if (projection_zoid->decision & 1 << level + 1 + N_RANK) {
+                    if (cut_lb) {
+					//if (projection_zoid->decision & 1 << level + 1 + N_RANK) {
                         grid_info<N_RANK> l_son_grid = l_father_grid;
                         const int l_start = (l_father_grid.x0[level]);
                         const int l_end = (l_father_grid.x1[level]);
@@ -1185,10 +1284,10 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
                         push_queue(next_dep_pointer, level-1, t0, t1, 
 											l_son_grid) ;
 
-						//const int cut_more = ((lb - (thres << 2)) >= 0) ;
-						//if (cut_more)
-						if (projection_zoid->decision & 
-									1 << level + 1 + 2 * N_RANK)
+						const int cut_more = ((lb - (thres << 2)) >= 0) ;
+						if (cut_more)
+						//if (projection_zoid->decision & 
+						//			1 << level + 1 + 2 * N_RANK)
 						{
 							const int offset = (thres << 1) ;
 							l_son_grid.x0[level] = l_start ;
@@ -1224,17 +1323,17 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
 						}
                     } /* end if (cut_lb) */
                     else { /* cut_tb */
-                        //if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
-						if (projection_zoid->decision & 
-									1 << level + 1 + 3 * N_RANK) {
+                        if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
+						//if (projection_zoid->decision & 
+						//			1 << level + 1 + 3 * N_RANK) {
                             grid_info<N_RANK> l_son_grid = l_father_grid;
                             const int l_start = (l_father_grid.x0[level]);
                             const int l_end = (l_father_grid.x1[level]);
                             const int next_dep_pointer = (curr_dep + 1) & 0x1;
-							//const int cut_more = ((lb - (thres << 2)) >= 0) ;
-							//if (cut_more)
-							if (projection_zoid->decision & 
-									1 << level + 1 + 2 * N_RANK)
+							const int cut_more = ((lb - (thres << 2)) >= 0) ;
+							if (cut_more)
+							//if (projection_zoid->decision & 
+							//		1 << level + 1 + 2 * N_RANK)
 							{
 								const int offset = (thres << 1) ;
                             	l_son_grid.x0[level] = l_start ;
@@ -1295,10 +1394,10 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
 								t1, l_son_grid) ;
 
 							const int next_dep_pointer = (curr_dep + 1) & 0x1;
-							//const int cut_more = ((tb - (thres << 2)) >= 0) ;
-							//if (cut_more)
-							if (projection_zoid->decision & 
-									1 << level + 1 + 2 * N_RANK)
+							const int cut_more = ((tb - (thres << 2)) >= 0) ;
+							if (cut_more)
+							//if (projection_zoid->decision & 
+							//		1 << level + 1 + 2 * N_RANK)
 							{
 								l_son_grid.x0[level] = l_start + offset ;
 								l_son_grid.dx0[level] = -slope_[level];
@@ -1478,5 +1577,6 @@ sawzoid_space_time_cut_boundary(int t0,
 #undef slope_ 
 #undef touch_boundary 
 #undef base_case_kernel_boundary
+#undef base_case_kernel_boundary_rectangle
 
 #endif

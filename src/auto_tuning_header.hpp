@@ -55,9 +55,9 @@ class zoid
 		if (this != child)
 		{
 			children [pos] = index ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 			child->add_parent(this->id) ;
-//#endif
+#endif
 		}
 	}
 	
@@ -68,13 +68,13 @@ class zoid
 		children = 0 ;
 		num_children = 0 ;
 		time = 0 ;
-		cache_penalty_time = 0 ;
-//#ifndef NDEBUG
+		//cache_penalty_time = 0 ;
+#ifndef NDEBUG
 		stime = 0 ;
 		ttime = 0 ;
 		ltime = 0 ;
 		id = ULONG_MAX ;
-//#endif
+#endif
 	};
 	
 	zoid & operator = (const zoid & z)
@@ -85,12 +85,12 @@ class zoid
 			delete [] children ;
 			decision = z.decision ;
 			time = z.time ;
-			cache_penalty_time = z.cache_penalty_time ;
-//#ifndef NDEBUG
+			//cache_penalty_time = z.cache_penalty_time ;
+#ifndef NDEBUG
 			stime = z.stime ;
 			ttime = z.ttime ;
 			ltime = z.ltime ;
-//#endif
+#endif
 			num_children = z.num_children ;
 			children = 0 ;
 			height = z.height ;
@@ -102,14 +102,14 @@ class zoid
 					children [i] = z.children [i] ;
 				}
 			}
-//#ifndef NDEBUG
+#ifndef NDEBUG
 			id = z.id ;
 			info = z.info ;
 			for (int i = 0 ; i < z.parents.size() ; i++)
 			{
 				parents.push_back(z.parents [i]) ;
 			}
-//#endif
+#endif
 		}
 		return *this ;
 	}
@@ -118,12 +118,12 @@ class zoid
 	{
 		decision = z.decision ;
 		time = z.time ;
-		cache_penalty_time = z.cache_penalty_time ;
-//#ifndef NDEBUG
+		//cache_penalty_time = z.cache_penalty_time ;
+#ifndef NDEBUG
 		stime = z.stime ;
 		ttime = z.ttime ;
 		ltime = z.ltime ;
-//#endif
+#endif
 		num_children = z.num_children ;
 		//cout << "zoid : copy const for zoid " << z.id << " # children" << 
 		//		num_children << endl ;
@@ -137,22 +137,22 @@ class zoid
 				children [i] = z.children [i] ;
 			}
 		}
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		id = z.id ;
 		info = z.info ;
 		for (int i = 0 ; i < z.parents.size() ; i++)
 		{
 			parents.push_back(z.parents [i]) ;
 		}
-//#endif
+#endif
 	}
 
 
 	int add_parent(unsigned long parent_id)
 	{
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		parents.push_back(parent_id) ;
-//#endif
+#endif
 	}
 	//destructor for zoid
 	~zoid()
@@ -161,19 +161,19 @@ class zoid
 		num_children = 0 ;
 		decision = 0 ; // 0 for looping
 		time = 0 ;
-		cache_penalty_time = 0 ;
-//#ifndef NDEBUG
+		//cache_penalty_time = 0 ;
+#ifndef NDEBUG
 		stime = 0 ;
 		ttime = 0 ;
 		ltime = 0 ;
-//#endif
+#endif
 		delete [] children ;
 		children = 0 ;
 		//cout << "zoid : end destructor for zoid " << id << endl ;
 	}
 	
 	const int NUM_BITS_DECISION = sizeof(unsigned short) * 8 ;
-	const double FUZZ = 1. ;
+	const double FUZZ = 1.0 ;
 	private :
 	//char decision ;
 	unsigned short decision ;
@@ -181,15 +181,15 @@ class zoid
 	unsigned long * children ;  
 	int num_children ;
 	double time ;
-	double cache_penalty_time ;
-//#ifndef NDEBUG
+	//double cache_penalty_time ;
+#ifndef NDEBUG
 	grid_info <N_RANK> info ;
 	unsigned long id ; //id of the zoid.
 	vector<unsigned long> parents ;
 	double stime ;
 	double ttime ;
 	double ltime ;
-//#endif
+#endif
 } ;
 
 // a compact representation of zoid
@@ -323,9 +323,9 @@ private:
 		//create a dummy head
 		m_zoids.push_back(zoid_type ()) ;
 		zoid_type & dummy_head = m_zoids [m_num_vertices] ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		dummy_head.id = m_num_vertices ;
-//#endif
+#endif
 		dummy_head.resize_children(1) ;
 		m_num_vertices++ ;
 		assert (m_num_vertices == m_zoids.size()) ;
@@ -344,9 +344,9 @@ private:
 		//create a dummy head
 		m_zoids.push_back(zoid_type ()) ;
 		zoid_type & dummy_head = m_zoids [m_num_vertices] ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		dummy_head.id = m_num_vertices ;
-//#endif
+#endif
 		dummy_head.resize_children(1) ;
 		m_num_vertices++ ;
 		assert (m_num_vertices == m_zoids.size()) ;
@@ -355,13 +355,13 @@ private:
 		double rtime = 0, ntime = 0 ;
 		symbolic_sawzoid_space_time_cut_boundary(t0, t1, grid, 
 						m_num_vertices - 1, 0, rtime, ntime, f, bf) ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		cout << " decision of head [" << index << " ] " << 
 			m_zoids [m_head [index]].decision 
 			<< " time for space cut " << m_zoids [m_head [index]].stime << 
 			" time for time cut " << m_zoids [m_head [index]].ttime << 
 			" time to loop " << m_zoids [m_head [index]].ltime << endl ;
-//#endif
+#endif
 		cout << " decision of head [" << index << "] : " << 
 			m_zoids [m_head [index]].decision 
 			<< " time " << m_zoids [m_head [index]].time * 1.0e3 << "ms" <<
@@ -493,7 +493,7 @@ private:
 		hash_table & h = m_projections [centroid] ;
 		//cout << "centroid : "  << centroid << endl ;
 		assert (centroid < m_projections.size()) ;
-		//cout << "searching hashtable" << endl ;
+		//cout << "searching hashtable. key " << key << endl ;
 		//cout << "size hashtable " << h.size() << endl ;
 		std::pair<hash_table_iterator, hash_table_iterator> p = 
 													h.equal_range (key) ;
@@ -508,6 +508,40 @@ private:
 			{
 				index = start->second ;
 				//cout << "found entry" << endl ;
+#ifndef NDEBUG
+				grid_info <N_RANK> grid2 = z->info ;
+				for (int i = N_RANK - 1 ; i >= 0 ; i--)
+				{
+					if (pmod(grid.x0 [i], m_algo.phys_length_ [i]) != 
+						pmod(grid2.x0 [i], m_algo.phys_length_ [i]) ||
+						pmod(grid.x1 [i], m_algo.phys_length_ [i]) != 
+						pmod(grid2.x1 [i], m_algo.phys_length_ [i]))
+					{
+						int h = height ;
+						cout << "2 diff zoids hash to same key " << endl ;
+						cout << "diff dim " << i << endl ;
+						cout << " grid " << endl ;
+						for (int j = N_RANK - 1 ; j >= 0 ; j--)
+						{
+							cout << " x0 [" << j << "] " << grid.x0 [j] 
+							<< " x1 [" << j << "] " << grid.x1 [j] 
+							<< " x2 [" << j << "] " << grid.x0[j] + grid.dx0[j] * h
+							<< " x3 [" << j << "] " << grid.x1[j] + grid.dx1[j] * h
+							<< " h " << h << endl ; 
+						}
+						cout << " grid 2 at index " << index << endl ;
+						for (int j = N_RANK - 1 ; j >= 0 ; j--)
+						{
+							cout << " x0 [" << j << "] " << grid2.x0 [j] 
+							<< " x1 [" << j << "] " << grid2.x1 [j] 
+							<< " x2 [" << j << "] " << grid2.x0[j] + grid2.dx0[j] * h
+							<< " x3 [" << j << "] " << grid2.x1[j] + grid2.dx1[j] * h
+							<< " h " << h << endl ; 
+						}
+						assert (0) ;
+					}
+				}	
+#endif
 				return true ;
 			}
 		}
@@ -522,7 +556,7 @@ private:
 		zoid_type & z = m_zoids [m_num_vertices] ;
 		z.height = height ;
 		//assert (m_num_vertices == m_num_projections) ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		z.info = grid ;
 		z.id = m_num_vertices ;
 		//m_num_projections ;
@@ -536,7 +570,7 @@ private:
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
 			<< " h " << height << endl ; 
 		}*/
-//#endif
+#endif
 		//*zoid = z ;
 		//h.insert(std::pair<unsigned long, zoid_type *>(key, z)) ;
 		h.insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
@@ -628,7 +662,7 @@ private:
 		m_num_vertices = num_vertices ;
 	}
 
-//#ifndef NDEBUG
+#ifndef NDEBUG
 	void print_dag()
 	{
 		cout << "# vertices " << m_num_vertices << endl ;
@@ -667,8 +701,8 @@ private:
 					" # children " << z->num_children << endl ;
 					//" num_parents " << z->parents.size() << 
 				cout << " decision " << z->decision << 
-					" time " << z->time << 
-					" ptime " << z->cache_penalty_time << endl ;
+					" time " << z->time ;
+					//" ptime " << z->cache_penalty_time << endl ;
 				cout << " stime " << z->stime  <<
 					" ttime " << z->ttime  <<
 					" ltime " << z->ltime << endl ;
@@ -742,7 +776,7 @@ private:
 			print_bits(&(*begin), sizeof(word_type) * 8);
 		}
 	}
-//#endif
+#endif
 
 	template <typename F>
 	inline void symbolic_abnormal_space_time_cut_boundary(int t0, int t1,  
@@ -860,7 +894,8 @@ private:
 	Algorithm <N_RANK> & m_algo ; // a reference to Algorithm
 	unsigned long m_num_vertices ; //# of zoids in the dag
 	//unsigned long m_num_projections ; //# of projections created
-	const int NUM_BITS_IN_INT = 8 * sizeof(int) ;
+	const int NUM_BITS_INT = 8 * sizeof(unsigned int) ;
+	const int NUM_BITS_KEY = 8 * sizeof(unsigned long) ;
 	typedef typename Algorithm<N_RANK>::queue_info queue_info ;
 	set<word_type> m_heterogeneity ;
 	//pochoir_clone_array <N_RANK> * m_clone_array ; 
@@ -887,6 +922,8 @@ private:
 		initialize(grid, power_of_two) ;
 		num_bits_dim = sizeof (unsigned long) * 8 / N_RANK ;
 		num_bits_width = sizeof (unsigned long) * 8 / (2 * N_RANK) ;
+		cout << " NUM_BITS_KEY" << NUM_BITS_KEY << " num_bits_dim " << num_bits_dim << " num_bits_width " <<
+			num_bits_width << endl ;
 	}
 
 
@@ -914,6 +951,7 @@ private:
 				slope = m_algo.slope_ [i] ;
 			}
 		}
+		cout << "total size of array " << array->total_size() << endl ;
 		//back up data
 		copy_data(&(m_array[0]), array->data(), volume) ;
 		//struct timeval start, end;
@@ -957,9 +995,9 @@ private:
 			index++ ;
 		}
 		clock_gettime(CLOCK_MONOTONIC, &end) ;
-//#ifndef NDEBUG
+#ifndef NDEBUG
 		print_dag() ;
-//#endif
+#endif
 		//copy data back.
 		copy_data(array->data(), &(m_array[0]), volume) ;
 		//gettimeofday(&end, 0);
