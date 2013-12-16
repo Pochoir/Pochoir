@@ -86,32 +86,36 @@ do { \
 template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
 {
+	//cout << "here" << endl ;
 	int h = t1 - t0 ;
 	int lb = grid.x1[0] - grid.x0[0] ;
 	int tb = grid.x1[0] + grid.dx1[0] * h - grid.x0[0] - grid.dx0[0] * h;
 	int sigma_h = slope_ [0] * h ;
-	int num_upright_zoids, num_inverted_zoids, upright_middle_zoid = 0 ;
-	int m = lb / (2 * sigma_h) ;
+	int num_upright_zoids = lb / (2 * sigma_h) ; 
+	int num_inverted_zoids ;
+	int offset = 0 ;
 	if (lb < tb)
 	{
 		//inverted trapezoid
-		num_upright_zoids = lb / (2 * sigma_h) ; 
 		num_inverted_zoids = num_upright_zoids + 1 ;
-		if (num_upright_zoids != num_inverted_zoids)
-		{
-			//m is odd - middle zoid is upright
-			upright_middle_zoid = 1 ;
-		}
 	}
+	else
+	{
+		//upright trapezoid
+		num_inverted_zoids = num_upright_zoids - 1 ;
+		offset = 2 * sigma_h ;
+	}
+	//seems to be working correctly.
+	//coarsen the base case.
+	//continue from here
 	{
 		int left_end = grid.x0[0] ;
 		int right_end = grid.x1[0] ;
-		grid_info<N_RANK> const subgrid ;
+		grid_info<N_RANK> subgrid ;
 		subgrid.dx0 [0] = slope_ [0] ;
 		subgrid.dx1 [0] = -slope_ [0] ;
 		//process the upright zoids first	
-		//for (int i = 0 ; i < num_upright_zoids ; i++)
-		for ( ; num_upright_zoids >= 1 ; num_upright_zoids -= 2)
+		for ( ; num_upright_zoids > 1 ; num_upright_zoids -= 2)
 		{
 			//process the triangle at left
 			subgrid.x0 [0] = left_end ;
@@ -130,25 +134,18 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 		//process the middle trapezoid
 		subgrid.x0 [0] = left_end ;
 		subgrid.x0 [1] = right_end ;
-		//if (m & 1) //m odd - middle trapezoid is upright
 		if (num_upright_zoids == 1) 
 		{
 			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 		}
 		cilk_sync ;
-		//int one = m & 1 ;
-		//subgrid.dx0 [0] = (2 * one - 1) * slope_ [0] ;
-		//subgrid.dx1 [0] = (1 - 2 * one) * slope_[0] ;
-		//cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 		
-		left_end = grid.x0[0] ;
-		right_end = grid.x1[0] ;
+		left_end = grid.x0[0] + offset ;
+		right_end = grid.x1[0] - offset ;
 		subgrid.dx0 [0] = -slope_ [0] ;
 		subgrid.dx1 [0] = slope_ [0] ;
 		//process the inverted zoids next
-		//for (int i = 0 ; i < m - m / 2 ; i++)
-		//for (int i = 0 ; i < num_inverted_zoids ; i++)
-		for ( ; num_inverted_zoids >= 1; num_inverted_zoids -= 2)
+		for ( ; num_inverted_zoids > 1; num_inverted_zoids -= 2)
 		{
 			//process the triangle at left
 			subgrid.x0 [0] = subgrid.x0 [1] = left_end ;
@@ -163,17 +160,18 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 		}
 
-		//if (m ^ 1) // m even - middle trapezoid is inverted
 		if (num_inverted_zoids == 1)
 		{
 			subgrid.x0 [0] = left_end ;
 			subgrid.x0 [1] = right_end ;
 			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 		}
+		cilk_sync ;
 	}
 }
 
 // modified space cuts. 
+/*
 template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
 {
@@ -240,7 +238,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
                     push_queue(curr_dep_pointer, level-1, t0, t1, 
 							l_father_grid) ;
                 } else  {
-                    /* can_cut! */
+                    // can_cut! 
                     if (cut_lb) {
                         grid_info<N_RANK> l_son_grid = l_father_grid;
                         const int l_start = (l_father_grid.x0[level]);
@@ -298,9 +296,9 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
             	            push_queue(curr_dep_pointer, level-1, t0, 
 								t1, l_son_grid) ;
 						}
-                    } /* end if (cut_lb) */
+                    } // end if (cut_lb) 
                     else {
-                        /* cut_tb */
+                        // cut_tb 
                         grid_info<N_RANK> l_son_grid = l_father_grid;
                         const int l_start = (l_father_grid.x0[level]);
                         const int l_end = (l_father_grid.x1[level]);
@@ -358,7 +356,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
                         	push_queue(next_dep_pointer, level-1, t0, 
 								t1, l_son_grid) ;
 						}
-                    } /* end else (cut_tb) */
+                    } // end else (cut_tb) 
                 } // end if (can_cut) 
             } // end if (performing a space cut) 
         } // end while (queue_len_[curr_dep] > 0) 
@@ -368,6 +366,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
         assert(queue_len_[curr_dep_pointer] == 0);
     } // end for (curr_dep < N_RANK+1) 
 }
+*/
 
 /* Boundary space cut. Uses modified space cut.
  */
@@ -1383,19 +1382,20 @@ inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1,
 
 	int h2 = t1 - t0 ;
 	//time cuts happen only if height > dt_recursive_
-	while (h2 > dt_recursive_)
+	//while (h2 > dt_recursive_)
+	while (h2 >= 1 )
 	{
 		//find index of most significant bit that is set
 		index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
 		int h = 1 << index_msb ;
-		/*cout << "t0 " << t0 << " t1 " << t1 << 
+		cout << "t0 " << t0 << " t1 " << t1 << 
 			" h " << h << " t0 + h " <<
-			t0 + h << endl ;*/
+			t0 + h << endl ;
 		space_time_cut_boundary(t0, t0 + h, grid, f, bf) ;
 		t0 += h ;
 		h2 = t1 - t0 ;
 	}
-	while (h2 > 1)
+	/*while (h2 > 1)
 	{
 		//find index of most significant bit that is set
 		index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
@@ -1420,6 +1420,6 @@ inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1,
 			 " t0 + h " << t0 + h2 << endl ;
 		//base_case_kernel_boundary(t0, t0 + h2, grid, bf);
 		shorter_duo_sim_obase_bicut_p(t0, t0 + h2, grid, f, bf) ;
-	}
+	}*/
 }
 #endif
