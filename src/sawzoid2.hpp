@@ -90,24 +90,32 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 	int lb = grid.x1[0] - grid.x0[0] ;
 	int tb = grid.x1[0] + grid.dx1[0] * h - grid.x0[0] - grid.dx0[0] * h;
 	int sigma_h = slope_ [0] * h ;
+	int num_upright_zoids, num_inverted_zoids, upright_middle_zoid = 0 ;
+	int m = lb / (2 * sigma_h) ;
 	if (lb < tb)
 	{
 		//inverted trapezoid
-		int m = lb / (2 * sigma_h) ;
+		num_upright_zoids = lb / (2 * sigma_h) ; 
+		num_inverted_zoids = num_upright_zoids + 1 ;
+		if (num_upright_zoids != num_inverted_zoids)
+		{
+			//m is odd - middle zoid is upright
+			upright_middle_zoid = 1 ;
+		}
+	}
+	{
 		int left_end = grid.x0[0] ;
 		int right_end = grid.x1[0] ;
 		grid_info<N_RANK> const subgrid ;
 		subgrid.dx0 [0] = slope_ [0] ;
 		subgrid.dx1 [0] = -slope_ [0] ;
 		//process the upright zoids first	
-		//for (int i = 0 ; i < m - 1 ; i++)
-		for (int i = 0 ; i < m / 2 ; i++)
+		//for (int i = 0 ; i < num_upright_zoids ; i++)
+		for ( ; num_upright_zoids >= 1 ; num_upright_zoids -= 2)
 		{
 			//process the triangle at left
 			subgrid.x0 [0] = left_end ;
 			left_end = subgrid.x0 [1] = left_end + 2 * sigma_h ;
-			//subgrid.dx0 [0] = slope_ [0] ;
-			//subgrid.dx1 [0] = -slope_ [0] ;
 
 			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 
@@ -115,8 +123,6 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 			subgrid.x0 [0] = right_end - 2 * sigma_h ;
 			subgrid.x0 [1] = right_end ;
 			right_end = subgrid.x0 [0] ;
-			//subgrid.dx0 [0] = slope_ [0] ;
-			//subgrid.dx1 [0] = -slope_ [0] ;
 
 			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 		}
@@ -124,30 +130,44 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 		//process the middle trapezoid
 		subgrid.x0 [0] = left_end ;
 		subgrid.x0 [1] = right_end ;
-		int one = m & 1 ;
-		subgrid.dx0 [0] = (2 * one - 1) * slope_ [0] ;
-		subgrid.dx1 [0] = (1 - 2 * one) * slope_[0] ;
-		cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
+		//if (m & 1) //m odd - middle trapezoid is upright
+		if (num_upright_zoids == 1) 
+		{
+			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
+		}
+		cilk_sync ;
+		//int one = m & 1 ;
+		//subgrid.dx0 [0] = (2 * one - 1) * slope_ [0] ;
+		//subgrid.dx1 [0] = (1 - 2 * one) * slope_[0] ;
+		//cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 		
 		left_end = grid.x0[0] ;
 		right_end = grid.x1[0] ;
+		subgrid.dx0 [0] = -slope_ [0] ;
+		subgrid.dx1 [0] = slope_ [0] ;
 		//process the inverted zoids next
-		for (int i = 0 ; i < m - m / 2 ; i++)
+		//for (int i = 0 ; i < m - m / 2 ; i++)
+		//for (int i = 0 ; i < num_inverted_zoids ; i++)
+		for ( ; num_inverted_zoids >= 1; num_inverted_zoids -= 2)
 		{
 			//process the triangle at left
 			subgrid.x0 [0] = subgrid.x0 [1] = left_end ;
 			left_end += 2 * sigma_h ;
-			subgrid.dx0 [0] = -slope_ [0] ;
-			subgrid.dx1 [0] = slope_ [0] ;
 
 			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 
 			//process the triangle at right
 			subgrid.x0 [0] = subgrid.x0 [1] = right_end  ;
 			right_end -= 2 * sigma_h ;
-			subgrid.dx0 [0] = -slope_ [0] ;
-			subgrid.dx1 [0] = slope_ [0] ;
 
+			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
+		}
+
+		//if (m ^ 1) // m even - middle trapezoid is inverted
+		if (num_inverted_zoids == 1)
+		{
+			subgrid.x0 [0] = left_end ;
+			subgrid.x0 [1] = right_end ;
 			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 		}
 	}
