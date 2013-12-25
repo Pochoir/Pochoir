@@ -88,43 +88,48 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 {
 	//cout << "here" << endl ;
 	int h = t1 - t0 ;
-	int lb = grid.x1[0] - grid.x0[0] ;
-	int tb = grid.x1[0] + grid.dx1[0] * h - grid.x0[0] - grid.dx0[0] * h;
-	int sigma_h = slope_ [0] * h ;
-	int num_upright_zoids = lb / (2 * sigma_h) ; 
-	int num_inverted_zoids ;
-	int offset = 0 ;
-	if (lb < tb)
+	int num_upright_zoids [N_RANK], num_inverted_zoids [N_RANK] ; 
+	int offset [N_RANK], sigma_h [N_RANK] ;
+	for (int i = N_RANK - 1 ; i >= 0 ; i--)
 	{
-		//inverted trapezoid
-		num_inverted_zoids = num_upright_zoids + 1 ;
-	}
-	else
-	{
-		//upright trapezoid
-		num_inverted_zoids = num_upright_zoids - 1 ;
-		offset = 2 * sigma_h ;
+		int lb = grid.x1[i] - grid.x0[i] ;
+		int tb = grid.x1[i] + grid.dx1[i] * h - grid.x0[i] - grid.dx0[i] * h;
+		sigma_h [i] = slope_ [0] * h ;
+		num_upright_zoids [i] = lb / (2 * sigma_h [i]) ; 
+		if (lb < tb)
+		{
+			//inverted trapezoid
+			num_inverted_zoids [i] = num_upright_zoids [i] + 1 ;
+			offset [i] = 0 ;
+		}
+		else
+		{
+			//upright trapezoid
+			num_inverted_zoids [i] = num_upright_zoids [i] - 1 ;
+			offset [i]  = 2 * sigma_h [i] ;
+		}
 	}
 	//seems to be working correctly.
 	//coarsen the base case.
 	//continue from here
+	grid_info<N_RANK> subgrid ;
+	for (int i = N_RANK - 1 ; i >= 0 ; i--)
 	{
-		int left_end = grid.x0[0] ;
-		int right_end = grid.x1[0] ;
-		grid_info<N_RANK> subgrid ;
-		subgrid.dx0 [0] = slope_ [0] ;
-		subgrid.dx1 [0] = -slope_ [0] ;
+		int left_end = grid.x0[i] ;
+		int right_end = grid.x1[i] ;
+		subgrid.dx0 [i] = slope_ [i] ;
+		subgrid.dx1 [i] = -slope_ [i] ;
 		//process the upright zoids first	
-		for ( ; num_upright_zoids > 1 ; num_upright_zoids -= 2)
+		for ( ; num_upright_zoids [i] > 1 ; num_upright_zoids [i] -= 2)
 		{
 			//process the triangle at left
 			subgrid.x0 [0] = left_end ;
-			left_end = subgrid.x0 [1] = left_end + 2 * sigma_h ;
+			left_end = subgrid.x0 [1] = left_end + 2 * sigma_h [i] ;
 
 			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 
 			//process the triangle at right
-			subgrid.x0 [0] = right_end - 2 * sigma_h ;
+			subgrid.x0 [0] = right_end - 2 * sigma_h [i] ;
 			subgrid.x0 [1] = right_end ;
 			right_end = subgrid.x0 [0] ;
 
@@ -134,33 +139,33 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 		//process the middle trapezoid
 		subgrid.x0 [0] = left_end ;
 		subgrid.x0 [1] = right_end ;
-		if (num_upright_zoids == 1) 
+		if (num_upright_zoids [i] == 1) 
 		{
 			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 		}
 		cilk_sync ;
 		
-		left_end = grid.x0[0] + offset ;
-		right_end = grid.x1[0] - offset ;
+		left_end = grid.x0[0] + offset [i] ;
+		right_end = grid.x1[0] - offset [i] ;
 		subgrid.dx0 [0] = -slope_ [0] ;
 		subgrid.dx1 [0] = slope_ [0] ;
 		//process the inverted zoids next
-		for ( ; num_inverted_zoids > 1; num_inverted_zoids -= 2)
+		for ( ; num_inverted_zoids [i] > 1; num_inverted_zoids [i] -= 2)
 		{
 			//process the triangle at left
 			subgrid.x0 [0] = subgrid.x0 [1] = left_end ;
-			left_end += 2 * sigma_h ;
+			left_end += 2 * sigma_h [i] ;
 
 			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 
 			//process the triangle at right
 			subgrid.x0 [0] = subgrid.x0 [1] = right_end  ;
-			right_end -= 2 * sigma_h ;
+			right_end -= 2 * sigma_h [i] ;
 
 			cilk_spawn space_time_cut_interior(t0, t1, subgrid, f) ;
 		}
 
-		if (num_inverted_zoids == 1)
+		if (num_inverted_zoids [i] == 1)
 		{
 			subgrid.x0 [0] = left_end ;
 			subgrid.x0 [1] = right_end ;
