@@ -90,7 +90,8 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 	int h = t1 - t0 ;
 	//cout << "h " << h << endl ;
 	int num_upright_zoids [N_RANK], num_inverted_zoids [N_RANK] ; 
-	int offset [N_RANK], sigma_h [N_RANK] ;
+	int offset [N_RANK], two_sigma_h [N_RANK] ;
+	int l_slope [N_RANK] ;
 	for (int i = N_RANK - 1 ; i >= 0 ; i--)
 	{
 		int lb = grid.x1[i] - grid.x0[i] ;
@@ -102,10 +103,11 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 		<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * h
 		<< " h " << h << endl ; */
 #endif
-		sigma_h [i] = slope_ [i] * h ;
-		num_upright_zoids [i] = lb / (2 * sigma_h [i]) ; 
+		two_sigma_h [i] = 2 * slope_ [i] * h ;
+		l_slope [i] = slope_ [i] ;
+		num_upright_zoids [i] = lb / (two_sigma_h [i]) ; 
 		assert (num_upright_zoids [i] >= 0) ;
-		if (lb < tb)
+		if (lb <= tb)
 		{
 			//inverted trapezoid
 			num_inverted_zoids [i] = num_upright_zoids [i] + 1 ;
@@ -114,22 +116,22 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 		else
 		{
 			//upright trapezoid
-			num_inverted_zoids [i] = num_upright_zoids [i] - 1 ;
-			if (num_inverted_zoids [i] < 0)
-			{
-				num_inverted_zoids [i] = 0 ;
-			}
-			offset [i]  = 2 * sigma_h [i] ;
+			num_inverted_zoids [i] = max (num_upright_zoids [i] - 1, 0) ;
+			offset [i]  = two_sigma_h [i] ;
 		}
 		//cout << " num_upright_zoids [" << i << "] " << num_upright_zoids [i] << endl ;
 		//cout << " num_inverted_zoids [" << i << "] " << num_inverted_zoids [i] << endl ;
 		assert (num_inverted_zoids [i] >= 0) ;
+
+		if (lb == tb)
+		{
+			//projection trapezoid is a rectangle.
+			l_slope [i] = 0 ;
+		}
 	}
-	//seems to be working correctly.
 	//coarsen the base case.
-	//continue from here
-	grid_info<N_RANK> subgrid ;
 	int popcount = 0 ;
+	grid_info<N_RANK> subgrid ;
 	for (int j = 0 ; j < num_orientations ; j++)
 	{
 		unsigned int bits = space_cut_sequence [N_RANK - 1] [j] ;
@@ -167,8 +169,8 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 				int inverted = bits & 1 << i ; 
 				if (inverted)
 				{
-					subgrid.dx0 [i] = -slope_ [i] ;
-					subgrid.dx1 [i] = slope_ [i] ;
+					subgrid.dx0 [i] = -l_slope [i] ;
+					subgrid.dx1 [i] = l_slope [i] ;
 					index = (k / volume) % num_inverted_zoids [i] ;
 					int mid = num_inverted_zoids [i] / 2 ;
 					//cout << "index " << index << endl ;
@@ -176,7 +178,7 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 					{
 						//cout << "il " << endl ;
 						//zoid lies to the left of midpoint
-						subgrid.x0 [i] = grid.x0[i] + index * 2 * sigma_h [i] +
+						subgrid.x0 [i] = grid.x0[i] + index * two_sigma_h [i] +
 										offset [i] ;
 						subgrid.x1 [i] = subgrid.x0 [i] ;
 					}
@@ -184,9 +186,9 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 					{
 						//cout << "im " << endl ;
 						//zoid lies in the middle
-						subgrid.x0 [i] = grid.x0[i] + index * 2 * sigma_h [i] +
+						subgrid.x0 [i] = grid.x0[i] + index * two_sigma_h [i] +
 										offset [i] ;
-						subgrid.x1 [i] = grid.x1[i] - index * 2 * sigma_h [i] -
+						subgrid.x1 [i] = grid.x1[i] - index * two_sigma_h [i] -
 										offset [i] ;
 					}
 					else
@@ -195,15 +197,15 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 						//zoid lies to the right of midpoint
 						subgrid.x0 [i] = grid.x1[i] - 
 							(num_inverted_zoids [i] - index - 1) * 
-							2 * sigma_h [i] - offset [i] ;
+							two_sigma_h [i] - offset [i] ;
 						subgrid.x1 [i] = subgrid.x0 [i] ;
 					}
 					volume *= num_inverted_zoids [i] ;
 				}
 				else
 				{
-					subgrid.dx0 [i] = slope_ [i] ;
-					subgrid.dx1 [i] = -slope_ [i] ;
+					subgrid.dx0 [i] = l_slope [i] ;
+					subgrid.dx1 [i] = -l_slope [i] ;
 					index = (k / volume) % num_upright_zoids [i] ;
 					int mid = num_upright_zoids [i] / 2 ;
 					//cout << "index " << index << endl ;
@@ -211,25 +213,23 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 					{
 						//cout << "ul" << endl ;
 						//zoid lies to the left of midpoint
-						subgrid.x0 [i] = grid.x0[i] + index * 2 * sigma_h [i] ;
-						subgrid.x1 [i] = subgrid.x0 [i] + 2 * sigma_h [i] ;
+						subgrid.x0 [i] = grid.x0[i] + index * two_sigma_h [i] ;
+						subgrid.x1 [i] = subgrid.x0 [i] + two_sigma_h [i] ;
 					}
 					else if (index == mid && num_upright_zoids [i] & 1) 
 					{
 						//zoid lies in the middle
 						//cout << "um" << endl ;
-						subgrid.x0 [i] = grid.x0[i] + 
-											index * 2 * sigma_h [i] ;
-						subgrid.x1 [i] = grid.x1[i] - 
-											index * 2 * sigma_h [i] ;
+						subgrid.x0 [i] = grid.x0[i] + index * two_sigma_h [i] ;
+						subgrid.x1 [i] = grid.x1[i] - index * two_sigma_h [i] ;
 					}
 					else
 					{
 						//cout << "ur" << endl ;
 						//zoid lies to the right of midpoint
 						subgrid.x0 [i] = grid.x1[i] - 
-						(num_upright_zoids [i] - index) * 2 * sigma_h [i] ;
-						subgrid.x1 [i] = subgrid.x0 [i] + 2 * sigma_h [i] ;
+						(num_upright_zoids [i] - index) * two_sigma_h [i] ;
+						subgrid.x1 [i] = subgrid.x0 [i] + two_sigma_h [i] ;
 					}
 					volume *= num_upright_zoids [i] ;
 				}
@@ -254,7 +254,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 	int h = t1 - t0 ;
 	//cout << "h " << h << endl ;
 	int num_upright_zoids [N_RANK], num_inverted_zoids [N_RANK] ; 
-	int offset [N_RANK], sigma_h [N_RANK] ;
+	int offset [N_RANK], two_sigma_h [N_RANK] ;
 	for (int i = N_RANK - 1 ; i >= 0 ; i--)
 	{
 		int lb = grid.x1[i] - grid.x0[i] ;
@@ -266,10 +266,10 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 		<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * h
 		<< " h " << h << endl ; */
 #endif
-		sigma_h [i] = slope_ [i] * h ;
-		num_upright_zoids [i] = lb / (2 * sigma_h [i]) ; 
+		two_sigma_h [i] = 2 * slope_ [i] * h ;
+		num_upright_zoids [i] = lb / (two_sigma_h [i]) ; 
 		assert (num_upright_zoids [i] >= 0) ;
-		if (lb < tb)
+		if (lb <= tb)
 		{
 			//inverted trapezoid
 			num_inverted_zoids [i] = num_upright_zoids [i] + 1 ;
@@ -279,15 +279,13 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 		{
 			//upright trapezoid
 			num_inverted_zoids [i] = num_upright_zoids [i] - 1 ;
-			offset [i]  = 2 * sigma_h [i] ;
+			offset [i]  = two_sigma_h [i] ;
 		}
 		assert (num_inverted_zoids [i] >= 0) ;
 		//cout << " num_upright_zoids [" << i << "] " << num_upright_zoids [i] << endl ;
 		//cout << " num_inverted_zoids [" << i << "] " << num_inverted_zoids [i] << endl ;
 	}
-	//seems to be working correctly.
 	//coarsen the base case.
-	//continue from here
 	grid_info<N_RANK> subgrid ;
 	int popcount = 0 ;
 	for (int j = 0 ; j < num_orientations ; j++)
@@ -336,7 +334,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 					{
 						//cout << "il " << endl ;
 						//zoid lies to the left of midpoint
-						subgrid.x0 [i] = grid.x0[i] + index * 2 * sigma_h [i] +
+						subgrid.x0 [i] = grid.x0[i] + index * two_sigma_h [i] +
 										offset [i] ;
 						subgrid.x1 [i] = subgrid.x0 [i] ;
 					}
@@ -344,9 +342,9 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 					{
 						//cout << "im " << endl ;
 						//zoid lies in the middle
-						subgrid.x0 [i] = grid.x0[i] + index * 2 * sigma_h [i] +
+						subgrid.x0 [i] = grid.x0[i] + index * two_sigma_h [i] +
 										offset [i] ;
-						subgrid.x1 [i] = grid.x1[i] - index * 2 * sigma_h [i] -
+						subgrid.x1 [i] = grid.x1[i] - index * two_sigma_h [i] -
 										offset [i] ;
 					}
 					else
@@ -355,7 +353,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 						//zoid lies to the right of midpoint
 						subgrid.x0 [i] = grid.x1[i] - 
 							(num_inverted_zoids [i] - index - 1) * 
-							2 * sigma_h [i] - offset [i] ;
+							two_sigma_h [i] - offset [i] ;
 						subgrid.x1 [i] = subgrid.x0 [i] ;
 					}
 					volume *= num_inverted_zoids [i] ;
@@ -371,25 +369,23 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 					{
 						//cout << "ul" << endl ;
 						//zoid lies to the left of midpoint
-						subgrid.x0 [i] = grid.x0[i] + index * 2 * sigma_h [i] ;
-						subgrid.x1 [i] = subgrid.x0 [i] + 2 * sigma_h [i] ;
+						subgrid.x0 [i] = grid.x0[i] + index * two_sigma_h [i] ;
+						subgrid.x1 [i] = subgrid.x0 [i] + two_sigma_h [i] ;
 					}
 					else if (index == mid && num_upright_zoids [i] & 1) 
 					{
 						//zoid lies in the middle
 						//cout << "um" << endl ;
-						subgrid.x0 [i] = grid.x0[i] + 
-											index * 2 * sigma_h [i] ;
-						subgrid.x1 [i] = grid.x1[i] - 
-											index * 2 * sigma_h [i] ;
+						subgrid.x0 [i] = grid.x0[i] + index * two_sigma_h [i] ;
+						subgrid.x1 [i] = grid.x1[i] - index * two_sigma_h [i] ;
 					}
 					else
 					{
 						//cout << "ur" << endl ;
 						//zoid lies to the right of midpoint
 						subgrid.x0 [i] = grid.x1[i] - 
-						(num_upright_zoids [i] - index) * 2 * sigma_h [i] ;
-						subgrid.x1 [i] = subgrid.x0 [i] + 2 * sigma_h [i] ;
+						(num_upright_zoids [i] - index) * two_sigma_h [i] ;
+						subgrid.x1 [i] = subgrid.x0 [i] + two_sigma_h [i] ;
 					}
 					volume *= num_upright_zoids [i] ;
 				}
