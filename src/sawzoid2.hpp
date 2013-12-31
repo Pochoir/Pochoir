@@ -92,20 +92,32 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 	int num_upright_zoids [N_RANK], num_inverted_zoids [N_RANK] ; 
 	int offset [N_RANK], two_sigma_h [N_RANK] ;
 	int l_slope [N_RANK] ;
+	grid_info<N_RANK> grid2 = grid ;
+	cout << "done" << endl ; 
 	for (int i = N_RANK - 1 ; i >= 0 ; i--)
 	{
 		int lb = grid.x1[i] - grid.x0[i] ;
 		int tb = grid.x1[i] + grid.dx1[i] * h - grid.x0[i] - grid.dx0[i] * h;
-#ifndef NDEBUG
-		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
+		const bool l_touch_boundary = touch_boundary(i, h, grid2);
+//#ifndef NDEBUG
+		cout << " x0 [" << i << "] " << grid.x0 [i] 
 		<< " x1 [" << i << "] " << grid.x1 [i] 
 		<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * h
 		<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * h
-		<< " h " << h << endl ; */
-#endif
+		<< " h " << h << endl ; 
+//#endif
 		two_sigma_h [i] = 2 * slope_ [i] * h ;
 		l_slope [i] = slope_ [i] ;
-		num_upright_zoids [i] = lb / (two_sigma_h [i]) ; 
+		//num_upright_zoids [i] = lb / (two_sigma_h [i]) ; 
+		if (l_touch_boundary)
+		{
+			num_upright_zoids [i] = lb / (two_sigma_h [i]) ; 
+		}
+		else
+		{
+			num_upright_zoids [i] = max (lb / (two_sigma_h [i]), 
+									(lb - dx_recursive_ [i]) / two_sigma_h [i]);
+		}
 		assert (num_upright_zoids [i] >= 0) ;
 		if (lb <= tb)
 		{
@@ -151,7 +163,7 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 			}
 		}
 		//cout << "total_num_zoids " << total_num_zoids << endl ;
-		if (__builtin_popcount(bits) != popcount)
+		if (total_num_zoids && __builtin_popcount(bits) != popcount)
 		{
 			//cout << "sync" << endl ;
 			//sync when the popcount of the sequence changes.
@@ -255,19 +267,23 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 	//cout << "h " << h << endl ;
 	int num_upright_zoids [N_RANK], num_inverted_zoids [N_RANK] ; 
 	int offset [N_RANK], two_sigma_h [N_RANK] ;
+	//cout << "done" << endl ;
 	for (int i = N_RANK - 1 ; i >= 0 ; i--)
 	{
 		int lb = grid.x1[i] - grid.x0[i] ;
 		int tb = grid.x1[i] + grid.dx1[i] * h - grid.x0[i] - grid.dx0[i] * h;
 #ifndef NDEBUG
-		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
+		cout << " x0 [" << i << "] " << grid.x0 [i] 
 		<< " x1 [" << i << "] " << grid.x1 [i] 
 		<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * h
 		<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * h
-		<< " h " << h << endl ; */
+		<< " h " << h << endl ; 
 #endif
 		two_sigma_h [i] = 2 * slope_ [i] * h ;
-		num_upright_zoids [i] = lb / (two_sigma_h [i]) ; 
+		//num_upright_zoids [i] = lb / (two_sigma_h [i]) ; 
+		num_upright_zoids [i] = max (lb / (two_sigma_h [i]), 
+									(lb - dx_recursive_ [i]) / two_sigma_h [i]);
+		//cout << " num_upright_zoids [" << i << "] " << num_upright_zoids [i] << endl ;
 		assert (num_upright_zoids [i] >= 0) ;
 		if (lb <= tb)
 		{
@@ -282,7 +298,6 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 			offset [i]  = two_sigma_h [i] ;
 		}
 		assert (num_inverted_zoids [i] >= 0) ;
-		//cout << " num_upright_zoids [" << i << "] " << num_upright_zoids [i] << endl ;
 		//cout << " num_inverted_zoids [" << i << "] " << num_inverted_zoids [i] << endl ;
 	}
 	//coarsen the base case.
@@ -307,7 +322,7 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 			}
 		}
 		//cout << "total_num_zoids " << total_num_zoids << endl ;
-		if (__builtin_popcount(bits) != popcount)
+		if (total_num_zoids && __builtin_popcount(bits) != popcount)
 		{
 			//cout << "sync" << endl ;
 			//sync when the popcount of the sequence changes.
