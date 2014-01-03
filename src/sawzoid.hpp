@@ -139,218 +139,54 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
                 const int level = l_father->level;
                 const int thres = slope_[level] * lt;
                 const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
-				const int top_left = l_father_grid.x0[level] + 
-									l_father_grid.dx0[level] * lt ;
-				const int top_right = l_father_grid.x1[level] + 
-									l_father_grid.dx1[level] * lt ;
-                //const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
-                const int tb = top_right - top_left ;
+                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
 				const bool can_cut = CAN_CUT_I ;
 				if (! can_cut) {
-                //if (num_zoids [level] == 0) {
                     // if we can't cut into this dimension, just directly push 
                     // it into the circular queue 
-                    //
                     push_queue(curr_dep_pointer, level-1, t0, t1, 
 							l_father_grid) ;
-                } else  {
-                    /* can_cut! */
-                    const int l_start = (l_father_grid.x0[level]);
-                    const int l_end = (l_father_grid.x1[level]);
-					int mid = l_start + (l_end - l_start) / 2 ;
-                    const int next_dep_pointer = (curr_dep + 1) & 0x1;
-                    if (cut_lb) {
-						//trap is inverted
-                        grid_info<N_RANK> l_son_grid = l_father_grid;
-						
-						//m is the # of possible space cuts
-						int m = lb / (thres * 2) ;
-						int rem_width = lb - m * thres * 2 ;
-						int floor_half_rem_width = rem_width / 2 ;
-						int ceil_half_rem_width = rem_width - rem_width / 2 ;
-
-						if (m & 1)
-						{
-							//m is odd
-							//middle trap is upright
-							l_son_grid.x0[level] = mid - floor_half_rem_width
-													- thres ;
-                        	l_son_grid.x1[level] = mid + ceil_half_rem_width 
-													+ thres ;
-                        	l_son_grid.dx0[level] = slope_ [level] ;
-                        	l_son_grid.dx1[level] = -slope_[level] ;
-                        	push_queue(curr_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-							
-							//trapezoid on the left
-							l_son_grid.x0[level] = l_start ;
-                        	l_son_grid.dx0[level] = l_father_grid.dx0[level] ;
-                        	l_son_grid.x1[level] = mid - floor_half_rem_width
-													- thres ;
-	                        l_son_grid.dx1[level] = slope_[level] ;
-                        	push_queue(next_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-
-							//trapezoid on the right
-							l_son_grid.x0[level] = mid + ceil_half_rem_width 
-													+ thres ;
-                        	l_son_grid.dx0[level] = -slope_[level];
-                        	l_son_grid.x1[level] = l_end ;
-                        	l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
-                        	push_queue(next_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-						}
-						else
-						{
-							//m is even
-							//middle trap is inverted
-							l_son_grid.x0[level] = mid - floor_half_rem_width ;
-                        	l_son_grid.x1[level] = mid + ceil_half_rem_width ;
-							l_son_grid.dx0[level] = -slope_ [level] ;
-                        	l_son_grid.dx1[level] = slope_[level] ;
-                        	push_queue(next_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-							
-							//parallelogram on the left
-							l_son_grid.x0[level] = l_start ;
-                        	l_son_grid.dx0[level] = l_father_grid.dx0[level] ;
-                        	l_son_grid.x1[level] = mid - floor_half_rem_width ;
-	                        l_son_grid.dx1[level] = -slope_[level] ;
-                        	push_queue(curr_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-
-							//parallelogram on the right
-							l_son_grid.x0[level] = mid + ceil_half_rem_width ;
-                        	l_son_grid.dx0[level] = slope_[level];
-                        	l_son_grid.x1[level] = l_end ;
-                        	l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
-                        	push_queue(curr_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-							
-						}
-                    } /* end if (cut_lb) */
-                    else if (lb > tb){
-                        //upright trapezoid 
-						//m is the # of possible space cuts
-						int m = tb / (thres * 2) ;
-						int rem_width = tb - m * thres * 2 ;
-						int floor_half_rem_width = rem_width / 2 ;
-						int ceil_half_rem_width = rem_width - rem_width / 2 ;
-
-                        grid_info<N_RANK> l_son_grid = l_father_grid;
-
-						if (m & 1)
-						{
-							//m is odd. trapezoid in the middle is inverted
-							l_son_grid.x0[level] = mid - floor_half_rem_width ;
-                        	l_son_grid.dx0[level] = -slope_[level] ;
-                        	l_son_grid.x1[level] = mid + ceil_half_rem_width ;
-                        	l_son_grid.dx1[level] = slope_[level] ;
-                        	push_queue(next_dep_pointer, level-1, t0, t1, 
-									l_son_grid) ;
-
-							//trapezoid on the left
-							l_son_grid.x0[level] = l_start ;
-                        	l_son_grid.dx0[level] = l_father_grid.dx0[level] ;
-                        	l_son_grid.x1[level] = mid - floor_half_rem_width ;
-	                        l_son_grid.dx1[level] = -slope_[level] ;
-                        	push_queue(curr_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-
-							//trapezoid on the right
-							l_son_grid.x0[level] = mid + ceil_half_rem_width ;
-                        	l_son_grid.dx0[level] = slope_[level];
-                        	l_son_grid.x1[level] = l_end ;
-                        	l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
-                        	push_queue(curr_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-						}
-						else
-						{
-							//m is even. trapezoid in the middle is upright
-							l_son_grid.x0[level] = mid - floor_half_rem_width 
-													- thres ;
-                        	l_son_grid.dx0[level] = slope_[level] ;
-                        	l_son_grid.x1[level] = mid + ceil_half_rem_width
-													+ thres ;
-                        	l_son_grid.dx1[level] = -slope_[level] ;
-                        	push_queue(curr_dep_pointer, level-1, t0, t1, 
-									l_son_grid) ;
-
-							//parallelogram on the left
-							l_son_grid.x0[level] = l_start ;
-                        	l_son_grid.dx0[level] = l_father_grid.dx0[level] ;
-                        	l_son_grid.x1[level] = mid - floor_half_rem_width
-                                                    - thres ;
-	                        l_son_grid.dx1[level] = slope_[level] ;
-                        	push_queue(next_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-
-							//parallelogram on the right
-							l_son_grid.x0[level] = mid + ceil_half_rem_width
-                                                    + thres ;
-                        	l_son_grid.dx0[level] = -slope_[level];
-                        	l_son_grid.x1[level] = l_end ;
-                        	l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
-                        	push_queue(next_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-						}
-                    } /* end else if (lb > tb) */
-					else
-					{
-						assert (lb == tb) ;
-						assert (l_father_grid.dx0[level] == 
-								l_father_grid.dx1[level]) ;
-						//assert (l_father_grid.dx1[level] != 0) ;
-						//zoid is a parallelogram
-
-						//m is the # of possible space cuts
-						int m = tb / (thres * 2) ;
-						grid_info<N_RANK> l_son_grid = l_father_grid;
-						int bottom_left, bottom_right ;
-						//create an upright triangle in the middle
-						if (m & 1)
-						{
-							//m is odd.
-							bottom_left = mid - thres ;
-							bottom_right = mid + thres ;
-						}
-						else
-						{
-							//m is even
-							bottom_left = mid ;
-							bottom_right = mid + 2 * thres ;
-						}
+				} else  {
+					// can_cut
+					const int l_start = (l_father_grid.x0[level]);
+					const int l_end = (l_father_grid.x1[level]);
+					//trap is inverted or upright or a parallelogram
+					grid_info<N_RANK> l_son_grid = l_father_grid;
 					
-						l_son_grid.x0[level] = bottom_left ;
-						l_son_grid.dx0[level] = slope_[level] ;
-						l_son_grid.x1[level] = bottom_right ;
-						l_son_grid.dx1[level] = -slope_[level] ;
-						push_queue(curr_dep_pointer, level-1, t0, t1, 
-									l_son_grid) ;
-					
-						//create parallelograms on the left and right
-						if (top_left < bottom_left)
-						{
-							l_son_grid.x0[level] = l_start ;
-							l_son_grid.dx0[level] =l_father_grid.dx0[level];
-							l_son_grid.x1[level] = bottom_left ;
-							l_son_grid.dx1[level] = slope_[level] ;
-							push_queue(next_dep_pointer, level-1, t0, 
-										t1, l_son_grid) ;
-						}
-						if (top_right > bottom_right)
-						{
-							l_son_grid.x0[level] = bottom_right ;
-							l_son_grid.dx0[level] = -slope_[level] ;
-							l_son_grid.x1[level] = l_end ;
-							l_son_grid.dx1[level] =l_father_grid.dx1[level];
-							push_queue(next_dep_pointer, level-1, t0, 
-										t1, l_son_grid) ;
-						}
-					}
-                } // end if (can_cut) 
+					//m is the # of upright triangles
+					int m = lb / (thres * 2) ;
+					int one = m & 1 ;
+
+					//if m is odd, trapezoid in the middle is upright
+					//if m is even, trapezoid in the middle is inverted
+					int left_slope = (2 * one - 1) * slope_ [level] ;
+					int right_slope = -left_slope ;
+
+					l_son_grid.x0[level] = l_start + (m - one) * thres ;
+					l_son_grid.x1[level] = l_end - (m - one) * thres ;
+					l_son_grid.dx0[level] = left_slope ;
+					l_son_grid.dx1[level] = right_slope ;
+					const int dep_pointer = (curr_dep + 1 - one) & 0x1 ;
+					push_queue(dep_pointer, level-1, t0, t1, l_son_grid) ;
+	
+					const int next_dep_pointer = (curr_dep + one) & 0x1;
+					//trapezoid on the left
+					l_son_grid.x0[level] = l_start ;
+					l_son_grid.dx0[level] = l_father_grid.dx0[level] ;
+					l_son_grid.x1[level] = l_start + (m - one) * thres ;
+					l_son_grid.dx1[level] = left_slope ;
+					push_queue(next_dep_pointer, level-1, t0, t1,
+								l_son_grid) ;
+
+					//trapezoid on the right
+					l_son_grid.x0[level] = l_end - (m - one) * thres ;
+					l_son_grid.dx0[level] = right_slope ;
+					l_son_grid.x1[level] = l_end ;
+					l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
+					push_queue(next_dep_pointer, level-1, t0, t1,
+								l_son_grid) ;
+				} 
             } // end if (performing a space cut) 
         } // end while (queue_len_[curr_dep] > 0) 
 #if !USE_CILK_FOR
@@ -416,274 +252,86 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
                 const int level = l_father->level;
                 const int thres = slope_[level] * lt;
                 const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
-				const int top_left = l_father_grid.x0[level] + 
-									l_father_grid.dx0[level] * lt ;
-				const int top_right = l_father_grid.x1[level] + 
-									l_father_grid.dx1[level] * lt ;
-                //const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
-                const int tb = top_right - top_left ;
+                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
                 const bool cut_lb = (lb < tb);
                 const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
-                //const bool l_touch_boundary = true ;
 				const bool can_cut = CAN_CUT_B ;
                 if (! can_cut) {
-                //if (num_zoids [level] == 0) {
                     // if we can't cut into this dimension, just directly push
                     // it into the circular queue
-                    //
                     push_queue(curr_dep_pointer, level-1, t0, t1, 
 							l_father_grid) ;
                 } else  {
                     const int l_start = (l_father_grid.x0[level]);
                     const int l_end = (l_father_grid.x1[level]);
-					int mid = l_start + (l_end - l_start) / 2 ;
-                    const int next_dep_pointer = (curr_dep + 1) & 0x1;
                     /* can_cut */
-                    if (cut_lb) {
-						//trap is inverted
+					if (l_father_grid.dx0[level] != 0 || 
+						l_father_grid.dx1[level] != 0) {
+						//Not the initial cut on the dimension.
                         grid_info<N_RANK> l_son_grid = l_father_grid;
-						
-						//m is the # of possible space cuts
+						//m is the # of upright triangles
 						int m = lb / (thres * 2) ;
-						int rem_width = lb - m * thres * 2 ;
-						int floor_half_rem_width = rem_width / 2 ;
-						int ceil_half_rem_width = rem_width - rem_width / 2 ;
+						int one = m & 1 ;
 
-						if (m & 1)
-						{
-							//m is odd
-							//middle trap is upright
-							l_son_grid.x0[level] = mid - floor_half_rem_width
-													- thres ;
-                        	l_son_grid.x1[level] = mid + ceil_half_rem_width 
-													+ thres ;
-                        	l_son_grid.dx0[level] = slope_ [level] ;
-                        	l_son_grid.dx1[level] = -slope_[level] ;
-                        	push_queue(curr_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-							
-							//trapezoid on the left
-							l_son_grid.x0[level] = l_start ;
-                        	l_son_grid.dx0[level] = l_father_grid.dx0[level] ;
-                        	l_son_grid.x1[level] = mid - floor_half_rem_width
-													- thres ;
-	                        l_son_grid.dx1[level] = slope_[level] ;
-                        	push_queue(next_dep_pointer, level-1, t0, t1,
+						//if m is odd, trapezoid in the middle is upright
+						//if m is even, trapezoid in the middle is inverted
+						int left_slope = (2 * one - 1) * slope_ [level] ;
+						int right_slope = -left_slope ;
+
+						l_son_grid.x0[level] = l_start + (m - one) * thres ;
+                        l_son_grid.x1[level] = l_end - (m - one) * thres ;
+                        l_son_grid.dx0[level] = left_slope ;
+                        l_son_grid.dx1[level] = right_slope ;
+						const int dep_pointer = (curr_dep + 1 - one) & 0x1 ;
+                        push_queue(dep_pointer, level-1, t0, t1, l_son_grid) ;
+		
+                    	const int next_dep_pointer = (curr_dep + one) & 0x1;
+						//trapezoid on the left
+						l_son_grid.x0[level] = l_start ;
+                        l_son_grid.dx0[level] = l_father_grid.dx0[level] ;
+                        l_son_grid.x1[level] = l_start + (m - one) * thres ;
+	                    l_son_grid.dx1[level] = left_slope ;
+                        push_queue(next_dep_pointer, level-1, t0, t1,
                                     l_son_grid) ;
 
-							//trapezoid on the right
-							l_son_grid.x0[level] = mid + ceil_half_rem_width 
-													+ thres ;
-                        	l_son_grid.dx0[level] = -slope_[level];
-                        	l_son_grid.x1[level] = l_end ;
-                        	l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
-                        	push_queue(next_dep_pointer, level-1, t0, t1,
+						//trapezoid on the right
+						l_son_grid.x0[level] = l_end - (m - one) * thres ;
+                        l_son_grid.dx0[level] = right_slope ;
+                        l_son_grid.x1[level] = l_end ;
+                        l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
+                        push_queue(next_dep_pointer, level-1, t0, t1,
                                     l_son_grid) ;
-						}
-						else
-						{
-							//m is even
-							//middle trap is inverted
-							l_son_grid.x0[level] = mid - floor_half_rem_width ;
-                        	l_son_grid.x1[level] = mid + ceil_half_rem_width ;
-							l_son_grid.dx0[level] = -slope_ [level] ;
-                        	l_son_grid.dx1[level] = slope_[level] ;
-                        	push_queue(next_dep_pointer, level-1, t0, t1,
+                    }
+                    else { 
+						// initial cut on the dimension 
+                        assert (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) ;
+						assert (lb == tb) ;
+						//m is the # of upright triangles
+						int m = lb / (thres * 2) ;
+						int one = m & 1 ;
+
+						//if m is odd, trapezoid in the middle is upright
+						//if m is even, trapezoid in the middle is inverted
+						int left_slope = (2 * one - 1) * slope_ [level] ;
+						int right_slope = -left_slope ;
+
+                        grid_info<N_RANK> l_son_grid = l_father_grid;
+						l_son_grid.x0[level] = l_start + (m - one) * thres ;
+                        l_son_grid.x1[level] = l_end - (m - one) * thres ;
+                        l_son_grid.dx0[level] = left_slope ;
+                        l_son_grid.dx1[level] = right_slope ;
+						const int dep_pointer = (curr_dep + 1 - one) & 0x1 ;
+                        push_queue(dep_pointer, level-1, t0, t1, l_son_grid) ;
+		
+                    	const int next_dep_pointer = (curr_dep + one) & 0x1;
+						//trapezoid on the right
+						l_son_grid.x0[level] = l_end - (m - one) * thres ;
+                        l_son_grid.dx0[level] = right_slope ;
+                        l_son_grid.x1[level] = l_end + (m - one) * thres ;
+                        l_son_grid.dx1[level] = left_slope ;
+                        push_queue(next_dep_pointer, level-1, t0, t1,
                                     l_son_grid) ;
-							
-							//parallelogram on the left
-							l_son_grid.x0[level] = l_start ;
-                        	l_son_grid.dx0[level] = l_father_grid.dx0[level] ;
-                        	l_son_grid.x1[level] = mid - floor_half_rem_width ;
-	                        l_son_grid.dx1[level] = -slope_[level] ;
-                        	push_queue(curr_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-
-							//parallelogram on the right
-							l_son_grid.x0[level] = mid + ceil_half_rem_width ;
-                        	l_son_grid.dx0[level] = slope_[level];
-                        	l_son_grid.x1[level] = l_end ;
-                        	l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
-                        	push_queue(curr_dep_pointer, level-1, t0, t1,
-                                    l_son_grid) ;
-							
-						}
-                    }/* end if (cut_lb) */
-                    else { /* cut_tb */
-						//m is the # of possible space cuts
-						int m = tb / (thres * 2) ;
-                        if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
-
-							int rem_width = tb - m * thres * 2 ;
-							int floor_half_rem_width = rem_width / 2 ;
-							int ceil_half_rem_width = rem_width - rem_width / 2;
-
-                            grid_info<N_RANK> l_son_grid = l_father_grid;
-							if (m & 1)
-							{
-								//m is odd. trapezoid in the middle is upright
-								int left_end = mid - floor_half_rem_width - 
-												thres ;
-								int right_end = mid + ceil_half_rem_width +
-                                                thres ;
-								l_son_grid.x0[level] = left_end ;
-                                l_son_grid.dx0[level] = slope_[level] ;
-                                l_son_grid.x1[level] = right_end ;
-                                l_son_grid.dx1[level] = -slope_[level] ;
-                                push_queue(curr_dep_pointer, level-1, t0, t1,
-                                        l_son_grid) ;
-
-                                //trapezoid on the right
-                                l_son_grid.x0[level] = right_end ;
-                                l_son_grid.dx0[level] = -slope_[level];
-                                l_son_grid.x1[level] = l_end + left_end - 
-														l_start;
-                                l_son_grid.dx1[level] = slope_[level] ;
-                                push_queue(next_dep_pointer, level-1, t0, t1,
-                                        l_son_grid) ;
-							}
-							else
-							{
-								//m is even. trapezoid in the middle is inverted
-								int left_end = mid - floor_half_rem_width ;
-								l_son_grid.x0[level] = left_end ;
-								l_son_grid.dx0[level] = -slope_[level] ;
-								l_son_grid.x1[level] = mid + 
-														ceil_half_rem_width ;
-								l_son_grid.dx1[level] = slope_[level] ;
-								push_queue(next_dep_pointer, level-1, t0, t1, 
-										l_son_grid) ;
-
-								//trapezoid on the right
-								l_son_grid.x0[level] = mid + 
-													ceil_half_rem_width;
-								l_son_grid.dx0[level] = slope_[level];
-								l_son_grid.x1[level] = l_end + left_end - 
-													l_start ;
-								l_son_grid.dx1[level] = -slope_[level] ;
-								push_queue(curr_dep_pointer, level-1, t0, t1,
-										l_son_grid) ;
-							}
-						} else if (lb > tb) {
-							//upright trapezoid 
-							int rem_width = tb - m * thres * 2 ;
-							int floor_half_rem_width = rem_width / 2 ;
-							int ceil_half_rem_width = rem_width - rem_width / 2;
-
-							grid_info<N_RANK> l_son_grid = l_father_grid;
-
-							if (m & 1)
-							{
-								//m is odd. trapezoid in the middle is inverted
-								l_son_grid.x0[level] = mid - 
-														floor_half_rem_width ;
-								l_son_grid.dx0[level] = -slope_[level] ;
-								l_son_grid.x1[level] = mid + 
-														ceil_half_rem_width ;
-								l_son_grid.dx1[level] = slope_[level] ;
-								push_queue(next_dep_pointer, level-1, t0, t1, 
-										l_son_grid) ;
-
-								//trapezoid on the left
-								l_son_grid.x0[level] = l_start ;
-								l_son_grid.dx0[level] =l_father_grid.dx0[level];
-								l_son_grid.x1[level] = mid - 
-													floor_half_rem_width ;
-								l_son_grid.dx1[level] = -slope_[level] ;
-								push_queue(curr_dep_pointer, level-1, t0, t1,
-										l_son_grid) ;
-
-								//trapezoid on the right
-								l_son_grid.x0[level] = mid + 
-													ceil_half_rem_width;
-								l_son_grid.dx0[level] = slope_[level];
-								l_son_grid.x1[level] = l_end ;
-								l_son_grid.dx1[level] =l_father_grid.dx1[level];
-								push_queue(curr_dep_pointer, level-1, t0, t1,
-										l_son_grid) ;
-							}
-							else
-							{
-								//m is even. trapezoid in the middle is upright
-								l_son_grid.x0[level] = mid - 
-												floor_half_rem_width - thres ;
-								l_son_grid.dx0[level] = slope_[level] ;
-								l_son_grid.x1[level] = mid + ceil_half_rem_width
-														+ thres ;
-								l_son_grid.dx1[level] = -slope_[level] ;
-								push_queue(curr_dep_pointer, level-1, t0, t1, 
-										l_son_grid) ;
-
-								//parallelogram on the left
-								l_son_grid.x0[level] = l_start ;
-								l_son_grid.dx0[level] =l_father_grid.dx0[level];
-								l_son_grid.x1[level] = mid - 
-											floor_half_rem_width - thres ;
-								l_son_grid.dx1[level] = slope_[level] ;
-								push_queue(next_dep_pointer, level-1, t0, t1,
-										l_son_grid) ;
-
-								//parallelogram on the right
-								l_son_grid.x0[level] = mid + ceil_half_rem_width
-														+ thres ;
-								l_son_grid.dx0[level] = -slope_[level];
-								l_son_grid.x1[level] = l_end ;
-								l_son_grid.dx1[level] =l_father_grid.dx1[level];
-								push_queue(next_dep_pointer, level-1, t0, t1,
-										l_son_grid) ;
-							}
-						}                   
-						else
-						{
-							assert (lb == tb) ;
-							assert (l_father_grid.dx0[level] == 
-									l_father_grid.dx1[level]) ;
-							//assert (l_father_grid.dx1[level] != 0) ;
-							//zoid is a parallelogram
-							grid_info<N_RANK> l_son_grid = l_father_grid;
-							int bottom_left, bottom_right ;
-							//create an upright triangle in the middle
-							if (m & 1)
-							{
-								//m is odd.
-								bottom_left = mid - thres ;
-								bottom_right = mid + thres ;
-							}
-							else
-							{
-								//m is even
-								bottom_left = mid ;
-								bottom_right = mid + 2 * thres ;
-							}
-						
-							l_son_grid.x0[level] = bottom_left ;
-							l_son_grid.dx0[level] = slope_[level] ;
-							l_son_grid.x1[level] = bottom_right ;
-							l_son_grid.dx1[level] = -slope_[level] ;
-							push_queue(curr_dep_pointer, level-1, t0, t1, 
-										l_son_grid) ;
-						
-							//create parallelograms on the left and right
-							if (top_left < bottom_left)
-							{
-								l_son_grid.x0[level] = l_start ;
-								l_son_grid.dx0[level] =l_father_grid.dx0[level];
-								l_son_grid.x1[level] = bottom_left ;
-								l_son_grid.dx1[level] = slope_[level] ;
-								push_queue(next_dep_pointer, level-1, t0, 
-											t1, l_son_grid) ;
-							}
-							if (top_right > bottom_right)
-							{
-								l_son_grid.x0[level] = bottom_right ;
-								l_son_grid.dx0[level] = -slope_[level] ;
-								l_son_grid.x1[level] = l_end ;
-								l_son_grid.dx1[level] =l_father_grid.dx1[level];
-								push_queue(next_dep_pointer, level-1, t0, 
-											t1, l_son_grid) ;
-							}
-						}
-                    } /* end if (cut_tb) */
+                    } 
                 }// end if (can_cut) 
             } // end if (performing a space cut) 
         } // end while (queue_len_[curr_dep] > 0) 
@@ -834,595 +482,6 @@ inline void Algorithm<N_RANK>::space_time_cut_boundary(int t0, int t1, grid_info
             f(t0, t1, l_father_grid);
         }
 	}
-}
-
-/* This is the version for boundary region cut! */
-template <int N_RANK> template <typename F, typename BF>
-inline void Algorithm<N_RANK>::abnormal_region_space_time_cut_boundary(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
-{
-    const int lt = t1 - t0;
-    bool sim_can_cut = false, call_boundary = false;
-    grid_info<N_RANK> l_father_grid = grid, l_son_grid;
-    int l_dt_stop;
-    for (int i = N_RANK-1; i >= 0; --i) {
-        int lb, thres, tb;
-        bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
-
-        lb = (grid.x1[i] - grid.x0[i]);
-        tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-
-        thres = slope_[i] * lt ;
-		bool cut_lb = (lb < tb);
-		sim_can_cut = SIM_CAN_CUT_B ;
-        call_boundary |= l_touch_boundary;
-#ifndef NDEBUG
-		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
-		<< " x1 [" << i << "] " << grid.x1 [i] 
-		<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
-		<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-		<< " lt " << lt << endl ;*/
-#endif
-    }
-    if (call_boundary)
-	{
-        l_dt_stop = dt_recursive_boundary_;
-	}
-    else
-	{
-        l_dt_stop = dt_recursive_;
-	}
-    if (sim_can_cut) 
-	{
-		//cout << "space cut " << endl ;
-        //cut into space 
-        if (call_boundary) 
-		{
-            abnormal_region_space_cut_boundary(t0, t1, l_father_grid, 
-										f, bf) ;
-        }
-		else
-		{
-            abnormal_region_space_cut_interior(t0, t1, l_father_grid, 
-										f) ;
-		}
-    } 
-	else if (lt > l_dt_stop)  //time cut
-	{
-		//cout << "time cut " << endl ;
-        // cut into time 
-		
-        int halflt = lt / 2;
-        l_son_grid = l_father_grid;
-        if (call_boundary) {
-            abnormal_region_space_time_cut_boundary(t0, t0+halflt, 
-								l_son_grid, f, bf);
-        } else {
-            abnormal_region_space_time_cut_interior(t0, t0+halflt, 
-								l_son_grid, f);
-        }
-
-        for (int i = 0; i < N_RANK; ++i) {
-            l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
-            l_son_grid.dx0[i] = l_father_grid.dx0[i];
-            l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
-            l_son_grid.dx1[i] = l_father_grid.dx1[i];
-        }
-        if (call_boundary) {
-            abnormal_region_space_time_cut_boundary(t0+halflt, t1, 
-								l_son_grid, f, bf);
-        } else {
-            abnormal_region_space_time_cut_interior(t0+halflt, t1, 
-								l_son_grid, f);
-        }
-    } 
-	else
-	{
-        if (call_boundary) {
-            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-        } else {
-            f(t0, t1, l_father_grid);
-        }
-	}
-}
-
-/* This is the version for interior region cut! */
-template <int N_RANK> template <typename F>
-inline void Algorithm<N_RANK>::abnormal_region_space_time_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
-{
-    const int lt = t1 - t0;
-    bool sim_can_cut = false;
-    grid_info<N_RANK> l_son_grid;
- 
-    for (int i = N_RANK-1; i >= 0; --i) {
-        int lb, thres, tb;
-        lb = (grid.x1[i] - grid.x0[i]);
-        tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-
-        bool cut_lb = (lb < tb);
-        thres = (slope_[i] * lt);
-        sim_can_cut = SIM_CAN_CUT_I ;
-#ifndef NDEBUG
-		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
-		<< " x1 [" << i << "] " << grid.x1 [i] 
-		<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
-		<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-		<< " lt " << lt << endl ;*/
-#endif
-    }
-    if (sim_can_cut) 
-	{
-        /* cut into space */
-        abnormal_region_space_cut_interior(t0, t1, grid, f) ;
-    } 
-	else if (lt > dt_recursive_) 
-	{
-        /* cut into time */
-        assert(lt > dt_recursive_);
-        int halflt = lt / 2;
-        l_son_grid = grid;
-        abnormal_region_space_time_cut_interior(t0, t0+halflt, 
-									l_son_grid, f);
-
-        for (int i = 0; i < N_RANK; ++i) {
-            l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
-            l_son_grid.dx0[i] = grid.dx0[i];
-            l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
-            l_son_grid.dx1[i] = grid.dx1[i];
-        }
-        abnormal_region_space_time_cut_interior(t0+halflt, t1, 
-								l_son_grid, f);
-    }
-	else 
-	{
-        f(t0, t1, grid);
-	}
-}
-
-
-template <int N_RANK> template <typename F, typename BF>
-inline void Algorithm<N_RANK>::abnormal_region_space_cut_boundary(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
-{
-    queue_info *l_father;
-    queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
-    int queue_head_[2], queue_tail_[2], queue_len_[2];
-
-    for (int i = 0; i < 2; ++i) {
-        queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
-    }
-	
-    // set up the initial grid 
-    push_queue(0, N_RANK-1, t0, t1, grid);
-    for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
-        const int curr_dep_pointer = (curr_dep & 0x1);
-        while (queue_len_[curr_dep_pointer] > 0) {
-            top_queue(curr_dep_pointer, l_father);
-            if (l_father->level < 0) {
-                // spawn all the grids in circular_queue_[curr_dep][] 
-#if USE_CILK_FOR 
-                // use cilk_for to spawn all the sub-grid 
-// #pragma cilk_grainsize = 1
-				
-                cilk_for (int j = 0; j < queue_len_[curr_dep_pointer]; ++j) {
-                    int i = pmod((queue_head_[curr_dep_pointer]+j), ALGOR_QUEUE_SIZE);
-                    queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
-                    // assert all the sub-grid has done N_RANK spatial cuts 
-                    //assert(l_son->level == -1);
-                    abnormal_region_space_time_cut_boundary(l_son->t0, 
-						l_son->t1, l_son->grid, f, bf);
-                } // end cilk_for 
-                queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
-                queue_len_[curr_dep_pointer] = 0;
-#else
-                // use cilk_spawn to spawn all the sub-grid 
-                pop_queue(curr_dep_pointer);
-                if (queue_len_[curr_dep_pointer] == 0) {
-                    abnormal_region_space_time_cut_boundary(l_father->t0,
-						l_father->t1, l_father->grid, f, bf);
-                } else {
-                    //cilk_spawn abnormal_region_space_time_cut_boundary(
-                    abnormal_region_space_time_cut_boundary(
-						l_father->t0, l_father->t1, l_father->grid, f, bf);
-                }
-#endif
-            } else {
-                // performing a space cut on dimension 'level' 
-                pop_queue(curr_dep_pointer);
-                grid_info<N_RANK> l_father_grid = l_father->grid;
-                const int t0 = l_father->t0, t1 = l_father->t1;
-                const int lt = (t1 - t0);
-                const int level = l_father->level;
-                const int thres = slope_[level] * lt;
-                const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
-                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
-                const bool cut_lb = (lb < tb);
-                const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
-                //const bool l_touch_boundary = true ;
-				const bool can_cut = CAN_CUT_B ;
-                if (! can_cut) {
-                //if (num_zoids [level] == 0) {
-                    // if we can't cut into this dimension, just directly push
-                    // it into the circular queue
-                    //
-                    push_queue(curr_dep_pointer, level-1, t0, t1, 
-							l_father_grid) ;
-                } else  {
-                    /* can_cut */
-                    if (cut_lb) {
-                        grid_info<N_RANK> l_son_grid = l_father_grid;
-                        const int l_start = (l_father_grid.x0[level]);
-                        const int l_end = (l_father_grid.x1[level]);
-
-                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
-                        l_son_grid.x0[level] = l_start ;
-                        l_son_grid.dx0[level] = l_father_grid.dx0[level] ;
-                        l_son_grid.x1[level] = l_start ;
-                        l_son_grid.dx1[level] = slope_[level] ;
-                        push_queue(next_dep_pointer, level-1, t0, t1, 
-											l_son_grid) ;
-
-                        l_son_grid.x0[level] = l_end ;
-                        l_son_grid.dx0[level] = -slope_[level];
-                        l_son_grid.x1[level] = l_end ;
-                        l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
-                        push_queue(next_dep_pointer, level-1, t0, t1, 
-											l_son_grid) ;
-
-						//const int cut_more = ((lb - (thres << 2)) >= 0) ;
-						tb -= (thres << 2) ;
-						//const bool cut_more = (tb >= thres << 1)  && 
-						//				  (lb > dx_recursive_[level]) ;
-						const bool cut_more = CHECK_WIDTH_TB ;
-						if (cut_more)
-						{
-							const int offset = (thres << 1) ;
-							l_son_grid.x0[level] = l_start ;
-	                        l_son_grid.dx0[level] = slope_[level];
-    	                    l_son_grid.x1[level] = l_start + offset;
-        	                l_son_grid.dx1[level] = -slope_[level] ;
-            	            push_queue(curr_dep_pointer, level-1, t0, 
-									t1, l_son_grid) ;
-
-							
-							l_son_grid.x0[level] = l_end - offset ;
-	                        l_son_grid.dx0[level] = slope_[level];
-    	                    l_son_grid.x1[level] = l_end ;
-        	                l_son_grid.dx1[level] = -slope_[level] ;
-            	            push_queue(curr_dep_pointer, level-1, t0, 
-									t1, l_son_grid) ;
-
-							l_son_grid.x0[level] = l_start + offset;
-	                        l_son_grid.dx0[level] = -slope_[level];
-    	                    l_son_grid.x1[level] = l_end - offset ;
-        	                l_son_grid.dx1[level] = slope_[level] ;
-            	            push_queue(next_dep_pointer, level-1, t0, 
-									t1, l_son_grid);
-						}
-						else
-						{
-							l_son_grid.x0[level] = l_start ;
-	                        l_son_grid.dx0[level] = slope_[level];
-    	                    l_son_grid.x1[level] = l_end;
-        	                l_son_grid.dx1[level] = -slope_[level] ;
-            	            push_queue(curr_dep_pointer, level-1, t0, 
-									t1, l_son_grid);
-						}
-                    } /* end if (cut_lb) */
-                    else { /* cut_tb */
-                        if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { /* initial cut on the dimension */
-                            grid_info<N_RANK> l_son_grid = l_father_grid;
-                            const int l_start = (l_father_grid.x0[level]);
-                            const int l_end = (l_father_grid.x1[level]);
-                            const int next_dep_pointer = (curr_dep + 1) & 0x1;
-							//const int cut_more = ((lb - (thres << 2)) >= 0) ;
-							tb -= (thres << 1) ;
-							//const bool cut_more = (tb >= thres << 1)  && 
-							//		  (lb > dx_recursive_boundary_[level]) ;
-							const bool cut_more = CHECK_WIDTH_TB_BOUNDARY ;
-							if (cut_more)
-							{
-								const int offset = (thres << 1) ;
-                            	l_son_grid.x0[level] = l_start ;
-                            	l_son_grid.dx0[level] = slope_[level];
-                            	l_son_grid.x1[level] = l_start + offset ;
-                            	l_son_grid.dx1[level] = -slope_[level];
-                            	push_queue(curr_dep_pointer, level-1, 
-									t0, t1, l_son_grid) ;
-
-                            	l_son_grid.x0[level] = l_end - offset ;
-                            	l_son_grid.dx0[level] = slope_[level];
-                            	l_son_grid.x1[level] = l_end ;
-                            	l_son_grid.dx1[level] = -slope_[level];
-                            	push_queue(curr_dep_pointer, level-1, 
-									t0, t1, l_son_grid) ;
-
-                            	l_son_grid.x0[level] = l_start + offset ;
-                            	l_son_grid.dx0[level] = -slope_[level];
-                            	l_son_grid.x1[level] = l_end - offset ;
-                            	l_son_grid.dx1[level] = slope_[level];
-                            	push_queue(next_dep_pointer, level-1, 
-									t0, t1, l_son_grid);
-							}
-							else
-							{
-                            	l_son_grid.x0[level] = l_start ;
-                            	l_son_grid.dx0[level] = slope_[level];
-                            	l_son_grid.x1[level] = l_end ;
-                            	l_son_grid.dx1[level] = -slope_[level];
-                            	push_queue(curr_dep_pointer, level-1, 
-									t0, t1, l_son_grid);
-							}
-                            l_son_grid.x0[level] = l_end ;
-                            l_son_grid.dx0[level] = -slope_[level];
-                            l_son_grid.x1[level] = l_end ;
-                            l_son_grid.dx1[level] = slope_[level];
-                            push_queue(next_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-						} else  {
-							/* cut_tb */
-							grid_info<N_RANK> l_son_grid = l_father_grid;
-							const int l_start = (l_father_grid.x0[level]);
-							const int l_end = (l_father_grid.x1[level]);
-							const int offset = (thres << 1) ;
-
-							l_son_grid.x0[level] = l_start;
-							l_son_grid.dx0[level] = l_father_grid.dx0[level];
-							l_son_grid.x1[level] = l_start + offset;
-							l_son_grid.dx1[level] = -slope_[level];
-							push_queue(curr_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-
-							l_son_grid.x0[level] = l_end - offset ;
-							l_son_grid.dx0[level] = slope_[level];
-							l_son_grid.x1[level] = l_end;
-							l_son_grid.dx1[level] = l_father_grid.dx1[level];
-							push_queue(curr_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-
-							const int next_dep_pointer = (curr_dep + 1) & 0x1;
-							//const int cut_more = ((tb - (thres << 2)) >= 0) ;
-							lb -= (thres << 2) ;
-							//const bool cut_more = (lb >= thres << 1)  && 
-							//			  (lb > dx_recursive_[level]) ;
-							const bool cut_more = CHECK_WIDTH_LB ;
-							if (cut_more)
-							{
-								l_son_grid.x0[level] = l_start + offset ;
-								l_son_grid.dx0[level] = -slope_[level];
-								l_son_grid.x1[level] = l_start + offset;
-								l_son_grid.dx1[level] = slope_[level];
-								push_queue(next_dep_pointer, level-1, 
-									t0, t1, l_son_grid) ;
-
-								l_son_grid.x0[level] = l_end - offset ;
-								l_son_grid.dx0[level] = -slope_[level];
-								l_son_grid.x1[level] = l_end - offset ;
-								l_son_grid.dx1[level] = slope_[level];
-								push_queue(next_dep_pointer, level-1, 
-									t0, t1, l_son_grid) ;
-
-								l_son_grid.x0[level] = l_start + offset ;
-								l_son_grid.dx0[level] = slope_[level];
-								l_son_grid.x1[level] = l_end - offset ;
-								l_son_grid.dx1[level] = -slope_[level];
-								push_queue(curr_dep_pointer, level-1, 
-									t0, t1, l_son_grid);
-							}
-							else
-							{
-								l_son_grid.x0[level] = l_start + offset ;
-								l_son_grid.dx0[level] = -slope_[level];
-								l_son_grid.x1[level] = l_end - offset ;
-								l_son_grid.dx1[level] = slope_[level];
-								push_queue(next_dep_pointer, level-1, 
-									t0, t1, l_son_grid);
-							}
-						}                   
-                    } /* end if (cut_tb) */
-                }// end if (can_cut) 
-            } // end if (performing a space cut) 
-        } // end while (queue_len_[curr_dep] > 0) 
-#if !USE_CILK_FOR
-        //cilk_sync;
-#endif
-        assert(queue_len_[curr_dep_pointer] == 0);
-    } // end for (curr_dep < N_RANK+1) 
-}
-
-
-template <int N_RANK> template <typename F>
-inline void Algorithm<N_RANK>::abnormal_region_space_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
-{
-    queue_info *l_father;
-    queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
-    int queue_head_[2], queue_tail_[2], queue_len_[2];
-
-    for (int i = 0; i < 2; ++i) {
-        queue_head_[i] = queue_tail_[i] = queue_len_[i] = 0;
-    }
-
-    // set up the initial grid 
-    push_queue(0, N_RANK-1, t0, t1, grid);
-    for (int curr_dep = 0; curr_dep < N_RANK+1; ++curr_dep) {
-        const int curr_dep_pointer = (curr_dep & 0x1);
-        while (queue_len_[curr_dep_pointer] > 0) {
-            top_queue(curr_dep_pointer, l_father);
-            if (l_father->level < 0) {
-                // spawn all the grids in circular_queue_[curr_dep][] 
-#if USE_CILK_FOR 
-                // use cilk_for to spawn all the sub-grid 
-// #pragma cilk_grainsize = 1
-                cilk_for (int j = 0; j < queue_len_[curr_dep_pointer]; ++j) {
-                    int i = pmod((queue_head_[curr_dep_pointer]+j), ALGOR_QUEUE_SIZE);
-                    queue_info * l_son = &(circular_queue_[curr_dep_pointer][i]);
-                    // assert all the sub-grid has done N_RANK spatial cuts 
-                    assert(l_son->level == -1);
-                    abnormal_region_space_time_cut_interior(l_son->t0, 
-						l_son->t1, l_son->grid, f);
-                } // end cilk_for 
-                queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
-                queue_len_[curr_dep_pointer] = 0;
-#else
-                // use cilk_spawn to spawn all the sub-grid 
-                pop_queue(curr_dep_pointer);
-                if (queue_len_[curr_dep_pointer] == 0)
-				{
-                    abnormal_region_space_time_cut_interior(l_father->t0,
- 							l_father->t1, l_father->grid, f);
-				}
-                else
-				{
-                    //cilk_spawn abnormal_region_space_time_cut_interior(
-                    abnormal_region_space_time_cut_interior(
-						l_father->t0, l_father->t1, l_father->grid, f) ;
-				}
-#endif
-            } else {
-                // performing a space cut on dimension 'level' 
-                pop_queue(curr_dep_pointer);
-                const grid_info<N_RANK> l_father_grid = l_father->grid;
-                const int t0 = l_father->t0, t1 = l_father->t1;
-                const int lt = (t1 - t0);
-                const int level = l_father->level;
-                const int thres = slope_[level] * lt;
-                const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
-                const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
-                const bool cut_lb = (lb < tb);
-				const bool can_cut = CAN_CUT_I ;
-				if (! can_cut) {
-                //if (num_zoids [level] == 0) {
-                    // if we can't cut into this dimension, just directly push 
-                    // it into the circular queue 
-                    //
-                    push_queue(curr_dep_pointer, level-1, t0, t1, 
-							l_father_grid) ;
-                } else  {
-                    /* can_cut! */
-                    if (cut_lb) {
-                        grid_info<N_RANK> l_son_grid = l_father_grid;
-                        const int l_start = (l_father_grid.x0[level]);
-                        const int l_end = (l_father_grid.x1[level]);
-
-                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
-                        l_son_grid.x0[level] = l_start ;
-                        l_son_grid.dx0[level] = l_father_grid.dx0[level] ;
-                        l_son_grid.x1[level] = l_start ;
-                        l_son_grid.dx1[level] = slope_[level] ;
-                        push_queue(next_dep_pointer, level-1, t0, t1, 
-									l_son_grid) ;
-
-                        l_son_grid.x0[level] = l_end ;
-                        l_son_grid.dx0[level] = -slope_[level];
-                        l_son_grid.x1[level] = l_end ;
-                        l_son_grid.dx1[level] = l_father_grid.dx1[level] ;
-                        push_queue(next_dep_pointer, level-1, t0, t1, 
-									l_son_grid) ;
-						//const int cut_more = ((lb - (thres << 2)) >= 0) ;
-						tb -= (thres << 2) ;
-						//const bool cut_more = (tb >= thres << 1)  && 
-						//					  (lb > dx_recursive_[level]) ;
-						const bool cut_more = CHECK_WIDTH_TB ;
-						if (cut_more)
-						{
-							const int offset = (thres << 1) ;
-							l_son_grid.x0[level] = l_start ;
-	                        l_son_grid.dx0[level] = slope_[level];
-    	                    l_son_grid.x1[level] = l_start + offset ;
-        	                l_son_grid.dx1[level] = -slope_[level] ;
-            	            push_queue(curr_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-							
-							l_son_grid.x0[level] = l_end - offset ;
-	                        l_son_grid.dx0[level] = slope_[level];
-    	                    l_son_grid.x1[level] = l_end ;
-        	                l_son_grid.dx1[level] = -slope_[level] ;
-            	            push_queue(curr_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-
-							l_son_grid.x0[level] = l_start + offset ;
-	                        l_son_grid.dx0[level] = -slope_[level] ;
-    	                    l_son_grid.x1[level] = l_end - offset ;
-        	                l_son_grid.dx1[level] = slope_[level] ;
-            	            push_queue(next_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-						}
-						else
-						{
-							l_son_grid.x0[level] = l_start ;
-	                        l_son_grid.dx0[level] = slope_[level];
-    	                    l_son_grid.x1[level] = l_end;
-        	                l_son_grid.dx1[level] = -slope_[level] ;
-            	            push_queue(curr_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-						}
-                    } /* end if (cut_lb) */
-                    else {
-                        /* cut_tb */
-                        grid_info<N_RANK> l_son_grid = l_father_grid;
-                        const int l_start = (l_father_grid.x0[level]);
-                        const int l_end = (l_father_grid.x1[level]);
-						const int offset = (thres << 1) ;
-
-                        l_son_grid.x0[level] = l_start;
-                        l_son_grid.dx0[level] = l_father_grid.dx0[level];
-                        l_son_grid.x1[level] = l_start + offset;
-                        l_son_grid.dx1[level] = -slope_[level];
-                        push_queue(curr_dep_pointer, level-1, t0, t1, 
-									l_son_grid) ;
-
-                        l_son_grid.x0[level] = l_end - offset ;
-                        l_son_grid.dx0[level] = slope_[level];
-                        l_son_grid.x1[level] = l_end;
-                        l_son_grid.dx1[level] = l_father_grid.dx1[level];
-                        push_queue(curr_dep_pointer, level-1, t0, t1, 
-									l_son_grid);
-
-                        const int next_dep_pointer = (curr_dep + 1) & 0x1;
-						//const int cut_more = ((tb - (thres << 2)) >= 0) ;
-						lb -= (thres << 2) ;
-						//const bool cut_more = (lb >= thres << 1)  && 
-						//					  (lb > dx_recursive_[level]) ;
-						const bool cut_more = CHECK_WIDTH_LB ;
-						if (cut_more)
-						{
-							l_son_grid.x0[level] = l_start + offset ;
-                            l_son_grid.dx0[level] = -slope_[level];
-							l_son_grid.x1[level] = l_start + offset;
-                        	l_son_grid.dx1[level] = slope_[level];
-                        	push_queue(next_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-
-							l_son_grid.x0[level] = l_end - offset ;
-                        	l_son_grid.dx0[level] = -slope_[level];
-							l_son_grid.x1[level] = l_end - offset ;
-                            l_son_grid.dx1[level] = slope_[level];
-                        	push_queue(next_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-
-							l_son_grid.x0[level] = l_start + offset ;
-                            l_son_grid.dx0[level] = slope_[level];
-                            l_son_grid.x1[level] = l_end - offset ;
-                            l_son_grid.dx1[level] = -slope_[level];
-                            push_queue(curr_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-						}
-						else
-						{
-                        	l_son_grid.x0[level] = l_start + offset ;
-                        	l_son_grid.dx0[level] = -slope_[level];
-                        	l_son_grid.x1[level] = l_end - offset ;
-                        	l_son_grid.dx1[level] = slope_[level];
-                        	push_queue(next_dep_pointer, level-1, t0, 
-								t1, l_son_grid) ;
-						}
-                    } /* end else (cut_tb) */
-                } // end if (can_cut) 
-            } // end if (performing a space cut) 
-        } // end while (queue_len_[curr_dep] > 0) 
-#if !USE_CILK_FOR
-        //cilk_sync;
-#endif
-        assert(queue_len_[curr_dep_pointer] == 0);
-    } // end for (curr_dep < N_RANK+1) 
 }
 
 template <int N_RANK> template <typename F, typename BF>
