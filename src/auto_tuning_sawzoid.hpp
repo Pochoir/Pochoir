@@ -445,21 +445,12 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_boundary(int t0,
     } // end for (curr_dep < N_RANK+1) 
 }
 
-#define copy_zoid(z1, z2) \\
-for (int i = 0 ; i < N_RANK ; i++) \\
-{									\\
-	z1.x0 [i] = z2.x0 [i] ; \\
-	z1.x1 [i] = z2.x1 [i] ; \\
-	z1.dx0 [i] = z2.dx0 [i] ; \\
-	z1.dx1 [i] = z2.dx1 [i] ; \\
-}
-
 template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		int t0, int t1, grid_info<N_RANK> const & grid, 
 		unsigned long parent_index, int child_index, 
 		double & redundant_time, double & projected_time, F const & f,
-		double & max_loop_time, grid_info<N_RANK> & max_loop_time_zoid)
+		double & max_loop_time)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false;
@@ -587,24 +578,18 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	{
         /* cut into space */
 		symbolic_sawzoid_space_cut_interior(t0, t1, grid, index, f, 
-				num_subzoids, rtime, ptime, max_loop_time, max_loop_time_zoid) ;
+							num_subzoids, rtime, ptime, max_loop_time) ;
 		//decision = 2 ;
     }
 	else if (lt > dt_recursive_)
 	{
-		double time1 = max_loop_time, time2 = 0 ;
-		grid_info <N_RANK> z ;
-		copy_zoid(z, max_loop_time_zoid) ;
+		double time1 = 0, time2 = 0 ;
         /* cut into time */
         int halflt = lt / 2;
         l_son_grid = grid;
         symbolic_sawzoid_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
-				index, 0, rtime, ptime, f, time1, z);
-		if (time1 > max_loop_time)
-		{
-			max_loop_time = time1 ;
-			copy_zoid(max_loop_time_zoid, z) ;
-		}
+				index, 0, rtime, ptime, f, time1);
+
         for (int i = 0; i < N_RANK; ++i) {
             l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
             l_son_grid.dx0[i] = grid.dx0[i];
@@ -612,7 +597,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
             l_son_grid.dx1[i] = grid.dx1[i];
         }
         symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
-				index, 1, rtime, ptime, f, time1, z);
+				index, 1, rtime, ptime, f, time2);
 		time1 = max(time1, time2) ;
 		max_loop_time = max(time1, max_loop_time) ;
     }
