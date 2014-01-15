@@ -35,13 +35,17 @@ class zoid
 	{
 		//cout << "resize child for zoid " << id << " # children " << size << endl ;
 		assert (size) ;
-		if (num_children > 0)
+		//if (num_children > 0 && size > num_children)
+		if (capacity < size)
 		{
+			capacity = size ;
 			delete [] children ;
 			//num_children = 0 ;
+			children = new unsigned long [size];
 		}
-		children = new unsigned long [size];
+		//children = new unsigned long [size];
 		num_children = size ;
+		assert (num_children <= capacity) ;
 		for (int i = 0 ; i < size ; i++)
 		{
 			children [i] = 0 ;
@@ -73,7 +77,9 @@ class zoid
 		decision = 0 ; //0 for loop
 		children = 0 ;
 		num_children = 0 ;
+		capacity = 0 ;
 		time = 0 ;
+		max_loop_time = 0 ;
 		height = 0 ;
 #ifndef NDEBUG
 		cache_penalty_time = 0 ;
@@ -89,25 +95,35 @@ class zoid
 		//cout << "zoid : assignment op for zoid " << z.id << endl ;
 		if (this != &z)
 		{
-			delete [] children ;
-			children = 0 ;
+			//delete [] children ;
+			//children = 0 ;
 			decision = z.decision ;
 			time = z.time ;
+			max_loop_time = z.max_loop_time ;
 #ifndef NDEBUG
 			cache_penalty_time = z.cache_penalty_time ;
 			stime = z.stime ;
 			ttime = z.ttime ;
 			ltime = z.ltime ;
 #endif
+			assert (z.num_children <= z.capacity) ;
 			num_children = z.num_children ;
 			height = z.height ;
 			if (num_children > 0)
 			{
-				children = new unsigned long [num_children];
-				for (int i = 0 ; i < num_children ; i++)
+				//children = new unsigned long [num_children];
+				if (capacity < z.capacity)
 				{
-					children [i] = z.children [i] ;
+					capacity = z.capacity ;
+					delete [] children ;
+					children = new unsigned long [capacity] ;
 				}
+				assert (children) ;
+			}
+			assert (num_children <= capacity) ;
+			for (int i = 0 ; i < num_children ; i++)
+			{
+				children [i] = z.children [i] ;
 			}
 #ifndef NDEBUG
 			id = z.id ;
@@ -125,20 +141,26 @@ class zoid
 	{
 		decision = z.decision ;
 		time = z.time ;
+		max_loop_time = z.max_loop_time ;
 #ifndef NDEBUG
 		cache_penalty_time = z.cache_penalty_time ;
 		stime = z.stime ;
 		ttime = z.ttime ;
 		ltime = z.ltime ;
 #endif
+		//assert (z.num_children <= z.capacity) ;
 		num_children = z.num_children ;
+		capacity = z.capacity ;
+		assert (num_children <= capacity) ;
 		//cout << "zoid : copy const for zoid " << z.id << " # children" << 
 		//		num_children << endl ;
 		children = 0 ;
 		height = z.height ;
-		if (num_children > 0)
+		//if (num_children > 0)
+		if (capacity > 0)
 		{
-			children = new unsigned long [num_children];
+			//children = new unsigned long [num_children];
+			children = new unsigned long [capacity] ;
 			for (int i = 0 ; i < num_children ; i++)
 			{
 				children [i] = z.children [i] ;
@@ -166,8 +188,10 @@ class zoid
 	{
 		//cout << "zoid : destructor for zoid " << id << endl ;
 		num_children = 0 ;
+		capacity = 0 ;
 		decision = 0 ; // 0 for looping
 		time = 0 ;
+		max_loop_time = 0 ;
 		height = 0 ;
 #ifndef NDEBUG
 		cache_penalty_time = 0 ;
@@ -187,8 +211,10 @@ class zoid
 	unsigned short decision ;
 	int height ;
 	unsigned long * children ;  
-	int num_children ;
+	unsigned short capacity ;
+	unsigned short num_children ;
 	double time ;
+	double max_loop_time ;
 #ifndef NDEBUG
 	double cache_penalty_time ;
 	grid_info <N_RANK> info ;
@@ -874,12 +900,12 @@ private:
 	template <typename F, typename BF>
 	inline void symbolic_sawzoid_space_cut_boundary(int t0, int t1,
 		grid_info<N_RANK> const & grid, unsigned long, F const & f, 
-		BF const & bf, int *, double &, double &, double &) ;
+		BF const & bf, int *, double &, double &, double &, int) ;
 
 	template <typename F>
 	inline void symbolic_sawzoid_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *,
-		double &, double &, double &) ;
+		double &, double &, double &, int) ;
 
 #if 0
 	template <typename F>
