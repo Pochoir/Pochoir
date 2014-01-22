@@ -32,10 +32,12 @@
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 #include <cilk/reducer_opadd.h>
+//#include <cilk/cilk_stub.h>
 #include "pochoir_common.hpp"
 #include <map>
 #include <vector>
 #include <set>
+#include <sys/resource.h>
 
 using namespace std;
 
@@ -397,6 +399,8 @@ struct Algorithm {
         } queue_info;
 
         int ALGOR_QUEUE_SIZE;
+		//int stack_depth ;
+		//int max_stack_depth ;
 
         /* we can use toggled circular queue! */
         grid_info<N_RANK> phys_grid_;
@@ -441,6 +445,10 @@ struct Algorithm {
         } queue_info_modified_cut ;
 #endif
 		int num_triangles [N_RANK] ;
+		unsigned int space_cut_sequence [3][8] = { {0,1},
+												  {0,1,2,3},
+												  {0,1,2,4,3,5,6,7} } ;
+		const int num_orientations = 1 << N_RANK ;
 	public:
 #if STAT
     /* sim_count_cut will be accessed outside Algorithm object */
@@ -453,6 +461,19 @@ struct Algorithm {
     
     /* constructor */
     Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1) {
+		struct rlimit rl;
+    	int result = getrlimit(RLIMIT_STACK, &rl);
+    	if (result == 0)
+    	{
+			cout << "stack current limit " << rl.rlim_cur << endl ;
+			cout << "stack max limit " << rl.rlim_max << endl ;
+			rl.rlim_cur *= 100 ;
+			result = setrlimit(RLIMIT_STACK, &rl);
+            if (result != 0)
+            {
+                fprintf(stderr, "setrlimit returned result = %d\n", result);
+            }
+		}
         for (int i = 0; i < N_RANK; ++i) {
             slope_[i] = _slope[i];
             dx_recursive_boundary_[i] = _slope[i];
@@ -464,6 +485,8 @@ struct Algorithm {
         boundarySet = false;
         physGridSet = false;
         slopeSet = true;
+		//stack_depth = 0 ;
+		//max_stack_depth = 0 ;
         /* ALGOR_QUEUE_SIZE = 3^N_RANK */
         // ALGOR_QUEUE_SIZE = power<N_RANK>::value;
 #define ALGOR_QUEUE_SIZE (power<N_RANK>::value)
@@ -480,6 +503,8 @@ struct Algorithm {
 
     ~Algorithm() 
 	{
+	//cout << "stack depth " << stack_depth << endl ;
+	//cout << "max stack depth " << max_stack_depth << endl ;
 #if 0
 #ifdef COUNT_PROJECTIONS
 		unsigned long total_projections = 0 ;
@@ -1022,6 +1047,7 @@ inline void Algorithm<N_RANK>::base_case_kernel_boundary(int t0, int t1, grid_in
 		}
 	}
 }
+
 
 #if DEBUG 
 template <int N_RANK>
