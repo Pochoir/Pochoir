@@ -34,22 +34,21 @@ class zoid
 	void resize_children(int size)
 	{
 		//cout << "resize child for zoid " << id << " # children " << size << endl ;
-		assert (size) ;
-		//if (num_children > 0 && size > num_children)
+		assert (size >= 0) ;
 		if (capacity < size)
 		{
 			capacity = size ;
 			delete [] children ;
-			//num_children = 0 ;
+			//if # of children increases, create and initialize a new children 
+			//array
 			children = new unsigned long [size];
+			for (int i = 0 ; i < size ; i++)
+			{
+				children [i] = 0 ;
+			}
 		}
-		//children = new unsigned long [size];
 		num_children = size ;
 		assert (num_children <= capacity) ;
-		for (int i = 0 ; i < size ; i++)
-		{
-			children [i] = 0 ;
-		}
 		//cout << "resize done " << endl ;
 	}
 
@@ -90,13 +89,39 @@ class zoid
 #endif
 	};
 	
+	//does a shallow copy of the contents of z.
+	//does not copy children. 
+	void shallow_copy(const zoid & z)
+	{
+		decision = z.decision ;
+		time = z.time ;
+		max_loop_time = z.max_loop_time ;
+#ifndef NDEBUG
+		cache_penalty_time = z.cache_penalty_time ;
+		stime = z.stime ;
+		ttime = z.ttime ;
+		ltime = z.ltime ;
+#endif
+		//num_children = z.num_children ;
+		num_children = 0 ;
+		capacity = 0 ;
+		height = z.height ;
+		//assert (num_children <= capacity) ;
+#ifndef NDEBUG
+		id = z.id ;
+		info = z.info ;
+		for (int i = 0 ; i < z.parents.size() ; i++)
+		{
+			parents.push_back(z.parents [i]) ;
+		}
+#endif
+	}
+
 	zoid & operator = (const zoid & z)
 	{
 		//cout << "zoid : assignment op for zoid " << z.id << endl ;
 		if (this != &z)
 		{
-			//delete [] children ;
-			//children = 0 ;
 			decision = z.decision ;
 			time = z.time ;
 			max_loop_time = z.max_loop_time ;
@@ -111,7 +136,6 @@ class zoid
 			height = z.height ;
 			if (num_children > 0)
 			{
-				//children = new unsigned long [num_children];
 				if (capacity < z.capacity)
 				{
 					capacity = z.capacity ;
@@ -148,7 +172,6 @@ class zoid
 		ttime = z.ttime ;
 		ltime = z.ltime ;
 #endif
-		//assert (z.num_children <= z.capacity) ;
 		num_children = z.num_children ;
 		capacity = z.capacity ;
 		assert (num_children <= capacity) ;
@@ -156,10 +179,8 @@ class zoid
 		//		num_children << endl ;
 		children = 0 ;
 		height = z.height ;
-		//if (num_children > 0)
 		if (capacity > 0)
 		{
-			//children = new unsigned long [num_children];
 			children = new unsigned long [capacity] ;
 			for (int i = 0 ; i < num_children ; i++)
 			{
@@ -400,6 +421,10 @@ private:
 					m_num_vertices - 1, 0, rtime, ntime, f, bf, max_loop_time) ;
 		m_head [index] = m_zoids [index_head].children[0] ;
 #ifndef NDEBUG
+		//remove the dummy parent of the zoid at m_head [index]
+		m_zoids [m_head [index]].parents.pop_back() ;
+		cout << "index " << index << " m_head [index] " << m_head [index] <<
+		endl ;
 		cout << " decision of head [" << index << " ] " << 
 			m_zoids [m_head [index]].decision 
 			<< " time for space cut " << m_zoids [m_head [index]].stime << 
@@ -682,21 +707,17 @@ private:
 	{
 		color [node] = num_vertices ; //color node gray
 		zoid_type & z = m_zoids [node] ;
-		if (__builtin_popcount(z.geneity) == 1)
+		//if leaf do not recurse further
+		if (z.decision == 0 || 
+			z.decision == 1 << zoid<N_RANK>::NUM_BITS_DECISION - 1)
 		{
 			//do not store node's children
 			//cout << "push back zoid " << z.id << endl ;
 			temp_zoids.push_back(zoid_type()) ;
-			zoid_type & z1 = temp_zoids [num_vertices] ;
-			z1.geneity = z.geneity ;
-			//z1.num_children = 0 ; //set in constructor
-			z1.height = z.height ;
+			temp_zoids [num_vertices].shallow_copy(z) ;
+			temp_zoids [num_vertices].resize_children(0) ;
 			num_vertices++ ;
 			assert (num_vertices == temp_zoids.size()) ;
-#ifndef NDEBUG
-			z1.info = z.info ;
-			z1.id = z.id ;
-#endif
 		}
 		else
 		{
@@ -707,6 +728,7 @@ private:
 			for (int i = 0 ; i < z.num_children ; i++)
 			{
 				zoid_type & z1 = temp_zoids [index] ;	
+				assert (z.children [i] < m_num_vertices) ;
 				if (color [z.children [i]] == ULONG_MAX) //node is white
 				{
 					z1.children [i] = num_vertices ;
@@ -715,6 +737,7 @@ private:
 				else
 				{
 					//node is already visited.
+					assert (color [z.children [i]] < num_vertices) ;
 					//assign the child's index 
 					z1.children [i] = color [z.children [i]] ;
 				}
@@ -722,7 +745,7 @@ private:
 		}
 	}
 
-	//remove children of all homogeneous nodes.
+	//compress array by removing nodes that are not part of the final DAG
 	void compress_dag()
 	{
 		vector <unsigned long> color ;
@@ -739,12 +762,42 @@ private:
 
 		for (int j = 0 ; j < m_head.size() ; j++)
 		{
+			assert (m_head [j] < m_num_vertices) ;
 			if (color [m_head [j]] == ULONG_MAX)
 			{
 				head.push_back(num_vertices) ;
 				dfs(m_head [j], temp_zoids, color, num_vertices) ;
 			}
+			else
+			{
+				//node m_head [j] was already visited.
+				assert (color [m_head [j]] < num_vertices) ;
+				head.push_back(color [m_head [j]]) ;
+			}
 		}
+#ifndef NDEBUG
+		//set the id/parents.
+		for (unsigned long j = 0 ; j < num_vertices ; j++)
+		{
+			zoid_type & z = temp_zoids [j] ;
+			assert (z.id < m_num_vertices) ;
+			assert (color [z.id] < num_vertices) ;
+			z.id = color [z.id] ;
+			for (int i = 0 ; i < z.parents.size() ; i++)
+			{
+				assert (z.parents [i] < m_num_vertices) ;
+				/*if (color [z.parents [i]] >= num_vertices)
+				{
+					cout << "zoid " << z.id << " at index " << j <<
+						": parent " << z.parents [i] <<
+						" was not colored !" << endl ;
+					cout << " color " << color [z.parents [i]] << endl ;
+					assert (color [z.parents [i]] < num_vertices) ;
+				}*/
+				z.parents [i] = color [z.parents [i]] ;
+			}
+		}
+#endif
 		//swap the DAG and compressed DAG
 		m_zoids.swap(temp_zoids) ;
 		m_head.swap(head) ;
@@ -774,10 +827,12 @@ private:
 			{
 				color [i] = 0 ;
 			}
-			
-			color [0] = 1 ;
+			assert (m_head [j] < m_num_vertices) ;
+			assert (m_zoids [m_head [j]].id < m_num_vertices) ;
+			//color [0] = 1 ; //looks like a bug. check it.
 			//deque<zoid_type *> que ;
 			deque<unsigned long> que ;
+			color [m_zoids [m_head [j]].id] = 1 ;
 			que.push_front(m_head [j]) ;
 
 			while (!que.empty())
@@ -797,7 +852,6 @@ private:
 					" ttime " << z->ttime  <<
 					" ltime " << z->ltime << endl ;
 					//" num_parents " << z->parents.size() << " geneity " ;
-				//print_bits(&(z->geneity), sizeof(word_type) * 8);
 				grid_info <N_RANK> & grid = z->info ;
 				int h = z->height ;
 				for (int i = N_RANK - 1 ; i >= 0 ; i--)
@@ -808,26 +862,6 @@ private:
 					<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * h
 					<< endl ; 
 				}
-				/*if (z->geneity == 0)
-				{
-					int bottom_volume = 1, top_volume = 1 ;
-					for (int i = 0 ; i < N_RANK ; i++)
-					{
-						int lb = grid.x1[i] - grid.x0[i] ;
-						int x0_top = grid.x0[i] + grid.dx0[i] * (h - 1) ;
-						int x1_top = grid.x1[i] + grid.dx1[i] * (h - 1) ;
-						int tb = x1_top - x0_top ;
-						bottom_volume *= lb ;
-						top_volume *= tb ;
-					}
-					if (bottom_volume != 0 || top_volume != 0)
-					{
-						//zoid is not empty. It must have a geneity
-						cout << "Error : geneity is 0 " << endl ;
-						assert (z->geneity) ;
-					}
-				}*/
-				//if (z->num_parents > 1)
 				vector<unsigned long> & v = z->parents ;
 				cout << "parents " << endl ;
 				for (int i = 0 ; i < v.size() ; i++)
@@ -846,7 +880,8 @@ private:
 					cout << "child index " << index << endl ;
 					assert (index < m_num_vertices) ;
 					zoid_type * child = &(m_zoids [index]);
-					if (index && child && color [child->id] == 0)
+					//if (index && child && color [child->id] == 0)
+					if (color [child->id] == 0)
 					{
 						assert (child->id < m_num_vertices) ;
 						color [child->id] = 1 ;
@@ -1082,9 +1117,6 @@ private:
 			index++ ;
 		}
 		clock_gettime(CLOCK_MONOTONIC, &end) ;
-#ifndef NDEBUG
-		//print_dag() ;
-#endif
 		//copy data back.
 		copy_data(array->data(), &(m_array[0]), volume) ;
 		//gettimeofday(&end, 0);
@@ -1096,10 +1128,15 @@ private:
 				<< "ms" << std::endl;
 		cout << "Expected run time " << expected_run_time * 1e3 << "ms" << endl;
 		clear_projections() ;
-#ifdef GENEITY_TEST
-		//compress_dag () ;
-		cout << "# vertices after compression" << m_num_vertices << endl ;
-		cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
+#ifndef NDEBUG
+		//print_dag() ;
+#endif
+		cout << "begin compress dag" << endl ;
+		compress_dag () ;
+		cout << "# vertices after compression " << m_num_vertices << endl ;
+		cout << "DAG capacity after compression " << m_zoids.capacity() << endl ;
+#ifndef NDEBUG
+		//print_dag() ;
 #endif
 		create_simple_zoids() ;
 		double compute_time = 0. ;
@@ -1108,9 +1145,9 @@ private:
 		int m = T / h1 ;
 		for (int i = 0 ; i < m ; i++)
 		{
-			/*cout << "t0 " << t0 << " t1 " << t1 << 
+			cout << "t0 " << t0 << " t1 " << t1 << 
 				" h1 " << h1 << " t0 + h1 " <<
-				t0 + h1 << endl ;*/
+				t0 + h1 << endl ;
 			sawzoid_space_time_cut_boundary(t0, t0 + h1, grid, 
 				&(m_simple_zoids [m_head [0]]), f, bf) ;
 				//&(m_zoids [m_head [0]]), f, bf) ;
@@ -1126,9 +1163,9 @@ private:
 			//find index of most significant bit that is set
 			index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
 			int h = 1 << index_msb ;
-			/*cout << "t0 " << t0 << " t1 " << t1 << 
+			cout << "t0 " << t0 << " t1 " << t1 << 
 				" h " << h << " t0 + h " <<
-				t0 + h << endl ;*/
+				t0 + h << endl ;
 			sawzoid_space_time_cut_boundary(t0, t0 + h, grid, 
 				&(m_simple_zoids [m_head [index]]), f, bf) ;
 				//&(m_zoids [m_head [index]]), f, bf) ;
