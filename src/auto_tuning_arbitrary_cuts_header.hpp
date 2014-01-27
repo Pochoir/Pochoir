@@ -30,12 +30,30 @@ template <int N_RANK>
 class zoid
 {
 	public :
-
-	void resize_children(int size)
+	inline void set_capacity(int size)
+	{
+		assert (size >= 0) ;
+		if (capacity < size)
+        {
+            capacity = size ;
+            delete [] children ;
+            //if # of children increases, create and initialize a new children 
+            //array
+            children = new unsigned long [size];
+            for (int i = 0 ; i < size ; i++)
+            {
+                children [i] = 0 ;
+            }
+        }
+		assert (num_children <= capacity) ;
+	}
+	
+	inline void resize_children(int size)
 	{
 		//cout << "resize child for zoid " << id << " # children " << size << endl ;
 		assert (size >= 0) ;
-		if (capacity < size)
+		set_capacity(size) ;
+		/*if (capacity < size)
 		{
 			capacity = size ;
 			delete [] children ;
@@ -46,7 +64,7 @@ class zoid
 			{
 				children [i] = 0 ;
 			}
-		}
+		}*/
 		num_children = size ;
 		assert (num_children <= capacity) ;
 		//cout << "resize done " << endl ;
@@ -134,7 +152,7 @@ class zoid
 			assert (z.num_children <= z.capacity) ;
 			num_children = z.num_children ;
 			height = z.height ;
-			if (num_children > 0)
+			/*if (num_children > 0)
 			{
 				if (capacity < z.capacity)
 				{
@@ -143,6 +161,13 @@ class zoid
 					children = new unsigned long [capacity] ;
 				}
 				assert (children) ;
+			}*/
+			//resize the children array if necessary
+			if (capacity < num_children)
+			{
+				capacity = num_children ;
+				delete [] children ;
+				children = new unsigned long [capacity] ;
 			}
 			assert (num_children <= capacity) ;
 			for (int i = 0 ; i < num_children ; i++)
@@ -173,7 +198,8 @@ class zoid
 		ltime = z.ltime ;
 #endif
 		num_children = z.num_children ;
-		capacity = z.capacity ;
+		capacity = num_children ;
+		//capacity = z.capacity ;
 		assert (num_children <= capacity) ;
 		//cout << "zoid : copy const for zoid " << z.id << " # children" << 
 		//		num_children << endl ;
@@ -725,9 +751,29 @@ private:
 			unsigned long index = num_vertices ; //index into the vector
 			num_vertices++ ;
 			assert (num_vertices == temp_zoids.size()) ;
+			assert (z.num_children <= z.capacity) ;
+			/*cout << " z.num_children " << z.num_children << endl ;
+			for (int i = 0 ; i < z.num_children ; i++)
+			{
+				cout << "z.children [ " << i << " ] " << z.children [i] << endl ;
+				if (z.children [i] == 0)
+				{
+					grid_info<N_RANK> & grid = z.info ;
+					int h = z.height ;
+					for (int j = N_RANK-1; j >= 0; --j) 
+					{
+						cout << " x0 [" << j << "] " << grid.x0 [j] 
+						<< " x1 [" << j << "] " << grid.x1 [j] 
+						<< " x2 [" << j << "] " << grid.x0[j] + grid.dx0[j] * h
+						<< " x3 [" << j << "] " << grid.x1[j] + grid.dx1[j] * h
+						<< " h " << h << endl ;
+					}
+				}
+			}*/
 			for (int i = 0 ; i < z.num_children ; i++)
 			{
 				zoid_type & z1 = temp_zoids [index] ;	
+				//assert (z.children [i] > 0) ;
 				assert (z.children [i] < m_num_vertices) ;
 				if (color [z.children [i]] == ULONG_MAX) //node is white
 				{
@@ -759,7 +805,12 @@ private:
 		{
 			color [j] = ULONG_MAX ; //color node white
 		}
-
+		//set color [0] = 0
+		//m_zoids [0] is a dummy node.
+		//a child of a zoid may also have index 0 if the
+		//number of children was over allocated.
+		//To avoid dfs into the dummy node, we set color [0] = 0.
+		color [0] = 0 ;
 		for (int j = 0 ; j < m_head.size() ; j++)
 		{
 			assert (m_head [j] < m_num_vertices) ;

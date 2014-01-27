@@ -470,7 +470,6 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	int num_subzoids [N_RANK] ;
 	unsigned long key = 0 ;
 	unsigned short decision = 0 ;
-	//cout << endl ;
     for (int i = N_RANK-1; i >= 0; --i) {
         unsigned long lb, tb;
         int thres ;
@@ -550,7 +549,9 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	if (lt > dt_recursive_)
 	{
 		divide_and_conquer = true ;
-		m_zoids [index].resize_children(max (2, total_num_subzoids)) ;
+		//m_zoids [index].resize_children(max (2, total_num_subzoids)) ;
+		m_zoids [index].set_capacity(max (2, total_num_subzoids)) ;
+		m_zoids [index].resize_children(2) ;
 	}
 	clock_gettime(CLOCK_MONOTONIC, &start1);
 	//if (! sim_can_cut && lt > dt_recursive_)
@@ -594,19 +595,24 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		{
 			//back up the time cut children data
 			bak = m_zoids [index] ;
+			assert(bak.num_children == 2) ;
+			//bak.resize_children(2) ;
 		}
-		m_zoids [index].resize_children(total_num_subzoids) ;
+		//m_zoids [index].resize_children(total_num_subzoids) ;
+		m_zoids [index].set_capacity(total_num_subzoids) ;
 	}
 	
+	//continue from here.
+	//set num_children correctly before recursing down to child.
 	if (sim_can_cut) 
 	{
 		zoid_type bak2 ;
 		int num_cases = 1 << N_RANK ;
-		int best_case = 0 ;
+		int best_case = 0, num_children_best_case = 1 ;
 		for (int i = num_cases - 1 ; i > 0 ; i--)
-		//for (int i = 1 ; i < num_cases ; i++)
 		{
 			int invalid_case = 0 ;
+			int num_children = 1 ;
 			for (int j = 0 ; j < N_RANK && ! invalid_case ; j++)
 			{
 				int like_to_cut_dim_j = i & 1 << j ;
@@ -614,16 +620,26 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 				//if we like to cut dim j but cannot cut dim j,
 				//the case is invalid.
 				invalid_case = like_to_cut_dim_j && ! can_cut_dim_j ;
-				//cout << " j " << j << 
-				//		" like_to_cut_dim_j " << like_to_cut_dim_j <<
-				//		" can_cut_dim_j " << can_cut_dim_j << endl ;
+				//find # of subzoids in dim j
+				if (like_to_cut_dim_j && can_cut_dim_j)
+				{
+					if (decision & 1 << j + 1 + 2 * N_RANK) 
+					{
+						num_children *= 5 ;
+					}
+					else
+					{
+						num_children *= 3 ;
+					}
+				}
 			}
 			if (invalid_case)
 			{
 				//invalid case.
 				continue ;
 			}
-			//cout << " i  " << i << endl ;
+			assert (num_children <= total_num_subzoids) ;
+			m_zoids [index].resize_children(num_children) ;
 			clock_gettime(CLOCK_MONOTONIC, &start1);
 			/* cut into space */
 			double time = 0, rtime = 0, ptime = 0, elapsed_time = 0  ;
@@ -646,20 +662,41 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 				best_case = i ;
 				//back up the zoid with its children.
 				bak2 = m_zoids [index] ;
+				assert (m_zoids [index].num_children == num_children) ;
 				assert (m_zoids [index].num_children <= total_num_subzoids) ;
+				num_children_best_case = num_children ;
 			}
 		}
 		assert (space_cut_elapsed_time >= 0.) ;
 		assert (space_cut_ptime >= 0.) ;
 		assert (space_cut_rtime >= 0.) ;
+
 		//set the decision with the best case found
 		for (int j = 0 ; j < N_RANK ; j++)
 		{
 			int bit = best_case & 1 << j ;
 			decision = decision & ~(1 << j + 1) | (bit != 0) << j + 1 ;
+#ifndef NDEBUG
+			int decision_bit = decision & 1 << j + 1 ;
+			assert (decision_bit == bit << 1) ;
+#endif
+			/*if (bit) // if dim j will be cut
+			{
+				//find # of subzoids in dim j
+				if (decision & 1 << j + 1 + 2 * N_RANK) 
+				{
+					num_children *= 5 ;
+				}
+				else
+				{
+					num_children *= 3 ;
+				}
+			}*/
 		}
 		//restore the back up.
 		m_zoids [index] = bak2 ;
+		//m_zoids [index].resize_children(num_children) ;
+		assert (m_zoids [index].num_children == num_children_best_case) ;
 		assert (m_zoids [index].num_children <= total_num_subzoids) ;
 	}
 #ifndef NDEBUG
@@ -686,6 +723,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 			necessary_time = time_cut_elapsed_time ;
 			decision = 1 ;
 			m_zoids [index] = bak ; //restore the backup
+			assert (m_zoids [index].num_children == 2) ;
 			//cout << "choosing time cut for zoid " << m_zoids [index].id << endl ;
 		}
 	}
@@ -695,6 +733,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		projected_time1 = time_cut_ptime ;
 		necessary_time = time_cut_elapsed_time ;
 		decision = 1 ;
+		assert (m_zoids [index].num_children == 2) ;
 		//cout << "choosing time cut for zoid " << m_zoids [index].id << endl ;
 	}
 	else if (sim_can_cut)
@@ -744,7 +783,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		}
 		else
 		{
-			//m_zoids [index].decision = 0 ;
+			m_zoids [index].decision = 0 ;
 			necessary_time = loop_time ;
 			m_zoids [index].time = loop_time ;
 		}
@@ -776,7 +815,6 @@ double & max_loop_time)
 
 	struct timespec start, end;
 	struct timespec start1, end1 ;
-	//cout << endl ;
 	clock_gettime(CLOCK_MONOTONIC, &start);
 
     for (int i = N_RANK-1; i >= 0; --i) {
@@ -884,7 +922,9 @@ double & max_loop_time)
 	if (lt > l_dt_stop)  //time cut
 	{
 		divide_and_conquer = true ;
-		m_zoids [index].resize_children(max (2, total_num_subzoids)) ;
+		//m_zoids [index].resize_children(max (2, total_num_subzoids)) ;
+		m_zoids [index].set_capacity(max (2, total_num_subzoids)) ;
+		m_zoids [index].resize_children(2) ;
 		//decision = 1 ;
 	}
 	clock_gettime(CLOCK_MONOTONIC, &start1) ;
@@ -942,18 +982,21 @@ double & max_loop_time)
 		{
 			//back up the time cut children data
 			bak = m_zoids [index] ;
+			assert (bak.num_children == 2) ;
+			//bak.resize_children(2) ;
 		}
-		m_zoids [index].resize_children(total_num_subzoids) ;
+		//m_zoids [index].resize_children(total_num_subzoids) ;
+		m_zoids [index].set_capacity(total_num_subzoids) ;
 	}
     if (sim_can_cut) 
 	{
 		zoid_type bak2 ;
 		int num_cases = 1 << N_RANK ;
-		int best_case = 0 ;
+		int best_case = 0, num_children_best_case = 1 ;
 		for (int i = num_cases - 1 ; i > 0 ; i--)
-		//for (int i = 1 ; i < num_cases ; i++)
 		{
 			int invalid_case = 0 ;
+			int num_children = 1 ;
 			for (int j = 0 ; j < N_RANK && ! invalid_case ; j++)
 			{
 				int like_to_cut_dim_j = i & 1 << j ;
@@ -961,16 +1004,26 @@ double & max_loop_time)
 				//if we like to cut dim j but cannot cut dim j,
 				//the case is invalid.
 				invalid_case = like_to_cut_dim_j && ! can_cut_dim_j ;
-				//cout << " j " << j << 
-				//		" like_to_cut_dim_j " << like_to_cut_dim_j <<
-				//		" can_cut_dim_j " << can_cut_dim_j << endl ;
+				//find # of subzoids in dim j
+				if (like_to_cut_dim_j && can_cut_dim_j)
+				{
+					if (decision & 1 << j + 1 + 2 * N_RANK) 
+					{
+						num_children *= 5 ;
+					}
+					else
+					{
+						num_children *= 3 ;
+					}
+				}
 			}
 			if (invalid_case)
 			{
 				//invalid case.
 				continue ;
 			}
-			//cout << " i  " << i << endl ;
+			assert (num_children <= total_num_subzoids) ;
+			m_zoids [index].resize_children(num_children) ;
 			clock_gettime(CLOCK_MONOTONIC, &start1);
 			/* cut into space */
 			double time = 0, rtime = 0, ptime = 0, elapsed_time = 0  ;
@@ -998,20 +1051,42 @@ double & max_loop_time)
 				best_case = i ;
 				//back up the zoid with its children.
 				bak2 = m_zoids [index] ;
+				assert (m_zoids [index].num_children == num_children) ;
 				assert (m_zoids [index].num_children <= total_num_subzoids) ;
+				//to do : update num_children with the correct # of children.
+				num_children_best_case = num_children ;
 			}
 		}
 		assert (space_cut_elapsed_time >= 0.) ;
 		assert (space_cut_ptime >= 0.) ;
 		assert (space_cut_rtime >= 0.) ;
+		int num_children = 1 ;
 		//set the decision with the best case found
 		for (int j = 0 ; j < N_RANK ; j++)
 		{
 			int bit = best_case & 1 << j ;
 			decision = decision & ~(1 << j + 1) | (bit != 0) << j + 1 ;
+#ifndef NDEBUG
+			int decision_bit = decision & 1 << j + 1 ;
+			assert (decision_bit == bit << 1) ;
+#endif
+			/*if (bit) // if dim j will be cut
+			{
+				//find # of subzoids in dim j
+				if (decision & 1 << j + 1 + 2 * N_RANK) 
+				{
+					num_children *= 5 ;
+				}
+				else
+				{
+					num_children *= 3 ;
+				}
+			}*/
 		}
 		//restore the back up.
 		m_zoids [index] = bak2 ;
+		//m_zoids [index].resize_children(num_children) ;
+		assert (m_zoids [index].num_children == num_children_best_case) ;
 		assert (m_zoids [index].num_children <= total_num_subzoids) ;
 	}
 
@@ -1071,6 +1146,7 @@ double & max_loop_time)
 			necessary_time = time_cut_elapsed_time ;
 			decision = 1 ;
 			m_zoids [index] = bak ; //restore the backup
+			assert (m_zoids [index].num_children == 2) ;
 		}
 	}
 	else if (lt > l_dt_stop)
@@ -1079,6 +1155,7 @@ double & max_loop_time)
 		projected_time1 = time_cut_ptime ;
 		necessary_time = time_cut_elapsed_time ;
 		decision = 1 ;
+		assert (m_zoids [index].num_children == 2) ;
 		//cout << "choosing time cut for zoid " << m_zoids [index].id << endl ;
 	}
 	else if (sim_can_cut)
@@ -1633,7 +1710,41 @@ sawzoid_space_time_cut_interior(int t0,
     grid_info<N_RANK> l_son_grid;
 
 	assert (projection_zoid) ;
-	
+#ifndef NDEBUG
+    for (int i = N_RANK-1; i >= 0; --i) {
+		grid_info <N_RANK> & grid2 = projection_zoid->info ;
+		int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
+		int x1 = pmod(grid.x1 [i], phys_length_ [i]) ;
+
+		int x0_ = pmod(grid2.x0 [i], phys_length_ [i]) ;
+		int x1_ = pmod(grid2.x1 [i], phys_length_ [i]) ;
+
+		int x2 = pmod(grid.x0[i] + grid.dx0[i] * lt, phys_length_ [i]) ;
+		int x3 = pmod(grid.x1[i] + grid.dx1[i] * lt, phys_length_ [i]) ;
+
+		int x2_ = pmod(grid2.x0[i] + grid2.dx0[i] * lt, phys_length_ [i]) ;
+		int x3_ = pmod(grid2.x1[i] + grid2.dx1[i] * lt, phys_length_ [i]) ;
+
+		if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_)
+		{
+			cout << "zoid and proj zoid differ " << endl ;
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+				<< " lt " << lt << endl ;
+				cout << " x0 [" << i << "] " << grid2.x0 [i]
+				 << " x1 [" << i << "] " << grid2.x1 [i]
+				<< " x2 [" << i << "] " << grid2.x0[i] + grid2.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid2.x1[i] + grid2.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+			assert(0) ;
+		}
+	}
+#endif
     //if (projection_zoid->decision & 2) 
     if (projection_zoid->decision & m_space_cut_mask) 
 	{
@@ -1682,6 +1793,47 @@ sawzoid_space_time_cut_boundary(int t0,
 
 	assert (projection_zoid) ;
 
+#ifndef NDEBUG
+    for (int i = N_RANK-1; i >= 0; --i) {
+		grid_info <N_RANK> & grid2 = projection_zoid->info ;
+		int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
+		int x1 = pmod(grid.x1 [i], phys_length_ [i]) ;
+
+		int x0_ = pmod(grid2.x0 [i], phys_length_ [i]) ;
+		int x1_ = pmod(grid2.x1 [i], phys_length_ [i]) ;
+
+		int x2 = pmod(grid.x0[i] + grid.dx0[i] * lt, phys_length_ [i]) ;
+		int x3 = pmod(grid.x1[i] + grid.dx1[i] * lt, phys_length_ [i]) ;
+
+		int x2_ = pmod(grid2.x0[i] + grid2.dx0[i] * lt, phys_length_ [i]) ;
+		int x3_ = pmod(grid2.x1[i] + grid2.dx1[i] * lt, phys_length_ [i]) ;
+
+		if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_)
+		{
+			cout << "zoid and proj zoid differ " << endl ;
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+			cout << endl ;
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid2.x0 [i]
+				 << " x1 [" << i << "] " << grid2.x1 [i]
+				<< " x2 [" << i << "] " << grid2.x0[i] + grid2.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid2.x1[i] + grid2.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+
+			cout << "decision " << projection_zoid->decision << endl ;
+			assert(0) ;
+		}
+	}
+#endif
     for (int i = N_RANK-1; i >= 0; --i) {
         touch_boundary(i, lt, l_father_grid) ;
     }
