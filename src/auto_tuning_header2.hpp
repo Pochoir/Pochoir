@@ -244,7 +244,8 @@ private:
 		m_head [index] = m_num_vertices ;
 		//assert (m_num_vertices == m_num_projections) ;
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
-		symbolic_space_time_cut_boundary(t0, t1, grid, m_num_vertices - 1, 0, f) ;
+		symbolic_space_time_cut_boundary(t0, t1, grid, m_num_vertices - 1, 0, 
+										f, bf) ;
 		//symbolic_space_time_cut_boundary(t0, t1, grid, &dummy_head, 0, f) ;
 		//the first child of dummy_head is the actual head
 		//m_head [index] = dummy_head.children [0] ; 
@@ -700,19 +701,20 @@ private:
 	inline void symbolic_modified_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *) ;
 
-	template <typename F>
+	template <typename F, typename BF>
 	inline void symbolic_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, unsigned long,
-		int child_index, F const & f) ;
+		int child_index, F const & f, BF const & bf) ;
 
 	template <typename F>
 	inline void symbolic_space_time_cut_interior(int t0, int t1, 
 		grid_info<N_RANK> const & grid, unsigned long,
 		int child_index, F const & f) ;
 
-	template <typename F>
+	template <typename F, typename BF>
 	inline void symbolic_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const & grid, unsigned long, F const & f) ;
+		grid_info<N_RANK> const & grid, unsigned long, F const & f,
+		BF const & bf) ;
 
 	template <typename F>
 	inline void symbolic_space_cut_interior(int t0, int t1,

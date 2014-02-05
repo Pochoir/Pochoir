@@ -373,8 +373,10 @@ private:
 			m_space_cut_mask |= 1 << i + 1 ;
 		}
 		cout << "space cut mask " << m_space_cut_mask << endl ;
-		m_projections.reserve(T) ;
-		m_projections.resize(T) ; //To do : only Theta (lg T) space necessary
+		m_projections_interior.reserve(T) ;
+		m_projections_interior.resize(T) ; //To do : only Theta (lg T) space necessary
+		m_projections_boundary.reserve(volume) ;
+		m_projections_boundary.resize(volume) ; 
 		cout << "volume " << volume << endl ;
 
 		m_array.reserve(volume) ;
@@ -406,7 +408,8 @@ private:
 						BF const & bf, int index)
 	{
 		assert (m_head [index] == ULONG_MAX) ;
-		assert (m_projections.size()) ;
+		assert (m_projections_interior.size()) ;
+		assert (m_projections_boundary.size()) ;
 		//create a dummy head
 		m_zoids.push_back(zoid_type ()) ;
 		zoid_type & dummy_head = m_zoids [m_num_vertices] ;
@@ -447,7 +450,8 @@ private:
 						BF const & bf, int index)
 	{
 		assert (m_head [index] == ULONG_MAX) ;
-		assert (m_projections.size()) ;
+		assert (m_projections_interior.size()) ;
+		assert (m_projections_boundary.size()) ;
 		//create a dummy head
 		m_zoids.push_back(zoid_type ()) ;
 		zoid_type & dummy_head = m_zoids [m_num_vertices] ;
@@ -484,45 +488,171 @@ private:
 
 	inline void clear_projections()
 	{
-		//cout << "begin clear proj" << endl ;
-		//cout << " size of array of hash table " << m_projections.size() << endl ;
-		for (int i = 0 ; i < m_projections.size() ; i++)
+		for (int i = 0 ; i < m_projections_interior.size() ; i++)
 		{
-			//cout << "size of hash table " << i << " : " 
-			//	<< m_projections [i].size() << endl ;
-			m_projections [i].clear() ;		//clear the projections
+			m_projections_interior [i].clear() ;		//clear the projections
 		}
-		//cout << "done clearing contents " << endl ;
-		m_projections.clear() ;
+		m_projections_interior.clear() ;
 		//empty the projections vector.
-		vector<hash_table>().swap(m_projections) ; 
-		//cout << "end clear proj" << endl ;
+		vector<hash_table>().swap(m_projections_interior) ; 
+
+		for (int i = 0 ; i < m_projections_boundary.size() ; i++)
+		{
+			m_projections_boundary [i].clear() ;		//clear the projections
+		}
+		m_projections_boundary.clear() ;
+		//empty the projections vector.
+		vector<hash_table>().swap(m_projections_boundary) ; 
 	}
 
 
 	inline void destroy_auto_tune_dag()
 	{
-		//delete m_head [0] ;
-		//delete m_head [1] ;
-		//m_head [0] = 0 ;
-		//m_head [1] = 0 ;
 		m_head.clear() ;
 		m_num_vertices = 0 ;
-		//m_num_projections = 0 ;
 		clear_projections() ;
 		m_heterogeneity.clear() ;
 		m_zoids.clear() ;
 		vector<zoid_type>().swap(m_zoids) ; //empty the zoids vector
-		//delete [] m_cache ;
 	}
-	
+
 	//key is the bottom volume + top volume.
-	inline bool check_and_create_projection (unsigned long const key, 
+	inline bool check_and_create_projection_boundary(unsigned long const key, 
 					int const height, int const centroid, unsigned long & index,
-					grid_info <N_RANK> const & grid,
-					bool const touch_boundary)
+					grid_info <N_RANK> const & grid)
 	{
-		assert (m_projections.size()) ;
+		assert (m_projections_boundary.size()) ;
+		assert (centroid < m_projections_boundary.size()) ;
+		hash_table & h = m_projections_boundary [centroid] ;
+//#ifndef NDEBUG
+#if 0
+		cout << "centroid : "  << centroid << " key " << key << endl ;
+		for (int i = N_RANK - 1 ; i >= 0 ; i--)
+		{
+			cout << " x0 [" << i << "] " << grid.x0 [i] 
+			 << " x1 [" << i << "] " << grid.x1 [i] 
+			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
+			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
+			<< " h " << height << endl ; 
+		}
+#endif
+		std::pair<hash_table_iterator, hash_table_iterator> p = 
+													h.equal_range (key) ;
+		
+		//hash_table iterator has two elements, first and second.
+		for (hash_table_iterator start = p.first ; start != p.second ; start++)
+		{
+			assert (start->first == key) ;
+			assert (start->second < m_num_vertices) ;
+			zoid_type * z = &(m_zoids [start->second]) ;
+			if (z->height == height) 
+			{
+				index = start->second ;
+				assert (z->decision >> zoid_type::NUM_BITS_DECISION - 1 == 1) ;
+				/*grid_info <N_RANK> grid2 = z->info ;
+				int h = height ;
+				bool found = true ;
+				for (int i = N_RANK - 1 ; i >= 0 ; i--)
+				{
+					int x2 = grid.x0 [i] + grid.dx0 [i] * h ;
+					int x3 = grid.x1 [i] + grid.dx1 [i] * h ;
+					int x2_ = grid2.x0 [i] + grid2.dx0 [i] * h ; 
+					int x3_ = grid2.x1 [i] + grid2.dx1 [i] * h ;
+					int l = m_algo.phys_length_ [i] ;
+					if (pmod(grid.x0 [i], l) != pmod(grid2.x0 [i], l) ||
+						pmod(grid.x1 [i], l) != pmod(grid2.x1 [i], l) ||
+						pmod(x2, l) != pmod(x2_, l) ||
+						pmod(x3, l) != pmod(x3_, l))
+					{
+						found = false ;
+					}
+				}
+				if (found)
+				{
+					index = start->second ;
+					return true ;
+				}*/
+#ifndef NDEBUG
+//#if 0
+				grid_info <N_RANK> grid2 = z->info ;
+				int h = height ;
+				for (int i = N_RANK - 1 ; i >= 0 ; i--)
+				{
+					int x2 = grid.x0 [i] + grid.dx0 [i] * h ;
+					int x3 = grid.x1 [i] + grid.dx1 [i] * h ;
+					int x2_ = grid2.x0 [i] + grid2.dx0 [i] * h ; 
+					int x3_ = grid2.x1 [i] + grid2.dx1 [i] * h ;
+					if (pmod(grid.x0 [i], m_algo.phys_length_ [i]) != 
+						pmod(grid2.x0 [i], m_algo.phys_length_ [i]) ||
+						pmod(grid.x1 [i], m_algo.phys_length_ [i]) != 
+						pmod(grid2.x1 [i], m_algo.phys_length_ [i]) ||
+						pmod(x2, m_algo.phys_length_ [i]) != 
+						pmod(x2_, m_algo.phys_length_ [i]) ||
+						pmod(x3, m_algo.phys_length_ [i]) != 
+						pmod(x3_, m_algo.phys_length_ [i]))
+					{
+						cout << "2 diff zoids hash to same key " << endl ;
+						cout << "diff dim " << i << endl ;
+						cout << "centroid " << centroid << endl ;
+						cout << " grid " << endl ;
+						for (int j = N_RANK - 1 ; j >= 0 ; j--)
+						{
+							cout << " x0 [" << j << "] " << grid.x0 [j] 
+							<< " x1 [" << j << "] " << grid.x1 [j] 
+							<< " x2 [" << j << "] " << grid.x0[j] + grid.dx0[j] * h
+							<< " x3 [" << j << "] " << grid.x1[j] + grid.dx1[j] * h
+							<< " h " << h << endl ; 
+						}
+						cout << " grid 2 at index " << index << endl ;
+						for (int j = N_RANK - 1 ; j >= 0 ; j--)
+						{
+							cout << " x0 [" << j << "] " << grid2.x0 [j] 
+							<< " x1 [" << j << "] " << grid2.x1 [j] 
+							<< " x2 [" << j << "] " << grid2.x0[j] + grid2.dx0[j] * h
+							<< " x3 [" << j << "] " << grid2.x1[j] + grid2.dx1[j] * h
+							<< " h " << h << endl ; 
+						}
+						assert (0) ;
+					}
+				}	
+#endif
+				return true ;
+			}
+		}
+		if (m_num_vertices > m_zoids.capacity())
+		{
+			cout << "# nodes of DAG " << m_num_vertices << " exceeds capacity " 				<< m_zoids.capacity() << endl ;
+		}
+		m_zoids.push_back(zoid_type ()) ;
+		zoid_type & z = m_zoids [m_num_vertices] ;
+		z.height = height ;
+#ifndef NDEBUG
+		z.info = grid ;
+		z.id = m_num_vertices ;
+		/*cout << "inserting zoid " << z.id << " key " << key << endl ;
+		for (int i = N_RANK - 1 ; i >= 0 ; i--)
+		{
+			cout << " x0 [" << i << "] " << grid.x0 [i] 
+			 << " x1 [" << i << "] " << grid.x1 [i] 
+			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
+			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
+			<< " h " << height << endl ; 
+		}*/
+#endif
+		m_projections_boundary [centroid].insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
+		index = m_num_vertices ;
+		m_num_vertices++ ;
+		assert (m_num_vertices == m_zoids.size()) ;
+		
+		return false ;
+	}
+
+	//key is the bottom volume + top volume.
+	inline bool check_and_create_projection_interior(unsigned long const key, 
+					int const height, unsigned long & index,
+					grid_info <N_RANK> const & grid)
+	{
+		assert (m_projections_interior.size()) ;
 		int k = height - 1 ;  //index with the height for now.
 		/*int k = log2(m_initial_height / height) ;
 		int two_to_the_k = 1 << k ; //k = 2^floor(log2 (h / h_k))
@@ -558,7 +688,7 @@ private:
 			}
 		}*/
 		
-		hash_table & h = m_projections [k] ;
+		hash_table & h = m_projections_interior [k] ;
 #if 0
 		cout << "centroid : "  << centroid << " key " << key << endl ;
 		cout << " height " << height << endl ;
@@ -581,33 +711,21 @@ private:
 			assert (start->second < m_num_vertices) ;
 			zoid_type * z = &(m_zoids [start->second]) ;
 			assert (z->height == height) ;
-			if (touch_boundary == 
-				z->decision >> zoid_type::NUM_BITS_DECISION - 1)
-			{
-				index = start->second ;
-				cout << "touch_boundary " << touch_boundary <<
-					" z->decision >> zoid_type::NUM_BITS_DECISION - 1 " <<
-					(z->decision >> zoid_type::NUM_BITS_DECISION - 1) << endl ;
-				cout << "found entry" << endl ;
-				return true ;
-			}
+			assert (z->decision >> zoid_type::NUM_BITS_DECISION - 1 == 0) ;
+		
+			index = start->second ;
+			return true ;
 		}
-		//cout << "not found entry" << endl ;
-		//cout << "pushing zoid" << endl ;
 		if (m_num_vertices > m_zoids.capacity())
 		{
 			cout << "# nodes of DAG " << m_num_vertices << " exceeds capacity " 				<< m_zoids.capacity() << endl ;
 		}
 		m_zoids.push_back(zoid_type ()) ;
-		//cout << "pushed zoid" << endl ;
 		zoid_type & z = m_zoids [m_num_vertices] ;
 		z.height = height ;
-		//assert (m_num_vertices == m_num_projections) ;
 #ifndef NDEBUG
 		z.info = grid ;
 		z.id = m_num_vertices ;
-		//m_num_projections ;
-		//assert (m_num_vertices == m_num_projections) ;
 		/*cout << "inserting zoid " << z.id << " key " << key << endl ;
 		for (int i = N_RANK - 1 ; i >= 0 ; i--)
 		{
@@ -618,10 +736,8 @@ private:
 			<< " h " << height << endl ; 
 		}*/
 #endif
-		m_projections [k].insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
-		//cout << "inserted key" << endl ;
+		m_projections_interior [k].insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
 		index = m_num_vertices ;
-		//cout << "created zoid " << m_zoids [index].id << endl ;
 		m_num_vertices++ ;
 		assert (m_num_vertices == m_zoids.size()) ;
 		
@@ -747,7 +863,7 @@ private:
 	{
 		cout << "# vertices " << m_num_vertices << endl ;
 		//cout << "# vertices " << m_num_vertices << " # projections " <<
-		//		m_num_projections << endl ;
+		//		m_num_projections_interior << endl ;
 		//do a BFS of the dag and print each zoid's info	
 		vector <unsigned long> color ;
 		color.reserve(m_num_vertices) ;
@@ -929,7 +1045,10 @@ private:
 	unsigned short m_space_cut_mask ;
 	vector<zoid_type> m_zoids ; //the array of all nodes in the DAG
 	vector<simple_zoid_type> m_simple_zoids ; //a compact array of nodes in the DAG
-	vector<hash_table> m_projections ; //the array of hashtable of <key, zoid index>
+	//the array of hashtable of <key, zoid index> for interior region
+	vector<hash_table> m_projections_interior ; 
+	//the array of hashtable of <key, zoid index> for boundary region
+	vector<hash_table> m_projections_boundary ; 
 	vector<unsigned long> m_head ; // the indices of start nodes in the dag
 	Algorithm <N_RANK> & m_algo ; // a reference to Algorithm
 	unsigned long m_num_vertices ; //# of zoids in the dag
@@ -1156,10 +1275,10 @@ private:
 			cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
 			clear_projections() ;
 #ifndef NDEBUG
-		print_dag() ;
+		//print_dag() ;
 #endif
 			cout << "begin compress dag" << endl ;
-			//compress_dag () ;
+			compress_dag () ;
 			cout << "# vertices after compression" << m_num_vertices << endl ;
 			cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
 			//copy data back.

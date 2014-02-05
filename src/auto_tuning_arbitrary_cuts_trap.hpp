@@ -289,6 +289,21 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_cut_boundary(int t0,
                             grid_info<N_RANK> l_son_grid = l_father_grid;
                             const int l_start = (l_father_grid.x0[level]);
                             const int l_end = (l_father_grid.x1[level]);
+
+                            l_son_grid.x0[level] = l_start ;
+                            l_son_grid.dx0[level] = slope_[level];
+                            l_son_grid.x1[level] = l_end ;
+                            l_son_grid.dx1[level] = -slope_[level];
+                            push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+							
+                            const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                            // push triangle into circular queue of (curr_dep + 1)
+                            l_son_grid.x0[level] = l_end ;
+                            l_son_grid.dx0[level] = -slope_[level];
+                            l_son_grid.x1[level] = l_end ;
+                            l_son_grid.dx1[level] = slope_[level];
+                            push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+							/*
                             //draw a triangle with a vertex at midpoint of 
 							//top base.
                             l_son_grid.x0[level] = mid - dx ;
@@ -297,7 +312,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_cut_boundary(int t0,
                             l_son_grid.dx1[level] = -slope_[level];
                             push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
 
-                            /* cilk_sync */
+                            // cilk_sync
                             const int next_dep_pointer = (curr_dep + 1) & 0x1;
                             // push trapezoid into circular queue of (curr_dep + 1)
                             l_son_grid.x0[level] = mid + dx ;
@@ -305,6 +320,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_cut_boundary(int t0,
                             l_son_grid.x1[level] = l_end + mid - dx ;
                             l_son_grid.dx1[level] = slope_[level];
                             push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+							*/
                         } else { /* NOT the initial cut! */
                             const int mid = tb/2;
                             grid_info<N_RANK> l_son_grid = l_father_grid;
@@ -380,11 +396,11 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		key |= lb ;
 		key <<= num_bits_width ;
 		key |= tb ;
-		cout << " x0 [" << i << "] " << grid.x0 [i] 
+		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
 			 << " x1 [" << i << "] " << grid.x1 [i] 
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-			<< " lt " << lt << endl ;
+			<< " lt " << lt << endl ;*/
         thres = slope_[i] * lt ;
 		int short_side ;
 		bool space_cut = false ;
@@ -406,19 +422,13 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 			//set if a space cut can happen in dimension i
 			decision |= 1 << i + 1 ;
 			num_subzoids [i] = 3 ;
-			/*if (short_side - (thres << 2) >= 0)
-			{
-				num_subzoids [i]= 5 ;
-				//set if space cut yields 5 pieces
-				decision |= 1 << i + 1 + 2 * N_RANK ;
-			}*/
 			total_num_subzoids *= num_subzoids [i] ;
 		}
         sim_can_cut |= space_cut ;
     }
 	unsigned long index ;
-	bool projection_exists = check_and_create_projection (key, lt, 
-									centroid, index, grid, 0) ;
+	bool projection_exists = check_and_create_projection_interior (key, lt, 
+									index, grid) ;
 	zoid_type & z = m_zoids [index];
 	zoid_type & parent = m_zoids [parent_index] ;
 	//add the zoid as a child of the parent
@@ -437,7 +447,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		assert (z.decision >> zoid_type::NUM_BITS_DECISION - 1 == 0) ;
 		assert (z.height == lt) ;
 #ifndef NDEBUG
-		grid_info<N_RANK> & grid2 = z.info ;
+		/*grid_info<N_RANK> & grid2 = z.info ;
 		int h = z.height ;
 		for (int i = N_RANK - 1 ; i >= 0 ; --i)
 		{
@@ -446,7 +456,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 				<< " x2 [" << i << "] " << grid2.x0[i] + grid2.dx0[i] * h
 				<< " x3 [" << i << "] " << grid2.x1[i] + grid2.dx1[i] * h
 				<< " h " << h << endl ;
-		}
+		}*/
 #endif
 		return ;
 	}
@@ -716,11 +726,11 @@ double & max_loop_time)
 		assert (centroid >= 0) ;
 		width *= phys_length_ [i] ;
         tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-		cout << " x0 [" << i << "] " << grid.x0 [i] 
+		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
 			 << " x1 [" << i << "] " << grid.x1 [i] 
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-			<< " lt " << lt << endl ;
+			<< " lt " << lt << endl ;*/
         thres = slope_[i] * lt ;
         if (lb == phys_length_[i] && grid.dx0[i] == 0 && grid.dx1[i] == 0) 
 		{ 
@@ -756,12 +766,6 @@ double & max_loop_time)
 			//set if a space cut can be done in dimension i
 			decision |= 1 << i + 1 ;
 			num_subzoids [i] = 3 ;
-			/*if (short_side - (thres << 2) >= 0)
-			{
-				//set if space cut yields 5 pieces
-				decision |= 1 << i + 1 + 2 * N_RANK ;
-				num_subzoids [i] = 5 ;
-			}*/
 			total_num_subzoids *= num_subzoids [i] ;
 		}
         sim_can_cut |= space_cut ;
@@ -774,8 +778,17 @@ double & max_loop_time)
         call_boundary |= l_touch_boundary;
     }
 	unsigned long index ;
-	bool projection_exists = check_and_create_projection (key, lt, 
-								centroid, index, l_father_grid, call_boundary) ;
+	bool projection_exists = false ;
+	if (call_boundary)
+	{
+		projection_exists = check_and_create_projection_boundary (key, lt, 
+								centroid, index, l_father_grid) ;
+	}
+	else
+	{
+		projection_exists = check_and_create_projection_interior (key, lt, 
+									index, l_father_grid) ;
+	}
 	zoid_type & z = m_zoids [index] ;
 	zoid_type & parent = m_zoids [parent_index] ;
 	//add the zoid as a child of the parent
@@ -790,10 +803,10 @@ double & max_loop_time)
 		max_loop_time = z.max_loop_time ;
 		//cout << " zoid exists " << endl ;
 		//a zoid with the projection already exists. return
-#ifndef NDEBUG
 		assert (z.decision >> zoid_type::NUM_BITS_DECISION - 1 ==call_boundary);
 		assert (z.height == lt) ;
-		grid_info<N_RANK> & grid2 = z.info ;
+#ifndef NDEBUG
+		/*grid_info<N_RANK> & grid2 = z.info ;
 		int h = z.height ;
 		for (int i = N_RANK - 1 ; i >= 0 ; --i)
 		{
@@ -802,7 +815,7 @@ double & max_loop_time)
 				<< " x2 [" << i << "] " << grid2.x0[i] + grid2.dx0[i] * h
 				<< " x3 [" << i << "] " << grid2.x1[i] + grid2.dx1[i] * h
 				<< " h " << h << endl ;
-		}
+		}*/
 #endif
 		return ;
 	}
@@ -1373,6 +1386,21 @@ inline void auto_tune<N_RANK>::trap_space_cut_boundary(
                             grid_info<N_RANK> l_son_grid = l_father_grid;
                             const int l_start = (l_father_grid.x0[level]);
                             const int l_end = (l_father_grid.x1[level]);
+
+                            l_son_grid.x0[level] = l_start ;
+                            l_son_grid.dx0[level] = slope_[level];
+                            l_son_grid.x1[level] = l_end ;
+                            l_son_grid.dx1[level] = -slope_[level];
+                            push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
+							
+                            const int next_dep_pointer = (curr_dep + 1) & 0x1;
+                            // push triangle into circular queue of (curr_dep + 1)
+                            l_son_grid.x0[level] = l_end ;
+                            l_son_grid.dx0[level] = -slope_[level];
+                            l_son_grid.x1[level] = l_end ;
+                            l_son_grid.dx1[level] = slope_[level];
+                            push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+							/*
                             //draw a triangle with a vertex at midpoint of 
 							//top base.
                             l_son_grid.x0[level] = mid - dx ;
@@ -1381,7 +1409,7 @@ inline void auto_tune<N_RANK>::trap_space_cut_boundary(
                             l_son_grid.dx1[level] = -slope_[level];
                             push_queue(curr_dep_pointer, level-1, t0, t1, l_son_grid);
 
-                            /* cilk_sync */
+                            // cilk_sync 
                             const int next_dep_pointer = (curr_dep + 1) & 0x1;
                             // push trapezoid into circular queue of (curr_dep + 1)
                             l_son_grid.x0[level] = mid + dx ;
@@ -1389,6 +1417,7 @@ inline void auto_tune<N_RANK>::trap_space_cut_boundary(
                             l_son_grid.x1[level] = l_end + mid - dx ;
                             l_son_grid.dx1[level] = slope_[level];
                             push_queue(next_dep_pointer, level-1, t0, t1, l_son_grid);
+							*/
                         } else { /* NOT the initial cut! */
                             const int mid = tb/2;
                             grid_info<N_RANK> l_son_grid = l_father_grid;
@@ -1545,9 +1574,9 @@ trap_space_time_cut_boundary(int t0,
 		int x3_ = grid2.x1[i] + grid2.dx1[i] * lt ;
 
 		//if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_)
-		//if (x1 - x0 != x1_ - x0_ || x3 - x2 != x3_ - x2_)
+		if (x1 - x0 != x1_ - x0_ || x3 - x2 != x3_ - x2_)
 		{
-		//	cout << "zoid and proj zoid differ " << endl ;
+			cout << "zoid and proj zoid differ " << endl ;
 			//cout << "proj zoid id " << projection_zoid->id << endl ;
 			for (int i = N_RANK - 1 ; i >= 0 ; i--)
 			{
@@ -1568,21 +1597,19 @@ trap_space_time_cut_boundary(int t0,
 			}
 
 			cout << "decision " << projection_zoid->decision << endl ;
-			//assert(0) ;
+			assert(0) ;
 		}
 	}
 #endif
 	unsigned short cb = 0 ;
     for (int i = N_RANK-1; i >= 0; --i) {
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid) ;
-		cout << " l_touch_boundary " << l_touch_boundary << endl ;
+		//cout << " l_touch_boundary " << l_touch_boundary << endl ;
 		cb |= l_touch_boundary ;
     }
 	unsigned short call_boundary = projection_zoid->decision >> 
 					zoid<N_RANK>::NUM_BITS_DECISION - 1 ;
 	assert (cb == call_boundary) ;
-	//continue from here.
-	//unsigned short call_boundary = cb ; //looks like a bug. fix it
 	
 	//if (projection_zoid->decision & 2)
 	if (projection_zoid->decision & m_space_cut_mask)

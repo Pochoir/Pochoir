@@ -69,9 +69,11 @@ double & max_loop_time)
 #else
                 // use cilk_spawn to spawn all the sub-grid 
                 pop_queue(curr_dep_pointer);
+				double time = 0 ;
 				symbolic_sawzoid_space_time_cut_interior(l_father->t0, 
 					l_father->t1, l_father->grid, parent_index, child_index, 
-					redundant_time, projected_time, f, max_loop_time) ;
+					redundant_time, projected_time, f, time) ;
+				max_loop_time = max(time, max_loop_time) ;
 				child_index++ ;
 #endif
             } else {
@@ -255,9 +257,11 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_boundary(int t0,
 #else
                 // use cilk_spawn to spawn all the sub-grid 
                 pop_queue(curr_dep_pointer);
+				double time = 0 ;
 				symbolic_sawzoid_space_time_cut_boundary(l_father->t0, 
 					l_father->t1, l_father->grid, parent_index, child_index,
-					redundant_time, projected_time, f, bf, max_loop_time);
+					redundant_time, projected_time, f, bf, time);
+				max_loop_time = max(time, max_loop_time) ;
 				child_index++ ; 
 #endif
             } else {
@@ -530,6 +534,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		clock_gettime(CLOCK_MONOTONIC, &end) ;
 		redundant_time += tdiff2(&end, &start) ;
 		projected_time += z.time  ;
+		max_loop_time = z.max_loop_time ;
 		//a zoid with the projection already exists. return
 		return ;
 	}
@@ -577,9 +582,11 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
     if (sim_can_cut) 
 	{
         /* cut into space */
+		double time = 0 ;
 		symbolic_sawzoid_space_cut_interior(t0, t1, grid, index, f, 
-							num_subzoids, rtime, ptime, max_loop_time) ;
+							num_subzoids, rtime, ptime, time) ;
 		//decision = 2 ;
+		max_loop_time = max(time, max_loop_time) ;
     }
 	else if (lt > dt_recursive_)
 	{
@@ -661,10 +668,9 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 			//m_zoids [index].decision = 0 ;
 			necessary_time = loop_time ;
 			m_zoids [index].time = loop_time ;
-			//necessary_time = 0 ;
-			//m_zoids [index].time = 0 ;
 		}
 	}
+	m_zoids [index].max_loop_time = max_loop_time ;
 	
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	double total_time = tdiff2(&end, &start) ;
@@ -778,6 +784,7 @@ double & max_loop_time)
 		clock_gettime(CLOCK_MONOTONIC, &end) ;
 		redundant_time += tdiff2(&end, &start) ;
 		projected_time += z.time  ;
+		max_loop_time = z.max_loop_time ;
 		//a zoid with the projection already exists. return
 		return ;
 	}
@@ -785,68 +792,6 @@ double & max_loop_time)
 	double loop_time = 0. ;
 	double loop_time_with_penalty = 0. ;
 	
-	/*if (N_RANK == 1 && decision & 1 << 1 + 3 * N_RANK) 
-	{
-		cout << "rectangle 2 " << endl ;
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-		base_case_kernel_boundary_rectangle(t0, t1, l_father_grid, bf);
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
-		loop_time_with_penalty = tdiff2(&end1, &start1) ;
-
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-		base_case_kernel_boundary_rectangle(t0, t1, l_father_grid, bf);
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
-		loop_time = tdiff2(&end1, &start1) ;
-	}
-	else
-	{
-		
-		//determine the looping time on the zoid
-		if (initial_cut)
-		{
-			//do not loop at the root.
-			//for larger problems, looping at the root will be slow.
-			loop_time = ULONG_MAX ;
-			loop_time_with_penalty = ULONG_MAX ;
-		}
-		else
-		{
-			// base case
-			//determine the looping time on the zoid
-			clock_gettime(CLOCK_MONOTONIC, &start1) ;
-			if (call_boundary) 
-			{
-				base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-			} 
-			else 
-			{ 
-				f(t0, t1, l_father_grid);
-			}
-			clock_gettime(CLOCK_MONOTONIC, &end1) ;
-			loop_time_with_penalty = tdiff2(&end1, &start1) ;
-
-			clock_gettime(CLOCK_MONOTONIC, &start1) ;
-			if (call_boundary)
-			{
-				base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-			} 
-			else 
-			{ 
-				f(t0, t1, l_father_grid);
-			}
-			clock_gettime(CLOCK_MONOTONIC, &end1) ;
-			loop_time = tdiff2(&end1, &start1) ;
-		}
-		//loop_time = ULONG_MAX ;
-	//}
-#ifndef NDEBUG
-	m_zoids [index].ltime = loop_time ;
-	if (loop_time_with_penalty > loop_time)
-	{
-		m_zoids [index].cache_penalty_time = loop_time_with_penalty - loop_time;
-	}
-#endif
-	*/
     if (call_boundary)
 	{
 		z.decision |= (unsigned short) 1 << 
@@ -875,23 +820,24 @@ double & max_loop_time)
 	clock_gettime(CLOCK_MONOTONIC, &start1) ;
     if (sim_can_cut) 
 	{
-		//cout << "space cut " << endl ;
         //cut into space 
+		double time = 0 ;
     	for (int i = N_RANK-1; i >= 0; --i) {
         	touch_boundary(i, lt, l_father_grid) ;
     	}
         if (call_boundary) 
 		{
             symbolic_sawzoid_space_cut_boundary(t0, t1, l_father_grid, index, 
-					 f, bf, num_subzoids, rtime, ptime, max_loop_time);
+					 f, bf, num_subzoids, rtime, ptime, time);
         }
 		else
 		{
             symbolic_sawzoid_space_cut_interior(t0, t1, l_father_grid, index, 
-						f, num_subzoids, rtime, ptime, max_loop_time);
+						f, num_subzoids, rtime, ptime, time);
 		}
 		//decision = 2 ;
-    } 
+		max_loop_time = max(time, max_loop_time) ;
+    }
 	else if (lt > l_dt_stop)  //time cut
 	{
         // cut into time 
@@ -939,33 +885,6 @@ double & max_loop_time)
 		m_zoids [index].ttime = elapsed_time + ptime ;
 	}
 #endif
-	/*
-	//determine the looping time on the zoid
-	if (initial_cut)
-	{
-		//do not loop at the root.
-		//for larger problems, looping at the root will be slow.
-		loop_time = ULONG_MAX ;
-	}
-	else
-	{
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-		if (call_boundary)
-		{
-			base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-		} 
-		else 
-		{ 
-			f(t0, t1, l_father_grid);
-		}
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
-		loop_time = tdiff2(&end1, &start1) ;
-	}
-#ifndef NDEBUG
-	m_zoids [index].ltime = loop_time ;
-#endif
-	*/
-	
     //base case
 	//suppose loop_time(z) >= loop_time(z'), z' \in tree(z)
 	//if divide_and_conquer_time(z) < max_{z' \in tree(z)} loop_time(z')
@@ -1016,10 +935,9 @@ double & max_loop_time)
 			//m_zoids [index].decision = 0 ;
 			necessary_time = loop_time ;
 			m_zoids [index].time = loop_time ;
-			//necessary_time = 0 ;
-			//m_zoids [index].time = 0 ;
 		}
 	}
+	m_zoids [index].max_loop_time = max_loop_time ;
 	
 	clock_gettime(CLOCK_MONOTONIC, &end) ;
 	double total_time = tdiff2(&end, &start) ;

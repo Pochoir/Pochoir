@@ -403,9 +403,10 @@ private:
 		}
 	}
 
-	template <typename F>
+	template <typename F, typename BF>
 	inline void build_auto_tune_dag_trap(int t0, int t1, 
-						grid_info<N_RANK> const & grid, F const & f, int index)
+						grid_info<N_RANK> const & grid, F const & f, 
+						BF const & bf, int index)
 	{
 		assert (m_head [index] == ULONG_MAX) ;
 		assert (m_projections.size()) ;
@@ -416,12 +417,32 @@ private:
 		dummy_head.id = m_num_vertices ;
 #endif
 		dummy_head.resize_children(1) ;
+		unsigned long index_head = m_num_vertices ;
 		m_num_vertices++ ;
 		assert (m_num_vertices == m_zoids.size()) ;
-		m_head [index] = m_num_vertices ;
+		//m_head [index] = m_num_vertices ;
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
-		symbolic_space_time_cut_boundary(t0, t1, grid, m_num_vertices - 1, 0, f) ;
-	} 
+		double rtime = 0, ntime = 0, max_loop_time = 0 ;
+		symbolic_trap_space_time_cut_boundary(t0, t1, grid, 
+					m_num_vertices - 1, 0, rtime, ntime, f, bf, max_loop_time) ;
+		m_head [index] = m_zoids [index_head].children[0] ;
+		m_zoids [index_head].resize_children (0) ;
+#ifndef NDEBUG
+		//remove the dummy parent of the zoid at m_head [index]
+		m_zoids [m_head [index]].parents.pop_back() ;
+		cout << "index " << index << " m_head [index] " << m_head [index] <<
+		endl ;
+		cout << " decision of head [" << index << " ] " << 
+			m_zoids [m_head [index]].decision 
+			<< " time for space cut " << m_zoids [m_head [index]].stime << 
+			" time for time cut " << m_zoids [m_head [index]].ttime << 
+			" time to loop " << m_zoids [m_head [index]].ltime << endl ;
+#endif
+		cout << " decision of head [" << index << "] : " << 
+			m_zoids [m_head [index]].decision 
+			<< " time " << m_zoids [m_head [index]].time * 1.0e3 << "ms" <<
+			endl ;
+	}
 
 	template <typename F, typename BF>
 	inline void build_auto_tune_dag_sawzoid(int t0, int t1, 
@@ -446,6 +467,7 @@ private:
 		symbolic_sawzoid_space_time_cut_boundary(t0, t1, grid, 
 					m_num_vertices - 1, 0, rtime, ntime, f, bf, max_loop_time) ;
 		m_head [index] = m_zoids [index_head].children[0] ;
+		m_zoids [index_head].resize_children (0) ;
 #ifndef NDEBUG
 		//remove the dummy parent of the zoid at m_head [index]
 		m_zoids [m_head [index]].parents.pop_back() ;
@@ -752,24 +774,6 @@ private:
 			num_vertices++ ;
 			assert (num_vertices == temp_zoids.size()) ;
 			assert (z.num_children <= z.capacity) ;
-			/*cout << " z.num_children " << z.num_children << endl ;
-			for (int i = 0 ; i < z.num_children ; i++)
-			{
-				cout << "z.children [ " << i << " ] " << z.children [i] << endl ;
-				if (z.children [i] == 0)
-				{
-					grid_info<N_RANK> & grid = z.info ;
-					int h = z.height ;
-					for (int j = N_RANK-1; j >= 0; --j) 
-					{
-						cout << " x0 [" << j << "] " << grid.x0 [j] 
-						<< " x1 [" << j << "] " << grid.x1 [j] 
-						<< " x2 [" << j << "] " << grid.x0[j] + grid.dx0[j] * h
-						<< " x3 [" << j << "] " << grid.x1[j] + grid.dx1[j] * h
-						<< " h " << h << endl ;
-					}
-				}
-			}*/
 			for (int i = 0 ; i < z.num_children ; i++)
 			{
 				zoid_type & z1 = temp_zoids [index] ;	
@@ -953,24 +957,46 @@ private:
 		}
 	}
 #endif
+	template <typename F, typename BF>
+	inline void symbolic_trap_space_time_cut_boundary(int t0, int t1,  
+		grid_info<N_RANK> const & grid, unsigned long,
+		int child_index, double &, double &, F const & f, BF const & bf,
+		double &) ;
 
 	template <typename F>
-	inline void symbolic_abnormal_space_time_cut_boundary(int t0, int t1,  
-		grid_info<N_RANK> const grid, unsigned long,
-		int child_index, F const & f) ;
+	inline void symbolic_trap_space_time_cut_interior(int t0, int t1, 
+		grid_info<N_RANK> const & grid, unsigned long,
+		int child_index, double &, double &, F const & f, double &) ;
+
+	template <typename F, typename BF>
+	inline void symbolic_trap_space_cut_boundary(int t0, int t1,
+		grid_info<N_RANK> const & grid, unsigned long, F const & f, 
+		BF const & bf, int *, double &, double &, double &, int) ;
 
 	template <typename F>
-	inline void symbolic_abnormal_space_time_cut_interior(int t0, int t1, 
-		grid_info<N_RANK> const grid, unsigned long,
-		int child_index, F const & f) ;
+	inline void symbolic_trap_space_cut_interior(int t0, int t1,
+		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *,
+		double &, double &, double &, int) ;
+
+	template <typename F, typename BF>
+	inline void trap_space_time_cut_boundary(int t0, int t1,  
+		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
+		F const & f, BF const & bf) ;
 
 	template <typename F>
-	inline void symbolic_abnormal_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const grid, unsigned long, F const & f) ;
+	inline void trap_space_time_cut_interior(int t0, int t1, 
+		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
+		F const & f) ;
+
+	template <typename F, typename BF>
+	inline void trap_space_cut_boundary(int t0, int t1,
+		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
+		F const & f, BF const & bf) ;
 
 	template <typename F>
-	inline void symbolic_abnormal_space_cut_interior(int t0, int t1,
-		grid_info<N_RANK> const grid, unsigned long, F const & f) ;
+	inline void trap_space_cut_interior(int t0, int t1,
+		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
+		F const & f) ;
 
 	template <typename F, typename BF>
 	inline void symbolic_sawzoid_space_time_cut_boundary(int t0, int t1,  
@@ -993,69 +1019,25 @@ private:
 		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *,
 		double &, double &, double &, int) ;
 
-#if 0
-	template <typename F>
-	inline void symbolic_space_time_cut_boundary(int t0, int t1,  
-		grid_info<N_RANK> const & grid, unsigned long,
-		int child_index, F const & f) ;
-
-	template <typename F>
-	inline void symbolic_space_time_cut_interior(int t0, int t1, 
-		grid_info<N_RANK> const & grid, unsigned long,
-		int child_index, F const & f) ;
-
-	template <typename F>
-	inline void symbolic_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const & grid, unsigned long, F const & f) ;
-
-	template <typename F>
-	inline void symbolic_space_cut_interior(int t0, int t1,
-		grid_info<N_RANK> const & grid, unsigned long, F const & f) ;
-#endif
-
 	template <typename F, typename BF>
 	inline void sawzoid_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
-		//grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f, BF const & bf) ;
 
 	template <typename F>
 	inline void sawzoid_space_time_cut_interior(int t0, int t1, 
 		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
-		//grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f) ;
 
 	template <typename F, typename BF>
 	inline void sawzoid_space_cut_boundary(int t0, int t1,
 		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
-		//grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f, BF const & bf) ;
 
 	template <typename F>
 	inline void sawzoid_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
-		//grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f) ;
-
-#if 0
-	template <typename F, typename BF>
-	inline void heterogeneous_space_time_cut_boundary(int t0, int t1,  
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
-		F const & f, BF const & bf) ;
-
-	template <typename F>
-	inline void heterogeneous_space_time_cut_interior(int t0, int t1, 
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, F const & f) ;
-
-	template <typename F, typename BF>
-	inline void heterogeneous_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
-		F const & f, BF const & bf) ;
-
-	template <typename F>
-	inline void heterogeneous_space_cut_interior(int t0, int t1,
-		grid_info<N_RANK> const & grid, zoid_type * projection_zoid, F const & f) ;
-#endif
 
 	inline bool touch_boundary(int i, int lt,
                 grid_info<N_RANK> & grid, unsigned short & decision) ;
@@ -1177,7 +1159,7 @@ private:
 		cout << "DAG capacity " << m_zoids.capacity() << endl ;
 		std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
 				<< "ms" << std::endl;
-		cout << "Expected run time " << expected_run_time * 1e3 << "ms" << endl;
+		cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
 		clear_projections() ;
 #ifndef NDEBUG
 		//print_dag() ;
@@ -1257,135 +1239,125 @@ private:
 		}*/
 	}
 
-	template <typename F, typename BF, typename P>
-    inline void do_default_space_time_cuts(int t0, int t1,
-        grid_info<N_RANK> const & grid, F const & f, BF const & bf, P const & p)
+	template <typename F, typename BF>
+    inline void do_trap_space_time_cuts(int t0, int t1,
+        grid_info<N_RANK> const & grid, F const & f, BF const & bf, 
+		Pochoir_Array<double, N_RANK> * array)
 	{
 		int T = t1 - t0 ;
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
 		int W = 0 ;  //max_width among all dimensions
 		int slope ;
+		unsigned long volume = 1 ;
 		for (int i = 0 ; i < N_RANK ; i++)
 		{
+			volume *= m_algo.phys_length_ [i] ;
 			if (m_algo.phys_length_ [i] > W)
 			{
 				W = m_algo.phys_length_ [i] ;
 				slope = m_algo.slope_ [i] ;
 			}		
 		}
-		struct timeval start, end;
+		//back up data
+		copy_data(&(m_array[0]), array->data(), volume) ;
+		struct timespec start, end;
 		double dag_time = 0. ;
+		double expected_run_time = 0 ;
 		if (W >= 2 * slope * T)
 		{
 			//max width is >= 2 * sigma * h implies the zoid is ready for space cuts
-			gettimeofday(&start, 0);
 			m_head.push_back (ULONG_MAX) ;
-#ifdef COUNT_PROJECTIONS 
-			if (N_RANK == 1)
-			{
-				grid_info<N_RANK> grid2 ;
-				int dx = slope * T ;
-				grid2.x0[0] = dx ;
-            	grid2.dx0[0] = -slope ;
-           		grid2.x1[0] = W - dx ;
-            	grid2.dx1[0] = slope ;
-				cout << "Trap  x0 " << dx << " x1 " << W - dx << " dx0 " <<
-					-slope << " dx1 " << slope << endl ;
-				build_auto_tune_dag_trap(t0, t1, grid2, p, 0) ;
-				cout << "# triangles " << m_num_triangles <<
-					" # of trapezoids " << m_num_trapezoids <<
-					" total " << m_num_triangles + m_num_trapezoids <<
-					endl ;
-			}
-#else
-			build_auto_tune_dag_trap(t0, t1, grid, p, 0) ;
-#endif
-			gettimeofday(&end, 0);
-			dag_time = tdiff(&end, &start) ;
-			//print_dag() ;
-			//print_heterogeneity() ;
-			cout << "done building dag"  << endl ;
+			clock_gettime(CLOCK_MONOTONIC, &start) ;
+			build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			dag_time = tdiff2(&end, &start) ;
+			expected_run_time += m_zoids[m_head[0]].time ;
 			cout << "# vertices " << m_num_vertices << endl ;
 			cout << "DAG capacity " << m_zoids.capacity() << endl ;
 			std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
 					<< "ms" << std::endl;
+			cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
 			clear_projections() ;
-#ifdef GENEITY_TEST
+#ifndef NDEBUG
+		//print_dag() ;
+#endif
+			cout << "begin compress dag" << endl ;
 			compress_dag () ;
 			cout << "# vertices after compression" << m_num_vertices << endl ;
 			cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
-#endif
-#ifdef COUNT_PROJECTIONS 
-			print_statistics(T) ;
-#else
-			heterogeneous_space_time_cut_boundary(t0, t1, grid, 
-											&(m_zoids [m_head [0]]), f, bf) ;
-#endif
+			//copy data back.
+			copy_data(array->data(), &(m_array[0]), volume) ;
+			create_simple_zoids() ;
+			double compute_time = 0. ;
+			clock_gettime(CLOCK_MONOTONIC, &start) ;
+			trap_space_time_cut_boundary(t0, t1, grid, 
+				&(m_simple_zoids [m_head [0]]), f, bf) ;
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			compute_time = tdiff2(&end, &start) ;
+			std::cout << "Compute time :" << 1.0e3 * compute_time
+				<< "ms" << std::endl;
 		}
 		else
 		{
 			//the zoid will be cut in time until it becomes normal
-			//compute 2^k where k = ceil(lg (2 * slope * T / W))
-			//int k = 8 * sizeof(int) - __builtin_clz((T - 1) * 2 * slope / W) ;
-			//int k = 8 * sizeof(int) - __builtin_clz((T * 2 * slope - 1) / W) ;
-			//int k = 8 * sizeof(int) - __builtin_clz(T * 2 * slope / W - 1) ; 
-			//cout << "k " << k << endl ;
-			//int two_to_the_k = 1 << k ; 
-			//cout << "width " << W << " T " << T <<  " 2^k "  << two_to_the_k << endl ;
-			//h1 = floor (T / two_to_the_k)
-			//int h1 = T / two_to_the_k ;
 			cout << "slope " << slope << endl ;
 			//choose h1 to be the normalized width
 			int h1 = W / (2 * slope) ;
 			int h2 = T - T / h1 * h1 ;
 			cout << "h1 " << h1 << " h2 " << h2 << endl ;
-			struct timeval start, end;
-			gettimeofday(&start, 0);
+			clock_gettime(CLOCK_MONOTONIC, &start) ;
 			m_head.push_back (ULONG_MAX) ;
-			build_auto_tune_dag_trap(t0, t0 + h1, grid, p, 0) ;
-			gettimeofday(&end, 0);
-			dag_time = tdiff(&end, &start) ;
+			build_auto_tune_dag_trap(t0, t0 + h1, grid, f, bf, 0) ;
+			expected_run_time += m_zoids[m_head[0]].time * (int) (T / h1) ;
 			cout << " t0 + T / h1 * h1  " << t0 + T / h1 * h1 << endl ;
 			if (h2 > 0)
 			{
-				gettimeofday(&start, 0);
 				m_head.push_back (ULONG_MAX) ;
-				build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid, p, 1) ;
-				gettimeofday(&end, 0);
-				dag_time += tdiff(&end, &start) ;
+				build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid, f, bf, 1) ;
+				expected_run_time += m_zoids[m_head[1]].time ;
 			}
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			dag_time = tdiff2(&end, &start) ;
 			cout << "# vertices " << m_num_vertices << endl ;
 			cout << "DAG capacity " << m_zoids.capacity() << endl ;
-			std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
+			cout << "DAG : consumed time :" << 1.0e3 * dag_time
 					<< "ms" << std::endl;
+			cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
 			clear_projections() ;
-			//print_dag() ;
-#ifdef GENEITY_TEST
+#ifndef NDEBUG
+		//print_dag() ;
+#endif
+			cout << "begin compress dag " << endl ;
 			compress_dag () ;
 			cout << "# vertices after compression" << m_num_vertices << endl ;
 			cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
-#endif
-			//print_dag() ;
+			//copy data back.
+			copy_data(array->data(), &(m_array[0]), volume) ;
+			create_simple_zoids() ;
+			double compute_time = 0. ;
+			clock_gettime(CLOCK_MONOTONIC, &start) ;
 			int m = T / h1 ;
 			for (int i = 0 ; i < m ; i++)
 			{
-				//cout << "t0 " << t0 << endl ;
-				heterogeneous_space_time_cut_boundary(t0, t0 + h1,  
-							grid, &(m_zoids [m_head [0]]), f, bf) ;
+				cout << "t0 " << t0 << " t1 " << t1 << 
+					" h1 " << h1 << " t0 + h1 " <<
+					t0 + h1 << endl ;
+				trap_space_time_cut_boundary(t0, t0 + h1, grid, 
+					&(m_simple_zoids [m_head [0]]), f, bf) ;
 				t0 += h1 ;
 			}
 			if (h2 > 0)
 			{
-				cout << "t0 " << t0 << endl ;
-				/*gettimeofday(&start, 0);
-				build_auto_tune_dag_trap(t0, t0 + h2, grid, p, 1) ;
-				gettimeofday(&end, 0);
-				dag_time += tdiff(&end, &start) ;*/
-				//print_dag() ;
-				//print_heterogeneity() ;
-				heterogeneous_space_time_cut_boundary(t0, t0 + h2,  
-							grid, &(m_zoids [m_head [1]]), f, bf) ;
+				cout << "t0 " << t0 << " t1 " << t1 << 
+					" h2 " << h2 << " t0 + h2 " <<
+					t0 + h2 << endl ;
+				trap_space_time_cut_boundary(t0, t0 + h2, grid, 
+					&(m_simple_zoids [m_head [1]]), f, bf) ;
 			}
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			compute_time = tdiff2(&end, &start) ;
+			std::cout << "Compute time :" << 1.0e3 * compute_time
+					<< "ms" << std::endl;
 		}
 	}
 } ;

@@ -13,7 +13,8 @@
 #ifndef AUTO_TUNING_ARBITRARY_CUTS_SAWZOID_HPP 
 #define AUTO_TUNING_ARBITRARY_CUTS_SAWZOID_HPP
 
-#include "auto_tuning_arbitrary_cuts_header.hpp"
+//#include "auto_tuning_arbitrary_cuts_header.hpp"
+#include "auto_tuning_homogeneous_header.hpp"
 
 #define dx_recursive_boundary_  (m_algo.dx_recursive_boundary_)
 #define dx_recursive_ (m_algo.dx_recursive_)
@@ -475,7 +476,8 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
         int thres ;
         lb = (grid.x1[i] - grid.x0[i]);
         tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-		centroid = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
+		//centroid = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
+		centroid = pmod(grid.x0[i], phys_length_ [i]) * width + 
 					centroid ;
 		assert (centroid >= 0) ;
 		width *= phys_length_ [i] ;
@@ -521,8 +523,10 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
         sim_can_cut |= space_cut ;
     }
 	unsigned long index ;
-	bool projection_exists = check_and_create_projection (key, lt, 
-											centroid, index, grid) ;
+	//bool projection_exists = check_and_create_projection (key, lt, 
+	//										centroid, index, grid) ;
+	bool projection_exists = check_and_create_projection_interior (key, lt, 
+									index, grid) ;
 	zoid_type & z = m_zoids [index];
 	zoid_type & parent = m_zoids [parent_index] ;
 	//add the zoid as a child of the parent
@@ -708,13 +712,11 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	if (lt > dt_recursive_ && sim_can_cut)
 	{
 		if (space_cut_elapsed_time + space_cut_ptime < time_cut_elapsed_time + 														time_cut_ptime)
-		//if (1)
 		{
 			//space cut is better
 			projected_time1 = space_cut_ptime ;
 			necessary_time = space_cut_elapsed_time ;
 			//decision is already set in the initial loop above for space cut.
-			//cout << "choosing space cut for zoid " << m_zoids [index].id << endl ;
 		}
 		else
 		{
@@ -822,7 +824,8 @@ double & max_loop_time)
         int thres ;
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
         lb = (grid.x1[i] - grid.x0[i]);
-		centroid = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
+		//centroid = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
+		centroid = pmod(grid.x0[i], phys_length_ [i]) * width + 
 					centroid ;
 		assert (centroid >= 0) ;
 		width *= phys_length_ [i] ;
@@ -885,8 +888,19 @@ double & max_loop_time)
         call_boundary |= l_touch_boundary;
     }
 	unsigned long index ;
-	bool projection_exists = check_and_create_projection (key, lt, 
-									centroid, index, l_father_grid) ;
+	//bool projection_exists = check_and_create_projection (key, lt, 
+	//								centroid, index, l_father_grid) ;
+	bool projection_exists = false ;
+	if (call_boundary)
+	{
+		projection_exists = check_and_create_projection_boundary (key, lt, 
+								centroid, index, l_father_grid) ;
+	}
+	else
+	{
+		projection_exists = check_and_create_projection_interior (key, lt, 
+									index, l_father_grid) ;
+	}
 	zoid_type & z = m_zoids [index] ;
 	zoid_type & parent = m_zoids [parent_index] ;
 	//add the zoid as a child of the parent
@@ -1713,7 +1727,7 @@ sawzoid_space_time_cut_interior(int t0,
 #ifndef NDEBUG
     for (int i = N_RANK-1; i >= 0; --i) {
 		grid_info <N_RANK> & grid2 = projection_zoid->info ;
-		int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
+		/*int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
 		int x1 = pmod(grid.x1 [i], phys_length_ [i]) ;
 
 		int x0_ = pmod(grid2.x0 [i], phys_length_ [i]) ;
@@ -1723,9 +1737,22 @@ sawzoid_space_time_cut_interior(int t0,
 		int x3 = pmod(grid.x1[i] + grid.dx1[i] * lt, phys_length_ [i]) ;
 
 		int x2_ = pmod(grid2.x0[i] + grid2.dx0[i] * lt, phys_length_ [i]) ;
-		int x3_ = pmod(grid2.x1[i] + grid2.dx1[i] * lt, phys_length_ [i]) ;
+		int x3_ = pmod(grid2.x1[i] + grid2.dx1[i] * lt, phys_length_ [i]) ;*/
 
-		if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_)
+		int x0 = grid.x0 [i] ;
+		int x1 = grid.x1 [i] ;
+
+		int x0_ = grid2.x0 [i] ;
+		int x1_ = grid2.x1 [i] ;
+
+		int x2 = grid.x0[i] + grid.dx0[i] * lt ;
+		int x3 = grid.x1[i] + grid.dx1[i] * lt ;
+
+		int x2_ = grid2.x0[i] + grid2.dx0[i] * lt ;
+		int x3_ = grid2.x1[i] + grid2.dx1[i] * lt ;
+
+		//if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_)
+		if (x1 - x0 != x1_ - x0_ || x3 - x2 != x3_ - x2_)
 		{
 			cout << "zoid and proj zoid differ " << endl ;
 			for (int i = N_RANK - 1 ; i >= 0 ; i--)
@@ -1796,7 +1823,7 @@ sawzoid_space_time_cut_boundary(int t0,
 #ifndef NDEBUG
     for (int i = N_RANK-1; i >= 0; --i) {
 		grid_info <N_RANK> & grid2 = projection_zoid->info ;
-		int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
+		/*int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
 		int x1 = pmod(grid.x1 [i], phys_length_ [i]) ;
 
 		int x0_ = pmod(grid2.x0 [i], phys_length_ [i]) ;
@@ -1806,9 +1833,21 @@ sawzoid_space_time_cut_boundary(int t0,
 		int x3 = pmod(grid.x1[i] + grid.dx1[i] * lt, phys_length_ [i]) ;
 
 		int x2_ = pmod(grid2.x0[i] + grid2.dx0[i] * lt, phys_length_ [i]) ;
-		int x3_ = pmod(grid2.x1[i] + grid2.dx1[i] * lt, phys_length_ [i]) ;
+		int x3_ = pmod(grid2.x1[i] + grid2.dx1[i] * lt, phys_length_ [i]) ;*/
+	
+		int x0 = grid.x0 [i] ;
+		int x1 = grid.x1 [i] ;
 
-		if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_)
+		int x0_ = grid2.x0 [i] ;
+		int x1_ = grid2.x1 [i] ;
+
+		int x2 = grid.x0[i] + grid.dx0[i] * lt ;
+		int x3 = grid.x1[i] + grid.dx1[i] * lt ;
+
+		int x2_ = grid2.x0[i] + grid2.dx0[i] * lt ;
+		int x3_ = grid2.x1[i] + grid2.dx1[i] * lt ;
+		//if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_) 
+		if (x1 - x0 != x1_ - x0_ || x3 - x2 != x3_ - x2_)
 		{
 			cout << "zoid and proj zoid differ " << endl ;
 			for (int i = N_RANK - 1 ; i >= 0 ; i--)
@@ -1834,11 +1873,15 @@ sawzoid_space_time_cut_boundary(int t0,
 		}
 	}
 #endif
+	unsigned short cb = 0 ;
     for (int i = N_RANK-1; i >= 0; --i) {
-        touch_boundary(i, lt, l_father_grid) ;
+        //touch_boundary(i, lt, l_father_grid) ;
+        bool l_touch_boundary = touch_boundary(i, lt, l_father_grid) ;
+		cb |= l_touch_boundary ;
     }
 	unsigned short call_boundary = projection_zoid->decision >> 
 					zoid<N_RANK>::NUM_BITS_DECISION - 1 ;
+	assert (cb == call_boundary) ;
 
 	//if (projection_zoid->decision & 2)
 	if (projection_zoid->decision & m_space_cut_mask)

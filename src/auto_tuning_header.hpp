@@ -68,11 +68,12 @@ class zoid
 		children = 0 ;
 		num_children = 0 ;
 		time = 0 ;
-		//cache_penalty_time = 0 ;
+		max_loop_time = 0 ;
 #ifndef NDEBUG
+		cache_penalty_time = 0 ;
+		ltime = 0 ;
 		stime = 0 ;
 		ttime = 0 ;
-		ltime = 0 ;
 		id = ULONG_MAX ;
 #endif
 	};
@@ -85,11 +86,12 @@ class zoid
 			delete [] children ;
 			decision = z.decision ;
 			time = z.time ;
-			//cache_penalty_time = z.cache_penalty_time ;
+			max_loop_time = z.max_loop_time ;
 #ifndef NDEBUG
+			cache_penalty_time = z.cache_penalty_time ;
+			ltime = z.ltime ;
 			stime = z.stime ;
 			ttime = z.ttime ;
-			ltime = z.ltime ;
 #endif
 			num_children = z.num_children ;
 			children = 0 ;
@@ -118,11 +120,12 @@ class zoid
 	{
 		decision = z.decision ;
 		time = z.time ;
-		//cache_penalty_time = z.cache_penalty_time ;
+		max_loop_time = z.max_loop_time ;
 #ifndef NDEBUG
+		cache_penalty_time = z.cache_penalty_time ;
+		ltime = z.ltime ;
 		stime = z.stime ;
 		ttime = z.ttime ;
-		ltime = z.ltime ;
 #endif
 		num_children = z.num_children ;
 		//cout << "zoid : copy const for zoid " << z.id << " # children" << 
@@ -161,11 +164,12 @@ class zoid
 		num_children = 0 ;
 		decision = 0 ; // 0 for looping
 		time = 0 ;
-		//cache_penalty_time = 0 ;
+		max_loop_time = 0 ;
 #ifndef NDEBUG
+		cache_penalty_time = 0 ;
+		ltime = 0 ;
 		stime = 0 ;
 		ttime = 0 ;
-		ltime = 0 ;
 #endif
 		delete [] children ;
 		children = 0 ;
@@ -181,7 +185,8 @@ class zoid
 	unsigned long * children ;  
 	int num_children ;
 	double time ;
-	//double cache_penalty_time ;
+	//max loop time among zoids rooted at the given zoid.
+	double max_loop_time ; 
 #ifndef NDEBUG
 	grid_info <N_RANK> info ;
 	unsigned long id ; //id of the zoid.
@@ -189,10 +194,12 @@ class zoid
 	double stime ;
 	double ttime ;
 	double ltime ;
+	double cache_penalty_time ;
 #endif
 } ;
 
 // a compact representation of zoid
+template <int N_RANK>
 class simple_zoid
 {
 public :
@@ -223,6 +230,9 @@ public :
 private :
     unsigned short decision ;
 	unsigned long * children ;
+#ifndef NDEBUG
+	grid_info <N_RANK> info ;
+#endif
 } ;
 
 
@@ -231,6 +241,7 @@ class auto_tune
 {
 private:
 	typedef zoid <N_RANK> zoid_type ;
+	typedef simple_zoid <N_RANK> simple_zoid_type ;
 	typedef unordered_multimap<unsigned long, unsigned long> hash_table ;
 	typedef typename unordered_multimap<unsigned long, unsigned long>::iterator 
 					hash_table_iterator ;
@@ -256,13 +267,16 @@ private:
 		m_simple_zoids.resize (m_num_vertices) ;
 		for (int i = 0 ; i < m_num_vertices ; i++)
 		{
-			simple_zoid & dest = m_simple_zoids [i] ;
+			simple_zoid_type & dest = m_simple_zoids [i] ;
 			zoid_type & src = m_zoids [i] ;
 			dest.decision = src.decision ;
 			if (src.num_children > 0)
 			{
 				dest.resize_and_copy_children(src.num_children, src.children) ;
 			}
+#ifndef NDEBUG
+			dest.info = src.info ;
+#endif
 		}
 		//clear the contents of m_zoids.
 		m_zoids.clear() ;
@@ -352,9 +366,9 @@ private:
 		assert (m_num_vertices == m_zoids.size()) ;
 		m_head [index] = m_num_vertices ;
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
-		double rtime = 0, ntime = 0 ;
+		double rtime = 0, ntime = 0, max_loop_time = 0 ;
 		symbolic_sawzoid_space_time_cut_boundary(t0, t1, grid, 
-						m_num_vertices - 1, 0, rtime, ntime, f, bf) ;
+					m_num_vertices - 1, 0, rtime, ntime, f, bf, max_loop_time) ;
 #ifndef NDEBUG
 		cout << " decision of head [" << index << " ] " << 
 			m_zoids [m_head [index]].decision 
@@ -510,16 +524,25 @@ private:
 				//cout << "found entry" << endl ;
 #ifndef NDEBUG
 				grid_info <N_RANK> grid2 = z->info ;
+				int h = height ;
 				for (int i = N_RANK - 1 ; i >= 0 ; i--)
 				{
+					int x2 = grid.x0 [i] + grid.dx0 [i] * h ;
+					int x3 = grid.x1 [i] + grid.dx1 [i] * h ;
+					int x2_ = grid2.x0 [i] + grid2.dx0 [i] * h ; 
+					int x3_ = grid2.x1 [i] + grid2.dx1 [i] * h ;
 					if (pmod(grid.x0 [i], m_algo.phys_length_ [i]) != 
 						pmod(grid2.x0 [i], m_algo.phys_length_ [i]) ||
 						pmod(grid.x1 [i], m_algo.phys_length_ [i]) != 
-						pmod(grid2.x1 [i], m_algo.phys_length_ [i]))
+						pmod(grid2.x1 [i], m_algo.phys_length_ [i]) ||
+						pmod(x2, m_algo.phys_length_ [i]) != 
+						pmod(x2_, m_algo.phys_length_ [i]) ||
+						pmod(x3, m_algo.phys_length_ [i]) != 
+						pmod(x3_, m_algo.phys_length_ [i]))
 					{
-						int h = height ;
 						cout << "2 diff zoids hash to same key " << endl ;
 						cout << "diff dim " << i << endl ;
+						cout << "centroid " << centroid << endl ;
 						cout << " grid " << endl ;
 						for (int j = N_RANK - 1 ; j >= 0 ; j--)
 						{
@@ -672,7 +695,125 @@ private:
 		vector <unsigned long> color ;
 		color.reserve(m_num_vertices) ;
 		color.resize(m_num_vertices) ;
+		double sum_ptime_over_ltime = 0 ;
+		double max_ptime_over_ltime = 0 ;
+		double sum_ltime = 0 ;
+		double sum_ptime = 0 ;
+		int number_of_leaves = 0 ;
+		int max_index = -1 ;
 		for (int j = 0 ; j < m_head.size() ; j++)
+		{
+			if (m_head [j] == ULONG_MAX)
+			{
+				continue ;
+			}
+			//cout << "head " << j << endl ;
+			for (int i = 0 ; i < color.size() ; i++)
+			{
+				color [i] = 0 ;
+			}
+			
+			color [0] = 1 ;
+			//deque<zoid_type *> que ;
+			deque<unsigned long> que ;
+			que.push_front(m_head [j]) ;
+
+			while (!que.empty())
+			{
+				//zoid_type * z = que.front() ;
+				unsigned long index = que.front() ;
+				assert (index < m_num_vertices) ;
+				zoid_type * z = &(m_zoids[index]) ;
+				que.pop_front() ;
+				if (z->decision == 0 || 
+					z->decision == 1 << zoid<N_RANK>::NUM_BITS_DECISION - 1)
+				{
+					sum_ltime += z->ltime ;
+					sum_ptime += z->cache_penalty_time ;
+					double ratio = z->cache_penalty_time / z->ltime ;
+					assert (ratio >= 0.) ;
+					assert (ratio <= 1.) ;
+					sum_ptime_over_ltime += ratio ;
+					if (ratio > max_ptime_over_ltime)
+					{
+						max_ptime_over_ltime = ratio ;
+						max_index = index ;
+					}
+					number_of_leaves++ ;
+					{
+					cout << "\nid " << z->id << " h " << z->height <<
+						" # children " << z->num_children << endl ;
+						//" num_parents " << z->parents.size() << 
+					cout << " decision " << z->decision << 
+						" time " << z->time <<
+						" ptime " << z->cache_penalty_time << endl ;
+					cout << " stime " << z->stime  <<
+						" ttime " << z->ttime  <<
+						" ltime " << z->ltime << endl ;
+						//" num_parents " << z->parents.size() << " geneity " ;
+					grid_info <N_RANK> & grid = z->info ;
+					int h = z->height ;
+					for (int i = N_RANK - 1 ; i >= 0 ; i--)
+					{
+						cout << " x0 [" << i << "] " << grid.x0 [i] 
+						<< " x1 [" << i << "] " << grid.x1 [i] 
+						<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * h
+						<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * h
+						<< endl ; 
+					}
+					}
+				}
+				else
+				{
+					//cout << "# of children " << z->children.size() << endl ;
+					for (int i = 0 ; i < z->num_children ; i++)
+					{
+						unsigned long index = z->children[i] ;
+						//cout << "child index " << index << endl ;
+						assert (index < m_num_vertices) ;
+						zoid_type * child = &(m_zoids [index]);
+						if (index && child && color [child->id] == 0)
+						{
+							assert (child->id < m_num_vertices) ;
+							color [child->id] = 1 ;
+							que.push_back(index) ;
+						}
+					}
+				}
+			}
+		}
+		cout << " number_of_leaves " << number_of_leaves << endl ;
+		cout << " sum_ltime " << sum_ltime << " sum_ptime " << sum_ptime << endl;
+		cout << " sum_ptime / sum_ltime " << sum_ptime / sum_ltime << endl ;
+		cout << " sum_ptime_over_ltime " << sum_ptime_over_ltime << endl ;
+		cout << " avg ratio per leaf " << 
+			sum_ptime_over_ltime / number_of_leaves << endl ; 
+		cout << " max_ptime_over_ltime " << max_ptime_over_ltime << endl ;
+		cout << " leaf with max ratio " << endl ;
+		zoid_type * z = &(m_zoids[max_index]) ;
+		{
+			cout << "\nid " << z->id << " h " << z->height <<
+				" # children " << z->num_children << endl ;
+				//" num_parents " << z->parents.size() << 
+			cout << " decision " << z->decision << 
+				" time " << z->time <<
+				" ptime " << z->cache_penalty_time << endl ;
+			cout << " stime " << z->stime  <<
+				" ttime " << z->ttime  <<
+				" ltime " << z->ltime << endl ;
+				//" num_parents " << z->parents.size() << " geneity " ;
+			grid_info <N_RANK> & grid = z->info ;
+			int h = z->height ;
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				<< " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * h
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * h
+				<< endl ; 
+			}
+		}
+		/*for (int j = 0 ; j < m_head.size() ; j++)
 		{
 			//if (m_head [j] == 0)
 			if (m_head [j] == ULONG_MAX)
@@ -696,6 +837,9 @@ private:
 				unsigned long index = que.front() ;
 				assert (index < m_num_vertices) ;
 				zoid_type * z = &(m_zoids[index]) ;
+				if (z->decision == 0 || 
+					z->decision == 1 << zoid<N_RANK>::NUM_BITS_DECISION - 1)
+				{
 				cout << "\nid " << z->id << " h " << z->height <<
 					//" num children " << z->children.size() << 
 					" # children " << z->num_children << endl ;
@@ -718,28 +862,10 @@ private:
 					<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * h
 					<< endl ; 
 				}
-				/*if (z->geneity == 0)
-				{
-					int bottom_volume = 1, top_volume = 1 ;
-					for (int i = 0 ; i < N_RANK ; i++)
-					{
-						int lb = grid.x1[i] - grid.x0[i] ;
-						int x0_top = grid.x0[i] + grid.dx0[i] * (h - 1) ;
-						int x1_top = grid.x1[i] + grid.dx1[i] * (h - 1) ;
-						int tb = x1_top - x0_top ;
-						bottom_volume *= lb ;
-						top_volume *= tb ;
-					}
-					if (bottom_volume != 0 || top_volume != 0)
-					{
-						//zoid is not empty. It must have a geneity
-						cout << "Error : geneity is 0 " << endl ;
-						assert (z->geneity) ;
-					}
-				}*/
+				}
 				//if (z->num_parents > 1)
 				vector<unsigned long> & v = z->parents ;
-				cout << "parents " << endl ;
+				//cout << "parents " << endl ;
 				for (int i = 0 ; i < v.size() ; i++)
 				{
 					cout << v [i] << " " ;
@@ -753,7 +879,7 @@ private:
 				{
 					//zoid_type * child = z->children[i] ;
 					unsigned long index = z->children[i] ;
-					cout << "child index " << index << endl ;
+					//cout << "child index " << index << endl ;
 					assert (index < m_num_vertices) ;
 					zoid_type * child = &(m_zoids [index]);
 					if (index && child && color [child->id] == 0)
@@ -764,7 +890,7 @@ private:
 					}
 				}
 			}
-		}
+		}*/
 	}
 
 	void print_heterogeneity()
@@ -799,22 +925,23 @@ private:
 	template <typename F, typename BF>
 	inline void symbolic_sawzoid_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, unsigned long,
-		int child_index, double &, double &, F const & f, BF const & bf) ;
+		int child_index, double &, double &, F const & f, BF const & bf,
+		double &) ;
 
 	template <typename F>
 	inline void symbolic_sawzoid_space_time_cut_interior(int t0, int t1, 
 		grid_info<N_RANK> const & grid, unsigned long,
-		int child_index, double &, double &, F const & f) ;
+		int child_index, double &, double &, F const & f, double &) ;
 
 	template <typename F, typename BF>
 	inline void symbolic_sawzoid_space_cut_boundary(int t0, int t1,
 		grid_info<N_RANK> const & grid, unsigned long, F const & f, 
-		BF const & bf, int *, double &, double &) ;
+		BF const & bf, int *, double &, double &, double &) ;
 
 	template <typename F>
 	inline void symbolic_sawzoid_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *,
-		double &, double &) ;
+		double &, double &, double &) ;
 
 #if 0
 	template <typename F>
@@ -838,25 +965,25 @@ private:
 
 	template <typename F, typename BF>
 	inline void sawzoid_space_time_cut_boundary(int t0, int t1,  
-		grid_info<N_RANK> const & grid, simple_zoid * projection_zoid, 
+		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
 		//grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f, BF const & bf) ;
 
 	template <typename F>
 	inline void sawzoid_space_time_cut_interior(int t0, int t1, 
-		grid_info<N_RANK> const & grid, simple_zoid * projection_zoid, 
+		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
 		//grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f) ;
 
 	template <typename F, typename BF>
 	inline void sawzoid_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const & grid, simple_zoid * projection_zoid, 
+		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
 		//grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f, BF const & bf) ;
 
 	template <typename F>
 	inline void sawzoid_space_cut_interior(int t0, int t1,
-		grid_info<N_RANK> const & grid, simple_zoid * projection_zoid, 
+		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
 		//grid_info<N_RANK> const & grid, zoid_type * projection_zoid, 
 		F const & f) ;
 
@@ -886,7 +1013,7 @@ private:
 	vector<double> m_array ;
 	unsigned short m_space_cut_mask ;
 	vector<zoid_type> m_zoids ; //the array of all nodes in the DAG
-	vector<simple_zoid> m_simple_zoids ; //a compact array of nodes in the DAG
+	vector<simple_zoid_type> m_simple_zoids ; //a compact array of nodes in the DAG
 	vector<hash_table> m_projections ; //the array of hashtable of <key, zoid index>
 	//zoid_type * m_head [2] ; // the start nodes of the dag
 	//unsigned long m_head [2] ; // the indices of start nodes in the dag
@@ -996,7 +1123,7 @@ private:
 		}
 		clock_gettime(CLOCK_MONOTONIC, &end) ;
 #ifndef NDEBUG
-		print_dag() ;
+		//print_dag() ;
 #endif
 		//copy data back.
 		copy_data(array->data(), &(m_array[0]), volume) ;
@@ -1014,6 +1141,7 @@ private:
 		cout << "# vertices after compression" << m_num_vertices << endl ;
 		cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
 #endif
+#ifndef COUNT_PROJECTIONS
 		create_simple_zoids() ;
 		double compute_time = 0. ;
 		clock_gettime(CLOCK_MONOTONIC, &start) ;
@@ -1080,6 +1208,7 @@ private:
 			//base_case_kernel_boundary(t0, t0 + h2, grid, bf);
 			m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h2, grid, f, bf) ;
 		}*/
+#endif
 	}
 
 	template <typename F, typename BF, typename P>

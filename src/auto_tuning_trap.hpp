@@ -176,9 +176,10 @@ inline void auto_tune<N_RANK>::symbolic_space_cut_interior(int t0, int t1,
 //parent - zoid_type ptr of parent
 //do space cuts on grid and call the symbolic_space_time_cut_boundary routine
 //The routine does a symbolic space cut for boundary zoids. 
-template <int N_RANK> template <typename F>
+template <int N_RANK> template <typename F, typename BF>
 inline void auto_tune<N_RANK>::symbolic_space_cut_boundary(int t0, int t1, 
-		grid_info<N_RANK> const & grid, unsigned long parent_index, F const & f)
+		grid_info<N_RANK> const & grid, unsigned long parent_index, 
+		F const & f, BF const & bf)
 {
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
@@ -207,8 +208,7 @@ inline void auto_tune<N_RANK>::symbolic_space_cut_boundary(int t0, int t1,
                     // assert all the sub-grid has done N_RANK spatial cuts 
                     //assert(l_son->level == -1);
                     symbolic_space_time_cut_boundary(l_son->t0, l_son->t1, 
-									l_son->grid, parent_index, child_index, f);
-										//l_son->grid, parent, child_index, f);
+								l_son->grid, parent_index, child_index, f, bf);
 					child_index++ ; //this can be a race.
                 } // end cilk_for 
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
@@ -227,7 +227,8 @@ inline void auto_tune<N_RANK>::symbolic_space_cut_boundary(int t0, int t1,
 						//l_father->t1, l_father->grid, parent, child_index,f);
                 }*/
 				symbolic_space_time_cut_boundary(l_father->t0, 
-					l_father->t1, l_father->grid, parent_index, child_index,f);
+					l_father->t1, l_father->grid, parent_index, child_index,
+					f, bf);
 				child_index++ ;
 #endif
             } else {
@@ -449,6 +450,9 @@ inline void auto_tune<N_RANK>::symbolic_space_time_cut_interior(int t0,
 		//a zoid with the projection already exists. return
 		return ;
 	}
+	double divide_and_conquer_cost = 0 ;
+	struct timeval start, end ;
+	bool divide_and_conquer = false ;
     if (sim_can_cut) 
 	{
 		z.resize_children(num_subzoids) ;
@@ -475,27 +479,24 @@ inline void auto_tune<N_RANK>::symbolic_space_time_cut_interior(int t0,
         //symbolic_space_time_cut_interior(t0+halflt, t1, l_son_grid, z, 1, f);
         symbolic_space_time_cut_interior(t0+halflt, t1, l_son_grid, index, 1, f);
     } 
-	else 
-	{
-        // base case
-		//determine the geneity of the leaf
-		//compute_geneity(lt, grid, z.geneity, f) ;
-		//print_bits(&(z->geneity), sizeof(word_type) * 8) ;
-	}
-	//update the geneity of the parent.
-	//m_zoids [parent_index].geneity |= m_zoids [index].geneity ;
-	//parent->geneity |= z->geneity ;
+
+	//determine the looping cost on the zoid
+	double loop_cost = 0. ;
+	gettimeofday(&start, 0);
+	f(t0, t1, grid);
+	gettimeofday(&end, 0);
+	loop_cost = tdiff(&end, &start) ;
+	//z.cost = loop_cost ;
 }
 
 
 //grid - grid of the child
 //parent - zoid_type ptr of parent
 //This routine does a symbolic space/time cut on boundary zoid
-template <int N_RANK> template <typename F>
+template <int N_RANK> template <typename F, typename BF>
 inline void auto_tune<N_RANK>::symbolic_space_time_cut_boundary(int t0, 
-		//int t1,	grid_info<N_RANK> const & grid, zoid_type * parent, 
 		int t1,	grid_info<N_RANK> const & grid, unsigned long parent_index, 
-		int child_index, F const & f)
+		int child_index, F const & f, BF const & bf)
 {
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;
@@ -545,15 +546,9 @@ inline void auto_tune<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 	unsigned long index ;
 	bool projection_exists = check_and_create_projection (key, lt, 
 											centroid, index, l_father_grid) ;
-											//centroid, &z, l_father_grid) ;
 	//cout << " index " << index << endl ;
 	zoid_type & z = m_zoids [index] ;
 	zoid_type & parent = m_zoids [parent_index] ;
-	//have some confusion about 
-	//do we want to find the projection of the given grid? yes
-	//does the grid correspond to parent?  seems No.
-	//who are the children of the parent?  those from time cuts and space cuts
-	//how to add the children to a parent? from here and from space cut routines.
 	//cout << "parent id " << parent.id << endl ;
 	//cout << "address of parent " << &parent << endl ;
 	//add the zoid as a child of the parent
@@ -576,6 +571,9 @@ inline void auto_tune<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 	{
         l_dt_stop = dt_recursive_;
 	}
+	double divide_and_conquer_cost = 0 ;
+	struct timeval start, end ;
+	bool divide_and_conquer = false ;
     if (sim_can_cut) 
 	{
 		//cout << "space cut " << endl ;
@@ -583,12 +581,10 @@ inline void auto_tune<N_RANK>::symbolic_space_time_cut_boundary(int t0,
         //cut into space 
         if (call_boundary) 
 		{
-            //symbolic_space_cut_boundary(t0, t1, l_father_grid, z, f);
-            symbolic_space_cut_boundary(t0, t1, l_father_grid, index, f);
+            symbolic_space_cut_boundary(t0, t1, l_father_grid, index, f, bf);
         }
 		else
 		{
-            //symbolic_space_cut_interior(t0, t1, l_father_grid, z, f);
             symbolic_space_cut_interior(t0, t1, l_father_grid, index, f);
 		}
     } 
@@ -600,10 +596,8 @@ inline void auto_tune<N_RANK>::symbolic_space_time_cut_boundary(int t0,
         int halflt = lt / 2;
         l_son_grid = l_father_grid;
         if (call_boundary) {
-            //symbolic_space_time_cut_boundary(t0, t0+halflt, l_son_grid, z, 0, f);
-            symbolic_space_time_cut_boundary(t0, t0+halflt, l_son_grid, index, 0, f);
+            symbolic_space_time_cut_boundary(t0, t0+halflt, l_son_grid, index, 0, f, bf);
         } else {
-            //symbolic_space_time_cut_interior(t0, t0+halflt, l_son_grid, z, 0, f);
             symbolic_space_time_cut_interior(t0, t0+halflt, l_son_grid, index, 0, f);
         }
 
@@ -614,23 +608,24 @@ inline void auto_tune<N_RANK>::symbolic_space_time_cut_boundary(int t0,
             l_son_grid.dx1[i] = l_father_grid.dx1[i];
         }
         if (call_boundary) {
-            //symbolic_space_time_cut_boundary(t0+halflt, t1, l_son_grid, z, 1, f);
-            symbolic_space_time_cut_boundary(t0+halflt, t1, l_son_grid, index, 1, f);
+            symbolic_space_time_cut_boundary(t0+halflt, t1, l_son_grid, index, 1, f, bf);
         } else {
-            //symbolic_space_time_cut_interior(t0+halflt, t1, l_son_grid, z, 1, f);
             symbolic_space_time_cut_interior(t0+halflt, t1, l_son_grid, index, 1, f);
         }
-    } 
-	else
-	{
-		// base case
-		//determine the geneity of the leaf
-		//compute_geneity(lt, l_father_grid, z.geneity, f) ;
-		//print_bits(&(z->geneity), sizeof(word_type) * 8) ;
+    }
+
+	//determine the looping cost on the zoid
+	double loop_cost = 0. ;
+	gettimeofday(&start, 0);
+	// base case
+	if (call_boundary) {
+		base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+	} else { 
+		f(t0, t1, l_father_grid);
 	}
-	//update the geneity of the parent.
-	//m_zoids [parent_index].geneity |= m_zoids [index].geneity ;
-	//parent->geneity |= z->geneity ;
+	gettimeofday(&end, 0);
+	loop_cost = tdiff(&end, &start) ;
+	//z.cost = loop_cost ;
 }
 
 //The routine does a homogeneous space cut for interior zoids. 
