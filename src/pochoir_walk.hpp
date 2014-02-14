@@ -997,6 +997,10 @@ void Algorithm<N_RANK>::set_phys_grid(grid_info<N_RANK> const & grid)
             ulb_boundary[i] = phys_grid_.x1[i] - slope_[i];
             uub_boundary[i] = phys_grid_.x1[i] + slope_[i];
             lub_boundary[i] = phys_grid_.x0[i] + slope_[i];
+
+			//cout << " ulb_boundary[ " << i << " ] " << ulb_boundary[i] <<
+			//" uub_boundary[ " << i << " ] " << uub_boundary[i] <<
+			//" lub_boundary[ " << i << " ] " << lub_boundary[i] << endl ;
         }
     }
 }

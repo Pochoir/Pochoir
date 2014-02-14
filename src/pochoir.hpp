@@ -27,30 +27,37 @@
 #define EXPR_STENCIL_HPP
 
 #include "pochoir_common.hpp"
-#include "pochoir_modified_cuts.hpp"
+//#include "pochoir_modified_cuts.hpp"
+//#include "sawzoid2.hpp"
+#include "sawzoid.hpp"
 #include "pochoir_walk_recursive.hpp"
 #ifdef COUNT_PROJECTIONS
 //#include "projections.hpp"
 #endif
 #include "pochoir_array.hpp"
-#include "clones_2d_heat.hpp"
-//#include "clones_2d_diffusion.hpp"
+//#include "clones_2d_heat.hpp"
+#include "clones_2d_diffusion.hpp"
 //#include "clones_2d_output.hpp"
 //#include "clones_2dwave.hpp"
 //#include "clones.hpp"
 
 #ifdef KERNEL_SELECTION
 #include "kernel_selection_trap.hpp"
-#include "kernel_selection_sawzoid.hpp"
+//#include "kernel_selection_sawzoid.hpp"
+#include "kernel_selection_sawzoid_middle.hpp"
 #elif defined GENEITY_TEST
-#include "symbolic_walk_better_memory.hpp"
+//#include "symbolic_walk_better_memory.hpp"
 //#include "geneity_problem_trap.hpp"
 //#include "pochoir_modified_cuts_heterogeneity.hpp"
+#include "sawzoid_middle_heterogeneity.hpp"
 //#include "symbolic_walk.hpp"
 #elif defined AUTO_TUNE
 //#include "auto_tuning_trap.hpp"
 //#include "auto_tuning_sawzoid.hpp"
+//#include "auto_tuning_sawzoid_middle.hpp"
 #include "auto_tuning_arbitrary_cuts_sawzoid.hpp"
+//#include "auto_tuning_arbitrary_cuts_trap.hpp"
+//#include "auto_tuning_arbitrary_cuts_sawzoid_middle.hpp"
 //#include "dag_sawzoid.hpp"
 #endif
 
@@ -82,6 +89,7 @@ class Pochoir {
 		Pochoir_Array<double, N_RANK> * arr_ ;
 		int resolution_ ;
 		ofstream * outputFile_ ;
+		char * problem_name ; //name of the problem we are solving
     public:
 
 	void set_resolution(int r)
@@ -93,6 +101,12 @@ class Pochoir {
 	{
 		outputFile_ = file ;
 	}
+
+	void set_problem_name(char * name)
+	{
+		problem_name = name ;
+	}
+
     template <size_t N_SIZE>
     Pochoir(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
         for (int i = 0; i < N_RANK; ++i) {
@@ -483,6 +497,8 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	grid_info <N_RANK> grid = logic_grid_ ;
 	for (int i = N_RANK - 1 ; i >= 0 ; i--)
 	{
+		cout << "grid.dx0[i] " << grid.dx0[i] << endl ;
+		cout << "grid.dx1[i] " << grid.dx1[i] << endl ;
 		cout << " x0 [" << i << "] " << grid.x0 [i] 
 			<< " x1 [" << i << "] " << grid.x1 [i] 
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * timestep_
@@ -490,9 +506,10 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 			<< endl ; 
 	}
 	
-//#ifdef COUNT_PROJECTIONS
+#ifdef COUNT_PROJECTIONS
 //    algor.compute_projections(0+time_shift_, timestep+time_shift_, logic_grid_) ;
-//#endif
+	algor.set_thres_auto_tuning() ;
+#endif
 #ifdef COARSEN_BASE_CASE_WRT_BOTTOM_SIDE
 	cout << "coarsen base case wrt bottom side " << endl ;
 #else
@@ -513,9 +530,33 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #else
 	cout << "modified space cut " << endl ;
 #endif
+#ifdef TIME_INVARIANCE_INTERIOR
+	cout << "time invariance interior " << endl ;
+#else
+	cout << "space-time invariance interior " << endl ;
+#endif
+
+#ifdef TIME_INVARIANCE_BOUNDARY
+	cout << "time invariance boundary " << endl ;
+#else
+	cout << "space-time invariance boundary " << endl ;
+#endif
+
+#ifdef FIXED_TIME_CUT
+	cout << "fixed time cut" << endl ;
+#else
+	cout << "arbitrary time cut" << endl ;
+#endif
+
+#ifdef FIXED_SPACE_CUT
+	cout << "fixed space cut" << endl ;
+#else
+	cout << "arbitrary space cut " << endl ;
+#endif
 
 #ifdef TRAP
 	cout << "default time cut " << endl ;
+	//algor.set_thres_auto_tuning() ;
 #ifndef USE_PROJECTION
     algor.shorter_duo_sim_obase_bicut_p(time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #else
@@ -545,22 +586,23 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	hg.print_heterogeneity() ;
 #endif
 #elif defined AUTO_TUNE
-	auto_tune<N_RANK> at(algor, phys_grid_, 1) ;
+	//cout << "address of home cell " << &home_cell_ << endl ;
+	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name, timestep_) ;
 	struct timeval start, end;
 	double compute_time = 0. ;
 	gettimeofday(&start, 0);
-	at.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
-								logic_grid_, f, bf) ;
+	at.do_trap_space_time_cuts(time_shift_, timestep+time_shift_,
+								logic_grid_, f, bf, arr_) ;
 	gettimeofday(&end, 0);
 	compute_time = tdiff(&end, &start) ;
 	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
-
-	at.print_dag() ;
+	//at.print_dag() ;
 #endif
 
 #endif
 #else
 	cout << "pow2 time cut " << endl ;
+	//algor.set_thres_auto_tuning() ;
 #ifndef USE_PROJECTION
 	struct timespec start, end;
 	clock_gettime(CLOCK_MONOTONIC, &start);
@@ -578,6 +620,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
     ks.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
                             logic_grid_, f, bf, p) ;
 #elif defined GENEITY_TEST
+	algor.set_thres_auto_tuning() ;
 	predicate <N_RANK> p (phys_grid_) ; 
 	p.set_resolution(resolution_) ;
 	p.set_output_file(outputFile_) ;
@@ -594,13 +637,13 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	compute_time = tdiff(&end, &start) ;
 	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
 #ifndef NDEBUG
-	cout << "calling print dag " << endl ;
-	hg.print_dag() ;
-	hg.print_heterogeneity() ;
+	//cout << "calling print dag " << endl ;
+	//hg.print_dag() ;
+	//hg.print_heterogeneity() ;
 #endif
 #elif defined AUTO_TUNE
 	//cout << "address of home cell " << &home_cell_ << endl ;
-	auto_tune<N_RANK> at(algor, phys_grid_, 1) ;
+	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name, timestep_) ;
 	struct timeval start, end;
 	double compute_time = 0. ;
 	gettimeofday(&start, 0);

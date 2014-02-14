@@ -77,6 +77,11 @@ static inline int StrToInt(const std::string& s)
 //#define GENEITY_TEST
 //#define KERNEL_SELECTION
 #define AUTO_TUNE
+//#define TIME_INVARIANCE_INTERIOR
+#define TIME_INVARIANCE_BOUNDARY
+#define FIXED_SPACE_CUT //hyper space cut
+//#define FIXED_TIME_CUT
+//#define WRITE_DAG
 
 #define max_(a, b) ((a) > (b) ? (a) : (b))
 #define min_(a, b) ((a) < (b) ? (a) : (b))

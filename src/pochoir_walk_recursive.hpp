@@ -122,6 +122,11 @@ do { \
 template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
 {
+	/*stack_depth++ ;
+	if (stack_depth > max_stack_depth)
+	{
+		max_stack_depth = stack_depth ;
+	}*/
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
     int queue_head_[2], queue_tail_[2], queue_len_[2];
@@ -254,6 +259,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
 #endif
         assert(queue_len_[curr_dep_pointer] == 0);
     } // end for (curr_dep < N_RANK+1) 
+	//stack_depth-- ;
 }
 
 /* This is for boundary region space cut! , always cutting based on the shorter bar
@@ -262,6 +268,11 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
 template <int N_RANK> template <typename F, typename BF>
 inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
 {
+	/*stack_depth++ ;
+	if (stack_depth > max_stack_depth)
+	{
+		max_stack_depth = stack_depth ;
+	}*/
     queue_info *l_father;
     queue_info circular_queue_[2][ALGOR_QUEUE_SIZE];
     int queue_head_[2], queue_tail_[2], queue_len_[2];
@@ -441,6 +452,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
 #endif
         assert(queue_len_[curr_dep_pointer] == 0);
     } // end for (curr_dep < N_RANK+1) 
+	//stack_depth-- ;
 }
 
 
@@ -448,6 +460,11 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
 template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
 {
+	/*stack_depth++ ;
+	if (stack_depth > max_stack_depth)
+	{
+		max_stack_depth = stack_depth ;
+	}*/
     const int lt = t1 - t0;
     bool sim_can_cut = false;
     grid_info<N_RANK> l_son_grid;
@@ -489,6 +506,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
         ++sim_count_cut[l_count_cut];
 #endif
         shorter_duo_sim_obase_space_cut(t0, t1, grid, f);
+		//stack_depth-- ;
         return;
     // } else if (lt > dt_recursive_ && l_total_points > Z) {
     } else if (lt > dt_recursive_) {
@@ -507,6 +525,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
             l_son_grid.dx1[i] = grid.dx1[i];
         }
         shorter_duo_sim_obase_bicut(t0+halflt, t1, l_son_grid, f);
+		//stack_depth-- ;
         return;
     } else {
         // base case
@@ -520,6 +539,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
 #endif
         f(t0, t1, grid);
 //        base_case_kernel_interior(t0, t1, grid, f);
+		//stack_depth-- ;
         return;
     }  
 }
@@ -528,6 +548,11 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
 template <int N_RANK> template <typename F, typename BF>
 inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
 {
+	/*stack_depth++ ;
+	if (stack_depth > max_stack_depth)
+	{
+		max_stack_depth = stack_depth ;
+	}*/
     const int lt = t1 - t0;
     bool sim_can_cut = false, call_boundary = false;
     grid_info<N_RANK> l_father_grid = grid, l_son_grid;
@@ -583,6 +608,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
             shorter_duo_sim_obase_space_cut_p(t0, t1, l_father_grid, f, bf);
         else
             shorter_duo_sim_obase_space_cut(t0, t1, l_father_grid, f);
+		//stack_depth-- ;
         return;
     } 
 
@@ -613,6 +639,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
         } else {
             shorter_duo_sim_obase_bicut(t0+halflt, t1, l_son_grid, f);
         }
+		//stack_depth-- ;
         return;
     } 
 
@@ -635,6 +662,7 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
         } else {
             f(t0, t1, l_father_grid);
         }
+		//stack_depth-- ;
         return;
 }
 

@@ -22,6 +22,7 @@
 #include <climits> 
 #include <time.h>
 #include <cstring>
+#include <fstream>
 using namespace std ;
 
 typedef unsigned int word_type ;
@@ -251,11 +252,12 @@ class zoid
 		//cout << "zoid : end destructor for zoid " << id << endl ;
 	}
 	
-	const int NUM_BITS_DECISION = sizeof(unsigned short) * 8 ;
+	typedef unsigned char decision_type ;
+	const int NUM_BITS_DECISION = sizeof(decision_type) * 8 ;
 	const double FUZZ = 1. ;
 	private :
 	//char decision ;
-	unsigned short decision ;
+	decision_type decision ;
 	int height ;
 	unsigned long * children ;  
 	unsigned short capacity ;
@@ -301,9 +303,11 @@ public :
 			children [i] = src [i] ;
 		}
 	}
-	const int NUM_BITS_DECISION = sizeof(unsigned short) * 8 ;
+	typedef typename zoid<N_RANK>::decision_type decision_type ;
+	//const int NUM_BITS_DECISION = sizeof(decision_type) * 8 ;
+	const int NUM_BITS_DECISION = zoid<N_RANK>::NUM_BITS_DECISION ;
 private :
-    unsigned short decision ;
+    decision_type decision ;
 	unsigned long * children ;
 #ifndef NDEBUG
 	grid_info <N_RANK> info ;
@@ -320,6 +324,7 @@ private:
 	typedef unordered_multimap<unsigned long, unsigned long> hash_table ;
 	typedef typename unordered_multimap<unsigned long, unsigned long>::iterator 
 					hash_table_iterator ;
+	typedef typename zoid<N_RANK>::decision_type decision_type ;
 
 	void flush_cache()
 	{
@@ -336,7 +341,7 @@ private:
 
 	void create_simple_zoids()
 	{
-		cout << "num bits decision " << sizeof(unsigned short) * 8 << endl ;
+		cout << "num bits decision " << sizeof(decision_type) * 8 << endl ;
 		assert (m_num_vertices == m_zoids.size()) ;
 		m_simple_zoids.reserve (m_num_vertices) ;
 		m_simple_zoids.resize (m_num_vertices) ;
@@ -371,8 +376,24 @@ private:
 		{
 			volume *= (grid.x1[i] - grid.x0[i]) ;		
 			m_space_cut_mask |= 1 << i + 1 ;
+#ifdef WRITE_DAG
+			file_interior << " N" << i+1 << " " << grid.x1[i] - grid.x0[i] ;	
+			file_boundary << " N" << i+1 << " " << grid.x1[i] - grid.x0[i] ;	
+#endif
 		}
-		cout << "space cut mask " << m_space_cut_mask << endl ;
+#ifdef WRITE_DAG
+#ifdef TIME_INVARIANCE_INTERIOR
+		file_interior << "\nTime invariant interior " << endl ;
+#else
+		file_interior << "\nSpace-time invariant interior " << endl ;
+#endif
+#ifdef TIME_INVARIANCE_BOUNDARY
+		file_boundary << "\nTime invariant boundary " << endl ;
+#else
+		file_boundary << "\nSpace-time invariant boundary " << endl ;
+#endif
+#endif
+		//cout << "space cut mask " << m_space_cut_mask << endl ;
 		m_projections_interior.reserve(T) ;
 		m_projections_interior.resize(T) ; //To do : only Theta (lg T) space necessary
 		m_projections_boundary.reserve(volume) ;
@@ -433,13 +454,13 @@ private:
 		cout << "index " << index << " m_head [index] " << m_head [index] <<
 		endl ;
 		cout << " decision of head [" << index << " ] " << 
-			m_zoids [m_head [index]].decision 
+			(int) m_zoids [m_head [index]].decision 
 			<< " time for space cut " << m_zoids [m_head [index]].stime << 
 			" time for time cut " << m_zoids [m_head [index]].ttime << 
 			" time to loop " << m_zoids [m_head [index]].ltime << endl ;
 #endif
 		cout << " decision of head [" << index << "] : " << 
-			m_zoids [m_head [index]].decision 
+			(int) m_zoids [m_head [index]].decision 
 			<< " time " << m_zoids [m_head [index]].time * 1.0e3 << "ms" <<
 			endl ;
 	}
@@ -475,13 +496,13 @@ private:
 		cout << "index " << index << " m_head [index] " << m_head [index] <<
 		endl ;
 		cout << " decision of head [" << index << " ] " << 
-			m_zoids [m_head [index]].decision 
+			(int) m_zoids [m_head [index]].decision 
 			<< " time for space cut " << m_zoids [m_head [index]].stime << 
 			" time for time cut " << m_zoids [m_head [index]].ttime << 
 			" time to loop " << m_zoids [m_head [index]].ltime << endl ;
 #endif
 		cout << " decision of head [" << index << "] : " << 
-			m_zoids [m_head [index]].decision 
+			(int) m_zoids [m_head [index]].decision 
 			<< " time " << m_zoids [m_head [index]].time * 1.0e3 << "ms" <<
 			endl ;
 	}
@@ -517,7 +538,7 @@ private:
 	}
 
 	//key is the bottom volume + top volume.
-	inline bool check_and_create_projection_boundary(unsigned long const key, 
+	inline bool check_and_create_time_invariant_replica(unsigned long const key,
 					int const height, int const centroid, unsigned long & index,
 					grid_info <N_RANK> const & grid)
 	{
@@ -548,7 +569,7 @@ private:
 			if (z->height == height) 
 			{
 				index = start->second ;
-				assert (z->decision >> zoid_type::NUM_BITS_DECISION - 1 == 1) ;
+				//assert (z->decision >> zoid_type::NUM_BITS_DECISION - 1 == 1) ;
 				/*grid_info <N_RANK> grid2 = z->info ;
 				int h = height ;
 				bool found = true ;
@@ -648,7 +669,8 @@ private:
 	}
 
 	//key is the bottom volume + top volume.
-	inline bool check_and_create_projection_interior(unsigned long const key, 
+	inline bool check_and_create_space_time_invariant_replica(
+					unsigned long const key, 
 					int const height, unsigned long & index,
 					grid_info <N_RANK> const & grid)
 	{
@@ -711,8 +733,9 @@ private:
 			assert (start->second < m_num_vertices) ;
 			zoid_type * z = &(m_zoids [start->second]) ;
 			assert (z->height == height) ;
-			assert (z->decision >> zoid_type::NUM_BITS_DECISION - 1 == 0) ;
-		
+//#if defined (TIME_INVARIANCE_INTERIOR) || defined(TIME_INVARIANCE_BOUNDARY)
+//			assert (z->decision >> zoid_type::NUM_BITS_DECISION - 1 == 0) ;
+//#endif
 			index = start->second ;
 			return true ;
 		}
@@ -755,8 +778,10 @@ private:
 		color [node] = num_vertices ; //color node gray
 		zoid_type & z = m_zoids [node] ;
 		//if leaf do not recurse further
-		if (z.decision == 0 || 
-			z.decision == 1 << zoid<N_RANK>::NUM_BITS_DECISION - 1)
+		//if (z.decision == 0 || 
+		//	z.decision == 1 << zoid<N_RANK>::NUM_BITS_DECISION - 1)
+		if (z.decision == 1 << zoid_type::NUM_BITS_DECISION - 2 || 
+			z.decision == 3 << zoid<N_RANK>::NUM_BITS_DECISION - 2)
 		{
 			//do not store node's children
 			//cout << "push back zoid " << z.id << endl ;
@@ -1003,20 +1028,44 @@ private:
 		int child_index, double &, double &, F const & f, BF const & bf,
 		double &) ;
 
+	template <typename F, typename BF>
+	inline void sawzoid_find_mlt_space_time_boundary(int t0, int t1, 
+		grid_info<N_RANK> const & grid, zoid_type * zoid,
+		double const root_dnc_time, F const & f, BF const & bf,
+		double & max_loop_time, double & zoid_loop_time) ;
+
 	template <typename F>
 	inline void symbolic_sawzoid_space_time_cut_interior(int t0, int t1, 
 		grid_info<N_RANK> const & grid, unsigned long,
 		int child_index, double &, double &, F const & f, double &) ;
+
+	template <typename F>
+	inline void sawzoid_find_mlt_space_time_interior(int t0, int t1, 
+		grid_info<N_RANK> const & grid, zoid_type * zoid,
+		double const root_dnc_time, F const & f,
+		double & max_loop_time, double & zoid_loop_time) ;
 
 	template <typename F, typename BF>
 	inline void symbolic_sawzoid_space_cut_boundary(int t0, int t1,
 		grid_info<N_RANK> const & grid, unsigned long, F const & f, 
 		BF const & bf, int *, double &, double &, double &, int) ;
 
+	template <typename F, typename BF>
+	inline void sawzoid_find_mlt_space_boundary(
+		int t0, int t1, grid_info<N_RANK> const & grid, 
+		zoid_type * projection_zoid, double const root_dnc_time, 
+		F const & f, BF const & bf, double & max_loop_time, double &) ;
+
 	template <typename F>
 	inline void symbolic_sawzoid_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *,
 		double &, double &, double &, int) ;
+
+	template <typename F>
+	inline void sawzoid_find_mlt_space_interior(
+		int t0, int t1, grid_info<N_RANK> const & grid, 
+		zoid_type * projection_zoid, double const root_dnc_time, 
+		F const & f, double & max_loop_time, double &) ;
 
 	template <typename F, typename BF>
 	inline void sawzoid_space_time_cut_boundary(int t0, int t1,  
@@ -1038,11 +1087,11 @@ private:
 		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
 		F const & f) ;
 
-	inline bool touch_boundary(int i, int lt,
-                grid_info<N_RANK> & grid, unsigned short & decision) ;
+	//inline bool touch_boundary(int i, int lt,
+      //          grid_info<N_RANK> & grid, decision_type & decision) ;
 	//char * m_cache ;
 	vector<double> m_array ;
-	unsigned short m_space_cut_mask ;
+	decision_type m_space_cut_mask ;
 	vector<zoid_type> m_zoids ; //the array of all nodes in the DAG
 	vector<simple_zoid_type> m_simple_zoids ; //a compact array of nodes in the DAG
 	//the array of hashtable of <key, zoid index> for interior region
@@ -1058,17 +1107,53 @@ private:
 	int num_bits_width ; //# of bits to store width
 	int num_bits_dim ; //# of bits for bottom and top widths in a dimension
 	int m_initial_height ; //initial height of the zoid
+	//char * problem_name ; //name of the problem we solve.
+	ofstream file_interior ; //write height, widths of a zoid in the interior
+	ofstream file_boundary ; //write height, widths of a zoid at the boundary
 
+	inline void sawzoid_space_cut_interior_core
+		(int const, int const, int const, int const, 
+		grid_info<N_RANK> const &, int, int, queue_info (*)[ALGOR_QUEUE_SIZE], 
+		int *, int *, int *, int const, int const) ;
+
+	inline void sawzoid_space_cut_boundary_core
+		(int const, int const, int const, int const, 
+		grid_info<N_RANK> const &, int, int, queue_info (*)[ALGOR_QUEUE_SIZE], 
+		int *, int *, int *, int const, int const) ;
 	public :
 
 	auto_tune(Algorithm<N_RANK> & alg, grid_info<N_RANK> const & grid,
-				  bool power_of_two):m_algo(alg)
+				  bool power_of_two, char * name, int T):m_algo(alg)
 	{
 		m_head.reserve(2) ;
 		m_num_vertices = 0 ;
 		//initialize(grid, T, power_of_two) ;
 		num_bits_dim = sizeof (unsigned long) * 8 / N_RANK ;
 		num_bits_width = sizeof (unsigned long) * 8 / (2 * N_RANK) ;
+
+#ifdef WRITE_DAG
+		time_t now = time(0);
+		tm* localtm = localtime(&now);
+		char time [100] ;
+		strftime(time, 100, "_interior_%m%d%Y_%H%M%S", localtm) ;
+		//continue from here.
+		char interior_file [500], boundary_file [500] ;
+		strcpy(interior_file, name) ;
+		strcat(interior_file, time) ;
+		cout << "interior_file " << interior_file << endl ;
+
+		strftime(time, 100, "_boundary_%m%d%Y_%H%M%S", localtm) ;
+		strcpy(boundary_file, name) ;
+		strcat(boundary_file, time) ;
+		cout << "boundary_file " << boundary_file << endl ;
+
+		file_interior.open(interior_file) ;
+		file_boundary.open(boundary_file) ;
+		file_interior << "Problem " << name << endl ;
+		file_boundary << "Problem " << name << endl ;
+		file_interior << "h " << T ;
+		file_boundary << "h " << T ;
+#endif
 	}
 
 
@@ -1076,6 +1161,10 @@ private:
 	{
 		//delete all zoids and clear the projections
 		destroy_auto_tune_dag() ;
+#ifdef WRITE_DAG
+		file_interior.close() ;
+		file_boundary.close() ;
+#endif
 	}
 
 	template <typename F, typename BF>

@@ -57,9 +57,13 @@ class Storage {
 			//storage_ = new T[1069 + _sz];
 			//storage_ += 1069 ;
 			storage_ = new T[_sz];
+			//storage_ = 0 ;
 			ref_ = 1;
 			for (int i = 0; i < _sz; ++i)
+			{
 				storage_[i] = T();
+				//cout << "address " << i << " : " << &(storage_[i]) << endl ;
+			}
 		}
 
 		inline ~Storage() {

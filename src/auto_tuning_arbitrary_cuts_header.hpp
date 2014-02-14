@@ -236,7 +236,7 @@ class zoid
 		//cout << "zoid : destructor for zoid " << id << endl ;
 		num_children = 0 ;
 		capacity = 0 ;
-		decision = 0 ; // 0 for looping
+		decision = 0 ; 
 		time = 0 ;
 		max_loop_time = 0 ;
 		height = 0 ;
@@ -254,8 +254,11 @@ class zoid
 	const int NUM_BITS_DECISION = sizeof(unsigned short) * 8 ;
 	const double FUZZ = 1. ;
 	private :
-	//char decision ;
+	//the best decision for the subtree rooted at the given zoid.
 	unsigned short decision ;
+	//the decision that led to a zoid with max loop time in the subtree 
+	//rooted at the given zoid.
+	//unsigned char max_loop_decision ; 
 	int height ;
 	unsigned long * children ;  
 	unsigned short capacity ;

@@ -1293,7 +1293,8 @@ inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1,
 
 	int h2 = t1 - t0 ;
 	//time cuts happen only if height > dt_recursive_
-	while (h2 > dt_recursive_)
+	//while (h2 > dt_recursive_)
+	while (h2 >= 1)
 	{
 		//find index of most significant bit that is set
 		index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
@@ -1305,7 +1306,7 @@ inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1,
 		t0 += h ;
 		h2 = t1 - t0 ;
 	}
-	while (h2 > 1)
+	/*while (h2 > 1)
 	{
 		//find index of most significant bit that is set
 		index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
@@ -1330,6 +1331,6 @@ inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1,
 			 " t0 + h " << t0 + h2 << endl ;
 		//base_case_kernel_boundary(t0, t0 + h2, grid, bf);
 		shorter_duo_sim_obase_bicut_p(t0, t0 + h2, grid, f, bf) ;
-	}
+	}*/
 }
 #endif
