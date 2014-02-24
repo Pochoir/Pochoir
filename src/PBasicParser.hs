@@ -253,10 +253,11 @@ pSplitObase (l_tag, l_id, l_tstep, l_kernel, l_stencil) l_showKernel =
                                                   bdryKernelName l_kernel
         obaseKernel = l_showKernel obaseKernelName l_kernel 
         runKernel = 
-            if regBound then obaseKernelName ++ ", " ++ bdryKernelName
+			obaseKernelName ++ ", " ++ bdryKernelName
+--            if regBound then obaseKernelName ++ ", " ++ bdryKernelName
             -- if the boundary function is NOT registered, we guess user are using 
             -- zero-padding. Note: there's no zero-padding for Periodic stencils
-                        else obaseKernelName
+--                        else obaseKernelName
     in  return ("{" ++ breakline ++ bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
                 l_id ++ ".Run_Obase(" ++ l_tstep ++ ", " ++ runKernel ++ ");" ++ 
                 breakline ++ "}" ++ breakline)
