@@ -461,6 +461,7 @@ struct Algorithm {
     
     /* constructor */
     Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1) {
+#ifndef TRAP
 		struct rlimit rl;
     	int result = getrlimit(RLIMIT_STACK, &rl);
 		static bool increase_stack_size = true ;
@@ -476,6 +477,7 @@ struct Algorithm {
             }
 			increase_stack_size = false ;
 		}
+#endif
         for (int i = 0; i < N_RANK; ++i) {
             slope_[i] = _slope[i];
             dx_recursive_boundary_[i] = _slope[i];
