@@ -463,7 +463,8 @@ struct Algorithm {
     Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1) {
 		struct rlimit rl;
     	int result = getrlimit(RLIMIT_STACK, &rl);
-    	if (result == 0)
+		static bool increase_stack_size = true ;
+    	if (increase_stack_size && result == 0)
     	{
 			cout << "stack current limit " << rl.rlim_cur << endl ;
 			cout << "stack max limit " << rl.rlim_max << endl ;
@@ -473,6 +474,7 @@ struct Algorithm {
             {
                 fprintf(stderr, "setrlimit returned result = %d\n", result);
             }
+			increase_stack_size = false ;
 		}
         for (int i = 0; i < N_RANK; ++i) {
             slope_[i] = _slope[i];
@@ -896,6 +898,8 @@ struct Algorithm {
     inline void shorter_duo_sim_obase_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
     template <typename F, typename BF>
     inline void power_of_two_time_cut(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf);
+    template <typename F>
+    inline void power_of_two_time_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f) ;
     /*template <typename F>
     inline void stevenj_space_cut(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename F, typename BF>

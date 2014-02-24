@@ -63,7 +63,7 @@ static inline int StrToInt(const std::string& s)
 #define BIT_TRICK 0
 #define INF 100000000
 #define SUPPORT_RANK 9
-//#define TRAP
+#define TRAP
 
 #if defined (TRAP)
 #define DEFAULT_SPACE_CUT
@@ -73,13 +73,13 @@ static inline int StrToInt(const std::string& s)
 //#define COUNT_PROJECTIONS
 //#define COUNT_TRIANGLE
 //#define COUNT_TRAPEZOID
-#define USE_PROJECTION
+//#define USE_PROJECTION
 //#define GENEITY_TEST
 //#define KERNEL_SELECTION
-#define AUTO_TUNE
+//#define AUTO_TUNE
 //#define TIME_INVARIANCE_INTERIOR
-#define TIME_INVARIANCE_BOUNDARY
-#define FIXED_SPACE_CUT //hyper space cut
+//#define TIME_INVARIANCE_BOUNDARY
+//#define FIXED_SPACE_CUT //hyper space cut
 //#define FIXED_TIME_CUT
 //#define WRITE_DAG
 

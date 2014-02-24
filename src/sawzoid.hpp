@@ -484,6 +484,81 @@ inline void Algorithm<N_RANK>::space_time_cut_boundary(int t0, int t1, grid_info
 	}
 }
 
+template <int N_RANK> template <typename F>
+inline void Algorithm<N_RANK>::power_of_two_time_cut_interior(int t0, int t1, 
+				grid_info<N_RANK> const grid, F const & f)
+{
+	int T = t1 - t0 ;
+	int W = 0 ;  //max_width among all dimensions
+	int slope ;
+	for (int i = 0 ; i < N_RANK ; i++)
+	{
+		if (phys_length_ [i] > W)
+		{
+			W = phys_length_ [i] ;
+			slope = slope_ [i] ;
+		}		
+	}
+	//cout << " ALGOR_QUEUE_SIZE " << ALGOR_QUEUE_SIZE << endl ;
+	//find index of most significant bit that is set
+	int Wn = W / (slope << 1) ;
+	int index_msb = (sizeof(int) << 3) - __builtin_clz(Wn) - 1 ;
+	//h1 = 2^floor(lg(Wn)). The zoid with height h1 undergoes a space cut.
+	int h1 = 1 << index_msb ;
+	for (int i = 0 ; i < T / h1 ; i++)
+	{	
+		/*cout << "t0 " << t0 << " t1 " << t1 << 
+			" h1 " << h1 << " t0 + h1 " <<
+			t0 + h1 << endl ;*/
+		space_time_cut_interior(t0, t0 + h1, grid, f) ;
+		t0 += h1 ;
+	}
+
+	int h2 = t1 - t0 ;
+	//time cuts happen only if height > dt_recursive_
+	//while (h2 > dt_recursive_)
+	while (h2 >= 1)
+	{
+		//find index of most significant bit that is set
+		index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
+		int h = 1 << index_msb ;
+		cout << "t0 " << t0 << " t1 " << t1 << 
+			" h " << h << " t0 + h " <<
+			t0 + h << endl ;
+		space_time_cut_interior(t0, t0 + h, grid, f) ;
+		t0 += h ;
+		h2 = t1 - t0 ;
+	}
+	/*
+	//while (h2 > 1)
+	while (h2 >= 1)
+	{
+		//find index of most significant bit that is set
+		index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
+		int h = 1 << index_msb ;
+		cout << "t0 " << t0 << " t1 " << t1 << 
+			" h " << h << " t0 + h " <<
+			t0 + h << endl ;
+		bool abnormal = false ;
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			int n = dx_recursive_ [i] / ((slope_ [i] * h) << 1) ;
+			num_triangles [i] = max(1, n) ;
+		}
+		//abnormal_region_space_time_cut_boundary(t0, t0 + h, grid, f, bf) ;
+		space_time_cut_boundary(t0, t0 + h, grid, f, bf) ;
+		t0 += h ;
+		h2 = t1 - t0 ;
+	}
+	if (h2 == 1)
+	{
+		cout << "h = 1 t0 " << t0 << " t1 " << t1 << 
+			 " t0 + h " << t0 + h2 << endl ;
+		//base_case_kernel_boundary(t0, t0 + h2, grid, bf);
+		shorter_duo_sim_obase_bicut_p(t0, t0 + h2, grid, f, bf) ;
+	}*/
+}
+
 template <int N_RANK> template <typename F, typename BF>
 inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1, 
 				grid_info<N_RANK> const grid, F const & f, BF const & bf) 
