@@ -36,7 +36,7 @@
 #endif
 #include "pochoir_array.hpp"
 //#include "clones_2d_heat.hpp"
-#include "clones_2d_diffusion.hpp"
+//#include "clones_2d_diffusion.hpp"
 //#include "clones_2d_output.hpp"
 //#include "clones_2dwave.hpp"
 //#include "clones.hpp"
