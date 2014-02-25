@@ -167,11 +167,19 @@ struct meta_grid_boundary <4, BF>{
         for (int k = grid.x0[1]; k < grid.x1[1]; ++k) {
             int new_k = pmod_lu(k, initial_grid.x0[1], initial_grid.x1[1]);
             for (int l = grid.x0[0]; l < grid.x1[0]; ++l) {
-                int new_l = pmod_lu(l, initial_gird.x0[0], initial_grid.x1[0]);
-                if (inRun) {
+                int new_l = pmod_lu(l, initial_grid.x0[0], initial_grid.x1[0]);
+#ifdef CHECK_SHAPE
+                /*if (inRun) {
                     home_cell_[4] = new_l; home_cell_[3] = new_k;
                     home_cell_[2] = new_j; home_cell_[1] = new_i;
-                }
+                }*/
+				do {
+                    home_cell_[4] = inRun ? new_l : 0 ; 
+					home_cell_[3] = inRun ? new_k : 0 ;
+                    home_cell_[2] = inRun ? new_j : 0 ; 
+					home_cell_[1] = inRun ? new_i : 0 ;
+                } while (0);
+#endif
                 bf(t, new_i, new_j, new_k, new_l);
             } } } } 
     } 
