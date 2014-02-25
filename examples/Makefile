@@ -1,10 +1,15 @@
 #!/bin/bash
+TARGET = heat_2D_NP heat_2D_P 3dfd heat_3D_NP heat_4D_NP life rna psa_struct lcs apop 
 CC = ../pochoir
 ICC = icpc
 OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -lrt
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x
 #ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h  
 ICC_DEBUG_FLAGS = -O3 -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h  
+
+# make all targets specified
+all : $(TARGET)
+
 heat_1D_NP : tb_heat_1D_NP.cpp
 #   Phase-II compilation
 	${CC} -o heat_1D_NP ${OPT_FLAGS} tb_heat_1D_NP.cpp
@@ -18,7 +23,7 @@ fib : tb_fib.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o fib ${POCHOIR_DEBUG_FLAGS} tb_fib.cpp
 
-heat_NP : tb_heat_2D_NP.cpp
+heat_2D_NP : tb_heat_2D_NP.cpp
 #   Phase-II compilation
 	${CC} -o heat_2D_NP ${OPT_FLAGS} tb_heat_2D_NP.cpp
 #	Phase-I compilation with debugging aid
@@ -57,6 +62,12 @@ heat_3D_NP : tb_heat_3D_NP.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o heat_3D_NP ${POCHOIR_DEBUG_FLAGS} tb_heat_3D_NP.cpp
 
+heat_4D_NP : tb_heat_4D_NP.cpp
+#   Phase-II compilation
+	${CC} -o heat_4D_NP ${OPT_FLAGS} tb_heat_4D_NP.cpp
+#	Phase-I compilation with debugging aid
+#	${CC} -o heat_4D_NP ${POCHOIR_DEBUG_FLAGS} tb_heat_4D_NP.cpp
+
 apop : apop.cpp
 #   Phase-II compilation
 	${CC} -o apop ${OPT_FLAGS} apop.cpp
@@ -92,14 +103,14 @@ reaction_diffusion_1D : tb_reaction_diffusion_1D.cpp
 rna : tb_rna.cpp
 #   Phase-II compilation
 	${CC} -o rna ${OPT_FLAGS} tb_rna.cpp
-	${ICC} -o rna_gdb ${POCHOIR_DEBUG_FLAGS} tb_rna_pochoir.cpp
+#	${ICC} -o rna_gdb ${POCHOIR_DEBUG_FLAGS} tb_rna_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o rna ${POCHOIR_DEBUG_FLAGS} tb_rna.cpp
 
 lcs : tb_lcs.cpp
 #   Phase-II compilation
 	${CC} -o lcs ${OPT_FLAGS} tb_lcs.cpp
-	${ICC} -o lcs_gdb ${POCHOIR_DEBUG_FLAGS} tb_lcs_pochoir.cpp
+#	${ICC} -o lcs_gdb ${POCHOIR_DEBUG_FLAGS} tb_lcs_pochoir.cpp
 #	Phase-I compilation with debugging aid
 #	${CC} -o tb_lcs_pochoir ${POCHOIR_DEBUG_FLAGS} tb_lcs.cpp
 
@@ -129,4 +140,4 @@ berkeley3d27pt : tb_3d27pt.cpp
 
 
 clean: 
-	rm -f *.o *.i *_pochoir *_gdb *_pochoir.cpp *.out
+	rm -f $(TARGET) *.o *.i *_pochoir *_gdb *_pochoir.cpp *.out
