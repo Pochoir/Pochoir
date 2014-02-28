@@ -58,17 +58,26 @@ int main(int argc, char * argv[])
 	int t;
 	struct timeval start, end;
     double min_tdiff = INF;
-    int N_SIZE = 0, T_SIZE = 0;
+    //int N_SIZE = 0, T_SIZE = 0;
+    int N1 = 500, N2 = 100, T_SIZE = 731;
 
-    if (argc < 3) {
-        printf("argc < 3, quit! \n");
+    if (argc < 4) {
+        printf("argc < 4, quit! \n");
         exit(1);
     }
-    N_SIZE = StrToInt(argv[1]);
+    N1 = StrToInt(argv[1]);
+    N2 = StrToInt(argv[2]);
+    T_SIZE = StrToInt(argv[3]);
+	
+    printf("N1 = %d, N2 = %d, T_SIZE = %d\n", N1, N2, T_SIZE);
+    /*N_SIZE = StrToInt(argv[1]);
     T_SIZE = StrToInt(argv[2]);
-    printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);
+    printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);*/
     Pochoir_Shape_2D heat_shape_2D[] = {{1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, -1, -1}, {0, 0, -1}, {0, 0, 1}, {0, 0, 0}};
-	Pochoir_Array_2D(double) a(N_SIZE, N_SIZE), b(N_SIZE+2, N_SIZE+2);
+	//Pochoir_Array_2D(double) a(N_SIZE, N_SIZE) ;
+	Pochoir_Array_2D(double) a(N1, N2) ;
+	//Pochoir_Array_2D(double) b(N_SIZE+2, N_SIZE+2);
+	//Pochoir_Array_2D(double) b(N1+2, N2+2);
     Pochoir_2D heat_2D(heat_shape_2D);
 
 	cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
@@ -78,14 +87,14 @@ int main(int argc, char * argv[])
 
     a.Register_Boundary(heat_bv_2D);
     heat_2D.Register_Array(a);
-    b.Register_Shape(heat_shape_2D);
+    //b.Register_Shape(heat_shape_2D);
 
-	for (int i = 0; i < N_SIZE; ++i) {
-	for (int j = 0; j < N_SIZE; ++j) {
+	for (int i = 0; i < N1; ++i) {
+	for (int j = 0; j < N2; ++j) {
         a(0, i, j) = 1.0 * (rand() % BASE); 
         a(1, i, j) = 0; 
-        b(0, i+1, j+1) = a(0, i, j);
-        b(1, i+1, j+1) = 0;
+        //b(0, i+1, j+1) = a(0, i, j);
+        //b(1, i+1, j+1) = 0;
 	} }
 
 
@@ -97,13 +106,14 @@ int main(int argc, char * argv[])
     }
 	std::cout << "Pochoir ET: consumed time :" << min_tdiff << "ms" << std::endl;
 
+#if 0
     min_tdiff = INF;
     /* cilk_for + zero-padding */
     for (int times = 0; times < TIMES; ++times) {
 	gettimeofday(&start, 0);
 	for (int t = 0; t < T_SIZE; ++t) {
-    cilk_for (int i = 1; i < N_SIZE+1; ++i) {
-	for (int j = 1; j < N_SIZE+1; ++j) {
+    cilk_for (int i = 1; i < N1+1; ++i) {
+	for (int j = 1; j < N2+1; ++j) {
        b.interior(t+1, i, j) = 0.125 * (b.interior(t, i+1, j) - 2.0 * b.interior(t, i, j) + b.interior(t, i-1, j)) + 0.125 * (b.interior(t, i, j+1) - 2.0 * b.interior(t, i, j) + b.interior(t, i, j-1)) + b.interior(t, i, j); 
     } } }
 	gettimeofday(&end, 0);
@@ -112,10 +122,11 @@ int main(int argc, char * argv[])
 	std::cout << "Naive Loop: consumed time :" << min_tdiff << "ms" << std::endl;
 
 	t = T_SIZE;
-	for (int i = 0; i < N_SIZE; ++i) {
-	for (int j = 0; j < N_SIZE; ++j) {
+	for (int i = 0; i < N1; ++i) {
+	for (int j = 0; j < N2; ++j) {
 		check_result(t, i, j, a.interior(t, i, j), b.interior(t, i+1, j+1));
 	} } 
+#endif
 
 	return 0;
 }

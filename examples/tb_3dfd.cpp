@@ -42,7 +42,7 @@ int Ny = 100;
 int Nz = 100;
 int T = 40;
 static const int NPIECES = 2;
-int N_CORES=2;
+int N_CORES=1;
 #if 1
 static const int dt_threshold = 3;
 static const int dx_threshold = 1000;
@@ -382,7 +382,8 @@ void print_summary(char *header, double interval) {
 	
   long mul = (long)(Nx - 8) * (Ny  - 8) * (Nz - 8) * T;
   double perf = mul / (interval * 1e6);
-  printf("time: %f\n", interval);
+  //printf("time: %f\n", interval);
+  printf("time: %f ms \n", 1.0e3 * interval);
   printf("Perf: %f Mcells/sec (%f M-FAdd/s, %f M-FMul/s)\n", 
 	 perf, 
 	 perf * 26, 

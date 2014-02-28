@@ -70,10 +70,11 @@ int main(int argc, char * argv[])
     //Pochoir_Shape_4D heat_shape_4D[] = {{0, 0, 0, 0}, {-1, 1, 0, 0}, {-1, -1, 0, 0}, {-1, 0, 0, 0}, {-1, 0, 0, -1}, {-1, 0, 0, 1}, {-1, 0, 1, 0}, {-1, 0, -1, 0}};
     Pochoir_Shape_4D heat_shape_4D[] = {{0, 0, 0, 0, 0}, {-1, 1, 0, 0, 0}, {-1, -1, 0, 0, 0}, {-1, 0, 0, 0, 0}, {-1, 0, 0, -1, 0}, {-1, 0, 0, 1, 0}, {-1, 0, 1, 0, 0}, {-1, 0, -1, 0, 0}, {-1, 0, 0, 0, 1}, {-1, 0, 0, 0, -1}};
     Pochoir_4D heat_4D(heat_shape_4D);
-	Pochoir_Array_4D(double) a(N_SIZE, N_SIZE, N_SIZE, N_SIZE), b(N_SIZE, N_SIZE, N_SIZE, N_SIZE);
+	Pochoir_Array_4D(double) a(N_SIZE, N_SIZE, N_SIZE, N_SIZE) ;
+	//Pochoir_Array_4D(double) b(N_SIZE, N_SIZE, N_SIZE, N_SIZE);
     Pochoir_Domain I(1, N_SIZE-1), J(1, N_SIZE-1), K(1, N_SIZE-1), L(1, N_SIZE - 1);
     heat_4D.Register_Array(a);
-    b.Register_Shape(heat_shape_4D);
+    //b.Register_Shape(heat_shape_4D);
 
 	for (int i = 0; i < N_SIZE; ++i) {
 	for (int j = 0; j < N_SIZE; ++j) {
@@ -88,8 +89,8 @@ int main(int argc, char * argv[])
             a(0, i, j, k, l) = 1.0 * (rand() % BASE); 
             a(1, i, j, k, l) = 0; 
         }
-        b(0, i, j, k, l) = a(0, i, j, k, l);
-        b(1, i, j, k, l) = 0;
+        //b(0, i, j, k, l) = a(0, i, j, k, l);
+        //b(1, i, j, k, l) = 0;
 	} } } }
 
     Pochoir_Kernel_4D(heat_4D_fn, t, i, j, k, l)
@@ -110,7 +111,6 @@ int main(int argc, char * argv[])
     a.Register_Boundary(heat_bv_4D);
     heat_4D.Register_Domain(I, J, K, L);
 
-#if 1
     for (int times = 0; times < TIMES; ++times) {
 	    gettimeofday(&start, 0);
         heat_4D.Run(T_SIZE, heat_4D_fn);
@@ -119,8 +119,7 @@ int main(int argc, char * argv[])
     }
 	std::cout << "Pochoir ET: consumed time :" << min_tdiff << "ms" << std::endl;
 
-#endif
-#if 1
+#if 0
     min_tdiff = INF;
     /* cilk_for + zero-padding */
     for (int times = 0; times < TIMES; ++times) {

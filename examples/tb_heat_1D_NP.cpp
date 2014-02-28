@@ -70,12 +70,18 @@ int main(int argc, char * argv[])
     printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);
 	/* data structure of Pochoir - row major */
     Pochoir_Shape_1D heat_shape_1D[] = {{1, 0}, {0, 1}, {0, -1}, {0, 0}};
-	Pochoir_Array_1D(double) a(N_SIZE), b(N_SIZE);
+	Pochoir_Array_1D(double) b(N_SIZE);
+	Pochoir_Array_1D(double) a(N_SIZE) ;
     Pochoir_1D heat_1D(heat_shape_1D);
 
 	cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
     Pochoir_Kernel_1D(heat_1D_fn, t, i)
+	//cout << "(" << t << "," << i << ")" << endl ; 
+	//if (i <= N_SIZE / 2)
+	  // a(t+1, i) = 0.13 * (a(t, i+1) - 2.0 * a(t, i) + a(t, i-1));
+	//else
 	   a(t+1, i) = 0.125 * (a(t, i+1) - 2.0 * a(t, i) + a(t, i-1));
+	
     Pochoir_Kernel_End
 
     a.Register_Boundary(heat_bv_1D);
@@ -87,7 +93,7 @@ int main(int argc, char * argv[])
         a(1, i) = 0; 
         b(0, i) = a(0, i);
         b(1, i) = 0;
-	} 
+	}
 
 #if 1
     for (int times = 0; times < TIMES; ++times) {
@@ -107,7 +113,10 @@ int main(int argc, char * argv[])
 	gettimeofday(&start, 0);
 	for (int t = 0; t < T_SIZE; ++t) {
     cilk_for (int i = 0; i < N_SIZE; ++i) {
-       b(t+1, i) = 0.125 * (b(t, i+1) - 2.0 * b(t, i) + b(t, i-1)); 
+		//if (i <= N_SIZE / 2)
+		//	b(t+1, i) = 0.13 * (b(t, i+1) - 2.0 * b(t, i) + b(t, i-1)); 
+		//else
+			b(t+1, i) = 0.125 * (b(t, i+1) - 2.0 * b(t, i) + b(t, i-1)); 
     } }
 	gettimeofday(&end, 0);
     min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));

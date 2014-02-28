@@ -670,9 +670,10 @@ int main( int argc, char *argv[ ] )
               
         printf( "\n\nPochoir ( with struct ):\n" );
         printf( "\t alignment cost = %d\n", optCost );    
-        printf( "\t Running time = %.3lf sec\n\n", t0 );    
+        //printf( "\t Running time = %.3lf sec\n\n", t0 );    
+        printf( "\t Running time = %.3lf ms\n\n", 1.0e3 * t0 );    
 
-        printf( "Running pochoir-based DP ( without struct )..." );
+        /*printf( "Running pochoir-based DP ( without struct )..." );
         fflush( stdout );
                       
         gettimeofday( &start, 0 );        
@@ -684,7 +685,7 @@ int main( int argc, char *argv[ ] )
         printf( "\n\nPochoir ( without struct ):\n" );
         printf( "\t alignment cost = %d\n", optCost2 );    
         if ( t0 > 0 ) printf( "\t Running time = %.3lf sec ( %.3lf x Pochoir-Struct )\n\n", t1, t1 / t0 );    
-        else printf( "\t Running time = %.3lf sec\n\n", t1 );    
+        else printf( "\t Running time = %.3lf sec\n\n", t1 );   */ 
       
         if ( RunIterativeStencil )
           {

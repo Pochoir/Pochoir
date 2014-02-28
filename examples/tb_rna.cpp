@@ -640,7 +640,8 @@ int main( int argc, char *argv[ ] )
             printf( "\n\nPochoir:\n" );
             if ( maxNumBP == -INF ) printf( "\t maximum number of base pairs = -inf\n" );    
             else printf( "\t maximum number of base pairs = %d\n", maxNumBP );    
-            printf( "\t Running time = %.3lf sec\n\n", pochoirTime );    
+            //printf( "\t Running time = %.3lf sec\n\n", pochoirTime );    
+            printf( "\t Running time = %.3lf ms\n\n", 1.0e3 * pochoirTime );    
            } while (0);
       }
 

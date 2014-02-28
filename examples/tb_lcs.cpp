@@ -395,7 +395,8 @@ int main( int argc, char *argv[ ] )
               
         printf( "\n\nPochoir:\n" );
         printf( "\t LCS length = %d\n", optLen );    
-        printf( "\t Running time = %.3lf sec\n\n", t0 );    
+        //printf( "\t Running time = %.3lf sec\n\n", t0 );    
+        printf( "\t Running time = %.3lf ms\n\n", 1.0e3 * t0 );    
       
         if ( RunIterativeStencil )
           {
