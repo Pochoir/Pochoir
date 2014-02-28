@@ -1033,7 +1033,6 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	}
 #endif
 	double projected_time1 = 0, necessary_time = 0 ;
-	//if (lt > dt_recursive_ && sim_can_cut)
 	if (time_cut && sim_can_cut)
 	{
 		if (space_cut_elapsed_time + space_cut_ptime < time_cut_elapsed_time + 														time_cut_ptime)
@@ -1053,7 +1052,6 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 			assert (m_zoids [index].num_children == 2) ;
 		}
 	}
-	//else if (lt > dt_recursive_)
 	else if (time_cut)
 	{
 		//time cut is the only choice

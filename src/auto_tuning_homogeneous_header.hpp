@@ -400,8 +400,13 @@ private:
 		m_projections_boundary.resize(volume) ; 
 		cout << "volume " << volume << endl ;
 
-		m_array.reserve(volume) ;
-		m_array.resize(volume) ;
+		//m_array.reserve(volume) ;
+		//m_array.resize(volume) ;
+		m_array = malloc (volume * m_type_size) ;
+		if (! m_array)
+		{
+			cout << "auto tune :Malloc Failed " << endl ;
+		}
 		
 		if (power_of_two)
 		{
@@ -415,12 +420,14 @@ private:
 		}
 	}
 
-	inline copy_data(double * dest, double * src, unsigned long length)
+	//inline copy_data(double * dest, double * src, unsigned long length)
+	inline copy_data(void * dest, void * src, unsigned long length)
 	{
-		for (unsigned long i = 0 ; i < length ; i++)
+		/*for (unsigned long i = 0 ; i < length ; i++)
 		{
 			*dest++ = *src++ ;
-		}
+		}*/
+		memcpy(dest, src, length * m_type_size) ;
 	}
 
 	template <typename F, typename BF>
@@ -535,6 +542,7 @@ private:
 		m_heterogeneity.clear() ;
 		m_zoids.clear() ;
 		vector<zoid_type>().swap(m_zoids) ; //empty the zoids vector
+		free (m_array) ;
 	}
 
 	//key is the bottom volume + top volume.
@@ -1090,7 +1098,8 @@ private:
 	//inline bool touch_boundary(int i, int lt,
       //          grid_info<N_RANK> & grid, decision_type & decision) ;
 	//char * m_cache ;
-	vector<double> m_array ;
+	//vector<double> m_array ;
+	void * m_array ;
 	decision_type m_space_cut_mask ;
 	vector<zoid_type> m_zoids ; //the array of all nodes in the DAG
 	vector<simple_zoid_type> m_simple_zoids ; //a compact array of nodes in the DAG
@@ -1110,6 +1119,7 @@ private:
 	//char * problem_name ; //name of the problem we solve.
 	ofstream file_interior ; //write height, widths of a zoid in the interior
 	ofstream file_boundary ; //write height, widths of a zoid at the boundary
+	int m_type_size ; //size of type of date that is backed up in tuning
 
 	inline void sawzoid_space_cut_interior_core
 		(int const, int const, int const, int const, 
@@ -1123,8 +1133,11 @@ private:
 	public :
 
 	auto_tune(Algorithm<N_RANK> & alg, grid_info<N_RANK> const & grid,
-				  bool power_of_two, char * name, int T):m_algo(alg)
+				  bool power_of_two, char * name, int T,
+				  int type_size):m_algo(alg)
 	{
+		m_array = 0 ;
+		m_type_size = type_size ;
 		m_head.reserve(2) ;
 		m_num_vertices = 0 ;
 		//initialize(grid, T, power_of_two) ;
@@ -1170,8 +1183,10 @@ private:
 	template <typename F, typename BF>
     inline void do_power_of_two_time_cut(int t0, int t1,
         grid_info<N_RANK> const & grid, F const & f, BF const & bf,
-		Pochoir_Array<double, N_RANK> * array)
+		void * array)
 	{
+		//Pochoir_Array<double, N_RANK> * array = 
+		//				(Pochoir_Array<double, N_RANK> *) arr ;
 		int T = t1 - t0 ;
 		int W = 0 ;  //max_width among all dimensions
 		int slope ;
@@ -1200,7 +1215,8 @@ private:
 		}
 		initialize(grid, h1, true) ;
 		//back up data
-		copy_data(&(m_array[0]), array->data(), volume) ;
+		//copy_data(&(m_array[0]), array->data(), volume) ;
+		copy_data(m_array, array, volume) ;
 		m_head.push_back (ULONG_MAX) ;
 		clock_gettime(CLOCK_MONOTONIC, &start) ;
 		//gettimeofday(&start, 0);
@@ -1229,7 +1245,8 @@ private:
 		}
 		clock_gettime(CLOCK_MONOTONIC, &end) ;
 		//copy data back.
-		copy_data(array->data(), &(m_array[0]), volume) ;
+		//copy_data(array->data(), &(m_array[0]), volume) ;
+		copy_data(array, m_array, volume) ;
 		//gettimeofday(&end, 0);
 		//dag_time = tdiff(&end, &start) ;
 		dag_time = tdiff2(&end, &start) ;
@@ -1320,7 +1337,8 @@ private:
 	template <typename F, typename BF>
     inline void do_trap_space_time_cuts(int t0, int t1,
         grid_info<N_RANK> const & grid, F const & f, BF const & bf, 
-		Pochoir_Array<double, N_RANK> * array)
+		void * array)
+		//Pochoir_Array<double, N_RANK> * array)
 	{
 		assert (t0 < t1) ;
 		int T = t1 - t0 ;
@@ -1349,7 +1367,8 @@ private:
 			//max width is >= 2 * sigma * h implies the zoid is ready for space cuts
 			initialize(grid, T, false) ;
 			//back up data
-			copy_data(&(m_array[0]), array->data(), volume) ;
+			//copy_data(&(m_array[0]), array->data(), volume) ;
+			copy_data(m_array, array, volume) ;
 
 			m_head.push_back (ULONG_MAX) ;
 			clock_gettime(CLOCK_MONOTONIC, &start) ;
@@ -1371,7 +1390,8 @@ private:
 			cout << "# vertices after compression" << m_num_vertices << endl ;
 			cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
 			//copy data back.
-			copy_data(array->data(), &(m_array[0]), volume) ;
+			//copy_data(array->data(), &(m_array[0]), volume) ;
+			copy_data(array, m_array, volume) ;
 			create_simple_zoids() ;
 			double compute_time = 0. ;
 			clock_gettime(CLOCK_MONOTONIC, &start) ;
@@ -1394,7 +1414,8 @@ private:
 			
 			initialize(grid, h1, false) ;
 			//back up data
-			copy_data(&(m_array[0]), array->data(), volume) ;
+			//copy_data(&(m_array[0]), array->data(), volume) ;
+			copy_data(m_array, array, volume) ;
 
 			cout << "h1 " << h1 << " h2 " << h2 << endl ;
 			clock_gettime(CLOCK_MONOTONIC, &start) ;
@@ -1424,7 +1445,8 @@ private:
 			cout << "# vertices after compression" << m_num_vertices << endl ;
 			cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
 			//copy data back.
-			copy_data(array->data(), &(m_array[0]), volume) ;
+			//copy_data(array->data(), &(m_array[0]), volume) ;
+			copy_data(array, m_array, volume) ;
 			create_simple_zoids() ;
 			double compute_time = 0. ;
 			clock_gettime(CLOCK_MONOTONIC, &start) ;

@@ -56,7 +56,7 @@
 //#include "auto_tuning_sawzoid.hpp"
 //#include "auto_tuning_sawzoid_middle.hpp"
 #include "auto_tuning_arbitrary_cuts_sawzoid.hpp"
-//#include "auto_tuning_arbitrary_cuts_trap.hpp"
+#include "auto_tuning_arbitrary_cuts_trap.hpp"
 //#include "auto_tuning_arbitrary_cuts_sawzoid_middle.hpp"
 //#include "dag_sawzoid.hpp"
 #endif
@@ -237,7 +237,8 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & arr) {
 #endif
     regArrayFlag = true;
 	//eka - storing a pointer to pochoir array
-	arr_ = &(arr) ;
+	//arr_ = &(arr) ;
+	arr_ = arr.data() ;
 }
 
 template <int N_RANK> template <size_t N_SIZE>
@@ -450,180 +451,10 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f) {
 //     fprintf(stderr, "Call shorter_duo_sim_obase_bicut\n");
 #pragma isat marker M2_begin
    // algor.sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
-#if 1
-    algor.set_time_step(timestep_);
-	algor.set_time_shift(time_shift_) ;
-	cout << "time_shift_ " << time_shift_ << " timestep " << timestep << endl ;
-	grid_info <N_RANK> grid = logic_grid_ ;
-	for (int i = N_RANK - 1 ; i >= 0 ; i--)
-	{
-		cout << "grid.dx0[i] " << grid.dx0[i] << endl ;
-		cout << "grid.dx1[i] " << grid.dx1[i] << endl ;
-		cout << " x0 [" << i << "] " << grid.x0 [i] 
-			<< " x1 [" << i << "] " << grid.x1 [i] 
-			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * timestep_
-			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * timestep_
-			<< endl ; 
-		cout << "slope_ [i] " << slope_ [i] << endl ;
-	}
-	
 	cout << "no boundary kernel version " << endl ;
-#ifdef COUNT_PROJECTIONS
-//    algor.compute_projections(0+time_shift_, timestep+time_shift_, logic_grid_) ;
-	algor.set_thres_auto_tuning() ;
-#endif
-#ifdef COARSEN_BASE_CASE_WRT_BOTTOM_SIDE
-	cout << "coarsen base case wrt bottom side " << endl ;
-#else
-	cout << "coarsen base case wrt shorter side " << endl ;
-#endif
-#ifdef KERNEL_SELECTION
-	cout << "kernel selection" << endl ;
-#endif
-#ifdef GENEITY_TEST
-	cout << "geneity testing" << endl ;
-#endif
-#ifdef DEFAULT_SPACE_CUT
-	cout << "default space cut " << endl ;
-#else
-	cout << "modified space cut " << endl ;
-#endif
-#ifdef AUTO_TUNE
-	algor.set_thres_auto_tuning() ;
-	cout << "auto tune" << endl ;
-#ifdef TIME_INVARIANCE_INTERIOR
-	cout << "time invariance interior " << endl ;
-#else
-	cout << "space-time invariance interior " << endl ;
-#endif
-
-#ifdef TIME_INVARIANCE_BOUNDARY
-	cout << "time invariance boundary " << endl ;
-#else
-	cout << "space-time invariance boundary " << endl ;
-#endif
-
-#ifdef FIXED_TIME_CUT
-	cout << "fixed time cut" << endl ;
-#else
-	cout << "arbitrary time cut" << endl ;
-#endif
-
-#ifdef FIXED_SPACE_CUT
-	cout << "fixed space cut" << endl ;
-#else
-	cout << "arbitrary space cut " << endl ;
-#endif
-#endif
-
-#ifdef TRAP
-	cout << "default time cut " << endl ;
-	//algor.set_thres_auto_tuning() ;
-#ifndef USE_PROJECTION
-    algor.shorter_duo_sim_obase_bicut(time_shift_, timestep+time_shift_, logic_grid_, f);
-#else
-#ifdef KERNEL_SELECTION
-	predicate <N_RANK> p (phys_grid_) ; 
-	p.set_resolution(resolution_) ;
-	p.set_output_file(outputFile_) ;
-	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
-	kernel_selection_trap<N_RANK> ks(algor, phys_grid_, 0) ;
-	ks.set_clone_array(&c1) ;
-	ks.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
-							logic_grid_, f, p) ;
-#elif defined GENEITY_TEST
-	predicate <N_RANK> p (phys_grid_) ; 
-	p.set_resolution(resolution_) ;
-	//p.set_output_file(outputFile_) ;
-	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
-	heterogeneity<N_RANK> hg(algor, phys_grid_, 0) ;
-	//geneity_problem<N_RANK> hg(algor, phys_grid_, 0) ;
-	hg.set_clone_array(&c1) ;
-	//hg.build_heterogeneity_dag(0, timestep, logic_grid_, p, 0) ;
-	hg.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
-							logic_grid_, f, p) ;
-#ifndef NDEBUG
-	cout << "calling print dag " << endl ;
-	hg.print_dag() ;
-	hg.print_heterogeneity() ;
-#endif
-#elif defined AUTO_TUNE
-	//cout << "address of home cell " << &home_cell_ << endl ;
-	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name, timestep_) ;
-	struct timeval start, end;
-	double compute_time = 0. ;
-	gettimeofday(&start, 0);
-	at.do_trap_space_time_cuts(time_shift_, timestep+time_shift_,
-								logic_grid_, f, arr_) ;
-	gettimeofday(&end, 0);
-	compute_time = tdiff(&end, &start) ;
-	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
-	//at.print_dag() ;
-#endif
-
-#endif
-#else
-	cout << "pow2 time cut " << endl ;
-	//algor.set_thres_auto_tuning() ;
-#ifndef USE_PROJECTION
-	struct timespec start, end;
-	clock_gettime(CLOCK_MONOTONIC, &start);
-    algor.power_of_two_time_cut_interior(time_shift_, timestep+time_shift_, logic_grid_, f) ;
-	clock_gettime(CLOCK_MONOTONIC, &end) ;
-	cout << "compute time " << tdiff2(&end, &start) * 1e3 << "ms" << endl ;
-#else
-#ifdef KERNEL_SELECTION
-	predicate <N_RANK> p (phys_grid_) ; 
-	p.set_resolution(resolution_) ;
-	p.set_output_file(outputFile_) ;
-	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
-    kernel_selection_sawzoid<N_RANK> ks(algor, phys_grid_, 0) ;
-    ks.set_clone_array(&c1) ;
-    ks.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
-                            logic_grid_, f, p) ;
-#elif defined GENEITY_TEST
-	algor.set_thres_auto_tuning() ;
-	predicate <N_RANK> p (phys_grid_) ; 
-	p.set_resolution(resolution_) ;
-	p.set_output_file(outputFile_) ;
-	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
-	heterogeneity<N_RANK> hg(algor, phys_grid_, 1) ;
-	hg.set_clone_array(&c1) ;
-	struct timeval start, end;
-	double compute_time = 0. ;
-	//hg.build_heterogeneity_dag_modified(0, timestep, logic_grid_, p, 0) ;
-	gettimeofday(&start, 0);
-	hg.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
-								logic_grid_, f, p) ;
-	gettimeofday(&end, 0);
-	compute_time = tdiff(&end, &start) ;
-	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
-#ifndef NDEBUG
-	//cout << "calling print dag " << endl ;
-	//hg.print_dag() ;
-	//hg.print_heterogeneity() ;
-#endif
-#elif defined AUTO_TUNE
-	//cout << "address of home cell " << &home_cell_ << endl ;
-	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name, timestep_) ;
-	struct timeval start, end;
-	double compute_time = 0. ;
-	gettimeofday(&start, 0);
-	at.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
-								logic_grid_, f, arr_) ;
-	gettimeofday(&end, 0);
-	compute_time = tdiff(&end, &start) ;
-	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
-
-	//at.print_dag() ;
-#endif
-
-#endif
-#endif
-/*#else
 #if 1
     printf("shorter_duo_sim_obase_bicut!\n");
-    algor.shorter_duo_sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);*/
+    algor.shorter_duo_sim_obase_bicut(0+time_shift_, timestep+time_shift_, logic_grid_, f);
 #else
     printf("stevenj!\n");
     algor.stevenj(0+time_shift_, timestep+time_shift_, logic_grid_, f);
@@ -737,7 +568,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	predicate <N_RANK> p (phys_grid_) ; 
 	p.set_resolution(resolution_) ;
 	p.set_output_file(outputFile_) ;
-	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
+	pochoir_clone_array <N_RANK> c1(*arr_, p) ; //may not compile
 	kernel_selection_trap<N_RANK> ks(algor, phys_grid_, 0) ;
 	ks.set_clone_array(&c1) ;
 	ks.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
@@ -746,7 +577,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	predicate <N_RANK> p (phys_grid_) ; 
 	p.set_resolution(resolution_) ;
 	//p.set_output_file(outputFile_) ;
-	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
+	pochoir_clone_array <N_RANK> c1(*arr_, p) ; //may not compile
 	heterogeneity<N_RANK> hg(algor, phys_grid_, 0) ;
 	//geneity_problem<N_RANK> hg(algor, phys_grid_, 0) ;
 	hg.set_clone_array(&c1) ;
@@ -760,7 +591,8 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #endif
 #elif defined AUTO_TUNE
 	//cout << "address of home cell " << &home_cell_ << endl ;
-	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name, timestep_) ;
+	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name, timestep_,
+						 arr_type_size_) ;
 	struct timeval start, end;
 	double compute_time = 0. ;
 	gettimeofday(&start, 0);
@@ -787,7 +619,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	predicate <N_RANK> p (phys_grid_) ; 
 	p.set_resolution(resolution_) ;
 	p.set_output_file(outputFile_) ;
-	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
+	pochoir_clone_array <N_RANK> c1(*arr_, p) ; //may not compile
     kernel_selection_sawzoid<N_RANK> ks(algor, phys_grid_, 0) ;
     ks.set_clone_array(&c1) ;
     ks.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
@@ -797,7 +629,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	predicate <N_RANK> p (phys_grid_) ; 
 	p.set_resolution(resolution_) ;
 	p.set_output_file(outputFile_) ;
-	pochoir_clone_array <N_RANK> c1(*arr_, p) ;
+	pochoir_clone_array <N_RANK> c1(*arr_, p) ; //may not compile
 	heterogeneity<N_RANK> hg(algor, phys_grid_, 1) ;
 	hg.set_clone_array(&c1) ;
 	struct timeval start, end;
@@ -816,7 +648,8 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #endif
 #elif defined AUTO_TUNE
 	//cout << "address of home cell " << &home_cell_ << endl ;
-	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name, timestep_) ;
+	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name, timestep_,
+						arr_type_size_) ;
 	struct timeval start, end;
 	double compute_time = 0. ;
 	gettimeofday(&start, 0);
