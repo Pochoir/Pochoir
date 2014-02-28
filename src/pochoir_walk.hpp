@@ -386,6 +386,11 @@ class heterogeneity ;
 template <int N_RANK>
 struct Algorithm {
 	//friend class heterogeneity<N_RANK> ;
+	typedef struct {
+		int level; /* level is how many dimensions we have cut so far */
+		int t0, t1;
+		grid_info<N_RANK> grid;
+	} queue_info;
 	private:
         /* different stencils will have different slopes */
         /* We cut coarser in internal region, finer at boundary
@@ -400,11 +405,6 @@ struct Algorithm {
         const int r_t; /* # of pieces cut in time dimension */
         int N_CORES;
         typedef int index_info[N_RANK];
-        typedef struct {
-            int level; /* level is how many dimensions we have cut so far */
-            int t0, t1;
-            grid_info<N_RANK> grid;
-        } queue_info;
 
         int ALGOR_QUEUE_SIZE;
 		//int stack_depth ;

@@ -887,11 +887,11 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		clock_gettime(CLOCK_MONOTONIC, &start1);
         symbolic_sawzoid_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
 				index, 0, time_cut_rtime, time_cut_ptime, f, time1);
-		if (time1 > max_loop_time)
+		/*if (time1 > max_loop_time)
 		{
 			max_loop_time = time1 ;
-			max_loop_decision = 11 ; 
-		}
+			//max_loop_decision = 11 ; 
+		}*/
         for (int i = 0; i < N_RANK; ++i) {
             l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
             l_son_grid.dx0[i] = grid.dx0[i];
@@ -901,13 +901,13 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
         symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
 				index, 1, time_cut_rtime, time_cut_ptime, f, time2);
 		clock_gettime(CLOCK_MONOTONIC, &end1);
-		if (time2 > max_loop_time)
+		/*if (time2 > max_loop_time)
 		{
 			max_loop_time = time2 ;
-			max_loop_decision = 1 ;
-		}
-		//time1 = max(time1, time2) ;
-		//max_loop_time = max(time1, max_loop_time) ;
+			//max_loop_decision = 1 ;
+		}*/
+		time1 = max(time1, time2) ;
+		max_loop_time = max(time1, max_loop_time) ;
 		time_cut_elapsed_time = tdiff2(&end1, &start1) - time_cut_rtime ;
 		assert (time_cut_elapsed_time >= 0.) ;
 		assert (time_cut_ptime >= 0.) ;
@@ -941,7 +941,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 #ifdef FIXED_SPACE_CUT
 		//do a hyper space cut
 		int start = decision >> 1 ;
-		for (int i = start ; i >= start ; i--)
+		for (int i = start ; i == start ; i--)
 #else
 		for (int i = num_cases - 1 ; i > 0 ; i--)
 #endif
@@ -979,8 +979,8 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 							num_subzoids, rtime, ptime,
 							time, i) ;
 			clock_gettime(CLOCK_MONOTONIC, &end1);
-			//max_loop_time = max(time, max_loop_time) ;
-			if (time > max_loop_time)
+			max_loop_time = max(time, max_loop_time) ;
+			/*if (time > max_loop_time)
 			{
 				max_loop_time = time ;
 				max_loop_decision = 0 ;
@@ -989,7 +989,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 					int bit = i & 1 << j ;
 					max_loop_decision |= (bit != 0) << j + 2 ;
 				}
-			}
+			}*/
 			elapsed_time = tdiff2(&end1, &start1) - rtime ;
 			assert (elapsed_time >= 0.) ;
 			assert (ptime >= 0.) ;
@@ -1020,6 +1020,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 			assert (decision_bit == bit << 1) ;
 #endif
 		}
+		//continue review from here.
 		//restore the back up.
 		m_zoids [index] = bak2 ;
 		assert (m_zoids [index].num_children == num_children_best_case) ;

@@ -225,7 +225,7 @@ class zoid
 	}
 
 
-	int add_parent(unsigned long parent_id)
+	void add_parent(unsigned long parent_id)
 	{
 #ifndef NDEBUG
 		parents.push_back(parent_id) ;
