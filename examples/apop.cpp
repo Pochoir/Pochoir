@@ -349,6 +349,10 @@ double stencilAPOP( double S, double E, double r, double V, double T,
    APOP.Register_Domain( I );   
    f.Register_Boundary( apop_bv_1D );
 
+   char name [100] ;
+   sprintf(name, "apop") ;
+   APOP.set_problem_name(name) ;
+
    APOP.Run( nt, APOP_fn );
     
    return f.interior( nt, ( ns >> 1 ) );    

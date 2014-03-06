@@ -74,8 +74,6 @@ int main(int argc, char * argv[])
 	int t;
 	struct timeval start, end;
     int N1 = 500, N2 = 100, T_SIZE = 731;
-	char name [500] ;
-	sprintf(name, "heat_2d_p") ;
 
     if (argc < 4) {
         printf("argc < 4, quit! \n");
@@ -124,6 +122,8 @@ int main(int argc, char * argv[])
 	   	//a(t + 1, i, j) = 0.125 * (a(t, i+1, j) - 2.0 * a(t, i, j) + a(t, i-1, j)) + 0.125 * (a(t, i, j+1) - 2.0 * a(t, i, j) + a(t, i, j-1)) + a(t, i, j);
     Pochoir_Kernel_End
 
+	char name [500] ;
+	sprintf(name, "heat_2D_P") ;
 	heat_2D.set_problem_name(name) ;
 	gettimeofday(&start, 0);
     for (int times = 0; times < TIMES; ++times) {

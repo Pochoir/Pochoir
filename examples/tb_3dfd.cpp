@@ -326,7 +326,8 @@ void init_variables()
 	aref(1, x, y, z) = r;
 	vsqref(x, y, z) = 0.001f;
       }
-    N_CORES = max(2, __cilkrts_get_nworkers());
+    //N_CORES = max(2, __cilkrts_get_nworkers());
+    N_CORES = max(1, __cilkrts_get_nworkers());
     printf("N_CORES = %d\n", N_CORES);
 }
 
@@ -476,8 +477,9 @@ int main(int argc, char *argv[])
   Pochoir_3D fd_3D(fd_shape_3D);
   Pochoir_Domain I(0+ds, Nx-ds), J(0+ds, Ny-ds), K(0+ds, Nz-ds);
 
+  pa.Register_Boundary(fd_bv_3D) ;
   fd_3D.Register_Array(pa);
-  fd_3D.Register_Domain(I, J, K);
+  //fd_3D.Register_Domain(I, J, K);
 
   Pochoir_Kernel_3D(fd_3D_fn, t, i, j, k)
     float c0 = coef[0], c1 = coef[1], c2 = coef[2], c3 = coef[3], c4 = coef[4];
@@ -498,6 +500,10 @@ int main(int argc, char *argv[])
   Pochoir_Kernel_End
 
   dotest();
+
+  char name [500] ;
+  sprintf(name, "3dfd") ;
+  fd_3D.set_problem_name(name) ;
 
   init_pochoir_array(pa);
   gettimeofday(&start, 0);

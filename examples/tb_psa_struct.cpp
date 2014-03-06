@@ -452,6 +452,10 @@ int stencilPSA( int nX, char *X, int nY, char *Y, int goCost, int geCost, int *m
 
     int t = nX + nY;
 
+	char name [100] ;
+	sprintf(name, "psa") ;
+	pSeq.set_problem_name(name) ;
+
     pSeq.Run( t, pSeq_fn );
     
     int optCost = min( vG.interior( t + 1, nY ), min( vD.interior( t + 1, nY ), vI.interior( t + 1, nY ) ) );
@@ -529,6 +533,10 @@ int stencilPSAStruct( int nX, char *X, int nY, char *Y, int goCost, int geCost, 
     Pochoir_Kernel_End
 
     int t = nX + nY;
+
+	char name [100] ;
+	sprintf(name, "psa_struct") ;
+	pSeq.set_problem_name(name) ;
 
     pSeq.Run( t, pSeq_fn );
     

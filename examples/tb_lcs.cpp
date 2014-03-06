@@ -284,6 +284,10 @@ int stencilLCS( int nX, char *X, int nY, char *Y )
 
     int t = nX + nY;
 
+	char name [100] ;
+	sprintf(name, "lcs") ;
+	LCS.set_problem_name(name) ;
+
     LCS.Run( t, LCS_fn );
     
     int optLen = L.interior( t + 1, nY );

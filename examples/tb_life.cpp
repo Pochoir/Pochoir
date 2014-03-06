@@ -121,6 +121,10 @@ int main(int argc, char * argv[])
         a(t, i, j) = a(t-1, i, j);
     Pochoir_Kernel_End
 
+	char name [100] ;
+	sprintf(name, "life") ;
+	life_2D.set_problem_name(name) ;
+
 	gettimeofday(&start, 0);
     for (int times = 0; times < TIMES; ++times) {
         life_2D.Run(T_SIZE, life_2D_fn);
@@ -141,6 +145,9 @@ int main(int argc, char * argv[])
              || (c(t-1, i, j) == true && neighbors > 3); /* set false */
     c(t, i, j) = set0 ? true : (set1 ? false : c(t-1, i, j));
     Pochoir_Kernel_End
+
+	sprintf(name, "life_bit_trick") ;
+	bt_life_2D.set_problem_name(name) ;
 
 	gettimeofday(&start, 0);
     for (int times = 0; times < TIMES; ++times) {

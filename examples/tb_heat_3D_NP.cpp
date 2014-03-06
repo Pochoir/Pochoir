@@ -106,6 +106,10 @@ int main(int argc, char * argv[])
     a.Register_Boundary(heat_bv_3D);
     heat_3D.Register_Domain(I, J, K);
 
+	char name [100] ;
+	sprintf(name, "heat_3D_NP") ;
+	heat_3D.set_problem_name(name) ;
+
 #if 1
     for (int times = 0; times < TIMES; ++times) {
 	    gettimeofday(&start, 0);

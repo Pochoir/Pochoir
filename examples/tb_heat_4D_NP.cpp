@@ -111,6 +111,10 @@ int main(int argc, char * argv[])
     a.Register_Boundary(heat_bv_4D);
     heat_4D.Register_Domain(I, J, K, L);
 
+	char name [100] ;
+	sprintf(name, "heat_4D_NP") ;
+	heat_4D.set_problem_name(name) ;
+
     for (int times = 0; times < TIMES; ++times) {
 	    gettimeofday(&start, 0);
         heat_4D.Run(T_SIZE, heat_4D_fn);

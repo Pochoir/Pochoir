@@ -97,6 +97,9 @@ int main(int argc, char * argv[])
         //b(1, i+1, j+1) = 0;
 	} }
 
+	char name [100] ;
+	sprintf(name, "heat_2D_NP") ;
+	heat_2D.set_problem_name(name) ;
 
     for (int times = 0; times < TIMES; ++times) {
 	    gettimeofday(&start, 0);

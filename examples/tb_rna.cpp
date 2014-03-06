@@ -311,6 +311,10 @@ void stencilRNAi0( int nX, char *X, int i_0,
     pRNA.Register_Array( SP );
     pRNA.Register_Domain( I, K );    
 
+	char name [10] ;
+	sprintf(name, "rna") ;
+	pRNA.set_problem_name(name) ;
+
     for ( int k_0 = 1; k_0 <= nX; ++k_0 )
       for ( int i = i_0; i < k_0 - 1; ++i )
          SP( 0, i, k_0 ) = -INF;
