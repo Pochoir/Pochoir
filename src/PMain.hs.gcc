@@ -108,7 +108,8 @@ getObjFile dir fname = ["-o"] ++ [dir++name]
 
 pInitState = ParserState { pMode = PCaching, pState = Unrelated, pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty}
 
-icc = "/home/maryammehri/Documents/projections/kxing/gcc-cilk/bin/g++"
+--icc = "/home/maryammehri/Documents/projections/kxing/gcc-cilk/bin/g++"
+icc = "/scratch/kxing/gcc_cilkplus/gcc-cilk/bin/g++"
 --icc = "gcc-cilk"
 --icc = "icpc"
 
@@ -118,7 +119,7 @@ iccFlags = ["-O3","-fpermissive", "-DNDEBUG", "-Wall", "-Werror","-std=gnu++11",
 --iccFlags = ["-O3", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 
 --iccPPFlags = ["-E", "-C","-fpermissive", "-DNCHECK_SHAPE", "-DNDEBUG","-std=gnu++11" , "-Wall","-lrt",  "-fcilkplus","-lcilkrts", "-L/home/maryammehri/Documents/projections/kxing/gcc-cilk/lib" ,"-I/home/maryammehri/Documents/projections/kxing/gcc-cilk/include"]
-iccPPFlags = ["-E", "-c","-P", "-fpermissive", "-DNCHECK_SHAPE", "-DNDEBUG","-std=gnu++11" , "-Wall","-lrt",  "-fcilkplus","-lcilkrts", "-L/home/maryammehri/Documents/projections/kxing/gcc-cilk/lib" ,"-I/home/maryammehri/Documents/projections/kxing/gcc-cilk/include", "-o"]
+iccPPFlags = ["-E", "-c","-P", "-fpermissive", "-DNCHECK_SHAPE", "-DNDEBUG","-std=gnu++11" , "-Wall","-lrt",  "-fcilkplus","-lcilkrts", "-o"]
 --iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++11", "-Wall", "-fcilkplus", "-lcilkrts ", "-lrt"]
 --iccPPFlags = ["-E", "-o", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++11", "-Wall", "-fcilkplus", "-lcilkrts ", "-lrt"]
 --iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
@@ -127,7 +128,7 @@ iccPPFlags = ["-E", "-c","-P", "-fpermissive", "-DNCHECK_SHAPE", "-DNDEBUG","-st
 iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++11", "-include", "-lcilkrts","-lrt","-fcilkplus"]
 --iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++0x"]
 
-iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++11", "-include", "-lrt","-lcilkrts","-fcilkplus",  "-L/home/maryammehri/Documents/projections/kxing/gcc-cilk/lib" ,"-I/home/maryammehri/Documents/projections/kxing/gcc-cilk/include"]
+iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++11", "-include", "-lrt","-lcilkrts","-fcilkplus"]
 --iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x"]
 
 parseArgs :: ([String], [String], PMode, Bool, Bool, [String]) -> [String] -> ([String], [String], PMode, Bool, Bool, [String])
