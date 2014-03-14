@@ -1,0 +1,25 @@
+
+Modify your pochoir path in the script (I put a comment in the script)
+Run the script and it will ask you for the problem dimention and the problem name (heat_2D_NP for example)
+
+Then:
+
+Optimization flags used in Makefile:
+OPT_FLAGS = -O3 -DNDEBUG -Wall -fpermissive  -Wall  -Wno-unknown-pragmas  -std=c++0x -lrt -fcilkplus -lcilkrts
+
+
+Flags in PMain.hs
+iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-lcilkrts", "-fcilkplus"]
+iccPPFlags = ["-E", "-C", "-P", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror",  "-lcilkrts", "-fcilkplus", "-o"]
+
+
+Macros in pochoir_common.hpp:
+#define USE_PROJECTION
+//#define GENEITY_TEST
+//#define KERNEL_SELECTION
+#define AUTO_TUNE
+//#define TIME_INVARIANCE_INTERIOR
+#define TIME_INVARIANCE_BOUNDARY
+
+You will need to remove lamda fucntion outside of the main file and make them a normal fucntion.
+
