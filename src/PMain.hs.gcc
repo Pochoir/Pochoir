@@ -120,7 +120,8 @@ iccFlags = ["-O0","-fpermissive", "-Wall", "-Werror","-std=c++11","-fcilkplus", 
 --iccFlags = ["-O3", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 
 --iccPPFlags = ["-E", "-C","-fpermissive", "-DNCHECK_SHAPE", "-DNDEBUG","-std=gnu++11" , "-Wall","-lrt",  "-fcilkplus","-lcilkrts", "-L/home/maryammehri/Documents/projections/kxing/gcc-cilk/lib" ,"-I/home/maryammehri/Documents/projections/kxing/gcc-cilk/include"]
-iccPPFlags = ["-E", "-c","-P", "-fpermissive", "-DNCHECK_SHAPE", "-DNDEBUG","-std=gnu++11" , "-Wall","-lrt",  "-fcilkplus","-lcilkrts", "-o"]
+--iccPPFlags = ["-E", "-c","-P", "-fpermissive", "-DNCHECK_SHAPE", "-DNDEBUG","-std=gnu++11" , "-Wall","-lrt",  "-fcilkplus","-lcilkrts", "-o"]
+iccPPFlags = ["-E", "-c","-P", "-fpermissive", "-DNCHECK_SHAPE", "-std=c++11" , "-Wall","-lrt",  "-fcilkplus","-lcilkrts", "-o"]
 --iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++11", "-Wall", "-fcilkplus", "-lcilkrts ", "-lrt"]
 --iccPPFlags = ["-E", "-o", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++11", "-Wall", "-fcilkplus", "-lcilkrts ", "-lrt"]
 --iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
