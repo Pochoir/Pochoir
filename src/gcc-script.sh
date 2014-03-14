@@ -5,7 +5,7 @@ read dim
 echo "Problem name"
 read name
 # @ EKA: replaced the below line with your pochour src directory. All files will be replaced with the modified version so please do this in a test copy of pochoir. 
-startdirectory="/home/maryammehri/Documents/projections/Pochoir_projections_GCCCILK_scriptR/Pochoir/src"
+startdirectory="./"
 searchterm0="F"
 searchterm1="template <typename F, typename BF>"
 searchterm2="template <typename F, typename BF>"
