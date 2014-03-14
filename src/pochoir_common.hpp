@@ -73,12 +73,12 @@ static inline int StrToInt(const std::string& s)
 //#define COUNT_PROJECTIONS
 //#define COUNT_TRIANGLE
 //#define COUNT_TRAPEZOID
-//#define USE_PROJECTION
+#define USE_PROJECTION
 //#define GENEITY_TEST
 //#define KERNEL_SELECTION
-//#define AUTO_TUNE
+#define AUTO_TUNE
 //#define TIME_INVARIANCE_INTERIOR
-//#define TIME_INVARIANCE_BOUNDARY
+#define TIME_INVARIANCE_BOUNDARY
 //#define FIXED_SPACE_CUT //hyper space cut
 //#define FIXED_TIME_CUT
 //#define WRITE_DAG
@@ -97,6 +97,7 @@ static inline bool select(bool b, bool x, bool y) {
 static inline int select(bool b, int x, int y) {
     return (x&(-b)) | (y&-(!b));
 }
+/*
 static inline float select(bool b, float x, float y) {
     int __ir__ = ((*(int*)&x) & (-b)) | ((*(int*)&y) & -(!b)); 
     return *(float*)&__ir__; 
@@ -104,7 +105,7 @@ static inline float select(bool b, float x, float y) {
 static inline double select(bool b, double x, double y) {
     long __ir__ = ((*(long*)&x) & (-b)) | ((*(long*)&y) & -(!b));
     return *(double*)&__ir__;
-}
+}*/
 
 typedef int T_dim;
 typedef int T_index;

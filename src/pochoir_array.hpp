@@ -381,7 +381,7 @@ class Pochoir_Array {
         void Register_Boundary(BValue_7D _bv7) { bv7_ = _bv7;  bv1_ = NULL; bv2_ = NULL; bv3_ = NULL; bv4_ = NULL; bv5_ = NULL; bv6_ = NULL; bv8_ = NULL;}
         void Register_Boundary(BValue_8D _bv8) { bv8_ = _bv8;  bv1_ = NULL; bv2_ = NULL; bv3_ = NULL; bv4_ = NULL; bv5_ = NULL; bv6_ = NULL; bv7_ = NULL;}
 
-        void unRegister_Boundary(void) { bv1_ = NULL;  bv2_ = NULL; bv3_ = NULL; bv4_ = NULL; ; bv5_ = NULL; bv6_ = NULL; bv7_ = NULL; bv8_ = NULL}
+        void unRegister_Boundary(void) { bv1_ = NULL;  bv2_ = NULL; bv3_ = NULL; bv4_ = NULL; ; bv5_ = NULL; bv6_ = NULL; bv7_ = NULL; bv8_ = NULL ;}
 
         void Register_Domain(grid_info<N_RANK> initial_grid) {
             for (int i = 0; i < N_RANK; ++i) {
@@ -1020,7 +1020,7 @@ class Pochoir_Array {
 		}
 
 		inline T & set (int _idx8, int _idx7, int _idx6, int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + _idx7 * stride_[7] + (_idx8i % toggle_) * total_size_;
+			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + _idx5 * stride_[5] + _idx6 * stride_[6] + _idx7 * stride_[7] + (_idx8 % toggle_) * total_size_;
 			return (*view_)[l_idx];
 		}
 
@@ -1130,7 +1130,7 @@ class Pochoir_Array {
 		}
 
 		inline T & interior (int _idx5, int _idx4, int _idx3, int _idx2, int _idx1, int _idx0) {
-			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + (_idx5i % toggle_) * total_size_;
+			int l_idx = _idx0 * stride_[0] + _idx1 * stride_[1] + _idx2 * stride_[2] + _idx3 * stride_[3] + _idx4 * stride_[4] + (_idx5 % toggle_) * total_size_;
 			return (*view_)[l_idx];
 		}
 
@@ -1263,7 +1263,7 @@ class Pochoir_Array {
 #endif
 };
 
-#if 1
+#if 0
 template<typename T2, int N2>
 std::ostream& operator<<(std::ostream& os, Pochoir_Array<T2, N2> const & x) { 
 	typedef int size_info[N2];
