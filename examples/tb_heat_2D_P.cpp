@@ -87,13 +87,13 @@ int main(int argc, char * argv[])
     Pochoir_Shape_2D heat_shape_2D[] = {{0, 0, 0}, {-1, 1, 0}, {-1, 0, 0}, {-1, -1, 0}, {-1, 0, -1}, {-1, 0, 1}};
     //Pochoir_Shape_2D heat_shape_2D[] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 0}, {0, -1, 0}, {0, 0, -1}, {0, 0, 1}};
     Pochoir<N_RANK> heat_2D(heat_shape_2D);
-	//Pochoir_Array<double, N_RANK> b(N1, N2);
+	Pochoir_Array<double, N_RANK> b(N1, N2);
 	Pochoir_Array<double, N_RANK> a(N1, N2) ;
     a.Register_Boundary(aperiodic_2D);
     heat_2D.Register_Array(a);
 
-    //b.Register_Shape(heat_shape_2D);
-    //b.Register_Boundary(aperiodic_2D);
+    b.Register_Shape(heat_shape_2D);
+    b.Register_Boundary(aperiodic_2D);
 
     /* Now we can only access the Pochoir_Array after Register_Array,
      * or Register_Shape with the array, because we rely on the shape
@@ -103,8 +103,8 @@ int main(int argc, char * argv[])
 	for (int j = 0; j < N2; ++j) {
         a(0, i, j) = 1.0 * (rand() % BASE); 
         a(1, i, j) = 0; 
-        //b(0, i, j) = a(0, i, j);
-        //b(1, i, j) = 0;
+        b(0, i, j) = a(0, i, j);
+        b(1, i, j) = 0;
 	} }
 
 	cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
@@ -132,7 +132,7 @@ int main(int argc, char * argv[])
 	gettimeofday(&end, 0);
 	std::cout << "Pochoir ET: consumed time :" << 1.0e3 * tdiff(&end, &start)/TIMES << "ms" << std::endl;
 
-#if 0	
+#if 1	
 	gettimeofday(&start, 0);
     for (int times = 0; times < TIMES; ++times) {
 	for (int t = 0; t < T_SIZE; ++t) {

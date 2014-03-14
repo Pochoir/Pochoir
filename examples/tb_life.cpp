@@ -84,11 +84,11 @@ int main(int argc, char * argv[])
     Pochoir_Shape_2D life_shape_2D[] = {{0, 0, 0}, {-1, 1, 0}, {-1, -1, 0}, {-1, 0, 1}, {-1, 0, -1}, {-1, 1, 1}, {-1, -1, -1}, {-1, 1, -1}, {-1, -1, 1}, {-1, 0, 0}};
     Pochoir_2D life_2D(life_shape_2D), bt_life_2D(life_shape_2D);
 	Pochoir_Array_2D(bool) a(N1, N2), c(N1, N2);
-	//Pochoir_Array_2D(bool) b(N1, N2) ;
+	Pochoir_Array_2D(bool) b(N1, N2) ;
 
     a.Register_Boundary(life_bv_2D);
     c.Register_Boundary(life_bv_2D);
-    //b.Register_Shape(life_shape_2D);
+    b.Register_Shape(life_shape_2D);
 
     life_2D.Register_Array(a);
     bt_life_2D.Register_Array(c);
@@ -97,8 +97,8 @@ int main(int argc, char * argv[])
 	for (int j = 0; j < N2; ++j) {
 		a(0, i, j) = (rand() & 0x1) ? true : false;
 		a(1, i, j) = 0; 
-        //b(0, i, j) = a(0, i, j);
-        //b(1, i, j) = 0;
+        b(0, i, j) = a(0, i, j);
+        b(1, i, j) = 0;
         c(0, i, j) = a(0, i, j);
         c(1, i, j) = 0;
 	} }
@@ -156,8 +156,8 @@ int main(int argc, char * argv[])
 	gettimeofday(&end, 0);
 	std::cout << "Pochoir (Bit Trick): consumed time :" << 1.0e3 * tdiff(&end, &start)/TIMES << "ms" << std::endl;
 
-    //b.Register_Boundary(life_bv_2D);
-#if 0
+#if 1
+    b.Register_Boundary(life_bv_2D);
 	gettimeofday(&start, 0);
     for (int times = 0; times < TIMES; ++times) {
 	for (int t = 1; t < T_SIZE+1; ++t) {
@@ -190,7 +190,7 @@ int main(int argc, char * argv[])
 		check_result(t, i, j, a.interior(t, i, j), c.interior(t, i, j));
 	} } 
     printf("passed!\n");
-#if 0
+#if 1
     printf("compare a with b : ");
 	for (int i = 0; i < N1; ++i) {
 	for (int j = 0; j < N2; ++j) {

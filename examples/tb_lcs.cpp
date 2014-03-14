@@ -280,7 +280,7 @@ int stencilLCS( int nX, char *X, int nY, char *Y )
                       	      
     Pochoir_Kernel_End
 
-    LCS.Register_Domain( J );
+    //LCS.Register_Domain( J );
 
     int t = nX + nY;
 

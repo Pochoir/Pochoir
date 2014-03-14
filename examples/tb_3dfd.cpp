@@ -479,7 +479,7 @@ int main(int argc, char *argv[])
 
   pa.Register_Boundary(fd_bv_3D) ;
   fd_3D.Register_Array(pa);
-  //fd_3D.Register_Domain(I, J, K);
+  //fd_3D.Register_Domain(K, J, I);
 
   Pochoir_Kernel_3D(fd_3D_fn, t, i, j, k)
     float c0 = coef[0], c1 = coef[1], c2 = coef[2], c3 = coef[3], c4 = coef[4];
