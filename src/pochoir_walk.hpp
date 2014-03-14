@@ -57,7 +57,7 @@ struct meta_grid_boundary <8, BF>{
         for (int k = grid.x0[5]; k < grid.x1[5]; ++k) {
             int new_k = pmod_lu(k, initial_grid.x0[5], initial_grid.x1[5]);
             for (int l = grid.x0[4]; l < grid.x1[4]; ++l) {
-                int new_l = pmod_lu(l, initial_gird.x0[4], initial_grid.x1[4]);
+                int new_l = pmod_lu(l, initial_grid.x0[4], initial_grid.x1[4]);
         for (int m = grid.x0[3]; m < grid.x1[3]; ++m) {
             int new_m = pmod_lu(m, initial_grid.x0[3], initial_grid.x1[3]);
             for (int n = grid.x0[2]; n < grid.x1[2]; ++n) {
@@ -66,12 +66,14 @@ struct meta_grid_boundary <8, BF>{
             int new_o = pmod_lu(o, initial_grid.x0[1], initial_grid.x1[1]);
             for (int p = grid.x0[0]; p < grid.x1[0]; ++p) {
                 int new_p = pmod_lu(p, initial_grid.x0[0], initial_grid.x1[0]);
+#ifdef CHECK_SHAPE
                 if (inRun) {
                     home_cell_[8] = new_p; home_cell_[7] = new_o;
                     home_cell_[6] = new_n; home_cell_[5] = new_m;
                     home_cell_[4] = new_l; home_cell_[3] = new_k;
                     home_cell_[2] = new_j; home_cell_[1] = new_i;
                 }
+#endif
                 bf(t, new_i, new_j, new_k, new_l, new_m, new_n, new_o, new_p);
             } } } } } } } }
     }
@@ -88,19 +90,21 @@ struct meta_grid_boundary <7, BF>{
         for (int k = grid.x0[4]; k < grid.x1[4]; ++k) {
             int new_k = pmod_lu(k, initial_grid.x0[4], initial_grid.x1[4]);
             for (int l = grid.x0[3]; l < grid.x1[3]; ++l) {
-                int new_l = pmod_lu(l, initial_gird.x0[3], initial_grid.x1[3]);
+                int new_l = pmod_lu(l, initial_grid.x0[3], initial_grid.x1[3]);
         for (int m = grid.x0[2]; m < grid.x1[2]; ++m) {
             int new_m = pmod_lu(m, initial_grid.x0[2], initial_grid.x1[2]);
             for (int n = grid.x0[1]; n < grid.x1[1]; ++n) {
                 int new_n = pmod_lu(n, initial_grid.x0[1], initial_grid.x1[1]);
         for (int o = grid.x0[0]; o < grid.x1[0]; ++o) {
             int new_o = pmod_lu(o, initial_grid.x0[0], initial_grid.x1[0]);
+#ifdef CHECK_SHAPE
                 if (inRun) {
                     home_cell_[7] = new_o;
                     home_cell_[6] = new_n; home_cell_[5] = new_m;
                     home_cell_[4] = new_l; home_cell_[3] = new_k;
                     home_cell_[2] = new_j; home_cell_[1] = new_i;
                 }
+#endif
                 bf(t, new_i, new_j, new_k, new_l, new_m, new_n, new_o);
             } } } } } } }
     }
@@ -117,16 +121,18 @@ struct meta_grid_boundary <6, BF>{
         for (int k = grid.x0[3]; k < grid.x1[3]; ++k) {
             int new_k = pmod_lu(k, initial_grid.x0[3], initial_grid.x1[3]);
             for (int l = grid.x0[2]; l < grid.x1[2]; ++l) {
-                int new_l = pmod_lu(l, initial_gird.x0[2], initial_grid.x1[2]);
+                int new_l = pmod_lu(l, initial_grid.x0[2], initial_grid.x1[2]);
         for (int m = grid.x0[1]; m < grid.x1[1]; ++m) {
             int new_m = pmod_lu(m, initial_grid.x0[1], initial_grid.x1[1]);
             for (int n = grid.x0[0]; n < grid.x1[0]; ++n) {
                 int new_n = pmod_lu(n, initial_grid.x0[0], initial_grid.x1[0]);
+#ifdef CHECK_SHAPE
                 if (inRun) {
                     home_cell_[6] = new_n; home_cell_[5] = new_m;
                     home_cell_[4] = new_l; home_cell_[3] = new_k;
                     home_cell_[2] = new_j; home_cell_[1] = new_i;
                 }
+#endif
                 bf(t, new_i, new_j, new_k, new_l, new_m, new_n);
             } } } } } } 
     }
@@ -143,14 +149,16 @@ struct meta_grid_boundary <5, BF>{
         for (int k = grid.x0[2]; k < grid.x1[2]; ++k) {
             int new_k = pmod_lu(k, initial_grid.x0[2], initial_grid.x1[2]);
             for (int l = grid.x0[1]; l < grid.x1[1]; ++l) {
-                int new_l = pmod_lu(l, initial_gird.x0[1], initial_grid.x1[1]);
+                int new_l = pmod_lu(l, initial_grid.x0[1], initial_grid.x1[1]);
         for (int m = grid.x0[0]; m < grid.x1[0]; ++m) {
             int new_m = pmod_lu(m, initial_grid.x0[0], initial_grid.x1[0]);
+#ifdef CHECK_SHAPE
                 if (inRun) {
                     home_cell_[5] = new_m;
                     home_cell_[4] = new_l; home_cell_[3] = new_k;
                     home_cell_[2] = new_j; home_cell_[1] = new_i;
                 }
+#endif
                 bf(t, new_i, new_j, new_k, new_l, new_m);
             } } } } } 
     }
@@ -380,12 +388,11 @@ struct power<1> {
     enum {value = 5};
 }; 
 
-template <int N_RANK>
-class heterogeneity ;
+template <int N_RANK> class auto_tune ;
 
 template <int N_RANK>
 struct Algorithm {
-	//friend class heterogeneity<N_RANK> ;
+	friend class auto_tune<N_RANK> ;
 	typedef struct {
 		int level; /* level is how many dimensions we have cut so far */
 		int t0, t1;
@@ -466,6 +473,20 @@ struct Algorithm {
 #endif
 
     typedef enum {TILE_NCORES, TILE_BOUNDARY, TILE_MP} algor_type;
+
+	inline int get_physical_length(int i)
+	{
+		assert(i >= 0) ;
+		assert (i < N_RANK) ;
+		return phys_length_ [i] ;
+	}
+
+	inline int get_slope(int i)
+	{
+		assert(i >= 0) ;
+		assert (i < N_RANK) ;
+		return slope_ [i] ;
+	}
     
     /* constructor */
     Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1) {
@@ -1012,9 +1033,9 @@ void Algorithm<N_RANK>::set_phys_grid(grid_info<N_RANK> const & grid)
             uub_boundary[i] = phys_grid_.x1[i] + slope_[i];
             lub_boundary[i] = phys_grid_.x0[i] + slope_[i];
 
-			//cout << " ulb_boundary[ " << i << " ] " << ulb_boundary[i] <<
-			//" uub_boundary[ " << i << " ] " << uub_boundary[i] <<
-			//" lub_boundary[ " << i << " ] " << lub_boundary[i] << endl ;
+			cout << " ulb_boundary[ " << i << " ] " << ulb_boundary[i] <<
+			" uub_boundary[ " << i << " ] " << uub_boundary[i] <<
+			" lub_boundary[ " << i << " ] " << lub_boundary[i] << endl ;
         }
     }
 }

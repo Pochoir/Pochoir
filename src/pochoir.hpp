@@ -90,7 +90,7 @@ class Pochoir {
 		void * arr_ ;
 		int resolution_ ;
 		ofstream * outputFile_ ;
-		char * problem_name ; //name of the problem we are solving
+		char * problem_name_ ; //name of the problem we are solving
     public:
 
 	void set_resolution(int r)
@@ -105,7 +105,7 @@ class Pochoir {
 
 	void set_problem_name(char * name)
 	{
-		problem_name = name ;
+		problem_name_ = name ;
 	}
 
     template <size_t N_SIZE>
@@ -121,6 +121,7 @@ class Pochoir {
         regShapeFlag = true;
         num_arr_ = 0;
         arr_type_size_ = 0;
+		problem_name_ = 0 ;
     }
     /* currently, we just compute the slope[] out of the shape[] */
     /* We get the grid_info out of arrayInUse */
@@ -399,9 +400,13 @@ void Pochoir<N_RANK>::Run(int timestep, BF const & bf) {
     /* base_case_kernel() will mimic exact the behavior of serial nested loop!
     */
     checkFlags();
+#ifdef CHECK_SHAPE
     inRun = true;
+#endif
     algor.base_case_kernel_boundary(0 + time_shift_, timestep + time_shift_, logic_grid_, bf);
+#ifdef CHECK_SHAPE
     inRun = false;
+#endif
     // algor.sim_bicut_zero(0 + time_shift_, timestep + time_shift_, logic_grid_, bf);
     /* obase_boundary_p() is a parallel divide-and-conquer algorithm, which checks
      * boundary for every point
@@ -475,7 +480,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f) {
 /* obase for interior and ExecSpec for boundary */
 template <int N_RANK> template <typename F, typename BF>
 void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
-    int l_total_points = 1;
+    //int l_total_points = 1;
     Algorithm<N_RANK> algor(slope_);
     algor.set_phys_grid(phys_grid_);
     algor.set_thres(arr_type_size_);
@@ -591,15 +596,15 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #endif
 #elif defined AUTO_TUNE
 	//cout << "address of home cell " << &home_cell_ << endl ;
-	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name, timestep_,
+	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name_, timestep_,
 						 arr_type_size_) ;
 	struct timeval start, end;
-	double compute_time = 0. ;
+	//double compute_time = 0. ;
 	gettimeofday(&start, 0);
 	at.do_trap_space_time_cuts(time_shift_, timestep+time_shift_,
 								logic_grid_, f, bf, arr_) ;
 	gettimeofday(&end, 0);
-	compute_time = tdiff(&end, &start) ;
+	//compute_time = tdiff(&end, &start) ;
 	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
 	//at.print_dag() ;
 #endif
@@ -648,15 +653,15 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #endif
 #elif defined AUTO_TUNE
 	//cout << "address of home cell " << &home_cell_ << endl ;
-	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name, timestep_,
+	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name_, timestep_,
 						arr_type_size_) ;
 	struct timeval start, end;
-	double compute_time = 0. ;
+	//double compute_time = 0. ;
 	gettimeofday(&start, 0);
 	at.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
 								logic_grid_, f, bf, arr_) ;
 	gettimeofday(&end, 0);
-	compute_time = tdiff(&end, &start) ;
+	//compute_time = tdiff(&end, &start) ;
 	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
 
 	//at.print_dag() ;

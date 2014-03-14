@@ -26,11 +26,14 @@
 using namespace std ;
 
 typedef unsigned int word_type ;
+template <int N_RANK> class auto_tune ;
 
 template <int N_RANK>
 class zoid
 {
+	friend class auto_tune<N_RANK> ;
 	public :
+	typedef unsigned char decision_type ;
 	inline void set_capacity(int size)
 	{
 		assert (size >= 0) ;
@@ -252,11 +255,9 @@ class zoid
 		//cout << "zoid : end destructor for zoid " << id << endl ;
 	}
 	
-	typedef unsigned char decision_type ;
-	const int NUM_BITS_DECISION = sizeof(decision_type) * 8 ;
-	const double FUZZ = 1. ;
+	static const int NUM_BITS_DECISION ;
+	static const double FUZZ ;
 	private :
-	//char decision ;
 	decision_type decision ;
 	int height ;
 	unsigned long * children ;  
@@ -275,10 +276,16 @@ class zoid
 #endif
 } ;
 
+template <int N_RANK>
+double const zoid<N_RANK>::FUZZ = 1 ;
+
+template <int N_RANK>
+int const zoid<N_RANK>::NUM_BITS_DECISION = sizeof(decision_type) * 8 ;
 // a compact representation of zoid
 template <int N_RANK>
 class simple_zoid
 {
+	friend class auto_tune<N_RANK> ;
 public :
 	simple_zoid()
 	{
@@ -293,19 +300,29 @@ public :
 		children = 0 ;
 	}
 
-	void resize_and_copy_children(int size, unsigned long * src)
+	void resize_children(int size)
 	{
 		assert (size >= 0) ;
 		assert (children == 0) ;
-		children = new unsigned long [size];
+		if (size > 0)
+		{
+			children = new unsigned long [size];
+		}
+	}
+
+	void resize_and_copy_children(int size, unsigned long * src)
+	{
+		//assert (size >= 0) ;
+		//assert (children == 0) ;
+		//children = new unsigned long [size];
+		resize_children(size) ;
 		for (int i = 0 ; i < size ; i++)
 		{
 			children [i] = src [i] ;
 		}
 	}
 	typedef typename zoid<N_RANK>::decision_type decision_type ;
-	//const int NUM_BITS_DECISION = sizeof(decision_type) * 8 ;
-	const int NUM_BITS_DECISION = zoid<N_RANK>::NUM_BITS_DECISION ;
+	//const int NUM_BITS_DECISION = zoid<N_RANK>::NUM_BITS_DECISION ;
 private :
     decision_type decision ;
 	unsigned long * children ;
@@ -326,7 +343,7 @@ private:
 					hash_table_iterator ;
 	typedef typename zoid<N_RANK>::decision_type decision_type ;
 
-	void flush_cache()
+	/*void flush_cache()
 	{
 		const int size = 20*1024*1024; // Allocate 20M. 
 		//char *c = (char *)malloc(size);
@@ -337,7 +354,7 @@ private:
 		//free (c) ;
 		int r = rand() % 1024 ;
 		memset(m_cache, r, size) ;
-	}
+	}*/
 
 	void create_simple_zoids()
 	{
@@ -366,16 +383,16 @@ private:
 	void initialize(grid_info<N_RANK> const & grid, int T, bool power_of_two)
 	{
 		cout << "FUZZ " << zoid_type::FUZZ << endl ;
-		const int size = 20*1024*1024; // Allocate 20M. 
+		//const int size = 20*1024*1024; // Allocate 20M. 
 		//m_cache = new char [size];
 		//memset(m_cache, 0, size) ;
 
 		unsigned long volume = 1 ;
-		m_space_cut_mask = 0 ;
+		//m_space_cut_mask = 0 ;
 		for (int i = 0 ; i < N_RANK ; i++)
 		{
 			volume *= (grid.x1[i] - grid.x0[i]) ;		
-			m_space_cut_mask |= 1 << i + 1 ;
+			//m_space_cut_mask |= 1 << i + 1 ;
 #ifdef WRITE_DAG
 			file_interior << " N" << i+1 << " " << grid.x1[i] - grid.x0[i] ;	
 			file_boundary << " N" << i+1 << " " << grid.x1[i] - grid.x0[i] ;	
@@ -421,7 +438,7 @@ private:
 	}
 
 	//inline copy_data(double * dest, double * src, unsigned long length)
-	inline copy_data(void * dest, void * src, unsigned long length)
+	inline void copy_data(void * dest, void * src, unsigned long length)
 	{
 		/*for (unsigned long i = 0 ; i < length ; i++)
 		{
@@ -623,6 +640,7 @@ private:
 						cout << "2 diff zoids hash to same key " << endl ;
 						cout << "diff dim " << i << endl ;
 						cout << "centroid " << centroid << endl ;
+						cout << "key " << key << endl ;
 						cout << " grid " << endl ;
 						for (int j = N_RANK - 1 ; j >= 0 ; j--)
 						{
@@ -739,8 +757,10 @@ private:
 		{
 			assert (start->first == key) ;
 			assert (start->second < m_num_vertices) ;
+#ifndef NDEBUG
 			zoid_type * z = &(m_zoids [start->second]) ;
 			assert (z->height == height) ;
+#endif
 //#if defined (TIME_INVARIANCE_INTERIOR) || defined(TIME_INVARIANCE_BOUNDARY)
 //			assert (z->decision >> zoid_type::NUM_BITS_DECISION - 1 == 0) ;
 //#endif
@@ -786,10 +806,8 @@ private:
 		color [node] = num_vertices ; //color node gray
 		zoid_type & z = m_zoids [node] ;
 		//if leaf do not recurse further
-		//if (z.decision == 0 || 
-		//	z.decision == 1 << zoid<N_RANK>::NUM_BITS_DECISION - 1)
-		if (z.decision == 1 << zoid_type::NUM_BITS_DECISION - 2 || 
-			z.decision == 3 << zoid<N_RANK>::NUM_BITS_DECISION - 2)
+		if (z.decision == 1 << (zoid_type::NUM_BITS_DECISION - 2) || 
+			z.decision == 3 << (zoid_type::NUM_BITS_DECISION - 2))
 		{
 			//do not store node's children
 			//cout << "push back zoid " << z.id << endl ;
@@ -891,6 +909,199 @@ private:
 		m_num_vertices = num_vertices ;
 	}
 
+	bool read_dag_from_file(grid_info<N_RANK> const & grid, int T, int h1,
+							double & time)
+	{
+		string name = m_problem_name ;
+		if (name.size() == 0)
+		{
+			name = "auto_tune_dag" ;
+		}
+		char tmp [100] ;
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			sprintf(tmp, "_%d", grid.x1[i] - grid.x0[i]) ;
+			name += tmp ;
+		}
+		sprintf(tmp, "_%d", T) ;
+		name += tmp ;
+#ifndef NDEBUG
+		name += "_debug" ;
+#endif
+#ifdef TRAP
+		name += "_trap" ;
+#else
+		name += "_sawzoid" ;
+#endif
+		ifstream dag(name.c_str()) ;
+		if (! dag)
+		{
+			//file doesn't exist.
+			cout << "dag file " << name << " doesn't exist" << endl ; 
+			dag.close() ;
+			return false ;
+		}
+		cout << " using dag file " << name << endl ;
+		int h = 0 ;
+		//read height
+		dag >> h ;
+		//cout << h << " " ;
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			int N = 0 ;
+			//read grid dimension
+			dag >> N ;
+			//cout << N << " " ;
+			if (N != grid.x1[i] - grid.x0[i])
+			{
+				return false ;
+			}
+		}
+		//cout << endl ;
+		string str ;
+		//parse '# of head nodes "
+		dag >> str ; dag >> str ; dag >> str ; dag >> str  ;
+		int head_size ;
+		//read size of head array
+		dag >> head_size ;
+		//cout << "# of head nodes " << head_size << endl ;
+		//parse "head nodes"
+		dag >> str ; dag >> str ; 
+		//cout << "head nodes" << endl ;
+		//vector <unsigned long> head ;
+		m_head.resize(head_size) ;
+		double t ;
+		//read head [0]
+		dag >> m_head [0] ;
+		//read predicted time
+		dag >> t ;
+		//cout << m_head [0] <<  " " << t << endl ;
+		time = t * (int) (T / h1) ;
+		for (int i = 1 ; i < head_size ; i++)
+		{
+			dag >> m_head [i] ;
+			dag >> t ;
+			//cout << m_head [i] <<  " " << t << endl ;
+			time += t ;
+		}
+		//parse # nodes
+		dag >> str ; dag >> str ;
+		//int num_nodes;
+		//read num_nodes
+		dag >> m_num_vertices ;
+		//cout << "# nodes " << m_num_vertices << endl ;
+		//parse nodes
+		dag >> str ;
+		//cout << "nodes" << endl ;
+		//vector<simple_zoid_type> simple_zoids ; 
+		m_simple_zoids.resize(m_num_vertices) ;
+		for (int i = 0 ; i < m_num_vertices ; i++)
+		{
+			int decision ;
+			int height, num_children ;
+			dag >> decision ;
+			dag >> height ;
+			dag >> num_children ;
+			simple_zoid_type & z = m_simple_zoids [i] ;
+			//z.set_decision(decision) ;
+			z.decision = decision ;
+			z.resize_children(num_children) ;
+			//z.num_children = num_children ;
+			//cout << decision << " " << height << " " << num_children << " " ;
+			for (int i = 0 ; i < num_children ; i++)
+			{
+				int child ;
+				dag >> child ;
+				//z.set_child(i, child) ;
+				z.children [i] = child ;
+				//cout << child << " " ;
+			}
+			//cout << endl ;
+#ifndef NDEBUG
+			//read grid info
+			grid_info<N_RANK> grid ;
+			for (int i = 0 ; i < N_RANK ; i++)
+			{
+				dag >> grid.x0 [i] ; 
+				dag >> grid.x1 [i] ;
+				dag >> grid.dx0 [i] ; 
+				dag >> grid.dx1 [i] ;
+				//cout << grid.x0 [i] << " " << grid.x1 [i] << " " << 
+				//	" " << grid.dx0 [i] << " " << grid.dx1 [i] << endl ;
+			}
+			//z.set_grid_info(grid) ;
+			z.info = grid ;
+#endif
+		}
+		dag.close() ;
+		return true ;
+	}
+
+	void write_dag_to_file(grid_info<N_RANK> const & grid, int T)
+	{
+		if (m_problem_name.size() == 0)
+		{
+			cout << "auto tune : writing dag to file. problem name unspecified "
+				<< endl ;
+			m_problem_name = "auto_tune_dag" ;
+		}
+		char tmp [100] ;
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			sprintf(tmp, "_%d", grid.x1[i] - grid.x0[i]) ;
+			m_problem_name += tmp ;
+		}
+		sprintf(tmp, "_%d", T) ;
+		m_problem_name += tmp ;
+#ifndef NDEBUG
+		m_problem_name += "_debug" ;
+#endif
+#ifdef TRAP
+		m_problem_name += "_trap" ;
+#else
+		m_problem_name += "_sawzoid" ;
+#endif
+		ofstream dag ;
+		dag.open(m_problem_name.c_str()) ;
+		//write height
+		dag << T << " " ;
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			//write grid size
+			dag << grid.x1[i] - grid.x0[i] << " " ;
+		}
+		dag << endl ;
+		dag << "# of head nodes " << m_head.size() << endl ;
+		dag << "head nodes" << endl ;
+		for (int i = 0 ; i < m_head.size() ; i++)
+		{
+			dag << m_head [i] << " " << m_zoids [m_head [i]].time << endl ;
+		}
+		dag << "# nodes " << m_zoids.size() << endl ;
+		dag << "nodes" << endl ;
+		for (int i = 0 ; i < m_zoids.size() ; i++)
+		{
+			zoid_type & z = m_zoids [i] ;
+			dag << (int) z.decision << " " << z.height << " " << 
+				z.num_children << " " ;
+			//cout << "z.num_children " << z.num_children << endl ; 
+			for (int j = 0 ; j < z.num_children ; j++)
+			{
+				dag << z.children [j] << " " ;
+			}
+			dag << endl ;
+#ifndef NDEBUG
+			//write grid info
+			grid_info<N_RANK> & grid = z.info ;
+			for (int i = 0 ; i < N_RANK ; i++)
+			{
+				dag << grid.x0 [i] << " " << grid.x1 [i] << " " << 
+					" " << grid.dx0 [i] << " " << grid.dx1 [i] << endl ;
+			}
+#endif
+		}
+		dag.close() ;
+	}
 #ifndef NDEBUG
 	void print_dag()
 	{
@@ -1095,9 +1306,6 @@ private:
 		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
 		F const & f) ;
 
-	//inline bool touch_boundary(int i, int lt,
-      //          grid_info<N_RANK> & grid, decision_type & decision) ;
-	//char * m_cache ;
 	//vector<double> m_array ;
 	void * m_array ;
 	decision_type m_space_cut_mask ;
@@ -1116,7 +1324,7 @@ private:
 	int num_bits_width ; //# of bits to store width
 	int num_bits_dim ; //# of bits for bottom and top widths in a dimension
 	int m_initial_height ; //initial height of the zoid
-	//char * problem_name ; //name of the problem we solve.
+	string m_problem_name ; //name of the problem we solve.
 	ofstream file_interior ; //write height, widths of a zoid in the interior
 	ofstream file_boundary ; //write height, widths of a zoid at the boundary
 	int m_type_size ; //size of type of date that is backed up in tuning
@@ -1136,6 +1344,14 @@ private:
 				  bool power_of_two, char * name, int T,
 				  int type_size):m_algo(alg)
 	{
+		if (name != 0)
+		{
+			m_problem_name = name ;
+		}
+		else
+		{
+			m_problem_name = "" ;
+		}
 		m_array = 0 ;
 		m_type_size = type_size ;
 		m_head.reserve(2) ;
@@ -1144,6 +1360,11 @@ private:
 		num_bits_dim = sizeof (unsigned long) * 8 / N_RANK ;
 		num_bits_width = sizeof (unsigned long) * 8 / (2 * N_RANK) ;
 
+		m_space_cut_mask = 0 ;
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			m_space_cut_mask |= 1 << (i + 1) ;
+		}
 #ifdef WRITE_DAG
 		time_t now = time(0);
 		tm* localtm = localtime(&now);
@@ -1207,69 +1428,82 @@ private:
 		int Wn = W / (slope << 1) ;
 		int index_msb = (sizeof(int) << 3) - __builtin_clz(Wn) - 1 ;
 		//h1 = 2^floor(lg(Wn)). The zoid with height h1 undergoes a space cut.
-		int h1 = 1 << index_msb ;
+		int h1 = 1 << index_msb, h2, index ;
 		if (T < h1)
 		{
 			index_msb = (sizeof(int) << 3) - __builtin_clz(T) - 1 ;
 			h1 = 1 << index_msb ;
 		}
-		initialize(grid, h1, true) ;
-		//back up data
-		//copy_data(&(m_array[0]), array->data(), volume) ;
-		copy_data(m_array, array, volume) ;
-		m_head.push_back (ULONG_MAX) ;
+		bool read_dag = false ;
 		clock_gettime(CLOCK_MONOTONIC, &start) ;
-		//gettimeofday(&start, 0);
-		build_auto_tune_dag_sawzoid(t0, t0 + h1, grid, f, bf, 0) ;
-
-		int offset = t0 + T / h1 * h1 ;
-		expected_run_time += m_zoids[m_head[0]].time * (int) (T / h1) ;
-		int h2 = t1 - offset ;
-		int index = 1 ;
-		while (h2 >= 1)
-		//while (h2 > m_algo.dt_recursive_)
-		{
-			//find index of most significant bit that is set
-			index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
-			int h = 1 << index_msb ;
-			//cout << "t0 " << t0 << " t1 " << t1 << 
-			cout <<	" offset " << offset << " offset + h " <<
-				offset + h << " h " << h << endl ;
-			m_head.push_back (ULONG_MAX) ;
-			build_auto_tune_dag_sawzoid(offset, offset + h, grid,
-											f, bf, index) ;
-			expected_run_time += m_zoids[m_head[index]].time ;
-			offset += h ;
-			h2 = t1 - offset ;
-			index++ ;
-		}
+		read_dag = read_dag_from_file(grid, T, h1, expected_run_time) ;
 		clock_gettime(CLOCK_MONOTONIC, &end) ;
-		//copy data back.
-		//copy_data(array->data(), &(m_array[0]), volume) ;
-		copy_data(array, m_array, volume) ;
-		//gettimeofday(&end, 0);
-		//dag_time = tdiff(&end, &start) ;
-		dag_time = tdiff2(&end, &start) ;
-		cout << "# vertices " << m_num_vertices << endl ;
-		cout << "DAG capacity " << m_zoids.capacity() << endl ;
-		std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
-				<< "ms" << std::endl;
-		cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
-		clear_projections() ;
+		if (read_dag)
+		{
+			dag_time = tdiff2(&end, &start) ;
+			cout << "read dag from file " << endl ;
+			cout << "# vertices " << m_num_vertices << endl ;
+			cout << "DAG capacity " << m_zoids.capacity() << endl ;
+			std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
+					<< "ms" << std::endl;
+			cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
+		}
+		else
+		{
+			initialize(grid, h1, true) ;
+			//back up data
+			//copy_data(&(m_array[0]), array->data(), volume) ;
+			copy_data(m_array, array, volume) ;
+			m_head.push_back (ULONG_MAX) ;
+			clock_gettime(CLOCK_MONOTONIC, &start) ;
+			build_auto_tune_dag_sawzoid(t0, t0 + h1, grid, f, bf, 0) ;
+
+			int offset = t0 + T / h1 * h1 ;
+			expected_run_time += m_zoids[m_head[0]].time * (int) (T / h1) ;
+			h2 = t1 - offset ;
+			index = 1 ;
+			while (h2 >= 1)
+			{
+				//find index of most significant bit that is set
+				index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
+				int h = 1 << index_msb ;
+				//cout << "t0 " << t0 << " t1 " << t1 << 
+				cout <<	" offset " << offset << " offset + h " <<
+					offset + h << " h " << h << endl ;
+				m_head.push_back (ULONG_MAX) ;
+				build_auto_tune_dag_sawzoid(offset, offset + h, grid,
+												f, bf, index) ;
+				expected_run_time += m_zoids[m_head[index]].time ;
+				offset += h ;
+				h2 = t1 - offset ;
+				index++ ;
+			}
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			//copy data back.
+			//copy_data(array->data(), &(m_array[0]), volume) ;
+			copy_data(array, m_array, volume) ;
+			dag_time = tdiff2(&end, &start) ;
+			cout << "# vertices " << m_num_vertices << endl ;
+			cout << "DAG capacity " << m_zoids.capacity() << endl ;
+			std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
+					<< "ms" << std::endl;
+			cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
+			clear_projections() ;
 #ifndef NDEBUG
-		//print_dag() ;
+			//print_dag() ;
 #endif
-		cout << "begin compress dag" << endl ;
-		compress_dag () ;
-		cout << "# vertices after compression " << m_num_vertices << endl ;
-		cout << "DAG capacity after compression " << m_zoids.capacity() << endl ;
+			cout << "begin compress dag" << endl ;
+			compress_dag () ;
+			cout << "# vertices after compression " << m_num_vertices << endl ;
+			cout << "DAG capacity after compression " << m_zoids.capacity() << endl ;
 #ifndef NDEBUG
-		//print_dag() ;
+			//print_dag() ;
 #endif
-		create_simple_zoids() ;
+			write_dag_to_file(grid, T) ;
+			create_simple_zoids() ;
+		}
 		double compute_time = 0. ;
 		clock_gettime(CLOCK_MONOTONIC, &start) ;
-		//gettimeofday(&start, 0);
 		int m = T / h1 ;
 		for (int i = 0 ; i < m ; i++)
 		{
@@ -1301,37 +1535,10 @@ private:
 			h2 = t1 - t0 ;
 			index++ ;
 		}
-		//gettimeofday(&end, 0);
 		clock_gettime(CLOCK_MONOTONIC, &end) ;
 		compute_time = tdiff2(&end, &start) ;
 		std::cout << "Compute time :" << 1.0e3 * compute_time
 				<< "ms" << std::endl;
-		/*while (h2 > 1)
-		{
-			//find index of most significant bit that is set
-			index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
-			int h = 1 << index_msb ;
-			cout << "t0 " << t0 << " t1 " << t1 << 
-				" h " << h << " t0 + h " <<
-				t0 + h << endl ;
-			bool abnormal = false ;
-			for (int i = 0 ; i < N_RANK ; i++)
-			{
-				int num_triangles = m_algo.dx_recursive_ [i] / ((m_algo.slope_ [i] * h) << 1) ;
-				m_algo.num_triangles [i] = max(1, num_triangles) ;
-				cout << "num_triangles [ " << i << " ] " << m_algo.num_triangles [i] << endl ;
-			}
-			m_algo.abnormal_region_space_time_cut_boundary(t0, t0 + h, grid, f, bf) ;
-			t0 += h ;
-			h2 = t1 - t0 ;
-		}
-		if (h2 == 1)
-		{
-			cout << "h = 1 t0 " << t0 << " t1 " << t1 << 
-				 " t0 + h " << t0 + h2 << endl ;
-			//base_case_kernel_boundary(t0, t0 + h2, grid, bf);
-			m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h2, grid, f, bf) ;
-		}*/
 	}
 
 	template <typename F, typename BF>
@@ -1364,43 +1571,61 @@ private:
 		double expected_run_time = 0 ;
 		if (W >= 2 * slope * T)
 		{
-			//max width is >= 2 * sigma * h implies the zoid is ready for space cuts
-			initialize(grid, T, false) ;
-			//back up data
-			//copy_data(&(m_array[0]), array->data(), volume) ;
-			copy_data(m_array, array, volume) ;
+			//max width is >= 2 * sigma * h implies the zoid is ready for 
+			//space cuts
+			bool read_dag = false ;
+			clock_gettime(CLOCK_MONOTONIC, &start) ;
+			read_dag = read_dag_from_file(grid, T, T, expected_run_time) ;
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			if (read_dag)
+			{
+				dag_time = tdiff2(&end, &start) ;
+				cout << "read dag from file " << endl ;
+				cout << "# vertices " << m_num_vertices << endl ;
+				cout << "DAG capacity " << m_zoids.capacity() << endl ;
+				std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
+						<< "ms" << std::endl;
+				cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
+			}
+			else
+			{
+				initialize(grid, T, false) ;
+				//back up data
+				copy_data(m_array, array, volume) ;
 
-			m_head.push_back (ULONG_MAX) ;
-			clock_gettime(CLOCK_MONOTONIC, &start) ;
-			build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
-			clock_gettime(CLOCK_MONOTONIC, &end) ;
-			dag_time = tdiff2(&end, &start) ;
-			expected_run_time += m_zoids[m_head[0]].time ;
-			cout << "# vertices " << m_num_vertices << endl ;
-			cout << "DAG capacity " << m_zoids.capacity() << endl ;
-			std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
-					<< "ms" << std::endl;
-			cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
-			clear_projections() ;
+				m_head.push_back (ULONG_MAX) ;
+				clock_gettime(CLOCK_MONOTONIC, &start) ;
+				build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
+				clock_gettime(CLOCK_MONOTONIC, &end) ;
+				dag_time = tdiff2(&end, &start) ;
+				expected_run_time += m_zoids[m_head[0]].time ;
+				cout << "# vertices " << m_num_vertices << endl ;
+				cout << "DAG capacity " << m_zoids.capacity() << endl ;
+				std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
+						<< "ms" << std::endl;
+				cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
+				clear_projections() ;
 #ifndef NDEBUG
-		//print_dag() ;
+				//print_dag() ;
 #endif
-			cout << "begin compress dag" << endl ;
-			compress_dag () ;
-			cout << "# vertices after compression" << m_num_vertices << endl ;
-			cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
-			//copy data back.
-			//copy_data(array->data(), &(m_array[0]), volume) ;
-			copy_data(array, m_array, volume) ;
-			create_simple_zoids() ;
-			double compute_time = 0. ;
-			clock_gettime(CLOCK_MONOTONIC, &start) ;
-			trap_space_time_cut_boundary(t0, t1, grid, 
-				&(m_simple_zoids [m_head [0]]), f, bf) ;
-			clock_gettime(CLOCK_MONOTONIC, &end) ;
-			compute_time = tdiff2(&end, &start) ;
-			std::cout << "Compute time :" << 1.0e3 * compute_time
-				<< "ms" << std::endl;
+				cout << "begin compress dag" << endl ;
+				compress_dag () ;
+				cout << "# vertices after compression" << m_num_vertices << endl ;
+				cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
+				//copy data back.
+				//copy_data(array->data(), &(m_array[0]), volume) ;
+				copy_data(array, m_array, volume) ;
+				write_dag_to_file(grid, T) ;
+				create_simple_zoids() ;
+				double compute_time = 0. ;
+				clock_gettime(CLOCK_MONOTONIC, &start) ;
+				trap_space_time_cut_boundary(t0, t1, grid, 
+					&(m_simple_zoids [m_head [0]]), f, bf) ;
+				clock_gettime(CLOCK_MONOTONIC, &end) ;
+				compute_time = tdiff2(&end, &start) ;
+				std::cout << "Compute time :" << 1.0e3 * compute_time
+					<< "ms" << std::endl;
+			}
 		}
 		else
 		{
@@ -1412,42 +1637,59 @@ private:
 			int h1 = W >= 2 * slope ? W / (2 * slope) : 1 ;
 			int h2 = T - T / h1 * h1 ;
 			
-			initialize(grid, h1, false) ;
-			//back up data
-			//copy_data(&(m_array[0]), array->data(), volume) ;
-			copy_data(m_array, array, volume) ;
-
-			cout << "h1 " << h1 << " h2 " << h2 << endl ;
+			bool read_dag = false ;
 			clock_gettime(CLOCK_MONOTONIC, &start) ;
-			m_head.push_back (ULONG_MAX) ;
-			build_auto_tune_dag_trap(t0, t0 + h1, grid, f, bf, 0) ;
-			expected_run_time += m_zoids[m_head[0]].time * (int) (T / h1) ;
-			cout << " t0 + T / h1 * h1  " << t0 + T / h1 * h1 << endl ;
-			if (h2 > 0)
-			{
-				m_head.push_back (ULONG_MAX) ;
-				build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid, f, bf, 1) ;
-				expected_run_time += m_zoids[m_head[1]].time ;
-			}
+			read_dag = read_dag_from_file(grid, T, h1, expected_run_time) ;
 			clock_gettime(CLOCK_MONOTONIC, &end) ;
-			dag_time = tdiff2(&end, &start) ;
-			cout << "# vertices " << m_num_vertices << endl ;
-			cout << "DAG capacity " << m_zoids.capacity() << endl ;
-			cout << "DAG : consumed time :" << 1.0e3 * dag_time
-					<< "ms" << std::endl;
-			cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
-			clear_projections() ;
+			if (read_dag)
+			{
+				dag_time = tdiff2(&end, &start) ;
+				cout << "read dag from file " << endl ;
+				cout << "# vertices " << m_num_vertices << endl ;
+				cout << "DAG capacity " << m_zoids.capacity() << endl ;
+				std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
+						<< "ms" << std::endl;
+				cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
+			}
+			else
+			{
+				initialize(grid, h1, false) ;
+				//back up data
+				copy_data(m_array, array, volume) ;
+
+				cout << "h1 " << h1 << " h2 " << h2 << endl ;
+				clock_gettime(CLOCK_MONOTONIC, &start) ;
+				m_head.push_back (ULONG_MAX) ;
+				build_auto_tune_dag_trap(t0, t0 + h1, grid, f, bf, 0) ;
+				expected_run_time += m_zoids[m_head[0]].time * (int) (T / h1) ;
+				cout << " t0 + T / h1 * h1  " << t0 + T / h1 * h1 << endl ;
+				if (h2 > 0)
+				{
+					m_head.push_back (ULONG_MAX) ;
+					build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid, f, bf, 1) ;
+					expected_run_time += m_zoids[m_head[1]].time ;
+				}
+				clock_gettime(CLOCK_MONOTONIC, &end) ;
+				dag_time = tdiff2(&end, &start) ;
+				cout << "# vertices " << m_num_vertices << endl ;
+				cout << "DAG capacity " << m_zoids.capacity() << endl ;
+				cout << "DAG : consumed time :" << 1.0e3 * dag_time
+						<< "ms" << std::endl;
+				cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
+				clear_projections() ;
 #ifndef NDEBUG
-		//print_dag() ;
+				//print_dag() ;
 #endif
-			cout << "begin compress dag " << endl ;
-			compress_dag () ;
-			cout << "# vertices after compression" << m_num_vertices << endl ;
-			cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
-			//copy data back.
-			//copy_data(array->data(), &(m_array[0]), volume) ;
-			copy_data(array, m_array, volume) ;
-			create_simple_zoids() ;
+				cout << "begin compress dag " << endl ;
+				compress_dag () ;
+				cout << "# vertices after compression" << m_num_vertices << endl ;
+				cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
+				//copy data back.
+				copy_data(array, m_array, volume) ;
+				write_dag_to_file(grid, T) ;
+				create_simple_zoids() ;
+			}
+		
 			double compute_time = 0. ;
 			clock_gettime(CLOCK_MONOTONIC, &start) ;
 			int m = T / h1 ;

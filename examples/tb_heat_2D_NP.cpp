@@ -77,7 +77,7 @@ int main(int argc, char * argv[])
 	//Pochoir_Array_2D(double) a(N_SIZE, N_SIZE) ;
 	Pochoir_Array_2D(double) a(N1, N2) ;
 	//Pochoir_Array_2D(double) b(N_SIZE+2, N_SIZE+2);
-	//Pochoir_Array_2D(double) b(N1+2, N2+2);
+	Pochoir_Array_2D(double) b(N1+2, N2+2);
     Pochoir_2D heat_2D(heat_shape_2D);
 
 	cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
@@ -87,16 +87,19 @@ int main(int argc, char * argv[])
 
     a.Register_Boundary(heat_bv_2D);
     heat_2D.Register_Array(a);
-    //b.Register_Shape(heat_shape_2D);
+    b.Register_Shape(heat_shape_2D);
 
 	for (int i = 0; i < N1; ++i) {
 	for (int j = 0; j < N2; ++j) {
         a(0, i, j) = 1.0 * (rand() % BASE); 
         a(1, i, j) = 0; 
-        //b(0, i+1, j+1) = a(0, i, j);
-        //b(1, i+1, j+1) = 0;
+        b(0, i+1, j+1) = a(0, i, j);
+        b(1, i+1, j+1) = 0;
 	} }
 
+	char name [100] ;
+	sprintf(name, "heat_2D_NP") ;
+	heat_2D.set_problem_name(name) ;
 
     for (int times = 0; times < TIMES; ++times) {
 	    gettimeofday(&start, 0);
@@ -106,7 +109,7 @@ int main(int argc, char * argv[])
     }
 	std::cout << "Pochoir ET: consumed time :" << min_tdiff << "ms" << std::endl;
 
-#if 0
+#if 1
     min_tdiff = INF;
     /* cilk_for + zero-padding */
     for (int times = 0; times < TIMES; ++times) {

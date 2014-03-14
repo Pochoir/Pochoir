@@ -309,7 +309,11 @@ void stencilRNAi0( int nX, char *X, int i_0,
     pRNA.Register_Array( SM );
     pRNA.Register_Array( SMAX );
     pRNA.Register_Array( SP );
-    pRNA.Register_Domain( I, K );    
+    //pRNA.Register_Domain( I, K );    
+
+	char name [10] ;
+	sprintf(name, "rna") ;
+	pRNA.set_problem_name(name) ;
 
     for ( int k_0 = 1; k_0 <= nX; ++k_0 )
       for ( int i = i_0; i < k_0 - 1; ++i )
@@ -622,7 +626,7 @@ int main( int argc, char *argv[ ] )
           {
             printf( "Running iterative stencil..." );
             fflush( stdout );
-                          
+            cout << "nX " << nX << endl ; 
             int maxNumBPITST = stencilRNA( nX, X, false );
 
             printf( "\n\nIterative Stencil:\n" );

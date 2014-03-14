@@ -307,8 +307,9 @@ void computeCoeffs( double r, double V, double T, int ns, int nt,
 
 Pochoir_Boundary_1D( apop_bv_1D, arr, t, i )
 
-   if ( ( i < arr.size( 0 ) - 1 ) || ( t == 0 ) ) return arr.get( t, i );
-   else return 0;
+   //if ( ( i < arr.size( 0 ) - 1 ) || ( t == 0 ) ) return arr.get( t, i );
+   //else return 0;
+   return 0;
 
 Pochoir_Boundary_End
 
@@ -346,8 +347,12 @@ double stencilAPOP( double S, double E, double r, double V, double T,
   
    Pochoir_Kernel_End
 
-   APOP.Register_Domain( I );   
+   //APOP.Register_Domain( I );   
    f.Register_Boundary( apop_bv_1D );
+
+   char name [100] ;
+   sprintf(name, "apop") ;
+   APOP.set_problem_name(name) ;
 
    APOP.Run( nt, APOP_fn );
     

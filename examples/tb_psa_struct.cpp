@@ -368,7 +368,7 @@ int stencilPSA4Arrays( int nX, char *X, int nY, char *Y, int goCost, int geCost,
     pSeq.Register_Array( vG2 );
     pSeq.Register_Array( vD );
     pSeq.Register_Array( vI );            
-    pSeq.Register_Domain( J );
+    //pSeq.Register_Domain( J );
     
     vG( 0, 0 ) = vG2( 0, 0 ) = 0;
     
@@ -452,6 +452,10 @@ int stencilPSA( int nX, char *X, int nY, char *Y, int goCost, int geCost, int *m
 
     int t = nX + nY;
 
+	char name [100] ;
+	sprintf(name, "psa") ;
+	pSeq.set_problem_name(name) ;
+
     pSeq.Run( t, pSeq_fn );
     
     int optCost = min( vG.interior( t + 1, nY ), min( vD.interior( t + 1, nY ), vI.interior( t + 1, nY ) ) );
@@ -529,6 +533,10 @@ int stencilPSAStruct( int nX, char *X, int nY, char *Y, int goCost, int geCost, 
     Pochoir_Kernel_End
 
     int t = nX + nY;
+
+	char name [100] ;
+	sprintf(name, "psa_struct") ;
+	pSeq.set_problem_name(name) ;
 
     pSeq.Run( t, pSeq_fn );
     
@@ -663,6 +671,7 @@ int main( int argc, char *argv[ ] )
         fflush( stdout );
                    
         gettimeofday( &start, 0 );        
+		cout << "nX " << nX << " nY " << nY << endl ;
         int optCost = stencilPSAStruct( nX, X, nY, Y, goCost, geCost, mmCost );    
         gettimeofday( &end, 0 );
 

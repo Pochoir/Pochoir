@@ -71,26 +71,19 @@ int main(int argc, char * argv[])
     Pochoir_Shape_4D heat_shape_4D[] = {{0, 0, 0, 0, 0}, {-1, 1, 0, 0, 0}, {-1, -1, 0, 0, 0}, {-1, 0, 0, 0, 0}, {-1, 0, 0, -1, 0}, {-1, 0, 0, 1, 0}, {-1, 0, 1, 0, 0}, {-1, 0, -1, 0, 0}, {-1, 0, 0, 0, 1}, {-1, 0, 0, 0, -1}};
     Pochoir_4D heat_4D(heat_shape_4D);
 	Pochoir_Array_4D(double) a(N_SIZE, N_SIZE, N_SIZE, N_SIZE) ;
-	//Pochoir_Array_4D(double) b(N_SIZE, N_SIZE, N_SIZE, N_SIZE);
+	Pochoir_Array_4D(double) b(N_SIZE, N_SIZE, N_SIZE, N_SIZE);
     Pochoir_Domain I(1, N_SIZE-1), J(1, N_SIZE-1), K(1, N_SIZE-1), L(1, N_SIZE - 1);
     heat_4D.Register_Array(a);
-    //b.Register_Shape(heat_shape_4D);
+    b.Register_Shape(heat_shape_4D);
 
 	for (int i = 0; i < N_SIZE; ++i) {
 	for (int j = 0; j < N_SIZE; ++j) {
     for (int k = 0; k < N_SIZE; ++k) {
     for (int l = 0; l < N_SIZE; ++l) {
-        if (i == 0 || i == N_SIZE-1
-            || j == 0 || j == N_SIZE-1
-            || k == 0 || k == N_SIZE-1 
-            || l == 0 || l == N_SIZE-1) {
-            a(0, i, j, k, l) = a(1, i, j, k, l) = 0;
-        } else {
-            a(0, i, j, k, l) = 1.0 * (rand() % BASE); 
-            a(1, i, j, k, l) = 0; 
-        }
-        //b(0, i, j, k, l) = a(0, i, j, k, l);
-        //b(1, i, j, k, l) = 0;
+        a(0, i, j, k, l) = 1.0 * (rand() % BASE); 
+        a(1, i, j, k, l) = 0; 
+        b(0, i, j, k, l) = a(0, i, j, k, l);
+        b(1, i, j, k, l) = 0;
 	} } } }
 
     Pochoir_Kernel_4D(heat_4D_fn, t, i, j, k, l)
@@ -109,7 +102,12 @@ int main(int argc, char * argv[])
      * value function
      */
     a.Register_Boundary(heat_bv_4D);
-    heat_4D.Register_Domain(I, J, K, L);
+    b.Register_Boundary(heat_bv_4D);
+    //heat_4D.Register_Domain(I, J, K, L);
+
+	char name [100] ;
+	sprintf(name, "heat_4D_NP") ;
+	heat_4D.set_problem_name(name) ;
 
     for (int times = 0; times < TIMES; ++times) {
 	    gettimeofday(&start, 0);
@@ -119,22 +117,22 @@ int main(int argc, char * argv[])
     }
 	std::cout << "Pochoir ET: consumed time :" << min_tdiff << "ms" << std::endl;
 
-#if 0
+#if 1
     min_tdiff = INF;
     /* cilk_for + zero-padding */
     for (int times = 0; times < TIMES; ++times) {
 	gettimeofday(&start, 0);
-	for (int t = 1; t < T_SIZE+1; ++t) {
-    cilk_for (int i = 1; i < N_SIZE-1; ++i) {
-	for (int j = 1; j < N_SIZE-1; ++j) {
-    for (int k = 1; k < N_SIZE-1; ++k) {
-    for (int l = 1; l < N_SIZE-1; ++l) {
-	   b.interior(t, i, j, k, l) = 
-           0.125 * (b.interior(t-1, i+1, j, k, l) - 2.0 * b.interior(t-1, i, j, k, l) + b.interior(t-1, i-1, j, k, l)) 
-         + 0.125 * (b.interior(t-1, i, j+1, k, l) - 2.0 * b.interior(t-1, i, j, k, l) + b.interior(t-1, i, j-1, k, l)) 
-         + 0.125 * (b.interior(t-1, i, j, k+1, l) - 2.0 * b.interior(t-1, i, j, k, l) + b.interior(t-1, i, j, k-1, l))
-         + 0.125 * (b.interior(t-1, i, j, k, l+1) - 2.0 * b.interior(t-1, i, j, k, l) + b.interior(t-1, i, j, k, l-1))
-         + b.interior(t-1, i, j, k, l);
+	for (int t = 0; t < T_SIZE; ++t) {
+    cilk_for (int i = 0; i < N_SIZE; ++i) {
+	for (int j = 0; j < N_SIZE; ++j) {
+    for (int k = 0; k < N_SIZE; ++k) {
+    for (int l = 0; l < N_SIZE; ++l) {
+	   b(t + 1, i, j, k, l) = 
+           0.125 * (b(t, i+1, j, k, l) - 2.0 * b(t, i, j, k, l) + b(t, i-1, j, k, l)) 
+         + 0.125 * (b(t, i, j+1, k, l) - 2.0 * b(t, i, j, k, l) + b(t, i, j-1, k, l)) 
+         + 0.125 * (b(t, i, j, k+1, l) - 2.0 * b(t, i, j, k, l) + b(t, i, j, k-1, l))
+         + 0.125 * (b(t, i, j, k, l+1) - 2.0 * b(t, i, j, k, l) + b(t, i, j, k, l-1))
+         + b(t, i, j, k, l);
     } } } } }
 	gettimeofday(&end, 0);
     min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
@@ -142,10 +140,10 @@ int main(int argc, char * argv[])
 	std::cout << "Naive Loop: consumed time :" << min_tdiff << "ms" << std::endl;
 
 	t = T_SIZE;
-	for (int i = 1; i < N_SIZE-1; ++i) {
-	for (int j = 1; j < N_SIZE-1; ++j) {
-    for (int k = 1; k < N_SIZE-1; ++k) {
-    for (int l = 1; l < N_SIZE-1; ++l) {
+	for (int i = 0; i < N_SIZE; ++i) {
+	for (int j = 0; j < N_SIZE; ++j) {
+    for (int k = 0; k < N_SIZE; ++k) {
+    for (int l = 0; l < N_SIZE; ++l) {
 		check_result(t, i, j, k, l, a.interior(t, i, j, k, l), b.interior(t, i, j, k, l));
 	} } } }
 #endif

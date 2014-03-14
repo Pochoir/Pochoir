@@ -58,33 +58,30 @@ int main(int argc, char * argv[])
 	int t;
 	struct timeval start, end;
     double min_tdiff = INF;
-    int N_SIZE = 0, T_SIZE = 0;
+    //int N_SIZE = 0, T_SIZE = 0;
+    int N1 = 0, N2 = 0, N3 = 0, T_SIZE = 0;
 
-    if (argc < 3) {
-        printf("argc < 3, quit! \n");
+    if (argc < 5) {
+        printf("argc < 5, quit! \n");
         exit(1);
     }
-    N_SIZE = StrToInt(argv[1]);
-    T_SIZE = StrToInt(argv[2]);
-    printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);
+    N1 = StrToInt(argv[1]);
+    N2 = StrToInt(argv[2]);
+    N3 = StrToInt(argv[3]);
+    T_SIZE = StrToInt(argv[4]);
+    printf("N1 = %d, N2 = %d, N3 = %d, T_SIZE = %d\n", N1, N2, N3 , T_SIZE);
     Pochoir_Shape_3D heat_shape_3D[] = {{0, 0, 0, 0}, {-1, 1, 0, 0}, {-1, -1, 0, 0}, {-1, 0, 0, 0}, {-1, 0, 0, -1}, {-1, 0, 0, 1}, {-1, 0, 1, 0}, {-1, 0, -1, 0}};
     Pochoir_3D heat_3D(heat_shape_3D);
-	Pochoir_Array_3D(double) a(N_SIZE, N_SIZE, N_SIZE), b(N_SIZE, N_SIZE, N_SIZE);
-    Pochoir_Domain I(1, N_SIZE-1), J(1, N_SIZE-1), K(1, N_SIZE-1);
+	Pochoir_Array_3D(double) a(N1, N2, N3) ;
+	Pochoir_Array_3D(double) b(N1, N2, N3);
     heat_3D.Register_Array(a);
     b.Register_Shape(heat_shape_3D);
 
-	for (int i = 0; i < N_SIZE; ++i) {
-	for (int j = 0; j < N_SIZE; ++j) {
-    for (int k = 0; k < N_SIZE; ++k) {
-        if (i == 0 || i == N_SIZE-1
-            || j == 0 || j == N_SIZE-1
-            || k == 0 || k == N_SIZE-1) {
-            a(0, i, j, k) = a(1, i, j, k) = 0;
-        } else {
-            a(0, i, j, k) = 1.0 * (rand() % BASE); 
-            a(1, i, j, k) = 0; 
-        }
+	for (int i = 0; i < N1; ++i) {
+	for (int j = 0; j < N2; ++j) {
+    for (int k = 0; k < N3; ++k) {
+        a(0, i, j, k) = 1.0 * (rand() % BASE); 
+        a(1, i, j, k) = 0; 
         b(0, i, j, k) = a(0, i, j, k);
         b(1, i, j, k) = 0;
 	} } }
@@ -104,8 +101,11 @@ int main(int argc, char * argv[])
      * value function
      */
     a.Register_Boundary(heat_bv_3D);
-    heat_3D.Register_Domain(I, J, K);
+    b.Register_Boundary(heat_bv_3D);
 
+	char name [100] ;
+	sprintf(name, "heat_3D_NP") ;
+	heat_3D.set_problem_name(name) ;
 #if 1
     for (int times = 0; times < TIMES; ++times) {
 	    gettimeofday(&start, 0);
@@ -121,26 +121,38 @@ int main(int argc, char * argv[])
     /* cilk_for + zero-padding */
     for (int times = 0; times < TIMES; ++times) {
 	gettimeofday(&start, 0);
-	for (int t = 1; t < T_SIZE+1; ++t) {
-    cilk_for (int i = 1; i < N_SIZE-1; ++i) {
-	for (int j = 1; j < N_SIZE-1; ++j) {
-    for (int k = 1; k < N_SIZE-1; ++k) {
+	
+	for (int t = 0; t < T_SIZE; ++t) {
+    cilk_for (int i = 0; i < N1; ++i) {
+	for (int j = 0; j < N2; ++j) {
+    for (int k = 0; k < N3; ++k) {
+	   b(t + 1, i, j, k) = 
+           0.125 * (b(t, i+1, j, k) - 2.0 * b(t, i, j, k) + b(t, i-1, j, k)) 
+         + 0.125 * (b(t, i, j+1, k) - 2.0 * b(t, i, j, k) + b(t, i, j-1, k)) 
+         + 0.125 * (b(t, i, j, k+1) - 2.0 * b(t, i, j, k) + b(t, i, j, k-1))
+         + b(t, i, j, k);
+    } } } }
+	/*for (int t = 1; t < T_SIZE+1; ++t) {
+    cilk_for (int i = 1; i < N1+1; ++i) {
+	for (int j = 1; j < N2+1; ++j) {
+    for (int k = 1; k < N3+1; ++k) {
 	   b.interior(t, i, j, k) = 
            0.125 * (b.interior(t-1, i+1, j, k) - 2.0 * b.interior(t-1, i, j, k) + b.interior(t-1, i-1, j, k)) 
          + 0.125 * (b.interior(t-1, i, j+1, k) - 2.0 * b.interior(t-1, i, j, k) + b.interior(t-1, i, j-1, k)) 
          + 0.125 * (b.interior(t-1, i, j, k+1) - 2.0 * b.interior(t-1, i, j, k) + b.interior(t-1, i, j, k-1))
          + b.interior(t-1, i, j, k);
-    } } } }
+    } } } }*/
 	gettimeofday(&end, 0);
     min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
 	std::cout << "Naive Loop: consumed time :" << min_tdiff << "ms" << std::endl;
 
 	t = T_SIZE;
-	for (int i = 1; i < N_SIZE-1; ++i) {
-	for (int j = 1; j < N_SIZE-1; ++j) {
-    for (int k = 1; k < N_SIZE-1; ++k) {
+	for (int i = 0; i < N1; ++i) {
+	for (int j = 0; j < N2; ++j) {
+    for (int k = 0; k < N3; ++k) {
 		check_result(t, i, j, k, a.interior(t, i, j, k), b.interior(t, i, j, k));
+		//check_result(t, i, j, k, a.interior(t, i, j, k), b.interior(t, i+1, j+1, k+1));
 	} } }
 #endif
 

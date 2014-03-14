@@ -773,14 +773,14 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	
 	unsigned long key = 0 ;
 	decision_type decision = 0 ;
-	unsigned char max_loop_decision = 0 ;
+	//unsigned char max_loop_decision = 0 ;
     for (int i = N_RANK-1; i >= 0; --i) {
         unsigned long lb, tb;
         int thres ;
         lb = (grid.x1[i] - grid.x0[i]);
         tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-		//centroid = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
-		centroid = pmod(grid.x0[i], phys_length_ [i]) * width + 
+		centroid = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
+		//centroid = pmod(grid.x0[i], phys_length_ [i]) * width + 
 					centroid ;
 		assert (centroid >= 0) ;
 		width *= phys_length_ [i] ;
@@ -813,7 +813,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		{
 			space_cut = true ;
 			//set if a space cut can happen in dimension i
-			decision |= 1 << i + 1 ;
+			decision |= 1 << (i + 1) ;
 			num_subzoids [i] = 3 ;
 			if (short_side - (thres << 2) >= 0)
 			{
@@ -857,7 +857,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	bool divide_and_conquer = false ;
 	double time_cut_elapsed_time = 0, space_cut_elapsed_time = ULONG_MAX ; 
 	double time_cut_ptime = 0, space_cut_ptime = 0 ;
-	double time_cut_rtime = 0, space_cut_rtime = 0 ;
+	double time_cut_rtime = 0 ;// space_cut_rtime = 0 ;
 	/*if (lt > dt_recursive_)
 	{
 		//cout << " time cut " << endl ;
@@ -954,7 +954,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 			for (int j = 0 ; j < N_RANK && ! invalid_case ; j++)
 			{
 				int like_to_cut_dim_j = i & 1 << j ;
-				int can_cut_dim_j = decision & 1 << j + 1 ;
+				int can_cut_dim_j = decision & 1 << (j + 1) ;
 				//if we like to cut dim j but cannot cut dim j,
 				//the case is invalid.
 				invalid_case = like_to_cut_dim_j && ! can_cut_dim_j ;
@@ -1008,15 +1008,15 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		}
 		assert (space_cut_elapsed_time >= 0.) ;
 		assert (space_cut_ptime >= 0.) ;
-		assert (space_cut_rtime >= 0.) ;
+		//assert (space_cut_rtime >= 0.) ;
 
 		//set the decision with the best case found
 		for (int j = 0 ; j < N_RANK ; j++)
 		{
 			int bit = best_case & 1 << j ;
-			decision = decision & ~(1 << j + 1) | (bit != 0) << j + 1 ;
+			decision = (decision & ~(1 << (j + 1))) | ((bit != 0) << (j + 1)) ;
 #ifndef NDEBUG
-			int decision_bit = decision & 1 << j + 1 ;
+			int decision_bit = decision & 1 << (j + 1) ;
 			assert (decision_bit == bit << 1) ;
 #endif
 		}
@@ -1098,7 +1098,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		//m_zoids [index].decision = 0 ;
 		//set a flag to indicate that we looped on z.
 		m_zoids [index].decision = (decision_type) 1 << 
-					  zoid_type::NUM_BITS_DECISION - 2 ;
+					  (zoid_type::NUM_BITS_DECISION - 2) ;
 		necessary_time = loop_time ;
 		m_zoids [index].time = loop_time ;
 	}
@@ -1125,13 +1125,13 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		assert (loop_time >= 0.) ;
 		//set a flag to indicate that we looped on z.
 		m_zoids [index].decision |= (decision_type) 1 << 
-					  zoid_type::NUM_BITS_DECISION - 2 ;
+					  (zoid_type::NUM_BITS_DECISION - 2) ;
 		zoid_loop_time = loop_time ;
 #endif
 		
 #ifndef NDEBUG
 		//check if looping happened at z.
-		if (m_zoids [index].decision & 1 << zoid<N_RANK>::NUM_BITS_DECISION - 2)
+		if (m_zoids [index].decision & 1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2))
 		{	
 			m_zoids [index].ltime = zoid_loop_time ;
 		}
@@ -1142,7 +1142,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		//if we looped at z, then compare divide and conquer time with
 		//zoid_loop_time 
 		if (m_zoids [index].decision & (decision_type) 1 <<
-				zoid_type::NUM_BITS_DECISION - 2)
+				(zoid_type::NUM_BITS_DECISION - 2))
 		{ 
 			if(necessary_time + projected_time1 < zoid_type::FUZZ * 
 				zoid_loop_time)
@@ -1157,7 +1157,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 				//choose loop.
 				//set decision to loop.
 				m_zoids [index].decision = (decision_type) 1 << 
-						  zoid_type::NUM_BITS_DECISION - 2 ;
+						  (zoid_type::NUM_BITS_DECISION - 2) ;
 				necessary_time = zoid_loop_time ;
 				m_zoids [index].time = zoid_loop_time ;
 			}
@@ -1206,8 +1206,8 @@ double & max_loop_time)
         int thres ;
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
         lb = (grid.x1[i] - grid.x0[i]);
-		//centroid = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
-		centroid = pmod(grid.x0[i], phys_length_ [i]) * width + 
+		centroid = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
+		//centroid = pmod(grid.x0[i], phys_length_ [i]) * width + 
 					centroid ;
 		assert (centroid >= 0) ;
 		width *= phys_length_ [i] ;
@@ -1250,7 +1250,7 @@ double & max_loop_time)
 		{
 			space_cut = true ;
 			//set if a space cut can be done in dimension i
-			decision |= 1 << i + 1 ;
+			decision |= 1 << (i + 1) ;
 			num_subzoids [i] = 3 ;
 			if (short_side - (thres << 2) >= 0)
 			{
@@ -1315,7 +1315,7 @@ double & max_loop_time)
     if (call_boundary)
 	{
 		z.decision |= (decision_type) 1 << 
-					  zoid<N_RANK>::NUM_BITS_DECISION - 1 ;
+					  (zoid<N_RANK>::NUM_BITS_DECISION - 1) ;
         l_dt_stop = dt_recursive_boundary_;
 	}
     else
@@ -1327,7 +1327,7 @@ double & max_loop_time)
 	double projected_time1 = 0, necessary_time = 0 ;
 	double time_cut_elapsed_time = 0, space_cut_elapsed_time = ULONG_MAX ; 
 	double time_cut_ptime = 0, space_cut_ptime = 0 ;
-	double time_cut_rtime = 0, space_cut_rtime = 0 ;
+	double time_cut_rtime = 0 ;//space_cut_rtime = 0 ;
 	/*if (lt > l_dt_stop)  //time cut
 	{
 		divide_and_conquer = true ;
@@ -1353,9 +1353,9 @@ double & max_loop_time)
         int halflt = lt / 2;
         l_son_grid = l_father_grid;
 		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-    	for (int i = N_RANK-1; i >= 0; --i) {
+    	/*for (int i = N_RANK-1; i >= 0; --i) {
         	touch_boundary(i, lt, l_father_grid) ;
-    	}
+    	}*/
         if (call_boundary) {
             symbolic_sawzoid_space_time_cut_boundary(t0, t0+halflt, l_son_grid,
 					index, 0, time_cut_rtime, time_cut_ptime , f, bf, time1);
@@ -1408,11 +1408,11 @@ double & max_loop_time)
 	{
 		zoid_type bak2 ;
 		int num_cases = 1 << N_RANK ;
-		int best_case = 0, num_children_best_case = 1 ;
+		int best_case = 0 ; //num_children_best_case = 1 ;
 #ifdef FIXED_SPACE_CUT
 		//do a hyper space cut
 		int start = decision >> 1 ;
-		for (int i = start ; i >= start ; i--)
+		for (int i = start ; i == start ; i--)
 #else
 		for (int i = num_cases - 1 ; i > 0 ; i--)
 #endif
@@ -1425,7 +1425,7 @@ double & max_loop_time)
 			for (int j = 0 ; j < N_RANK && ! invalid_case ; j++)
 			{
 				int like_to_cut_dim_j = i & 1 << j ;
-				int can_cut_dim_j = decision & 1 << j + 1 ;
+				int can_cut_dim_j = decision & 1 << (j + 1) ;
 				//if we like to cut dim j but cannot cut dim j,
 				//the case is invalid.
 				invalid_case = like_to_cut_dim_j && ! can_cut_dim_j ;
@@ -1473,18 +1473,18 @@ double & max_loop_time)
 				assert (m_zoids [index].num_children == num_children) ;
 				assert (m_zoids [index].num_children <= total_num_subzoids) ;
 				//to do : update num_children with the correct # of children.
-				num_children_best_case = num_children ;
+				//num_children_best_case = num_children ;
 			}
 		}
 		assert (space_cut_elapsed_time >= 0.) ;
 		assert (space_cut_ptime >= 0.) ;
-		assert (space_cut_rtime >= 0.) ;
-		int num_children = 1 ;
+		//assert (space_cut_rtime >= 0.) ;
+		//int num_children = 1 ;
 		//set the decision with the best case found
 		for (int j = 0 ; j < N_RANK ; j++)
 		{
 			int bit = best_case & 1 << j ;
-			decision = decision & ~(1 << j + 1) | (bit != 0) << j + 1 ;
+			decision = (decision & ~(1 << (j + 1))) | ((bit != 0) << (j + 1)) ;
 #ifndef NDEBUG
 			int decision_bit = decision & 1 << j + 1 ;
 			assert (decision_bit == bit << 1) ;
@@ -1493,7 +1493,7 @@ double & max_loop_time)
 		//restore the back up.
 		m_zoids [index] = bak2 ;
 		//m_zoids [index].resize_children(num_children) ;
-		assert (m_zoids [index].num_children == num_children_best_case) ;
+		//assert (m_zoids [index].num_children == num_children_best_case) ;
 		assert (m_zoids [index].num_children <= total_num_subzoids) ;
 	}
 
@@ -1550,7 +1550,7 @@ double & max_loop_time)
 	//	then avoid computing loop_time(z).
 	//else compute loop_time(z).
 	double loop_time = 0. ;
-	double loop_time_with_penalty = 0. ;
+	//double loop_time_with_penalty = 0. ;
 	if (divide_and_conquer && necessary_time + projected_time1 < max_loop_time)
 	{
 		//do not compute loop_time.
@@ -1578,7 +1578,7 @@ double & max_loop_time)
 		max_loop_time = max(loop_time, max_loop_time) ;
 		//set a flag to indicate that we looped on z.
 		m_zoids [index].decision |= (decision_type) 1 << 
-					  zoid_type::NUM_BITS_DECISION - 2 ;
+					  (zoid_type::NUM_BITS_DECISION - 2) ;
 		necessary_time = loop_time ;
 		m_zoids [index].time = loop_time ;
 	}
@@ -1611,12 +1611,12 @@ double & max_loop_time)
 		loop_time = tdiff2(&end1, &start1) ;
 		//set a flag to indicate that we looped on z.
 		m_zoids [index].decision |= (decision_type) 1 << 
-					  zoid_type::NUM_BITS_DECISION - 2 ;
+					  (zoid_type::NUM_BITS_DECISION - 2) ;
 		zoid_loop_time = loop_time ;
 #endif	
 #ifndef NDEBUG
 		//check if looping happened at z.
-		if (m_zoids [index].decision & 1 << zoid<N_RANK>::NUM_BITS_DECISION - 2)
+		if (m_zoids [index].decision & 1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2))
 		{
 			m_zoids [index].ltime = zoid_loop_time ;
 		}
@@ -1628,7 +1628,7 @@ double & max_loop_time)
 		//if we looped at z, then compare divide and conquer time with
 		//zoid_loop_time 
 		if (m_zoids [index].decision & (decision_type) 1 <<
-				zoid_type::NUM_BITS_DECISION - 2)
+				(zoid_type::NUM_BITS_DECISION - 2))
 		{ 
 			if(necessary_time + projected_time1 < zoid_type::FUZZ * 
 				zoid_loop_time)
@@ -1643,9 +1643,9 @@ double & max_loop_time)
 				//choose loop.
 				//set the decision to loop.
 				m_zoids [index].decision = (decision_type) 1 << 
-						  zoid_type::NUM_BITS_DECISION - 2 ;
+						  (zoid_type::NUM_BITS_DECISION - 2) ;
 				m_zoids [index].decision |= (decision_type) call_boundary << 
-								  zoid_type::NUM_BITS_DECISION - 1 ;
+								  (zoid_type::NUM_BITS_DECISION - 1) ;
 				necessary_time = zoid_loop_time ;
 				m_zoids [index].time = zoid_loop_time ;
 			}
@@ -1739,28 +1739,26 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
                 const int lt = (t1 - t0);
                 const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
-                /*const bool cut_lb = (lb < tb);
-				const bool can_cut = CAN_CUT_I ;*/
+                const bool cut_lb = (lb < tb);
+				//const bool can_cut = CAN_CUT_I ;
 				//const bool can_cut = (cut_lb ? (lb >= 2 * thres) : 
 				//								(tb >= 2 * thres)) ;
 				//if (! can_cut) 
-				if ((projection_zoid->decision & 1 << level + 1) == 0) {
+				if ((projection_zoid->decision & 1 << (level + 1)) == 0) {
                     // if we can't cut into this dimension, just directly push 
                     // it into the circular queue 
                     //
                     push_queue(curr_dep_pointer, level-1, t0, t1, 
 							l_father_grid) ;
                 } else { 
-					sawzoid_space_cut_interior_core (t0, t1, lb, tb, 
+					/*sawzoid_space_cut_interior_core (t0, t1, lb, tb, 
 						l_father_grid, level, curr_dep, circular_queue_, 
 						queue_head_, queue_tail_, queue_len_, thres, 
-						curr_dep_pointer);
-
-				/*{
-					assert ((projection_zoid->decision & 1 << level + 1) != 0) ;
+						curr_dep_pointer);*/
+					assert ((projection_zoid->decision & 1 << (level + 1))!= 0);
                     // can_cut! 
-                    //if (cut_lb) 
-					if (projection_zoid->decision & 1 << level + 1 + N_RANK) {
+                    if (cut_lb) {
+					//if (projection_zoid->decision & 1 << level + 1 + N_RANK)
                         grid_info<N_RANK> l_son_grid = l_father_grid;
                         const int l_start = (l_father_grid.x0[level]);
                         const int l_end = (l_father_grid.x1[level]);
@@ -1780,9 +1778,9 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
                         push_queue(next_dep_pointer, level-1, t0, t1, 
 									l_son_grid) ;
 						//const int cut_more = ((lb - (thres << 2)) >= 0) ;
-						//if (cut_more)
-						if (projection_zoid->decision & 
-									1 << level + 1 + 2 * N_RANK)
+						//if (projection_zoid->decision & 
+						//			1 << level + 1 + 2 * N_RANK)
+						if (lb >= 4 * thres)
 						{
 							const int offset = (thres << 1) ;
 							l_son_grid.x0[level] = l_start ;
@@ -1840,8 +1838,9 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
                         const int next_dep_pointer = (curr_dep + 1) & 0x1;
 						//const int cut_more = ((tb - (thres << 2)) >= 0) ;
 						//if (cut_more)
-						if (projection_zoid->decision & 
-									1 << level + 1 + 2 * N_RANK)
+						//if (projection_zoid->decision & 
+						//			1 << level + 1 + 2 * N_RANK)
+						if (tb >= 4 * thres)
 						{
 							l_son_grid.x0[level] = l_start + offset ;
                             l_son_grid.dx0[level] = -slope_[level];
@@ -1873,7 +1872,7 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
                         	push_queue(next_dep_pointer, level-1, t0, 
 								t1, l_son_grid) ;
 						}
-                    } // end else (cut_tb) */
+                    } // end else (cut_tb) 
                 } // end if (can_cut) 
             } // end if (performing a space cut) 
         } // end while (queue_len_[curr_dep] > 0) 
@@ -1954,15 +1953,12 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
                 const int lt = (t1 - t0);
                 const int lb = (l_father_grid.x1[level] - l_father_grid.x0[level]);
                 const int tb = (l_father_grid.x1[level] + l_father_grid.dx1[level] * lt - l_father_grid.x0[level] - l_father_grid.dx0[level] * lt);
-                /*const bool cut_lb = (lb < tb);
-//#define touch_boundary m_algo.touch_boundary
-                const bool l_touch_boundary = touch_boundary(level, lt, l_father_grid);
-//#undef touch_boundary
-				const bool can_cut = CAN_CUT_B ;*/
+                const bool cut_lb = (lb < tb);
+				//const bool can_cut = CAN_CUT_B ;
 				//const bool can_cut = (cut_lb ? (lb >= 2 * thres) : 
 				//							  (tb >= 2 * thres)) ;
                 //if (! can_cut) 
-				if ((projection_zoid->decision & 1 << level + 1) == 0) {
+				if ((projection_zoid->decision & 1 << (level + 1)) == 0) {
                 //if (num_zoids [level] == 0) {
                     // if we can't cut into this dimension, just directly push
                     // it into the circular queue
@@ -1970,16 +1966,14 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
                     push_queue(curr_dep_pointer, level-1, t0, t1, 
 							l_father_grid) ;
                 } else {  
-					assert ((projection_zoid->decision & 1 << level + 1) != 0) ;
-					sawzoid_space_cut_boundary_core (t0, t1, lb, tb, 
+					assert ((projection_zoid->decision & 1 << (level + 1))!= 0);
+					/*sawzoid_space_cut_boundary_core (t0, t1, lb, tb, 
 						l_father_grid, level, curr_dep, circular_queue_, 
 						queue_head_, queue_tail_, queue_len_, thres, 
-						curr_dep_pointer);
-				}
-				/*{
+						curr_dep_pointer);*/
                     // can_cut 
-                    //if (cut_lb) 
-					if (projection_zoid->decision & 1 << level + 1 + N_RANK) {
+					//if (projection_zoid->decision & 1 << level + 1 + N_RANK) 
+                    if (cut_lb) {
                         grid_info<N_RANK> l_son_grid = l_father_grid;
                         const int l_start = (l_father_grid.x0[level]);
                         const int l_end = (l_father_grid.x1[level]);
@@ -2001,8 +1995,9 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
 
 						//const int cut_more = ((lb - (thres << 2)) >= 0) ;
 						//if (cut_more)
-						if (projection_zoid->decision & 
-									1 << level + 1 + 2 * N_RANK)
+						//if (projection_zoid->decision & 
+						//			1 << level + 1 + 2 * N_RANK)
+						if (lb >= 4 * thres)
 						{
 							const int offset = (thres << 1) ;
 							l_son_grid.x0[level] = l_start ;
@@ -2038,17 +2033,18 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
 						}
                     } // end if (cut_lb) 
                     else { // cut_tb 
-                        //if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) // initial cut on the dimension 
-						if (projection_zoid->decision & 
-									1 << level + 1 + 3 * N_RANK) {
+                        if (lb == phys_length_[level] && l_father_grid.dx0[level] == 0 && l_father_grid.dx1[level] == 0) { // initial cut on the dimension 
+						//if (projection_zoid->decision & 
+						//			1 << level + 1 + 3 * N_RANK) 
                             grid_info<N_RANK> l_son_grid = l_father_grid;
                             const int l_start = (l_father_grid.x0[level]);
                             const int l_end = (l_father_grid.x1[level]);
                             const int next_dep_pointer = (curr_dep + 1) & 0x1;
 							//const int cut_more = ((lb - (thres << 2)) >= 0) ;
 							//if (cut_more)
-							if (projection_zoid->decision & 
-									1 << level + 1 + 2 * N_RANK)
+							//if (projection_zoid->decision & 
+							//		1 << level + 1 + 2 * N_RANK)
+							if (lb >= 4 * thres)
 							{
 								const int offset = (thres << 1) ;
                             	l_son_grid.x0[level] = l_start ;
@@ -2111,8 +2107,9 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
 							const int next_dep_pointer = (curr_dep + 1) & 0x1;
 							//const int cut_more = ((tb - (thres << 2)) >= 0) ;
 							//if (cut_more)
-							if (projection_zoid->decision & 
-									1 << level + 1 + 2 * N_RANK)
+							//if (projection_zoid->decision & 
+							//		1 << level + 1 + 2 * N_RANK)
+							if (tb >= 4 * thres)
 							{
 								l_son_grid.x0[level] = l_start + offset ;
 								l_son_grid.dx0[level] = -slope_[level];
@@ -2146,7 +2143,7 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
 							}
 						}                   
                     } // end if (cut_tb)
-                }// end if (can_cut) */
+                }// end if (can_cut) 
             } // end if (performing a space cut) 
         } // end while (queue_len_[curr_dep] > 0) 
 #if !USE_CILK_FOR
@@ -2244,10 +2241,6 @@ sawzoid_space_time_cut_interior(int t0,
     }
 	else
 	{
-		assert (projection_zoid->decision == 
-				3 << zoid<N_RANK>::NUM_BITS_DECISION - 2 ||
-				projection_zoid->decision ==
-				1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
 #ifdef WRITE_DAG
 		file_interior << lt ;
 		for (int i = 0 ; i < N_RANK ; i++) 
@@ -2267,6 +2260,11 @@ sawzoid_space_time_cut_interior(int t0,
 #ifdef TIME_INVARIANCE_INTERIOR
 		assert (projection_zoid->decision == 
 					1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
+#else
+		assert (projection_zoid->decision == 
+				3 << zoid<N_RANK>::NUM_BITS_DECISION - 2 ||
+				projection_zoid->decision ==
+				1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
 #endif
 		//loop
 		f(t0, t1, grid);
@@ -2333,7 +2331,7 @@ sawzoid_space_time_cut_boundary(int t0,
 				<< " lt " << lt << endl ;
 			}
 
-			cout << "decision " << projection_zoid->decision << endl ;
+			cout << "decision " << (int) projection_zoid->decision << endl ;
 			assert(0) ;
 		}
 	}
@@ -2349,7 +2347,6 @@ sawzoid_space_time_cut_boundary(int t0,
 	//assert (cb == call_boundary) ;
 	decision_type call_boundary = cb ;
 
-	//if (projection_zoid->decision & 2)
 	if (projection_zoid->decision & m_space_cut_mask)
 	{
 		//cout << "space cut " << endl ;
@@ -2400,10 +2397,6 @@ sawzoid_space_time_cut_boundary(int t0,
 	}
 	else
 	{
-		assert (projection_zoid->decision == 
-				3 << zoid<N_RANK>::NUM_BITS_DECISION - 2 ||
-				projection_zoid->decision ==
-				1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
 #ifdef WRITE_DAG
 		if (call_boundary)
 		{
@@ -2442,6 +2435,10 @@ sawzoid_space_time_cut_boundary(int t0,
 		}
 #endif
 		//loop
+		assert (projection_zoid->decision == 
+				3 << zoid<N_RANK>::NUM_BITS_DECISION - 2 ||
+				projection_zoid->decision ==
+				1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
 		if (call_boundary) {
 #ifdef TIME_INVARIANCE_BOUNDARY
 			assert (projection_zoid->decision == 
@@ -2449,7 +2446,7 @@ sawzoid_space_time_cut_boundary(int t0,
 #endif
             base_case_kernel_boundary(t0, t1, l_father_grid, bf);
         } else { 
-#ifdef TIME_INVARIANCE_BOUNDARY
+#ifdef TIME_INVARIANCE_INTERIOR
 			assert (projection_zoid->decision == 
 					1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
 #endif
@@ -2541,7 +2538,7 @@ inline void auto_tune<N_RANK>::sawzoid_find_mlt_space_boundary(
 				//const bool can_cut = (cut_lb ? (lb >= 2 * thres) : 
 				//								(tb >= 2 * thres)) ;
 				//if (! can_cut) 
-				if ((projection_zoid->decision & 1 << level + 1) == 0) {
+				if ((projection_zoid->decision & 1 << (level + 1)) == 0) {
                     // if we can't cut into this dimension, just directly push 
                     // it into the circular queue 
                     //
@@ -2645,7 +2642,7 @@ inline void auto_tune<N_RANK>::sawzoid_find_mlt_space_interior(
 				//const bool can_cut = (cut_lb ? (lb >= 2 * thres) : 
 				//								(tb >= 2 * thres)) ;
 				//if (! can_cut) 
-				if ((projection_zoid->decision & 1 << level + 1) == 0) {
+				if ((projection_zoid->decision & 1 << (level + 1)) == 0) {
                     // if we can't cut into this dimension, just directly push 
                     // it into the circular queue 
                     //
@@ -2740,7 +2737,7 @@ sawzoid_find_mlt_space_time_interior(int t0, int t1,
 			clock_gettime(CLOCK_MONOTONIC, &end) ;
 			//set a flag to indicate that we looped on z.
 			projection_zoid->decision |= (decision_type) 1 << 
-						  zoid_type::NUM_BITS_DECISION - 2 ;
+						  (zoid_type::NUM_BITS_DECISION - 2) ;
 			//we expect the loop_time(z) >= loop_time(z'), z' \in children(z)
 			zoid_loop_time = tdiff2(&end, &start) ;
 			//update the max_loop_time of z.
@@ -2868,7 +2865,7 @@ sawzoid_find_mlt_space_time_boundary(int t0, int t1,
 			clock_gettime(CLOCK_MONOTONIC, &end) ;
 			//set a flag to indicate that we looped on z.
 			projection_zoid->decision |= (decision_type) 1 << 
-						  zoid_type::NUM_BITS_DECISION - 2 ;
+						  (zoid_type::NUM_BITS_DECISION - 2) ;
 			//we expect the loop_time(z) >= loop_time(z'), z' \in children(z)
 			zoid_loop_time = tdiff2(&end, &start) ;
 			//update the max_loop_time of z.
