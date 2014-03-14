@@ -65,7 +65,7 @@ ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) =
        let iccPPFile = inDir ++ getPPFile inFile
        let iccPPArgs = if debug == False
 --             then iccPPFlags ++ envPath ++ [inFile]
-             then iccPPFlags ++ ["tb_heat_2D_P.i"] ++ envPath ++ [inFile]
+             then iccPPFlags ++ envPath ++ [inFile]
 --             else iccDebugPPFlags ++ envPath ++ [inFile] 
              else iccDebugPPFlags ++   envPath ++ [inFile] 
        -- a pass of icc preprocessing
