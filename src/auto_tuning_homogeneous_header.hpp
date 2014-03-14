@@ -806,8 +806,8 @@ private:
 		color [node] = num_vertices ; //color node gray
 		zoid_type & z = m_zoids [node] ;
 		//if leaf do not recurse further
-		if (z.decision == 1 << zoid_type::NUM_BITS_DECISION - 2 || 
-			z.decision == 3 << zoid_type::NUM_BITS_DECISION - 2)
+		if (z.decision == 1 << (zoid_type::NUM_BITS_DECISION - 2) || 
+			z.decision == 3 << (zoid_type::NUM_BITS_DECISION - 2))
 		{
 			//do not store node's children
 			//cout << "push back zoid " << z.id << endl ;
