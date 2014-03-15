@@ -3,12 +3,14 @@ SHELL = /bin/bash
 CC = ../../pochoir
 ICC = icc
 
-CFLAGS = -restrict -unroll-aggressive -funroll-loops -scalar-rep -ipo -xHOST -fno-alias -O3 -no-prec-div -std=c++0x
+CFLAGS = -restrict -unroll-aggressive -funroll-loops -scalar-rep -ipo -xHOST -fno-alias -O3 -no-prec-div -std=c++0x -lrt
 # CFLAGS = -restrict -no-prec-div 
 #debugging
 #POFLAGS = -debug
 DEBUGFLAGS = -g3 -restrict -O0 -DDEBUG -no-prec-div -std=c++0x -debug
 POFLAGS = -O3 -unroll-aggressive -funroll-loops -scalar-rep -ipo -xHOST -fno-alias -restrict -std=c++0x
+#POFLAGS = -O0 -g -std=c++0x -lrt
+#CFLAGS = -O0 -g -std=c++0x -lrt
 REPORT_FLAGS = -par-report3 -openmp-report1 -vec-report3
 MY_OPTS = -DMYOPT
 
@@ -95,7 +97,7 @@ lbm_tang: $(INCLUDE_TANG) $(POCHOIR_SRC)
 lbm_tang_naive: $(INCLUDE) $(POCHOIR_SRC_NAIVE)
 	${CC} ${POFLAGS} ${DEFAULT_OPTIONS} ${NOVEC_OPTIONS} -DNDEBUG -Wall -Werror -o BIN/$@ ${POCHOIR_SRC_NAIVE}
 clean:
-	-rm *.o BIN/* COMPILE_LOG/* OUT/*
+	-rm *.o BIN/* COMPILE_LOG/* OUT/* *_pochoir.cpp *.i
 
 ## You need to provide at least 3 more targets (xtune_clean, xtune_build, xtune_test) for using XTune
 xtune_clean: clean
