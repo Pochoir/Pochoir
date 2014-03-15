@@ -17,6 +17,17 @@
 
 #include <sys/stat.h>
 
+//Pochoir_Boundary_3D(lbm_bv_3D, arr, t, i, j, k)
+ //   return 0;
+//Pochoir_Boundary_End
+Pochoir_Boundary_3D( lbm_bdry , a , t , z , y , x)
+	PoCellEntry result ;
+	result . _C = DFL1 ;
+	result . _N = result . _S = result . _E = result . _W = result . _T = result . _B = DFL2 ;
+	result . _NE = result . _NW = result . _SE = result ._SW = result . _NT = result . _NB = result . _ST = result . _SB = result . _ET = result . _EB = result . _WT = result . _WB = DFL3 ;
+	result . _FLAGS = 0.0;
+	return result ;
+Pochoir_Boundary_End
 int SIZE_X, SIZE_Y, SIZE_Z;
 /*############################################################################*/
 
@@ -41,7 +52,8 @@ int main( int nArgs, char* arg[] ) {
     Pochoir_Array_3D(PoCellEntry) pa(SIZE_Z+2*MARGIN_Z, SIZE_Y, SIZE_X);
     Pochoir_Domain X(0, SIZE_X), Y(0, SIZE_Y), Z(0+MARGIN_Z, SIZE_Z+MARGIN_Z);
     lbm.Register_Array(pa);
-    lbm.Register_Domain(Z, Y, X);
+    //lbm.Register_Domain(Z, Y, X);
+    pa.Register_Boundary(lbm_bdry);
 
 #if 1
     Pochoir_Kernel_3D(lbm_kernel_channel, t, z, y, x)
@@ -58,7 +70,7 @@ int main( int nArgs, char* arg[] ) {
 #if !defined(SPEC_CPU)
 	MAIN_startClock( &time );
 #endif
-#if 1
+#if 0
     if (param.simType == CHANNEL) {
         printf("CHANNEL\n");
         for( t = 1; t <= param.nTimeSteps; ++t ) {
@@ -92,6 +104,10 @@ int main( int nArgs, char* arg[] ) {
         }
     }
 #else
+	char name [100] ;
+	sprintf(name, "lbm") ;
+	lbm.set_problem_name(name) ;
+
     t = param.nTimeSteps;
     if (param.simType == CHANNEL) {
         lbm.Run(t, lbm_kernel_channel);
