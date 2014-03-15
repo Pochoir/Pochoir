@@ -37,6 +37,7 @@ using namespace std;
 #define TIMES 1
 #define N_RANK 4
 #define TOLERANCE (1e-6)
+//#define CHECK_RESULT
 
 void check_result(int t, int i, int j, int k, int l, double a, double b)
 {
@@ -71,10 +72,14 @@ int main(int argc, char * argv[])
     Pochoir_Shape_4D heat_shape_4D[] = {{0, 0, 0, 0, 0}, {-1, 1, 0, 0, 0}, {-1, -1, 0, 0, 0}, {-1, 0, 0, 0, 0}, {-1, 0, 0, -1, 0}, {-1, 0, 0, 1, 0}, {-1, 0, 1, 0, 0}, {-1, 0, -1, 0, 0}, {-1, 0, 0, 0, 1}, {-1, 0, 0, 0, -1}};
     Pochoir_4D heat_4D(heat_shape_4D);
 	Pochoir_Array_4D(double) a(N_SIZE, N_SIZE, N_SIZE, N_SIZE) ;
-	Pochoir_Array_4D(double) b(N_SIZE, N_SIZE, N_SIZE, N_SIZE);
     Pochoir_Domain I(1, N_SIZE-1), J(1, N_SIZE-1), K(1, N_SIZE-1), L(1, N_SIZE - 1);
     heat_4D.Register_Array(a);
+    a.Register_Boundary(heat_bv_4D);
+#ifdef CHECK_RESULT
+	Pochoir_Array_4D(double) b(N_SIZE, N_SIZE, N_SIZE, N_SIZE);
     b.Register_Shape(heat_shape_4D);
+    b.Register_Boundary(heat_bv_4D);
+#endif
 
 	for (int i = 0; i < N_SIZE; ++i) {
 	for (int j = 0; j < N_SIZE; ++j) {
@@ -82,8 +87,10 @@ int main(int argc, char * argv[])
     for (int l = 0; l < N_SIZE; ++l) {
         a(0, i, j, k, l) = 1.0 * (rand() % BASE); 
         a(1, i, j, k, l) = 0; 
+#ifdef CHECK_RESULT
         b(0, i, j, k, l) = a(0, i, j, k, l);
         b(1, i, j, k, l) = 0;
+#endif
 	} } } }
 
     Pochoir_Kernel_4D(heat_4D_fn, t, i, j, k, l)
@@ -101,8 +108,6 @@ int main(int argc, char * argv[])
      * the boundary region and when to call the user supplied boundary
      * value function
      */
-    a.Register_Boundary(heat_bv_4D);
-    b.Register_Boundary(heat_bv_4D);
     //heat_4D.Register_Domain(I, J, K, L);
 
 	char name [100] ;
@@ -117,7 +122,8 @@ int main(int argc, char * argv[])
     }
 	std::cout << "Pochoir ET: consumed time :" << min_tdiff << "ms" << std::endl;
 
-#if 1
+//#if 1
+#ifdef CHECK_RESULT
     min_tdiff = INF;
     /* cilk_for + zero-padding */
     for (int times = 0; times < TIMES; ++times) {
