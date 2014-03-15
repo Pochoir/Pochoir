@@ -1725,7 +1725,7 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
 				}
                 else
 				{
-                    cilk_spawn sawzoid_space_time_cut_interior(
+                    cilk_spawn this->sawzoid_space_time_cut_interior(
 						l_father->t0, l_father->t1, l_father->grid, child, f) ;
 				}
 #endif
@@ -1939,7 +1939,7 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
                     sawzoid_space_time_cut_boundary(l_father->t0,
 						l_father->t1, l_father->grid, child, f, bf);
                 } else {
-                    cilk_spawn sawzoid_space_time_cut_boundary(
+                    cilk_spawn this->sawzoid_space_time_cut_boundary(
 						l_father->t0, l_father->t1, l_father->grid, child, f, bf);
                 }
 #endif

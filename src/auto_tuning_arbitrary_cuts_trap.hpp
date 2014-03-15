@@ -1321,7 +1321,7 @@ inline void auto_tune<N_RANK>::trap_space_cut_interior(
 				}
                 else
 				{
-                    cilk_spawn trap_space_time_cut_interior(
+                    cilk_spawn this->trap_space_time_cut_interior(
 						l_father->t0, l_father->t1, l_father->grid, child, f) ;
 				}
 #endif
@@ -1484,7 +1484,7 @@ inline void auto_tune<N_RANK>::trap_space_cut_boundary(
                     trap_space_time_cut_boundary(l_father->t0,
 						l_father->t1, l_father->grid, child, f, bf);
                 } else {
-                    cilk_spawn trap_space_time_cut_boundary(
+                    cilk_spawn this->trap_space_time_cut_boundary(
 						l_father->t0, l_father->t1, l_father->grid, child, f, bf);
                 }
 #endif
