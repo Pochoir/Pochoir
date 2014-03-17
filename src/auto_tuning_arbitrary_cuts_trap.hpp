@@ -1082,7 +1082,7 @@ double & max_loop_time)
 			int bit = best_case & 1 << j ;
 			decision = (decision & ~(1 << (j + 1))) | ((bit != 0) << (j + 1)) ;
 #ifndef NDEBUG
-			int decision_bit = decision & 1 << j + 1 ;
+			int decision_bit = decision & 1 << (j + 1) ;
 			assert (decision_bit == bit << 1) ;
 #endif
 		}
@@ -1737,12 +1737,12 @@ trap_space_time_cut_interior(int t0,
 #endif
 #ifdef TIME_INVARIANCE_INTERIOR
 		assert (projection_zoid->decision == 
-					1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
+					1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2)) ;
 #else
 		assert (projection_zoid->decision == 
-				3 << zoid<N_RANK>::NUM_BITS_DECISION - 2 ||
+				3 << (zoid<N_RANK>::NUM_BITS_DECISION - 2) ||
 				projection_zoid->decision ==
-				1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
+				1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2)) ;
 #endif
 		//loop
 		f(t0, t1, grid);
@@ -1914,19 +1914,19 @@ trap_space_time_cut_boundary(int t0,
 #endif
 		//loop
 		assert (projection_zoid->decision == 
-				3 << zoid<N_RANK>::NUM_BITS_DECISION - 2 ||
+				3 << (zoid<N_RANK>::NUM_BITS_DECISION - 2) ||
 				projection_zoid->decision ==
-				1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
+				1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2)) ;
 		if (call_boundary) {
 #ifdef TIME_INVARIANCE_BOUNDARY
 			assert (projection_zoid->decision == 
-					3 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
+					3 << (zoid<N_RANK>::NUM_BITS_DECISION - 2)) ;
 #endif
             base_case_kernel_boundary(t0, t1, l_father_grid, bf);
         } else { 
 #ifdef TIME_INVARIANCE_INTERIOR
 			assert (projection_zoid->decision == 
-					1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
+					1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2)) ;
 #endif
             f(t0, t1, l_father_grid);
         }
