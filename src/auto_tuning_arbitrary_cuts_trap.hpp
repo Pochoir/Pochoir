@@ -669,14 +669,28 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		necessary_time = space_cut_elapsed_time ;
 		//decision is already set for space cut.
 	}
-	
+
+	bool force_divide = false ;
+	for (int i = 0 ; i < m_zoids [index].num_children ; i++)
+	{
+		unsigned long child_index = m_zoids [index].children [i] ;
+		decision_type d = m_zoids [child_index].decision ;
+    	if (d & m_space_cut_mask || d & 1) 
+		{
+			//a child of z chose to divide. so z should divide as well.
+			force_divide = true ;
+			break ;
+		}
+	}
+
     //base case
 	//suppose loop_time(z) >= loop_time(z'), z' \in tree(z)
 	//if divide_and_conquer_time(z) < max_{z' \in tree(z)} loop_time(z')
 	//	then avoid computing loop_time(z).
 	//else compute loop_time(z).
 	double loop_time = 0 ;
-	if (divide_and_conquer && necessary_time + projected_time1 < max_loop_time)
+	if ((divide_and_conquer && necessary_time + projected_time1 < max_loop_time)
+		|| force_divide)
 	{
 		//do not compute loop_time.
 		m_zoids [index].decision |= decision ;
@@ -1138,8 +1152,19 @@ double & max_loop_time)
 		necessary_time = space_cut_elapsed_time ;
 		//decision is already set in the initial loop above for space cut.
 	}
-	
-	//flush_cache() ;
+
+	bool force_divide = false ;
+	for (int i = 0 ; i < m_zoids [index].num_children ; i++)
+	{
+		unsigned long child_index = m_zoids [index].children [i] ;
+		decision_type d = m_zoids [child_index].decision ;
+    	if (d & m_space_cut_mask || d & 1) 
+		{
+			//a child of z chose to divide. so z should divide as well.
+			force_divide = true ;
+			break ;
+		}
+	}
 	// base case
 	//suppose loop_time(z) >= loop_time(z'), z' \in tree(z)
 	//if divide_and_conquer_time(z) < max_{z' \in tree(z)} loop_time(z')
@@ -1147,7 +1172,8 @@ double & max_loop_time)
 	//else compute loop_time(z).
 	double loop_time = 0. ;
 	//double loop_time_with_penalty = 0. ;
-	if (divide_and_conquer && necessary_time + projected_time1 < max_loop_time)
+	if ((divide_and_conquer && necessary_time + projected_time1 < max_loop_time)
+		|| force_divide)
 	{
 		//do not compute loop_time.
 		m_zoids [index].decision |= decision ;
