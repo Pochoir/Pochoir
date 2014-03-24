@@ -63,9 +63,11 @@ ppopp (mode, debug, showFile, userArgs) ((inFile, inDir):files) =
        let envPath = ["-I" ++ pochoirLibPath]
 --       let envPath = ["-I " ++ pochoirLibPath ++ " -I ./"]
        let iccPPFile = inDir ++ getPPFile inFile
+       let dotiFile = ["-o" ++ iccPPFile]
        let iccPPArgs = if debug == False
 --             then iccPPFlags ++ ["tb_heat_2D_P.i"] ++ envPath ++ [inFile]
-             then iccPPFlags ++ ["tb_heat_2D_P.i"] ++ envPath ++ [inFile]
+--             then iccPPFlags ++ ["tb_heat_2D_P.i"] ++ envPath ++ [inFile]
+             then iccPPFlags ++ dotiFile ++ envPath ++ [inFile]
 --             else iccDebugPPFlags ++ envPath ++ [inFile] 
              else iccDebugPPFlags ++   envPath ++ [inFile] 
        -- a pass of icc preprocessing
@@ -121,7 +123,8 @@ iccFlags = ["-O0","-fpermissive", "-Wall", "-Werror","-std=c++11","-fcilkplus", 
 
 --iccPPFlags = ["-E", "-C","-fpermissive", "-DNCHECK_SHAPE", "-DNDEBUG","-std=gnu++11" , "-Wall","-lrt",  "-fcilkplus","-lcilkrts", "-L/home/maryammehri/Documents/projections/kxing/gcc-cilk/lib" ,"-I/home/maryammehri/Documents/projections/kxing/gcc-cilk/include"]
 --iccPPFlags = ["-E", "-c","-P", "-fpermissive", "-DNCHECK_SHAPE", "-DNDEBUG","-std=gnu++11" , "-Wall","-lrt",  "-fcilkplus","-lcilkrts", "-o"]
-iccPPFlags = ["-E", "-c","-P", "-fpermissive", "-DNCHECK_SHAPE", "-std=c++11" , "-Wall","-lrt",  "-fcilkplus","-lcilkrts", "-o"]
+--iccPPFlags = ["-E", "-c","-P", "-fpermissive", "-DNCHECK_SHAPE", "-std=c++11" , "-Wall","-lrt",  "-fcilkplus","-lcilkrts", "-o"]
+iccPPFlags = ["-E", "-c","-P", "-fpermissive", "-DNCHECK_SHAPE", "-std=c++11" , "-Wall","-lrt",  "-fcilkplus","-lcilkrts", "-DNDEBUG"]
 --iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++11", "-Wall", "-fcilkplus", "-lcilkrts ", "-lrt"]
 --iccPPFlags = ["-E", "-o", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++11", "-Wall", "-fcilkplus", "-lcilkrts ", "-lrt"]
 --iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror"]
