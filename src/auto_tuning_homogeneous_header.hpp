@@ -380,13 +380,62 @@ private:
 		vector<zoid_type> ().swap(m_zoids) ;
 	}
 
-	void initialize(grid_info<N_RANK> const & grid, int T, bool power_of_two)
+	void fill_height_bucket(int h, int index, int level, int max_level)
+	{
+		if (h > 1)
+		{
+			//cout << "level " << level << " h " << h << endl ;
+			assert (level < max_level) ;
+			int floor_h = h / 2 ;
+			int ceil_h = (h + 1) / 2 ;
+			m_height_bucket [index][2 * level] = floor_h ;
+			m_height_bucket [index][2 * level + 1] = ceil_h ;
+			if (floor_h & 1)
+			{
+				fill_height_bucket(floor_h, index, level + 1, max_level) ;
+			}
+			else
+			{
+				fill_height_bucket(ceil_h, index, level + 1, max_level) ;
+			}
+		}
+	}
+
+	void initialize(grid_info<N_RANK> const & grid, int h1, int h2, 
+					bool power_of_two)
 	{
 		cout << "FUZZ " << zoid_type::FUZZ << endl ;
-		//const int size = 20*1024*1024; // Allocate 20M. 
-		//m_cache = new char [size];
-		//memset(m_cache, 0, size) ;
-
+		if (h1 > 0)
+		{
+			int max_level = log2(h1) + 1 ;
+			cout << "max_level " << max_level << endl ;
+			m_height_bucket [0].resize(2 * max_level) ;
+			m_height_bucket [0][0] = h1 ;
+			m_height_bucket [0][1] = h1 ;
+			fill_height_bucket(h1, 0, 1, max_level) ;
+		
+			for (int i = 0 ; i < max_level ; i++)
+			{
+				cout << m_height_bucket [0] [2 * i] << " " 
+					<< m_height_bucket [0] [2 * i + 1] << endl ;
+			}
+		}
+		if (h2 > 0 && h2 != h1)
+		{
+			int max_level = log2(h2) + 1 ;
+			cout << "max_level " << max_level << endl ;
+			m_height_bucket [1].resize(2 * max_level) ;
+			m_height_bucket [1][0] = h2 ;
+			m_height_bucket [1][1] = h2 ;
+			fill_height_bucket(h2, 1, 1, max_level) ;
+		
+			for (int i = 0 ; i < max_level ; i++)
+			{
+				cout << m_height_bucket [1] [2 * i] << " " 
+					<< m_height_bucket [1] [2 * i + 1] << endl ;
+			}
+		}
+		//continue from here.
 		unsigned long volume = 1 ;
 		//m_space_cut_mask = 0 ;
 		for (int i = 0 ; i < N_RANK ; i++)
@@ -411,8 +460,8 @@ private:
 #endif
 #endif
 		//cout << "space cut mask " << m_space_cut_mask << endl ;
-		m_projections_interior.reserve(T) ;
-		m_projections_interior.resize(T) ; //To do : only Theta (lg T) space necessary
+		m_projections_interior.reserve(h1) ;
+		m_projections_interior.resize(h1) ; //To do : only Theta (lg T) space necessary
 		m_projections_boundary.reserve(volume) ;
 		m_projections_boundary.resize(volume) ; 
 		cout << "volume " << volume << endl ;
@@ -1270,6 +1319,11 @@ private:
 		BF const & bf, int *, double &, double &, double &, int) ;
 
 	template <typename F, typename BF>
+	inline void symbolic_sawzoid_space_cut_boundary_span(int t0, int t1,
+		grid_info<N_RANK> const & grid, unsigned long, F const & f, 
+		BF const & bf, int *, double &, double &, double &, double &, int) ;
+
+	template <typename F, typename BF>
 	inline void sawzoid_find_mlt_space_boundary(
 		int t0, int t1, grid_info<N_RANK> const & grid, 
 		zoid_type * projection_zoid, double const root_dnc_time, 
@@ -1279,6 +1333,11 @@ private:
 	inline void symbolic_sawzoid_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *,
 		double &, double &, double &, int) ;
+
+	template <typename F>
+	inline void symbolic_sawzoid_space_cut_interior_span(int t0, int t1,
+		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *,
+		double &, double &, double &, double &, int) ;
 
 	template <typename F>
 	inline void sawzoid_find_mlt_space_interior(
@@ -1328,6 +1387,8 @@ private:
 	ofstream file_interior ; //write height, widths of a zoid in the interior
 	ofstream file_boundary ; //write height, widths of a zoid at the boundary
 	int m_type_size ; //size of type of date that is backed up in tuning
+
+	vector<int> m_height_bucket [2] ; //array of vectors of height buckets.
 
 	inline void sawzoid_space_cut_interior_core
 		(int const, int const, int const, int const, 
@@ -1450,7 +1511,7 @@ private:
 		}
 		else
 		{
-			initialize(grid, h1, true) ;
+			initialize(grid, h1, h1, true) ;
 			//back up data
 			//copy_data(&(m_array[0]), array->data(), volume) ;
 			copy_data(m_array, array, volume) ;
@@ -1589,7 +1650,7 @@ private:
 			}
 			else
 			{
-				initialize(grid, T, false) ;
+				initialize(grid, T, T, false) ;
 				//back up data
 				copy_data(m_array, array, volume) ;
 
@@ -1653,7 +1714,7 @@ private:
 			}
 			else
 			{
-				initialize(grid, h1, false) ;
+				initialize(grid, h1, h2, false) ;
 				//back up data
 				copy_data(m_array, array, volume) ;
 
