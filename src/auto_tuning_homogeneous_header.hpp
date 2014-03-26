@@ -404,25 +404,25 @@ private:
 	void initialize(grid_info<N_RANK> const & grid, int h1, int h2, 
 					bool power_of_two)
 	{
+		assert (h1 > 0) ;
 		cout << "FUZZ " << zoid_type::FUZZ << endl ;
-		if (h1 > 0)
+	
+		int max_level = log2(h1) + 1 ;
+		cout << "max_level " << max_level << endl ;
+		m_height_bucket [0].resize(2 * max_level) ;
+		m_height_bucket [0][0] = h1 ;
+		m_height_bucket [0][1] = h1 ;
+		fill_height_bucket(h1, 0, 1, max_level) ;
+	
+		for (int i = 0 ; i < max_level ; i++)
 		{
-			int max_level = log2(h1) + 1 ;
-			cout << "max_level " << max_level << endl ;
-			m_height_bucket [0].resize(2 * max_level) ;
-			m_height_bucket [0][0] = h1 ;
-			m_height_bucket [0][1] = h1 ;
-			fill_height_bucket(h1, 0, 1, max_level) ;
-		
-			for (int i = 0 ; i < max_level ; i++)
-			{
-				cout << m_height_bucket [0] [2 * i] << " " 
-					<< m_height_bucket [0] [2 * i + 1] << endl ;
-			}
+			cout << m_height_bucket [0] [2 * i] << " " 
+				<< m_height_bucket [0] [2 * i + 1] << endl ;
 		}
+	
 		if (h2 > 0 && h2 != h1)
 		{
-			int max_level = log2(h2) + 1 ;
+			max_level = log2(h2) + 1 ;
 			cout << "max_level " << max_level << endl ;
 			m_height_bucket [1].resize(2 * max_level) ;
 			m_height_bucket [1][0] = h2 ;
@@ -435,7 +435,6 @@ private:
 					<< m_height_bucket [1] [2 * i + 1] << endl ;
 			}
 		}
-		//continue from here.
 		unsigned long volume = 1 ;
 		//m_space_cut_mask = 0 ;
 		for (int i = 0 ; i < N_RANK ; i++)
@@ -460,14 +459,17 @@ private:
 #endif
 #endif
 		//cout << "space cut mask " << m_space_cut_mask << endl ;
-		m_projections_interior.reserve(h1) ;
-		m_projections_interior.resize(h1) ; //To do : only Theta (lg T) space necessary
+		max_level = log2(h1) + 1 ;
+		if (h2 > 0 && h1 != h2)
+		{
+			max_level += log2(h2) + 1 ;
+		}
+		m_projections_interior.reserve(2 * max_level) ;
+		m_projections_interior.resize(2 * max_level) ; 
 		m_projections_boundary.reserve(volume) ;
 		m_projections_boundary.resize(volume) ; 
 		cout << "volume " << volume << endl ;
 
-		//m_array.reserve(volume) ;
-		//m_array.resize(volume) ;
 		m_array = malloc (volume * m_type_size) ;
 		if (! m_array)
 		{
@@ -743,47 +745,75 @@ private:
 		return false ;
 	}
 
-	//key is the bottom volume + top volume.
 	inline bool check_and_create_space_time_invariant_replica(
 					unsigned long const key, 
 					int const height, unsigned long & index,
 					grid_info <N_RANK> const & grid)
 	{
 		assert (m_projections_interior.size()) ;
-		int k = height - 1 ;  //index with the height for now.
-		/*int k = log2(m_initial_height / height) ;
+		//int k = height - 1 ;  //index with the height for now.
+		bool found = false ;
+		//try checking the 1st bucket
+		int h1 = m_height_bucket [0][0] ;
+		int k = log2((double) h1 / height) ;
 		int two_to_the_k = 1 << k ; //k = 2^floor(log2 (h / h_k))
-		if (m_initial_height / two_to_the_k == height)
+		if (height == h1 / two_to_the_k)
 		{
-			//h_k = floor (h / 2^k)
-			k = 2 * k ;
-		}
-		else if (ceil (m_initial_height / two_to_the_k) == height)
-		{
-			//h_k = ceil (h / 2^k)
-			k = 2 * k + 1 ;
+			//height = floor (h1/2^k)
+			//k is the level of the tree
+			assert (height == m_height_bucket [0] [2 * k]) ;
+			found = true ;
+			k = 2 * k ; //index
 		}
 		else
 		{
-			assert (m_initial_height / two_to_the_k > height) ;
-			k++ ;
+			//height may be ceil (h1/2^k)
+			k = ceil(log2((double) h1 / height)) ;
 			two_to_the_k = 1 << k ;
-			if (m_initial_height / two_to_the_k == height)
+			//cout << "k " << k << " 2^k " << two_to_the_k << endl ;
+			//cout << "h1 " << h1 << endl ;
+			//cout << "(h1 + 2^k - 1) / 2^k " << (h1 + two_to_the_k - 1) / two_to_the_k << endl ;
+			if (height == (h1 + two_to_the_k - 1) / two_to_the_k)
 			{
-				//h_k = floor (h / 2^k)
-				k = 2 * k ;
-			}
-			else if (ceil (m_initial_height / two_to_the_k) == height)
-			{
-				//h_k = ceil (h / 2^k)
+				assert (height == m_height_bucket [0] [2 * k + 1]) ;
+				found = true ;
 				k = 2 * k + 1 ;
+			}
+		}
+		if (! found && ! m_height_bucket [1].empty())
+		{
+			//try checking the 2nd bucket
+			int h2 = m_height_bucket [1][0] ;
+			k = log2((double) h2 / height) ;
+			two_to_the_k = 1 << k ; //k = 2^floor(log2 (h / h_k))
+			int offset = 2 * (log2(h1) + 1) ;
+			if (height == h2 / two_to_the_k)
+			{
+				//height = floor (h2/2^k)
+				//k is the level of the tree
+				assert (height == m_height_bucket [1] [2 * k]) ;
+				found = true ;
+				k = 2 * k + offset ;
 			}
 			else
 			{
-				cout << "error in hash function " << endl ;
-				assert (0) ;
+				//height may be ceil (h2/2^k)
+				k = ceil(log2((double) h2 / height)) ;
+				two_to_the_k = 1 << k ;
+				if (height == (h2 + two_to_the_k - 1) / two_to_the_k)
+				{
+					assert (height == m_height_bucket [1] [2 * k + 1]) ;
+					found = true ;
+					k = 2 * k + 1 + offset ;
+				}
 			}
-		}*/
+		}
+		if (! found)
+		{
+			cout << "error in hash function. Height " << height << " not found "
+				<< endl ;
+			assert (found) ;
+		}
 		
 		hash_table & h = m_projections_interior [k] ;
 #if 0
@@ -810,9 +840,6 @@ private:
 			zoid_type * z = &(m_zoids [start->second]) ;
 			assert (z->height == height) ;
 #endif
-//#if defined (TIME_INVARIANCE_INTERIOR) || defined(TIME_INVARIANCE_BOUNDARY)
-//			assert (z->decision >> zoid_type::NUM_BITS_DECISION - 1 == 0) ;
-//#endif
 			index = start->second ;
 			return true ;
 		}
@@ -1678,15 +1705,15 @@ private:
 				copy_data(array, m_array, volume) ;
 				write_dag_to_file(grid, T) ;
 				create_simple_zoids() ;
-				double compute_time = 0. ;
-				clock_gettime(CLOCK_MONOTONIC, &start) ;
-				trap_space_time_cut_boundary(t0, t1, grid, 
-					&(m_simple_zoids [m_head [0]]), f, bf) ;
-				clock_gettime(CLOCK_MONOTONIC, &end) ;
-				compute_time = tdiff2(&end, &start) ;
-				std::cout << "Compute time :" << 1.0e3 * compute_time
-					<< "ms" << std::endl;
 			}
+			double compute_time = 0. ;
+			clock_gettime(CLOCK_MONOTONIC, &start) ;
+			trap_space_time_cut_boundary(t0, t1, grid, 
+				&(m_simple_zoids [m_head [0]]), f, bf) ;
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			compute_time = tdiff2(&end, &start) ;
+			std::cout << "Compute time :" << 1.0e3 * compute_time
+				<< "ms" << std::endl;
 		}
 		else
 		{
