@@ -467,14 +467,14 @@ private:
 		{
 			max_level += log2(h2) + 1 ;
 		}
+		m_projections_interior.reserve(2 * max_level) ;
+		m_projections_interior.resize(2 * max_level) ; 
 		int two_to_the_d = 1 << N_RANK ;
-		for (int i = 0 ; i < two_to_the_d ; i++)
+		/*for (int i = 0 ; i < two_to_the_d ; i++)
 		{
 			m_projections_interior [i].reserve(2 * max_level) ;
 			m_projections_interior [i].resize(2 * max_level) ; 
-		}
-		//m_projections_boundary.reserve(volume) ;
-		//m_projections_boundary.resize(volume) ; 
+		}*/
 		for (int i = 0 ; i < two_to_the_d ; i++)
 		{
 			m_projections_boundary [i].reserve(2 * max_level) ;
@@ -516,7 +516,7 @@ private:
 						BF const & bf, int index)
 	{
 		assert (m_head [index] == ULONG_MAX) ;
-		//assert (m_projections_interior.size()) ;
+		assert (m_projections_interior.size()) ;
 		//assert (m_projections_boundary.size()) ;
 		//create a dummy head
 		m_zoids.push_back(zoid_type ()) ;
@@ -558,7 +558,7 @@ private:
 						BF const & bf, int index)
 	{
 		assert (m_head [index] == ULONG_MAX) ;
-		//assert (m_projections_interior.size()) ;
+		assert (m_projections_interior.size()) ;
 		//assert (m_projections_boundary.size()) ;
 		//create a dummy head
 		m_zoids.push_back(zoid_type ()) ;
@@ -597,6 +597,7 @@ private:
 	inline void clear_projections()
 	{
 		int two_to_the_d = 1 << N_RANK ;
+		/*
 		for (int i = 0 ; i < two_to_the_d ; i++)
 		{
 			vector<hash_table> & p = m_projections_interior [i] ; 
@@ -607,7 +608,15 @@ private:
 			p.clear() ; //clear the contents of vector
 			//empty the vector.
 			vector<hash_table>().swap(p) ; 
+		}*/
+		for (int i = 0 ; i < m_projections_interior.size() ; i++)
+		{
+			m_projections_interior [i].clear() ;//clear the contents of hash table
 		}
+		//clear the contents of vector
+		m_projections_interior.clear() ;
+		//empty the vector.
+		vector<hash_table>().swap(m_projections_interior) ;
 
 		/*for (int i = 0 ; i < m_projections_boundary.size() ; i++)
 		{
@@ -953,12 +962,12 @@ private:
 	inline bool check_and_create_space_time_invariant_replica(
 					unsigned long const key, 
 					int const height, unsigned long & index,
-					grid_info <N_RANK> const & grid,
-					int dim_key)
+					grid_info <N_RANK> const & grid)
 	{
-		assert (dim_key < (1 << N_RANK) - 1) ;
+		//assert (dim_key < (1 << N_RANK) - 1) ;
 		vector <hash_table> & projections_interior = 
-							m_projections_interior [dim_key] ;
+							m_projections_interior ;
+							//m_projections_interior [dim_key] ;
 		assert (projections_interior.size()) ;
 		//int k = height - 1 ;  //index with the height for now.
 		bool found = false ;
@@ -1607,7 +1616,7 @@ private:
 	vector<zoid_type> m_zoids ; //the array of all nodes in the DAG
 	vector<simple_zoid_type> m_simple_zoids ; //a compact array of nodes in the DAG
 	//the array of hashtable of <key, zoid index> for interior region
-	vector<hash_table> m_projections_interior [1 << N_RANK] ; 
+	vector<hash_table> m_projections_interior ; 
 	//the array of hashtable of <key, zoid index> for boundary region
 	//vector<hash_table> m_projections_boundary ; 
 	vector<two_level_hash_table> m_projections_boundary [1 << N_RANK] ; 

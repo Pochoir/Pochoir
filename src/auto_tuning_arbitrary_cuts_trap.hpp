@@ -436,7 +436,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 								lt, centroid, index, grid, (1 << N_RANK) - 1) ;
 #else
 	bool projection_exists = check_and_create_space_time_invariant_replica (key,
-									lt, index, grid, 0) ;
+									lt, index, grid) ;
 #endif
 	zoid_type & z = m_zoids [index];
 	
@@ -898,18 +898,6 @@ double & max_loop_time)
 		//you can use space invariance in some dimension
 		projection_exists = check_and_create_time_invariant_replica (key, lt, 
 		  centroid_dim_touching_bdry, index, l_father_grid, dim_touching_bdry) ;
-		/*if (dim_touching_boundary == (1 << N_RANK) - 1)
-		{
-			//if every dimension touches boundary, use time invariance
-			projection_exists = check_and_create_time_invariant_replica (key, 
-					lt, centroid, index, l_father_grid, dim_touching_boundary) ;
-		}
-		else
-		{
-			//else you can use space invariance in some dimension
-			projection_exists = check_and_create_space_time_invariant_replica (
-						key, lt, index, l_father_grid, dim_touching_boundary) ;
-		}*/
 #endif
 	}
 	else
@@ -920,7 +908,7 @@ double & max_loop_time)
 #else
 		//space-time invariance at interior
 		projection_exists = check_and_create_space_time_invariant_replica (key,
-							lt, index, l_father_grid, 0) ;
+							lt, index, l_father_grid) ;
 #endif
 	}
 	zoid_type & z = m_zoids [index] ;
