@@ -339,8 +339,11 @@ private:
 	typedef zoid <N_RANK> zoid_type ;
 	typedef simple_zoid <N_RANK> simple_zoid_type ;
 	typedef unordered_multimap<unsigned long, unsigned long> hash_table ;
+	typedef unordered_multimap<unsigned long, hash_table> two_level_hash_table ;
 	typedef typename unordered_multimap<unsigned long, unsigned long>::iterator 
 					hash_table_iterator ;
+	typedef typename unordered_multimap<unsigned long, hash_table>::iterator 
+					two_level_hash_table_iterator ;
 	typedef typename zoid<N_RANK>::decision_type decision_type ;
 
 	/*void flush_cache()
@@ -464,10 +467,19 @@ private:
 		{
 			max_level += log2(h2) + 1 ;
 		}
-		m_projections_interior.reserve(2 * max_level) ;
-		m_projections_interior.resize(2 * max_level) ; 
-		m_projections_boundary.reserve(volume) ;
-		m_projections_boundary.resize(volume) ; 
+		int two_to_the_d = 1 << N_RANK ;
+		for (int i = 0 ; i < two_to_the_d ; i++)
+		{
+			m_projections_interior [i].reserve(2 * max_level) ;
+			m_projections_interior [i].resize(2 * max_level) ; 
+		}
+		//m_projections_boundary.reserve(volume) ;
+		//m_projections_boundary.resize(volume) ; 
+		for (int i = 0 ; i < two_to_the_d ; i++)
+		{
+			m_projections_boundary [i].reserve(2 * max_level) ;
+			m_projections_boundary [i].resize(2 * max_level) ; 
+		}
 		cout << "volume " << volume << endl ;
 
 		m_array = malloc (volume * m_type_size) ;
@@ -504,8 +516,8 @@ private:
 						BF const & bf, int index)
 	{
 		assert (m_head [index] == ULONG_MAX) ;
-		assert (m_projections_interior.size()) ;
-		assert (m_projections_boundary.size()) ;
+		//assert (m_projections_interior.size()) ;
+		//assert (m_projections_boundary.size()) ;
 		//create a dummy head
 		m_zoids.push_back(zoid_type ()) ;
 		zoid_type & dummy_head = m_zoids [m_num_vertices] ;
@@ -546,8 +558,8 @@ private:
 						BF const & bf, int index)
 	{
 		assert (m_head [index] == ULONG_MAX) ;
-		assert (m_projections_interior.size()) ;
-		assert (m_projections_boundary.size()) ;
+		//assert (m_projections_interior.size()) ;
+		//assert (m_projections_boundary.size()) ;
 		//create a dummy head
 		m_zoids.push_back(zoid_type ()) ;
 		zoid_type & dummy_head = m_zoids [m_num_vertices] ;
@@ -584,21 +596,44 @@ private:
 
 	inline void clear_projections()
 	{
-		for (int i = 0 ; i < m_projections_interior.size() ; i++)
+		int two_to_the_d = 1 << N_RANK ;
+		for (int i = 0 ; i < two_to_the_d ; i++)
 		{
-			m_projections_interior [i].clear() ;		//clear the projections
+			vector<hash_table> & p = m_projections_interior [i] ; 
+			for (int i = 0 ; i < p.size() ; i++)
+			{
+				p [i].clear() ;	//clear the contents of hash table
+			}
+			p.clear() ; //clear the contents of vector
+			//empty the vector.
+			vector<hash_table>().swap(p) ; 
 		}
-		m_projections_interior.clear() ;
-		//empty the projections vector.
-		vector<hash_table>().swap(m_projections_interior) ; 
 
-		for (int i = 0 ; i < m_projections_boundary.size() ; i++)
+		/*for (int i = 0 ; i < m_projections_boundary.size() ; i++)
 		{
-			m_projections_boundary [i].clear() ;		//clear the projections
+			m_projections_boundary [i].clear() ;//clear the projections
 		}
 		m_projections_boundary.clear() ;
 		//empty the projections vector.
-		vector<hash_table>().swap(m_projections_boundary) ; 
+		vector<hash_table>().swap(m_projections_boundary) ; */
+		for (int k = 0 ; k < two_to_the_d ; k++)
+		{
+			vector <two_level_hash_table> & v = m_projections_boundary [k] ;
+			for (int i = 0 ; i < v.size() ; i++)
+			{
+				two_level_hash_table & th = v [i] ;
+				for (two_level_hash_table_iterator start = th.begin() ; 
+							start != th.end() ; start++)
+				{
+					hash_table & h = start->second ;
+					h.clear() ; //clear the contents of hash table
+				}
+				th.clear() ; //clear the contents of 2 level hash table.
+			}
+			v.clear() ;
+			//empty the vector.
+			vector<two_level_hash_table>().swap(v) ;
+		}
 	}
 
 
@@ -612,8 +647,212 @@ private:
 		vector<zoid_type>().swap(m_zoids) ; //empty the zoids vector
 		free (m_array) ;
 	}
+	
+	inline bool check_and_create_time_invariant_replica(unsigned long const key,
+					int const height, int const centroid, unsigned long & index,
+					grid_info <N_RANK> const & grid, int dim_key)
+	{
 
-	//key is the bottom volume + top volume.
+		//assert (m_projections_boundary.size()) ;
+		assert (dim_key < (1 << N_RANK)) ;
+		vector <two_level_hash_table> & projections_boundary = 
+							m_projections_boundary [dim_key] ;
+							//m_projections_boundary ;
+		assert (projections_boundary.size()) ;
+		bool found = false ;
+		//try checking the 1st bucket
+		int h1 = m_height_bucket [0][0] ;
+		int k = log2((double) h1 / height) ;
+		int two_to_the_k = 1 << k ; //k = 2^floor(log2 (h / h_k))
+		if (height == h1 / two_to_the_k)
+		{
+			//height = floor (h1/2^k)
+			//k is the level of the tree
+			assert (height == m_height_bucket [0] [2 * k]) ;
+			found = true ;
+			k = 2 * k ; //index
+		}
+		else
+		{
+			//height may be ceil (h1/2^k)
+			k = ceil(log2((double) h1 / height)) ;
+			two_to_the_k = 1 << k ;
+			if (height == (h1 + two_to_the_k - 1) / two_to_the_k)
+			{
+				assert (height == m_height_bucket [0] [2 * k + 1]) ;
+				found = true ;
+				k = 2 * k + 1 ;
+			}
+		}
+		if (! found && ! m_height_bucket [1].empty())
+		{
+			//try checking the 2nd bucket
+			int h2 = m_height_bucket [1][0] ;
+			k = log2((double) h2 / height) ;
+			two_to_the_k = 1 << k ; //k = 2^floor(log2 (h / h_k))
+			int offset = 2 * (log2(h1) + 1) ;
+			if (height == h2 / two_to_the_k)
+			{
+				//height = floor (h2/2^k)
+				//k is the level of the tree
+				assert (height == m_height_bucket [1] [2 * k]) ;
+				found = true ;
+				k = 2 * k + offset ;
+			}
+			else
+			{
+				//height may be ceil (h2/2^k)
+				k = ceil(log2((double) h2 / height)) ;
+				two_to_the_k = 1 << k ;
+				if (height == (h2 + two_to_the_k - 1) / two_to_the_k)
+				{
+					assert (height == m_height_bucket [1] [2 * k + 1]) ;
+					found = true ;
+					k = 2 * k + 1 + offset ;
+				}
+			}
+		}
+		if (! found)
+		{
+			cout << "error in hash function. Height " << height << " not found "
+				<< endl ;
+			assert (found) ;
+		}
+		
+		two_level_hash_table & th = projections_boundary [k] ;
+//#ifndef NDEBUG
+#if 0
+		cout << "centroid : "  << centroid << " key " << key << endl ;
+		for (int i = N_RANK - 1 ; i >= 0 ; i--)
+		{
+			cout << " x0 [" << i << "] " << grid.x0 [i] 
+			 << " x1 [" << i << "] " << grid.x1 [i] 
+			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
+			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
+			<< " h " << height << endl ; 
+		}
+#endif
+		std::pair<two_level_hash_table_iterator, 
+				two_level_hash_table_iterator> p = th.equal_range (centroid) ;
+		
+		//hash_table iterator has two elements, first and second.
+		for (two_level_hash_table_iterator start = p.first ; 
+				start != p.second ; start++)
+		{
+			assert (start->first == centroid) ;
+			hash_table & h = start->second ;
+			std::pair<hash_table_iterator, hash_table_iterator> p1 = 
+							h.equal_range (key) ;
+			for (hash_table_iterator start1 = p1.first ; 
+							start1 != p1.second ; start1++)
+			{
+				assert (start1->first == key) ;
+				assert (start1->second < m_num_vertices) ;
+				zoid_type * z = &(m_zoids [start1->second]) ;
+				assert (z->height == height) ;
+				index = start1->second ;
+#ifndef NDEBUG
+				grid_info <N_RANK> grid2 = z->info ;
+				int h = height ;
+				for (int i = N_RANK - 1 ; i >= 0 ; i--)
+				{
+					bool error = false ;
+					int x0 = grid.x0 [i], x1 = grid.x1 [i] ;
+					int x2 = grid.x0 [i] + grid.dx0 [i] * h ;
+					int x3 = grid.x1 [i] + grid.dx1 [i] * h ;
+
+					int x0_ = grid2.x0 [i], x1_ = grid2.x1 [i] ;
+					int x2_ = grid2.x0 [i] + grid2.dx0 [i] * h ; 
+					int x3_ = grid2.x1 [i] + grid2.dx1 [i] * h ;
+					if (dim_key == ((1 << N_RANK) - 1))
+					{
+						//use time invariance
+						if (pmod(x0, m_algo.phys_length_ [i]) != 
+							pmod(x0_, m_algo.phys_length_ [i]) ||
+							pmod(x1, m_algo.phys_length_ [i]) != 
+							pmod(x1_, m_algo.phys_length_ [i]) ||
+							pmod(x2, m_algo.phys_length_ [i]) != 
+							pmod(x2_, m_algo.phys_length_ [i]) ||
+							pmod(x3, m_algo.phys_length_ [i]) != 
+							pmod(x3_, m_algo.phys_length_ [i]))
+						{
+							error = true ;
+						}
+					}
+					else
+					{
+						//use space-time invariance
+						if (x1 - x0 != x1_ - x0_ || x3 - x2 != x3_ - x2_)
+						{
+							error = true ;
+						}
+					}
+					if (error)
+					{
+						cout << "2 diff zoids hash to same key " << endl ;
+						cout << "diff dim " << i << endl ;
+						cout << "dim key " << dim_key << endl ;
+						cout << "centroid " << centroid << endl ;
+						cout << "key " << key << endl ;
+						cout << " grid " << endl ;
+						for (int j = N_RANK - 1 ; j >= 0 ; j--)
+						{
+							cout << " x0 [" << j << "] " << grid.x0 [j] 
+							<< " x1 [" << j << "] " << grid.x1 [j] 
+							<< " x2 [" << j << "] " << grid.x0[j] + grid.dx0[j] * h
+							<< " x3 [" << j << "] " << grid.x1[j] + grid.dx1[j] * h
+							<< " h " << h << endl ; 
+						}
+						cout << " grid 2 at index " << index << endl ;
+						for (int j = N_RANK - 1 ; j >= 0 ; j--)
+						{
+							cout << " x0 [" << j << "] " << grid2.x0 [j] 
+							<< " x1 [" << j << "] " << grid2.x1 [j] 
+							<< " x2 [" << j << "] " << grid2.x0[j] + grid2.dx0[j] * h
+							<< " x3 [" << j << "] " << grid2.x1[j] + grid2.dx1[j] * h
+							<< " h " << h << endl ; 
+						}
+						assert (0) ;
+					}
+				}	
+#endif
+				return true ;
+			}
+			//key doesn't exist in hashtable
+			m_zoids.push_back(zoid_type ()) ;
+			zoid_type & z = m_zoids [m_num_vertices] ;
+			z.height = height ;
+#ifndef NDEBUG
+			z.info = grid ;
+			z.id = m_num_vertices ;
+#endif
+			h.insert(std::pair<unsigned long, unsigned long>(key, 
+												m_num_vertices)) ;
+			index = m_num_vertices ;
+			m_num_vertices++ ;
+			assert (m_num_vertices == m_zoids.size()) ;
+			return false ;
+		}
+		//centroid doesn't exist in the 2 level hash table
+		m_zoids.push_back(zoid_type ()) ;
+		zoid_type & z = m_zoids [m_num_vertices] ;
+		z.height = height ;
+#ifndef NDEBUG
+		z.info = grid ;
+		z.id = m_num_vertices ;
+#endif
+		hash_table h ;
+		h.insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
+		index = m_num_vertices ;
+		m_num_vertices++ ;
+		assert (m_num_vertices == m_zoids.size()) ;
+		projections_boundary [k].insert(
+				std::pair<unsigned long, hash_table>(centroid, h)) ;
+		
+		return false ;
+	}
+
+	/*
 	inline bool check_and_create_time_invariant_replica(unsigned long const key,
 					int const height, int const centroid, unsigned long & index,
 					grid_info <N_RANK> const & grid)
@@ -645,32 +884,7 @@ private:
 			if (z->height == height) 
 			{
 				index = start->second ;
-				//assert (z->decision >> zoid_type::NUM_BITS_DECISION - 1 == 1) ;
-				/*grid_info <N_RANK> grid2 = z->info ;
-				int h = height ;
-				bool found = true ;
-				for (int i = N_RANK - 1 ; i >= 0 ; i--)
-				{
-					int x2 = grid.x0 [i] + grid.dx0 [i] * h ;
-					int x3 = grid.x1 [i] + grid.dx1 [i] * h ;
-					int x2_ = grid2.x0 [i] + grid2.dx0 [i] * h ; 
-					int x3_ = grid2.x1 [i] + grid2.dx1 [i] * h ;
-					int l = m_algo.phys_length_ [i] ;
-					if (pmod(grid.x0 [i], l) != pmod(grid2.x0 [i], l) ||
-						pmod(grid.x1 [i], l) != pmod(grid2.x1 [i], l) ||
-						pmod(x2, l) != pmod(x2_, l) ||
-						pmod(x3, l) != pmod(x3_, l))
-					{
-						found = false ;
-					}
-				}
-				if (found)
-				{
-					index = start->second ;
-					return true ;
-				}*/
 #ifndef NDEBUG
-//#if 0
 				grid_info <N_RANK> grid2 = z->info ;
 				int h = height ;
 				for (int i = N_RANK - 1 ; i >= 0 ; i--)
@@ -727,15 +941,6 @@ private:
 #ifndef NDEBUG
 		z.info = grid ;
 		z.id = m_num_vertices ;
-		/*cout << "inserting zoid " << z.id << " key " << key << endl ;
-		for (int i = N_RANK - 1 ; i >= 0 ; i--)
-		{
-			cout << " x0 [" << i << "] " << grid.x0 [i] 
-			 << " x1 [" << i << "] " << grid.x1 [i] 
-			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
-			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
-			<< " h " << height << endl ; 
-		}*/
 #endif
 		m_projections_boundary [centroid].insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
 		index = m_num_vertices ;
@@ -743,14 +948,18 @@ private:
 		assert (m_num_vertices == m_zoids.size()) ;
 		
 		return false ;
-	}
+	}*/
 
 	inline bool check_and_create_space_time_invariant_replica(
 					unsigned long const key, 
 					int const height, unsigned long & index,
-					grid_info <N_RANK> const & grid)
+					grid_info <N_RANK> const & grid,
+					int dim_key)
 	{
-		assert (m_projections_interior.size()) ;
+		assert (dim_key < (1 << N_RANK) - 1) ;
+		vector <hash_table> & projections_interior = 
+							m_projections_interior [dim_key] ;
+		assert (projections_interior.size()) ;
 		//int k = height - 1 ;  //index with the height for now.
 		bool found = false ;
 		//try checking the 1st bucket
@@ -815,7 +1024,7 @@ private:
 			assert (found) ;
 		}
 		
-		hash_table & h = m_projections_interior [k] ;
+		hash_table & h = projections_interior [k] ;
 #if 0
 		cout << "centroid : "  << centroid << " key " << key << endl ;
 		cout << " height " << height << endl ;
@@ -863,7 +1072,7 @@ private:
 			<< " h " << height << endl ; 
 		}*/
 #endif
-		m_projections_interior [k].insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
+		projections_interior [k].insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
 		index = m_num_vertices ;
 		m_num_vertices++ ;
 		assert (m_num_vertices == m_zoids.size()) ;
@@ -1398,9 +1607,10 @@ private:
 	vector<zoid_type> m_zoids ; //the array of all nodes in the DAG
 	vector<simple_zoid_type> m_simple_zoids ; //a compact array of nodes in the DAG
 	//the array of hashtable of <key, zoid index> for interior region
-	vector<hash_table> m_projections_interior ; 
+	vector<hash_table> m_projections_interior [1 << N_RANK] ; 
 	//the array of hashtable of <key, zoid index> for boundary region
-	vector<hash_table> m_projections_boundary ; 
+	//vector<hash_table> m_projections_boundary ; 
+	vector<two_level_hash_table> m_projections_boundary [1 << N_RANK] ; 
 	vector<unsigned long> m_head ; // the indices of start nodes in the dag
 	Algorithm <N_RANK> & m_algo ; // a reference to Algorithm
 	unsigned long m_num_vertices ; //# of zoids in the dag
@@ -1682,6 +1892,8 @@ private:
 				copy_data(m_array, array, volume) ;
 
 				m_head.push_back (ULONG_MAX) ;
+				cout << "m_head.size() " << m_head.size() << endl ;
+				cout << "mhead [0] " << m_head[0] << endl ;
 				clock_gettime(CLOCK_MONOTONIC, &start) ;
 				build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
 				clock_gettime(CLOCK_MONOTONIC, &end) ;

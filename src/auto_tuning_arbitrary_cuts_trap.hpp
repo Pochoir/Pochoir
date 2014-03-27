@@ -433,10 +433,10 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	//										centroid, index, grid) ;
 #ifdef TIME_INVARIANCE_INTERIOR
 	bool projection_exists = check_and_create_time_invariant_replica (key,
-									lt, centroid, index, grid) ;
+								lt, centroid, index, grid, (1 << N_RANK) - 1) ;
 #else
 	bool projection_exists = check_and_create_space_time_invariant_replica (key,
-									lt, index, grid) ;
+									lt, index, grid, 0) ;
 #endif
 	zoid_type & z = m_zoids [index];
 	
@@ -815,8 +815,9 @@ double & max_loop_time)
 
 	struct timespec start, end;
 	struct timespec start1, end1 ;
+	int dim_touching_bdry = 0 ;
+	int centroid_dim_touching_bdry = 0, width_dim_touching_bdry = 1 ;
 	clock_gettime(CLOCK_MONOTONIC, &start);
-
     for (int i = N_RANK-1; i >= 0; --i) {
         unsigned long lb, tb;
         int thres ;
@@ -855,6 +856,12 @@ double & max_loop_time)
 		if (l_touch_boundary)
 		{
 			limit = dx_recursive_boundary_[i] ;
+			dim_touching_bdry |= 1 << i ; 
+			centroid_dim_touching_bdry = 
+				pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * 
+				width_dim_touching_bdry + centroid_dim_touching_bdry ;
+			assert (centroid_dim_touching_bdry >= 0) ;
+			width_dim_touching_bdry *= phys_length_ [i] ;
 		}
 		else
 		{
@@ -880,29 +887,40 @@ double & max_loop_time)
         call_boundary |= l_touch_boundary;
     }
 	unsigned long index ;
-	//bool projection_exists = check_and_create_projection (key, lt, 
-	//								centroid, index, l_father_grid) ;
 	bool projection_exists = false ;
 	if (call_boundary)
 	{
 #ifdef TIME_INVARIANCE_BOUNDARY
 		projection_exists = check_and_create_time_invariant_replica (key, lt, 
-								centroid, index, l_father_grid) ;
+					centroid, index, l_father_grid, (1 << N_RANK) - 1) ;
 #else
 		//space-time invariance at boundary
-		projection_exists = check_and_create_space_time_invariant_replica (key,
-									lt, index, l_father_grid) ;
+		//you can use space invariance in some dimension
+		projection_exists = check_and_create_time_invariant_replica (key, lt, 
+		  centroid_dim_touching_bdry, index, l_father_grid, dim_touching_bdry) ;
+		/*if (dim_touching_boundary == (1 << N_RANK) - 1)
+		{
+			//if every dimension touches boundary, use time invariance
+			projection_exists = check_and_create_time_invariant_replica (key, 
+					lt, centroid, index, l_father_grid, dim_touching_boundary) ;
+		}
+		else
+		{
+			//else you can use space invariance in some dimension
+			projection_exists = check_and_create_space_time_invariant_replica (
+						key, lt, index, l_father_grid, dim_touching_boundary) ;
+		}*/
 #endif
 	}
 	else
 	{
 #ifdef TIME_INVARIANCE_INTERIOR
 		projection_exists = check_and_create_time_invariant_replica (key, lt, 
-								centroid, index, l_father_grid) ;
+						centroid, index, l_father_grid, (1 << N_RANK) - 1) ;
 #else
 		//space-time invariance at interior
 		projection_exists = check_and_create_space_time_invariant_replica (key,
-									lt, index, l_father_grid) ;
+							lt, index, l_father_grid, 0) ;
 #endif
 	}
 	zoid_type & z = m_zoids [index] ;
