@@ -1068,6 +1068,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	}
 
 	bool force_divide = false ;
+#ifdef SUBSUMPTION_SPACE
 	for (int i = 0 ; i < m_zoids [index].num_children ; i++)
 	{
 		unsigned long child_index = m_zoids [index].children [i] ;
@@ -1079,6 +1080,10 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 			break ;
 		}
 	}
+#endif
+#ifndef SUBSUMPTION_TIME
+	max_loop_time = 0 ;
+#endif
 	
     //base case
 	//suppose loop_time(z) >= loop_time(z'), z' \in tree(z)
@@ -1566,6 +1571,7 @@ double & max_loop_time)
 	}
 	
 	bool force_divide = false ;
+#ifdef SUBSUMPTION_SPACE
 	for (int i = 0 ; i < m_zoids [index].num_children ; i++)
 	{
 		unsigned long child_index = m_zoids [index].children [i] ;
@@ -1577,6 +1583,11 @@ double & max_loop_time)
 			break ;
 		}
 	}
+#endif
+#ifndef SUBSUMPTION_TIME
+	max_loop_time = 0 ;
+#endif
+
 	// base case
 	//suppose loop_time(z) >= loop_time(z'), z' \in tree(z)
 	//if divide_and_conquer_time(z) < max_{z' \in tree(z)} loop_time(z')

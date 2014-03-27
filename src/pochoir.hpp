@@ -56,6 +56,7 @@
 //#include "auto_tuning_sawzoid.hpp"
 //#include "auto_tuning_sawzoid_middle.hpp"
 #include "auto_tuning_arbitrary_cuts_sawzoid.hpp"
+//#include "auto_tuning_with_span_sawzoid.hpp"
 #include "auto_tuning_arbitrary_cuts_trap.hpp"
 //#include "auto_tuning_arbitrary_cuts_sawzoid_middle.hpp"
 //#include "dag_sawzoid.hpp"
@@ -530,11 +531,6 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #ifdef GENEITY_TEST
 	cout << "geneity testing" << endl ;
 #endif
-#ifdef DEFAULT_SPACE_CUT
-	cout << "default space cut " << endl ;
-#else
-	cout << "modified space cut " << endl ;
-#endif
 #ifdef AUTO_TUNE
 	algor.set_thres_auto_tuning() ;
 	cout << "auto tune" << endl ;
@@ -561,8 +557,25 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #else
 	cout << "arbitrary space cut " << endl ;
 #endif
+
+#ifdef SUBSUMPTION_SPACE
+	cout << "subsumption in space " << endl ;
+#else
+	cout << "no subsumption in space " << endl ;
 #endif
 
+#ifdef SUBSUMPTION_TIME
+	cout << "subsumption in time " << endl ;
+#else
+	cout << "no subsumption in time " << endl ;
+#endif
+#endif
+
+#ifdef DEFAULT_SPACE_CUT
+	cout << "default space cut " << endl ;
+#else
+	cout << "modified space cut " << endl ;
+#endif
 #ifdef TRAP
 	cout << "default time cut " << endl ;
 	//algor.set_thres_auto_tuning() ;
