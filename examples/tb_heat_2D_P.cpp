@@ -89,13 +89,13 @@ int main(int argc, char * argv[])
     //Pochoir_Shape_2D heat_shape_2D[] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 0}, {0, -1, 0}, {0, 0, -1}, {0, 0, 1}};
     Pochoir<N_RANK> heat_2D(heat_shape_2D);
 	Pochoir_Array<double, N_RANK> a(N1, N2) ;
-    a.Register_Boundary(aperiodic_2D);
+    a.Register_Boundary(periodic_2D);
     heat_2D.Register_Array(a);
 
 #ifdef CHECK_RESULT
 	Pochoir_Array<double, N_RANK> b(N1, N2);
     b.Register_Shape(heat_shape_2D);
-    b.Register_Boundary(aperiodic_2D);
+    b.Register_Boundary(periodic_2D);
 #endif
 
     /* Now we can only access the Pochoir_Array after Register_Array,
