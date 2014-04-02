@@ -103,7 +103,7 @@ class zoid
 #ifdef SUBSUMPTION_TIME
 		max_loop_time = 0 ;
 #endif
-		height = 0 ;
+		//height = 0 ;
 #ifndef NDEBUG
 		cache_penalty_time = 0 ;
 		stime = 0 ;
@@ -131,7 +131,7 @@ class zoid
 		//num_children = z.num_children ;
 		num_children = 0 ;
 		capacity = 0 ;
-		height = z.height ;
+		//height = z.height ;
 		//assert (num_children <= capacity) ;
 #ifndef NDEBUG
 		id = z.id ;
@@ -161,7 +161,7 @@ class zoid
 #endif
 			assert (z.num_children <= z.capacity) ;
 			num_children = z.num_children ;
-			height = z.height ;
+			//height = z.height ;
 			/*if (num_children > 0)
 			{
 				if (capacity < z.capacity)
@@ -216,7 +216,7 @@ class zoid
 		//cout << "zoid : copy const for zoid " << z.id << " # children" << 
 		//		num_children << endl ;
 		children = 0 ;
-		height = z.height ;
+		//height = z.height ;
 		if (capacity > 0)
 		{
 			children = new unsigned long [capacity] ;
@@ -253,7 +253,7 @@ class zoid
 #ifdef SUBSUMPTION_TIME
 		max_loop_time = 0 ;
 #endif
-		height = 0 ;
+		//height = 0 ;
 #ifndef NDEBUG
 		cache_penalty_time = 0 ;
 		stime = 0 ;
@@ -269,7 +269,6 @@ class zoid
 	static const double FUZZ ;
 	private :
 	decision_type decision ;
-	int height ;
 	unsigned long * children ;  
 	unsigned short capacity ;
 	unsigned short num_children ;
@@ -278,6 +277,7 @@ class zoid
 	double max_loop_time ;
 #endif
 #ifndef NDEBUG
+	int height ;
 	double cache_penalty_time ;
 	grid_info <N_RANK> info ;
 	unsigned long id ; //id of the zoid.
@@ -770,7 +770,7 @@ private:
 				assert (start1->first == key) ;
 				assert (start1->second < m_num_vertices) ;
 				zoid_type * z = &(m_zoids [start1->second]) ;
-				assert (z->height == height) ;
+				//assert (z->height == height) ;
 				index = start1->second ;
 #ifndef NDEBUG
 				grid_info <N_RANK> grid2 = z->info ;
@@ -842,7 +842,7 @@ private:
 			//key doesn't exist in hashtable
 			m_zoids.push_back(zoid_type ()) ;
 			zoid_type & z = m_zoids [m_num_vertices] ;
-			z.height = height ;
+			//z.height = height ;
 #ifndef NDEBUG
 			z.info = grid ;
 			z.id = m_num_vertices ;
@@ -857,7 +857,7 @@ private:
 		//centroid doesn't exist in the 2 level hash table
 		m_zoids.push_back(zoid_type ()) ;
 		zoid_type & z = m_zoids [m_num_vertices] ;
-		z.height = height ;
+		//z.height = height ;
 #ifndef NDEBUG
 		z.info = grid ;
 		z.id = m_num_vertices ;
@@ -1068,7 +1068,7 @@ private:
 			assert (start->second < m_num_vertices) ;
 #ifndef NDEBUG
 			zoid_type * z = &(m_zoids [start->second]) ;
-			assert (z->height == height) ;
+			//assert (z->height == height) ;
 #endif
 			index = start->second ;
 			return true ;
@@ -1079,7 +1079,7 @@ private:
 		}
 		m_zoids.push_back(zoid_type ()) ;
 		zoid_type & z = m_zoids [m_num_vertices] ;
-		z.height = height ;
+		//z.height = height ;
 #ifndef NDEBUG
 		z.info = grid ;
 		z.id = m_num_vertices ;
@@ -1306,7 +1306,7 @@ private:
 			int decision ;
 			int height, num_children ;
 			dag >> decision ;
-			dag >> height ;
+			//dag >> height ;
 			dag >> num_children ;
 			simple_zoid_type & z = m_simple_zoids [i] ;
 			//z.set_decision(decision) ;
@@ -1388,7 +1388,8 @@ private:
 		for (int i = 0 ; i < m_zoids.size() ; i++)
 		{
 			zoid_type & z = m_zoids [i] ;
-			dag << (int) z.decision << " " << z.height << " " << 
+			//dag << (int) z.decision << " " << z.height << " " << 
+			dag << (int) z.decision << " " << //z.height << " " << 
 				z.num_children << " " ;
 			//cout << "z.num_children " << z.num_children << endl ; 
 			for (int j = 0 ; j < z.num_children ; j++)
@@ -1445,7 +1446,8 @@ private:
 				unsigned long index = que.front() ;
 				assert (index < m_num_vertices) ;
 				zoid_type * z = &(m_zoids[index]) ;
-				cout << "\nid " << z->id << " h " << z->height <<
+				//cout << "\nid " << z->id << " h " << z->height <<
+				cout << "\nid " << z->id << // " h " << z->height <<
 					//" num children " << z->children.size() << 
 					" # children " << z->num_children << endl ;
 					//" num_parents " << z->parents.size() << 
