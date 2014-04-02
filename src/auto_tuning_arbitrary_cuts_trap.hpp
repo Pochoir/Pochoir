@@ -451,7 +451,9 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		clock_gettime(CLOCK_MONOTONIC, &end) ;
 		redundant_time += tdiff2(&end, &start) ;
 		projected_time += z.time  ;
+#ifdef SUBSUMPTION_TIME
 		max_loop_time = z.max_loop_time ;
+#endif
 		//cout << " zoid  " << index << " exists " << endl ;
 		//a zoid with the projection already exists. return
 		return ;
@@ -713,7 +715,8 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 #ifndef NDEBUG
 		m_zoids [index].ltime = loop_time ;
 #endif
-		max_loop_time = max(loop_time, max_loop_time) ;
+		//max_loop_time = max(loop_time, max_loop_time) ;
+		max_loop_time = loop_time ;
 		//assert (loop_time >= max_loop_time) ;
 		//max_loop_time = loop_time ;
 		//m_zoids [index].decision = 0 ;
@@ -757,7 +760,8 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 			m_zoids [index].ltime = zoid_loop_time ;
 		}
 #endif
-		max_loop_time = max(loop_time, max_loop_time) ;
+		//max_loop_time = max(loop_time, max_loop_time) ;
+		max_loop_time = zoid_loop_time ;
 		//store the decision for the zoid and pass the redundant time 
 		//to the parent
 		//if we looped at z, then compare divide and conquer time with
@@ -793,7 +797,9 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 			m_zoids [index].time = necessary_time + projected_time1 ;
 		}
 	}
+#ifdef SUBSUMPTION_TIME
 	m_zoids [index].max_loop_time = max_loop_time ;
+#endif
 	
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	double total_time = tdiff2(&end, &start) ;
@@ -927,7 +933,9 @@ double & max_loop_time)
 		clock_gettime(CLOCK_MONOTONIC, &end) ;
 		redundant_time += tdiff2(&end, &start) ;
 		projected_time += z.time  ;
+#ifdef SUBSUMPTION_TIME
 		max_loop_time = z.max_loop_time ;
+#endif
 		//cout << " zoid  " << index << " exists " << endl ;
 		//a zoid with the projection already exists. return
 		return ;
@@ -1212,7 +1220,8 @@ double & max_loop_time)
 #ifndef NDEBUG
 		m_zoids [index].ltime = loop_time ;
 #endif
-		max_loop_time = max(loop_time, max_loop_time) ;
+		//max_loop_time = max(loop_time, max_loop_time) ;
+		max_loop_time = loop_time ;
 		//set a flag to indicate that we looped on z.
 		m_zoids [index].decision |= (decision_type) 1 << 
 					  (zoid_type::NUM_BITS_DECISION - 2) ;
@@ -1258,8 +1267,8 @@ double & max_loop_time)
 			m_zoids [index].ltime = zoid_loop_time ;
 		}
 #endif
-		max_loop_time = max(loop_time, max_loop_time) ;
-		
+		//max_loop_time = max(loop_time, max_loop_time) ;
+		max_loop_time = zoid_loop_time ;
 		//store the decision for the zoid and pass the redundant time 
 		//to the parent
 		//if we looped at z, then compare divide and conquer time with
@@ -1297,7 +1306,9 @@ double & max_loop_time)
 			m_zoids [index].time = necessary_time + projected_time1 ;
 		}
 	}
+#ifdef SUBSUMPTION_TIME
 	m_zoids [index].max_loop_time = max_loop_time ;
+#endif
 
 	clock_gettime(CLOCK_MONOTONIC, &end) ;
 	double total_time = tdiff2(&end, &start) ;

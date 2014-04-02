@@ -100,7 +100,9 @@ class zoid
 		num_children = 0 ;
 		capacity = 0 ;
 		time = 0 ;
+#ifdef SUBSUMPTION_TIME
 		max_loop_time = 0 ;
+#endif
 		height = 0 ;
 #ifndef NDEBUG
 		cache_penalty_time = 0 ;
@@ -117,7 +119,9 @@ class zoid
 	{
 		decision = z.decision ;
 		time = z.time ;
+#ifdef SUBSUMPTION_TIME
 		max_loop_time = z.max_loop_time ;
+#endif
 #ifndef NDEBUG
 		cache_penalty_time = z.cache_penalty_time ;
 		stime = z.stime ;
@@ -146,7 +150,9 @@ class zoid
 		{
 			decision = z.decision ;
 			time = z.time ;
+#ifdef SUBSUMPTION_TIME
 			max_loop_time = z.max_loop_time ;
+#endif
 #ifndef NDEBUG
 			cache_penalty_time = z.cache_penalty_time ;
 			stime = z.stime ;
@@ -194,7 +200,9 @@ class zoid
 	{
 		decision = z.decision ;
 		time = z.time ;
+#ifdef SUBSUMPTION_TIME
 		max_loop_time = z.max_loop_time ;
+#endif
 #ifndef NDEBUG
 		cache_penalty_time = z.cache_penalty_time ;
 		stime = z.stime ;
@@ -242,7 +250,9 @@ class zoid
 		capacity = 0 ;
 		decision = 0 ; // 0 for looping
 		time = 0 ;
+#ifdef SUBSUMPTION_TIME
 		max_loop_time = 0 ;
+#endif
 		height = 0 ;
 #ifndef NDEBUG
 		cache_penalty_time = 0 ;
@@ -264,7 +274,9 @@ class zoid
 	unsigned short capacity ;
 	unsigned short num_children ;
 	double time ;
+#ifdef SUBSUMPTION_TIME
 	double max_loop_time ;
+#endif
 #ifndef NDEBUG
 	double cache_penalty_time ;
 	grid_info <N_RANK> info ;
