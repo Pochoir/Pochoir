@@ -374,7 +374,7 @@ double & max_loop_time, int bits)
 				double time = 0 ;
 				symbolic_sawzoid_space_time_cut_interior(l_father->t0, 
 					l_father->t1, l_father->grid, parent_index, child_index, 
-					redundant_time, projected_time, f, time);
+					redundant_time, projected_time, f, time) ;
 				max_loop_time = max(time, max_loop_time) ;
 				child_index++ ;
 #endif
@@ -901,7 +901,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
             l_son_grid.dx1[i] = grid.dx1[i];
         }
         symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
-				index, 1, time_cut_rtime, time_cut_ptime, f, time2);
+				index, 1, time_cut_rtime, time_cut_ptime, f, time2) ;
 		clock_gettime(CLOCK_MONOTONIC, &end1);
 		/*if (time2 > max_loop_time)
 		{
@@ -1071,15 +1071,34 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 
 	bool force_divide = false ;
 #ifdef SUBSUMPTION_SPACE
-	for (int i = 0 ; i < m_zoids [index].num_children ; i++)
+	for (int i = 0 ; i < m_zoids [index].num_children && ! force_divide ; i++)
 	{
 		unsigned long child_index = m_zoids [index].children [i] ;
 		decision_type d = m_zoids [child_index].decision ;
-    	if (d & m_space_cut_mask || d & 1) 
+    	/*if (d & m_space_cut_mask || d & 1) 
+		{
+			//check if a grand child also chose to divide.
+			zoid_type & child = m_zoids [child_index] ;
+			for (int j = 0 ; j < child.num_children ; j++)
+			{
+				unsigned long grand_child_index = child.children [j] ;
+				decision_type d2 = m_zoids [grand_child_index].decision ;
+				if (d2 & m_space_cut_mask || d2 & 1) 
+				{
+					//a grand child of z chose to divide. so z should divide.
+					force_divide = true ;
+					break ;
+				}
+			}
+		}*/
+		//set a bit to indicate that a child has divided
+		m_zoids [index].decision |= (decision_type) 1 << 
+									(zoid_type::NUM_BITS_DECISION - 3) ;
+    	if ((d & m_space_cut_mask || d & (decision_type) 1)
+			&& d & (decision_type) 1 << (zoid_type::NUM_BITS_DECISION - 3)) 
 		{
 			//a child of z chose to divide. so z should divide as well.
 			force_divide = true ;
-			break ;
 		}
 	}
 #endif
@@ -1388,15 +1407,15 @@ double & max_loop_time)
         int halflt = lt / 2;
         l_son_grid = l_father_grid;
 		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-    	/*for (int i = N_RANK-1; i >= 0; --i) {
+    	for (int i = N_RANK-1; i >= 0; --i) {
         	touch_boundary(i, lt, l_father_grid) ;
-    	}*/
+    	}
         if (call_boundary) {
             symbolic_sawzoid_space_time_cut_boundary(t0, t0+halflt, l_son_grid,
-					index, 0, time_cut_rtime, time_cut_ptime , f, bf, time1);
+					index, 0, time_cut_rtime, time_cut_ptime , f, bf, time1) ;
         } else {
             symbolic_sawzoid_space_time_cut_interior(t0, t0+halflt, l_son_grid,
-					index, 0, time_cut_rtime, time_cut_ptime, f, time1);
+					index, 0, time_cut_rtime, time_cut_ptime, f, time1) ;
         }
 
         for (int i = 0; i < N_RANK; ++i) {
@@ -1407,10 +1426,10 @@ double & max_loop_time)
         }
         if (call_boundary) {
             symbolic_sawzoid_space_time_cut_boundary(t0+halflt, t1, l_son_grid,
-					index, 1, time_cut_rtime, time_cut_ptime, f, bf, time2);
+					index, 1, time_cut_rtime, time_cut_ptime, f, bf, time2) ;
         } else {
             symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid,
-					index, 1, time_cut_rtime, time_cut_ptime, f, time2);
+					index, 1, time_cut_rtime, time_cut_ptime, f, time2) ;
         }
 		clock_gettime(CLOCK_MONOTONIC, &end1) ;
 		time1 = max(time1, time2) ;
@@ -1479,6 +1498,9 @@ double & max_loop_time)
 			assert (num_children <= total_num_subzoids) ;
 			m_zoids [index].resize_children(num_children) ;
 			clock_gettime(CLOCK_MONOTONIC, &start1);
+    		for (int i = N_RANK-1; i >= 0; --i) {
+        		touch_boundary(i, lt, l_father_grid) ;
+    		}
 			/* cut into space */
 			double time = 0, rtime = 0, ptime = 0, elapsed_time = 0  ;
 			if (call_boundary) 
@@ -1580,15 +1602,35 @@ double & max_loop_time)
 	
 	bool force_divide = false ;
 #ifdef SUBSUMPTION_SPACE
-	for (int i = 0 ; i < m_zoids [index].num_children ; i++)
+	for (int i = 0 ; i < m_zoids [index].num_children && ! force_divide ; i++)
 	{
 		unsigned long child_index = m_zoids [index].children [i] ;
 		decision_type d = m_zoids [child_index].decision ;
-    	if (d & m_space_cut_mask || d & 1) 
+    	/*if (d & m_space_cut_mask || d & 1) 
+		{
+			//check if a grand child also chose to divide.
+			zoid_type & child = m_zoids [child_index] ;
+			for (int j = 0 ; j < child.num_children ; j++)
+			{
+				unsigned long grand_child_index = child.children [j] ;
+				decision_type d2 = m_zoids [grand_child_index].decision ;
+				if (d2 & m_space_cut_mask || d2 & 1) 
+				{
+					//a grand child of z chose to divide. so z should divide.
+					force_divide = true ;
+					break ;
+				}
+			}
+		}*/
+		//set a bit to indicate that a child divided
+		m_zoids [index].decision |= (decision_type) 1 << 
+									(zoid_type::NUM_BITS_DECISION - 3) ;
+    	if ((d & m_space_cut_mask || d & (decision_type) 1)
+			&& d & (decision_type) 1 << (zoid_type::NUM_BITS_DECISION - 3)) 
+    	//if (d & m_space_cut_mask || d & 1) 
 		{
 			//a child of z chose to divide. so z should divide as well.
 			force_divide = true ;
-			break ;
 		}
 	}
 #endif
@@ -1631,8 +1673,10 @@ double & max_loop_time)
 		//max_loop_time = max(loop_time, max_loop_time) ;
 		max_loop_time = loop_time ;
 		//set a flag to indicate that we looped on z.
-		m_zoids [index].decision |= (decision_type) 1 << 
+		m_zoids [index].decision = (decision_type) 1 << 
 					  (zoid_type::NUM_BITS_DECISION - 2) ;
+		m_zoids [index].decision |=  call_boundary << 
+					  (zoid_type::NUM_BITS_DECISION - 1) ;
 		necessary_time = loop_time ;
 		m_zoids [index].time = loop_time ;
 	}
@@ -1699,7 +1743,7 @@ double & max_loop_time)
 				//set the decision to loop.
 				m_zoids [index].decision = (decision_type) 1 << 
 						  (zoid_type::NUM_BITS_DECISION - 2) ;
-				m_zoids [index].decision |= (decision_type) call_boundary << 
+				m_zoids [index].decision |= call_boundary << 
 								  (zoid_type::NUM_BITS_DECISION - 1) ;
 				necessary_time = zoid_loop_time ;
 				m_zoids [index].time = zoid_loop_time ;

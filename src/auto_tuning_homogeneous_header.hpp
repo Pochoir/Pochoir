@@ -100,6 +100,9 @@ class zoid
 		num_children = 0 ;
 		capacity = 0 ;
 		time = 0 ;
+#ifdef SUBSUMPTION_SPACE
+		num_level_divide = 0 ;
+#endif
 #ifdef SUBSUMPTION_TIME
 		max_loop_time = 0 ;
 #endif
@@ -119,6 +122,9 @@ class zoid
 	{
 		decision = z.decision ;
 		time = z.time ;
+#ifdef SUBSUMPTION_SPACE
+		num_level_divide = z.num_level_divide ;
+#endif
 #ifdef SUBSUMPTION_TIME
 		max_loop_time = z.max_loop_time ;
 #endif
@@ -150,6 +156,9 @@ class zoid
 		{
 			decision = z.decision ;
 			time = z.time ;
+#ifdef SUBSUMPTION_SPACE
+			num_level_divide = z.num_level_divide ;
+#endif
 #ifdef SUBSUMPTION_TIME
 			max_loop_time = z.max_loop_time ;
 #endif
@@ -200,6 +209,9 @@ class zoid
 	{
 		decision = z.decision ;
 		time = z.time ;
+#ifdef SUBSUMPTION_SPACE
+		num_level_divide = z.num_level_divide ;
+#endif
 #ifdef SUBSUMPTION_TIME
 		max_loop_time = z.max_loop_time ;
 #endif
@@ -250,6 +262,9 @@ class zoid
 		capacity = 0 ;
 		decision = 0 ; // 0 for looping
 		time = 0 ;
+#ifdef SUBSUMPTION_SPACE
+		num_level_divide = 0 ;
+#endif
 #ifdef SUBSUMPTION_TIME
 		max_loop_time = 0 ;
 #endif
@@ -273,6 +288,9 @@ class zoid
 	unsigned short capacity ;
 	unsigned short num_children ;
 	double time ;
+#ifdef SUBSUMPTION_SPACE
+	unsigned char num_level_divide ; //# of levels of consecutive divisions
+#endif
 #ifdef SUBSUMPTION_TIME
 	double max_loop_time ;
 #endif
@@ -494,13 +512,14 @@ private:
 		}
 		cout << "volume " << volume << endl ;
 
-		m_array = malloc (volume * m_type_size) ;
+		/*m_array = malloc (volume * m_type_size) ;
 		if (! m_array)
 		{
 			cout << "auto tune :Malloc Failed " << endl ;
-		}
+		}*/
 		
-		if (power_of_two)
+		m_zoids.reserve(volume) ;
+		/*if (power_of_two)
 		{
 			m_zoids.reserve(volume / 16) ;
 			cout << "Expected # of projections P " << volume / 16 << endl ;
@@ -509,16 +528,11 @@ private:
 		{
 			m_zoids.reserve(volume / 8) ;
 			cout << "Expected # of projections P " << volume / 8 << endl ;
-		}
+		}*/
 	}
 
-	//inline copy_data(double * dest, double * src, unsigned long length)
 	inline void copy_data(void * dest, void * src, unsigned long length)
 	{
-		/*for (unsigned long i = 0 ; i < length ; i++)
-		{
-			*dest++ = *src++ ;
-		}*/
 		memcpy(dest, src, length * m_type_size) ;
 	}
 
@@ -586,7 +600,7 @@ private:
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
 		double rtime = 0, ntime = 0, max_loop_time = 0 ;
 		symbolic_sawzoid_space_time_cut_boundary(t0, t1, grid, 
-					m_num_vertices - 1, 0, rtime, ntime, f, bf, max_loop_time) ;
+					m_num_vertices - 1, 0, rtime, ntime, f, bf, max_loop_time);
 		m_head [index] = m_zoids [index_head].children[0] ;
 		m_zoids [index_head].resize_children (0) ;
 #ifndef NDEBUG
@@ -666,7 +680,7 @@ private:
 		m_heterogeneity.clear() ;
 		m_zoids.clear() ;
 		vector<zoid_type>().swap(m_zoids) ; //empty the zoids vector
-		free (m_array) ;
+		//free (m_array) ;
 	}
 	
 	inline bool check_and_create_time_invariant_replica(unsigned long const key,
@@ -1625,7 +1639,7 @@ private:
 		F const & f) ;
 
 	//vector<double> m_array ;
-	void * m_array ;
+	//void * m_array ;
 	decision_type m_space_cut_mask ;
 	vector<zoid_type> m_zoids ; //the array of all nodes in the DAG
 	vector<simple_zoid_type> m_simple_zoids ; //a compact array of nodes in the DAG
@@ -1649,6 +1663,7 @@ private:
 	int m_type_size ; //size of type of date that is backed up in tuning
 
 	vector<int> m_height_bucket [2] ; //array of vectors of height buckets.
+	const int DIVIDE_COUNTER = 2 ;
 
 	inline void sawzoid_space_cut_interior_core
 		(int const, int const, int const, int const, 
@@ -1673,7 +1688,7 @@ private:
 		{
 			m_problem_name = "" ;
 		}
-		m_array = 0 ;
+		//m_array = 0 ;
 		m_type_size = type_size ;
 		m_head.reserve(2) ;
 		m_num_vertices = 0 ;
@@ -1691,7 +1706,6 @@ private:
 		tm* localtm = localtime(&now);
 		char time [100] ;
 		strftime(time, 100, "_interior_%m%d%Y_%H%M%S", localtm) ;
-		//continue from here.
 		char interior_file [500], boundary_file [500] ;
 		strcpy(interior_file, name) ;
 		strcat(interior_file, time) ;
@@ -1725,7 +1739,7 @@ private:
 	template <typename F, typename BF>
     inline void do_power_of_two_time_cut(int t0, int t1,
         grid_info<N_RANK> const & grid, F const & f, BF const & bf,
-		void * array)
+		void * array, void * m_array)
 	{
 		//Pochoir_Array<double, N_RANK> * array = 
 		//				(Pochoir_Array<double, N_RANK> *) arr ;
@@ -1774,7 +1788,10 @@ private:
 			initialize(grid, h1, h1, true) ;
 			//back up data
 			//copy_data(&(m_array[0]), array->data(), volume) ;
-			copy_data(m_array, array, volume) ;
+			//copy_data(m_array, array, volume) ;
+
+			//do a dry run
+    		//m_algo.power_of_two_time_cut(t0, t0 + h1, grid, f, bf) ;
 			m_head.push_back (ULONG_MAX) ;
 			clock_gettime(CLOCK_MONOTONIC, &start) ;
 			build_auto_tune_dag_sawzoid(t0, t0 + h1, grid, f, bf, 0) ;
@@ -1865,7 +1882,7 @@ private:
 	template <typename F, typename BF>
     inline void do_trap_space_time_cuts(int t0, int t1,
         grid_info<N_RANK> const & grid, F const & f, BF const & bf, 
-		void * array)
+		void * array, void * m_array)
 		//Pochoir_Array<double, N_RANK> * array)
 	{
 		assert (t0 < t1) ;
@@ -1912,11 +1929,12 @@ private:
 			{
 				initialize(grid, T, T, false) ;
 				//back up data
-				copy_data(m_array, array, volume) ;
-
+				//copy_data(m_array, array, volume) ;
+				//do a dry run
+    			//m_algo.shorter_duo_sim_obase_bicut_p(t0, t1, grid, f, bf) ;
 				m_head.push_back (ULONG_MAX) ;
-				cout << "m_head.size() " << m_head.size() << endl ;
-				cout << "mhead [0] " << m_head[0] << endl ;
+				//cout << "m_head.size() " << m_head.size() << endl ;
+				//cout << "mhead [0] " << m_head[0] << endl ;
 				clock_gettime(CLOCK_MONOTONIC, &start) ;
 				build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
 				clock_gettime(CLOCK_MONOTONIC, &end) ;
@@ -1978,8 +1996,10 @@ private:
 			{
 				initialize(grid, h1, h2, false) ;
 				//back up data
-				copy_data(m_array, array, volume) ;
+				//copy_data(m_array, array, volume) ;
 
+				//do a dry run
+    			//m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h1, grid, f, bf) ;
 				cout << "h1 " << h1 << " h2 " << h2 << endl ;
 				clock_gettime(CLOCK_MONOTONIC, &start) ;
 				m_head.push_back (ULONG_MAX) ;
