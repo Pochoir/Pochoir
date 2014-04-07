@@ -1,8 +1,11 @@
 #!/bin/bash
-TARGET = heat_2D_NP heat_2D_P 3dfd heat_3D_NP heat_4D_NP life rna psa_struct lcs apop 
+TARGET = heat_1D_NP heat_2D_NP heat_2D_P 3dfd heat_3D_NP heat_4D_NP life rna psa_struct lcs apop 
 CC = ../pochoir
 ICC = icpc
 OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -lrt
+#more options for lanka cluster
+#OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -march=corei7-avx -mtune=corei7x-avx -lrt 
+#OPT_FLAGS = -O0 -g -Wall -Werror -std=c++0x -lrt
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x
 #ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h  
 ICC_DEBUG_FLAGS = -O3 -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h  
