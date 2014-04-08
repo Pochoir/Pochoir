@@ -512,11 +512,11 @@ private:
 		}
 		cout << "volume " << volume << endl ;
 
-		/*m_array = malloc (volume * m_type_size) ;
+		m_array = malloc (volume * m_type_size) ;
 		if (! m_array)
 		{
 			cout << "auto tune :Malloc Failed " << endl ;
-		}*/
+		}
 		
 		m_zoids.reserve(volume) ;
 		/*if (power_of_two)
@@ -680,7 +680,7 @@ private:
 		m_heterogeneity.clear() ;
 		m_zoids.clear() ;
 		vector<zoid_type>().swap(m_zoids) ; //empty the zoids vector
-		//free (m_array) ;
+		free (m_array) ;
 	}
 	
 	inline bool check_and_create_time_invariant_replica(unsigned long const key,
@@ -1638,8 +1638,7 @@ private:
 		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
 		F const & f) ;
 
-	//vector<double> m_array ;
-	//void * m_array ;
+	void * m_array ;
 	decision_type m_space_cut_mask ;
 	vector<zoid_type> m_zoids ; //the array of all nodes in the DAG
 	vector<simple_zoid_type> m_simple_zoids ; //a compact array of nodes in the DAG
@@ -1688,7 +1687,7 @@ private:
 		{
 			m_problem_name = "" ;
 		}
-		//m_array = 0 ;
+		m_array = 0 ;
 		m_type_size = type_size ;
 		m_head.reserve(2) ;
 		m_num_vertices = 0 ;
@@ -1739,10 +1738,8 @@ private:
 	template <typename F, typename BF>
     inline void do_power_of_two_time_cut(int t0, int t1,
         grid_info<N_RANK> const & grid, F const & f, BF const & bf,
-		void * array, void * m_array)
+		void * array)
 	{
-		//Pochoir_Array<double, N_RANK> * array = 
-		//				(Pochoir_Array<double, N_RANK> *) arr ;
 		int T = t1 - t0 ;
 		int W = 0 ;  //max_width among all dimensions
 		int slope ;
@@ -1788,10 +1785,12 @@ private:
 			initialize(grid, h1, h1, true) ;
 			//back up data
 			//copy_data(&(m_array[0]), array->data(), volume) ;
-			//copy_data(m_array, array, volume) ;
+			copy_data(m_array, array, volume) ;
 
 			//do a dry run
-    		//m_algo.power_of_two_time_cut(t0, t0 + h1, grid, f, bf) ;
+    		m_algo.power_of_two_time_cut(t0, t0 + h1, grid, f, bf) ;
+			//set base case grid size to 1 in time/space.
+			m_algo.set_thres_auto_tuning() ;
 			m_head.push_back (ULONG_MAX) ;
 			clock_gettime(CLOCK_MONOTONIC, &start) ;
 			build_auto_tune_dag_sawzoid(t0, t0 + h1, grid, f, bf, 0) ;
@@ -1882,8 +1881,7 @@ private:
 	template <typename F, typename BF>
     inline void do_trap_space_time_cuts(int t0, int t1,
         grid_info<N_RANK> const & grid, F const & f, BF const & bf, 
-		void * array, void * m_array)
-		//Pochoir_Array<double, N_RANK> * array)
+		void * array)
 	{
 		assert (t0 < t1) ;
 		int T = t1 - t0 ;
@@ -1929,9 +1927,11 @@ private:
 			{
 				initialize(grid, T, T, false) ;
 				//back up data
-				//copy_data(m_array, array, volume) ;
+				copy_data(m_array, array, volume) ;
 				//do a dry run
-    			//m_algo.shorter_duo_sim_obase_bicut_p(t0, t1, grid, f, bf) ;
+    			m_algo.shorter_duo_sim_obase_bicut_p(t0, t1, grid, f, bf) ;
+				//set base case grid size to 1 in time/space.
+				m_algo.set_thres_auto_tuning() ;
 				m_head.push_back (ULONG_MAX) ;
 				//cout << "m_head.size() " << m_head.size() << endl ;
 				//cout << "mhead [0] " << m_head[0] << endl ;
@@ -1996,10 +1996,12 @@ private:
 			{
 				initialize(grid, h1, h2, false) ;
 				//back up data
-				//copy_data(m_array, array, volume) ;
+				copy_data(m_array, array, volume) ;
 
 				//do a dry run
-    			//m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h1, grid, f, bf) ;
+    			m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h1, grid, f, bf) ;
+				//set base case grid size to 1 in time/space.
+				m_algo.set_thres_auto_tuning() ;
 				cout << "h1 " << h1 << " h2 " << h2 << endl ;
 				clock_gettime(CLOCK_MONOTONIC, &start) ;
 				m_head.push_back (ULONG_MAX) ;

@@ -1071,35 +1071,23 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 
 	bool force_divide = false ;
 #ifdef SUBSUMPTION_SPACE
-	for (int i = 0 ; i < m_zoids [index].num_children && ! force_divide ; i++)
+	int max_num_level_divide = 0 ;
+	for (int i = 0 ; i < m_zoids [index].num_children ; i++)
 	{
 		unsigned long child_index = m_zoids [index].children [i] ;
 		decision_type d = m_zoids [child_index].decision ;
-    	/*if (d & m_space_cut_mask || d & 1) 
+    	if (d & m_space_cut_mask || d & 1) 
 		{
-			//check if a grand child also chose to divide.
-			zoid_type & child = m_zoids [child_index] ;
-			for (int j = 0 ; j < child.num_children ; j++)
-			{
-				unsigned long grand_child_index = child.children [j] ;
-				decision_type d2 = m_zoids [grand_child_index].decision ;
-				if (d2 & m_space_cut_mask || d2 & 1) 
-				{
-					//a grand child of z chose to divide. so z should divide.
-					force_divide = true ;
-					break ;
-				}
-			}
-		}*/
-		//set a bit to indicate that a child has divided
-		m_zoids [index].decision |= (decision_type) 1 << 
-									(zoid_type::NUM_BITS_DECISION - 3) ;
-    	if ((d & m_space_cut_mask || d & (decision_type) 1)
-			&& d & (decision_type) 1 << (zoid_type::NUM_BITS_DECISION - 3)) 
-		{
-			//a child of z chose to divide. so z should divide as well.
-			force_divide = true ;
+			//find the max # of levels of division
+			max_num_level_divide = max(max_num_level_divide, 
+								(int) m_zoids [child_index].num_level_divide) ;
 		}
+	}
+	m_zoids [index].num_level_divide = min(max_num_level_divide + 1, 
+										   DIVIDE_COUNTER) ; 
+	if (m_zoids [index].num_level_divide >= DIVIDE_COUNTER)
+	{
+		force_divide = true ;
 	}
 #endif
 #ifndef SUBSUMPTION_TIME
@@ -1602,36 +1590,23 @@ double & max_loop_time)
 	
 	bool force_divide = false ;
 #ifdef SUBSUMPTION_SPACE
-	for (int i = 0 ; i < m_zoids [index].num_children && ! force_divide ; i++)
+	int max_num_level_divide = 0 ;
+	for (int i = 0 ; i < m_zoids [index].num_children ; i++)
 	{
 		unsigned long child_index = m_zoids [index].children [i] ;
 		decision_type d = m_zoids [child_index].decision ;
-    	/*if (d & m_space_cut_mask || d & 1) 
+    	if (d & m_space_cut_mask || d & 1) 
 		{
-			//check if a grand child also chose to divide.
-			zoid_type & child = m_zoids [child_index] ;
-			for (int j = 0 ; j < child.num_children ; j++)
-			{
-				unsigned long grand_child_index = child.children [j] ;
-				decision_type d2 = m_zoids [grand_child_index].decision ;
-				if (d2 & m_space_cut_mask || d2 & 1) 
-				{
-					//a grand child of z chose to divide. so z should divide.
-					force_divide = true ;
-					break ;
-				}
-			}
-		}*/
-		//set a bit to indicate that a child divided
-		m_zoids [index].decision |= (decision_type) 1 << 
-									(zoid_type::NUM_BITS_DECISION - 3) ;
-    	if ((d & m_space_cut_mask || d & (decision_type) 1)
-			&& d & (decision_type) 1 << (zoid_type::NUM_BITS_DECISION - 3)) 
-    	//if (d & m_space_cut_mask || d & 1) 
-		{
-			//a child of z chose to divide. so z should divide as well.
-			force_divide = true ;
+			//find the max # of levels of division
+			max_num_level_divide = max(max_num_level_divide, 
+								(int) m_zoids [child_index].num_level_divide) ;
 		}
+	}
+	m_zoids [index].num_level_divide = min(max_num_level_divide + 1, 
+										   DIVIDE_COUNTER) ; 
+	if (m_zoids [index].num_level_divide >= DIVIDE_COUNTER)
+	{
+		force_divide = true ;
 	}
 #endif
 #ifndef SUBSUMPTION_TIME
