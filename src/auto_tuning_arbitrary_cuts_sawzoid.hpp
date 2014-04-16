@@ -1071,7 +1071,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 
 	bool force_divide = false ;
 #ifdef SUBSUMPTION_SPACE
-	int max_num_level_divide = 0 ;
+	int max_num_level_divide = -1 ;
 	for (int i = 0 ; i < m_zoids [index].num_children ; i++)
 	{
 		unsigned long child_index = m_zoids [index].children [i] ;
@@ -1590,7 +1590,7 @@ double & max_loop_time)
 	
 	bool force_divide = false ;
 #ifdef SUBSUMPTION_SPACE
-	int max_num_level_divide = 0 ;
+	int max_num_level_divide = -1 ;
 	for (int i = 0 ; i < m_zoids [index].num_children ; i++)
 	{
 		unsigned long child_index = m_zoids [index].children [i] ;

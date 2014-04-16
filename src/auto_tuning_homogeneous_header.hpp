@@ -1662,7 +1662,7 @@ private:
 	int m_type_size ; //size of type of date that is backed up in tuning
 
 	vector<int> m_height_bucket [2] ; //array of vectors of height buckets.
-	const int DIVIDE_COUNTER = 2 ;
+	const int DIVIDE_COUNTER = 1 ;
 
 	inline void sawzoid_space_cut_interior_core
 		(int const, int const, int const, int const, 
@@ -1679,6 +1679,9 @@ private:
 				  bool power_of_two, char * name, int T,
 				  int type_size):m_algo(alg)
 	{
+#ifdef SUBSUMPTION_SPACE
+		cout << "DIVIDE_COUNTER " << DIVIDE_COUNTER << endl ;
+#endif
 		if (name != 0)
 		{
 			m_problem_name = name ;
@@ -1788,7 +1791,10 @@ private:
 			copy_data(m_array, array, volume) ;
 
 			//do a dry run
+			clock_gettime(CLOCK_MONOTONIC, &start) ;
     		m_algo.power_of_two_time_cut(t0, t0 + h1, grid, f, bf) ;
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			cout << "t0 " << t0 << " t1 " << t0 + h1 << " dry run time " << tdiff2(&end, &start) * 1e3 << "ms" << endl;
 			//set base case grid size to 1 in time/space.
 			m_algo.set_thres_auto_tuning() ;
 			m_head.push_back (ULONG_MAX) ;
@@ -1929,7 +1935,10 @@ private:
 				//back up data
 				copy_data(m_array, array, volume) ;
 				//do a dry run
+				clock_gettime(CLOCK_MONOTONIC, &start) ;
     			m_algo.shorter_duo_sim_obase_bicut_p(t0, t1, grid, f, bf) ;
+				clock_gettime(CLOCK_MONOTONIC, &end) ;
+				cout << "t0 " << t0 << " t1 " << t1 << " dry run time " << tdiff2(&end, &start) * 1e3 << "ms" << endl;
 				//set base case grid size to 1 in time/space.
 				m_algo.set_thres_auto_tuning() ;
 				m_head.push_back (ULONG_MAX) ;
@@ -1999,7 +2008,10 @@ private:
 				copy_data(m_array, array, volume) ;
 
 				//do a dry run
+				clock_gettime(CLOCK_MONOTONIC, &start) ;
     			m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h1, grid, f, bf) ;
+				clock_gettime(CLOCK_MONOTONIC, &end) ;
+				cout << "t0 " << t0 << " t1 " << t0 + h1 << " dry run time " << tdiff2(&end, &start) * 1e3 << "ms" << endl;
 				//set base case grid size to 1 in time/space.
 				m_algo.set_thres_auto_tuning() ;
 				cout << "h1 " << h1 << " h2 " << h2 << endl ;
