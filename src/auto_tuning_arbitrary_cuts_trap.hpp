@@ -370,12 +370,12 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		double & max_loop_time)
 {
     const int lt = t1 - t0;
+	struct timespec start, end;
+	clock_gettime(CLOCK_MONOTONIC, &start);
     bool sim_can_cut = false;
     grid_info<N_RANK> l_son_grid;
 
-	struct timespec start, end;
 	struct timespec start1, end1 ;
-	clock_gettime(CLOCK_MONOTONIC, &start);
 
 	int centroid = 0, width = 1 ; 
 	int total_num_subzoids = 1 ;
@@ -430,14 +430,12 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
         sim_can_cut |= space_cut ;
     }
 	unsigned long index ;
-	//bool projection_exists = check_and_create_projection (key, lt, 
-	//										centroid, index, grid) ;
 #ifdef TIME_INVARIANCE_INTERIOR
 	bool projection_exists = check_and_create_time_invariant_replica (key,
-								lt, centroid, index, grid, (1 << N_RANK) - 1) ;
+					lt, centroid, centroid, index, grid, (1 << N_RANK) - 1) ;
 #else
 	bool projection_exists = check_and_create_space_time_invariant_replica (key,
-									lt, index, grid) ;
+								lt, centroid, index, grid) ;
 #endif
 	zoid_type & z = m_zoids [index];
 	
@@ -703,7 +701,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	//if divide_and_conquer_time(z) < max_{z' \in tree(z)} loop_time(z')
 	//	then avoid computing loop_time(z).
 	//else compute loop_time(z).
-	double loop_time = 0 ;
+	double loop_time = ULONG_MAX ;
 	if ((divide_and_conquer && necessary_time + projected_time1 < max_loop_time)
 		|| force_divide)
 	{
@@ -715,11 +713,16 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	else if (! divide_and_conquer)
 	{
 		//determine the looping time on the zoid
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-		f(t0, t1, grid);
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
-		loop_time = tdiff2(&end1, &start1) ;
-		assert (loop_time >= 0.) ;
+		for (int i = 0 ; i < 2 ; i++)
+		{
+			clock_gettime(CLOCK_MONOTONIC, &start1) ;
+			f(t0, t1, grid);
+			clock_gettime(CLOCK_MONOTONIC, &end1) ;
+			double t = tdiff2(&end1, &start1) ;
+			loop_time = min (t, loop_time) ;
+		}
+		//loop_time = tdiff2(&end1, &start1) ;
+		assert (loop_time > 0.) ;
 #ifndef NDEBUG
 		m_zoids [index].ltime = loop_time ;
 #endif
@@ -750,11 +753,16 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 				necessary_time + projected_time1, f, loop_time, zoid_loop_time);
 #else
 		//determine the looping time on the zoid
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-		f(t0, t1, grid);
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
+		//for (int i = 0 ; i < 2 ; i++)
+		//{
+			clock_gettime(CLOCK_MONOTONIC, &start1) ;
+			f(t0, t1, grid);
+			clock_gettime(CLOCK_MONOTONIC, &end1) ;
+			//double t = tdiff2(&end1, &start1) ;
+			//loop_time = min (t, loop_time) ;
+		//}
 		loop_time = tdiff2(&end1, &start1) ;
-		assert (loop_time >= 0.) ;
+		assert (loop_time > 0.) ;
 		//set a flag to indicate that we looped on z.
 		m_zoids [index].decision |= (decision_type) 1 << 
 					  (zoid_type::NUM_BITS_DECISION - 2) ;
@@ -822,6 +830,8 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf,
 double & max_loop_time)
 {
     const int lt = t1 - t0;
+	struct timespec start, end;
+	clock_gettime(CLOCK_MONOTONIC, &start);
     bool sim_can_cut = false, call_boundary = false;
     grid_info<N_RANK> l_father_grid = grid, l_son_grid;
     int l_dt_stop;
@@ -832,11 +842,9 @@ double & max_loop_time)
 	unsigned long key = 0 ;
 	decision_type decision = 0 ;
 
-	struct timespec start, end;
 	struct timespec start1, end1 ;
 	int dim_touching_bdry = 0 ;
 	int centroid_dim_touching_bdry = 0, width_dim_touching_bdry = 1 ;
-	clock_gettime(CLOCK_MONOTONIC, &start);
     for (int i = N_RANK-1; i >= 0; --i) {
         unsigned long lb, tb;
         int thres ;
@@ -911,23 +919,24 @@ double & max_loop_time)
 	{
 #ifdef TIME_INVARIANCE_BOUNDARY
 		projection_exists = check_and_create_time_invariant_replica (key, lt, 
-					centroid, index, l_father_grid, (1 << N_RANK) - 1) ;
+				centroid, centroid, index, l_father_grid, (1 << N_RANK) - 1) ;
 #else
 		//space-time invariance at boundary
 		//you can use space invariance in some dimension
 		projection_exists = check_and_create_time_invariant_replica (key, lt, 
-		  centroid_dim_touching_bdry, index, l_father_grid, dim_touching_bdry) ;
+		  	centroid_dim_touching_bdry, centroid, index, l_father_grid, 
+			dim_touching_bdry) ;
 #endif
 	}
 	else
 	{
 #ifdef TIME_INVARIANCE_INTERIOR
 		projection_exists = check_and_create_time_invariant_replica (key, lt, 
-						centroid, index, l_father_grid, (1 << N_RANK) - 1) ;
+				centroid, centroid, index, l_father_grid, (1 << N_RANK) - 1) ;
 #else
 		//space-time invariance at interior
 		projection_exists = check_and_create_space_time_invariant_replica (key,
-							lt, index, l_father_grid) ;
+						lt, centroid, index, l_father_grid) ;
 #endif
 	}
 	zoid_type & z = m_zoids [index] ;
@@ -975,7 +984,7 @@ double & max_loop_time)
 	}*/
 #ifdef FIXED_TIME_CUT
 	//cut in time only when space cut is not possible
-	if (lt > dt_recursive_ && ! sim_can_cut) 
+	if (lt > l_dt_stop && ! sim_can_cut) 
 #else
 	if (lt > l_dt_stop)  //time cut
 #endif
@@ -1212,7 +1221,7 @@ double & max_loop_time)
 	//if divide_and_conquer_time(z) < max_{z' \in tree(z)} loop_time(z')
 	//	then avoid computing loop_time(z).
 	//else compute loop_time(z).
-	double loop_time = 0. ;
+	double loop_time = ULONG_MAX ;
 	if ((divide_and_conquer && necessary_time + projected_time1 < max_loop_time)
 		|| force_divide)
 	{
@@ -1224,17 +1233,23 @@ double & max_loop_time)
 	else if (! divide_and_conquer)
 	{
 		//determine the looping time on the zoid
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-		if (call_boundary)
+		for (int i = 0 ; i < 2 ; i++)
 		{
-			base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-		} 
-		else 
-		{ 
-			f(t0, t1, l_father_grid);
+			clock_gettime(CLOCK_MONOTONIC, &start1) ;
+			if (call_boundary)
+			{
+				base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+			} 
+			else 
+			{ 
+				f(t0, t1, l_father_grid);
+			}
+			clock_gettime(CLOCK_MONOTONIC, &end1) ;
+			double t = tdiff2(&end1, &start1) ;
+			loop_time = min (loop_time, t) ;
 		}
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
-		loop_time = tdiff2(&end1, &start1) ;
+		//loop_time = tdiff2(&end1, &start1) ;
+		assert (loop_time > 0.) ;
 #ifndef NDEBUG
 		m_zoids [index].ltime = loop_time ;
 #endif
@@ -1264,17 +1279,23 @@ double & max_loop_time)
 			necessary_time + projected_time1, f, bf, loop_time, zoid_loop_time);
 #else
 		//determine the looping time on the zoid
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-		if (call_boundary)
-		{
-			base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-		} 
-		else 
-		{ 
-			f(t0, t1, l_father_grid);
-		}
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
+		//for (int i = 0 ; i < 2 ; i++)
+		//{
+			clock_gettime(CLOCK_MONOTONIC, &start1) ;
+			if (call_boundary)
+			{
+				base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+			} 
+			else 
+			{ 
+				f(t0, t1, l_father_grid);
+			}
+			clock_gettime(CLOCK_MONOTONIC, &end1) ;
+			//double t = tdiff2(&end1, &start1) ;
+			//loop_time = min (loop_time, t) ;
+		//}
 		loop_time = tdiff2(&end1, &start1) ;
+		assert (loop_time > 0.) ;
 		//set a flag to indicate that we looped on z.
 		m_zoids [index].decision |= (decision_type) 1 << 
 					  (zoid_type::NUM_BITS_DECISION - 2) ;
@@ -1772,7 +1793,7 @@ trap_space_time_cut_interior(int t0,
         /* cut into time */
 		assert (projection_zoid->children [0]) ;
 		assert (projection_zoid->children [1]) ;
-        assert(lt > dt_recursive_);
+        //assert(lt > dt_recursive_);
         int halflt = lt / 2;
         l_son_grid = grid;
 		unsigned long index = projection_zoid->children [0] ;
@@ -1817,7 +1838,38 @@ trap_space_time_cut_interior(int t0,
 				1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2)) ;
 #endif
 		//loop
+#ifndef NDEBUG
+		struct timespec start, end;
+		clock_gettime(CLOCK_MONOTONIC, &start) ;
+#endif
 		f(t0, t1, grid);
+#ifndef NDEBUG
+		clock_gettime(CLOCK_MONOTONIC, &end) ;
+		double time = tdiff2(&end, &start) ;
+		if (time > 1.2 * projection_zoid->time)
+		{
+			cout << "runtime " << time * 1e3 << " ms exceeds predicted time " 
+				<< projection_zoid->time * 1e3 << " ms" << endl ;
+			grid_info <N_RANK> & grid2 = projection_zoid->info ;
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+			cout << endl ;
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid2.x0 [i]
+				 << " x1 [" << i << "] " << grid2.x1 [i]
+				<< " x2 [" << i << "] " << grid2.x0[i] + grid2.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid2.x1[i] + grid2.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+		}
+#endif
 		return ;
 	}
 }
@@ -1832,35 +1884,68 @@ trap_space_time_cut_boundary(int t0,
     grid_info<N_RANK> l_father_grid = grid, l_son_grid;
 
 	assert (projection_zoid) ;
-
+#ifndef NDEBUG
+	bool dim_touching_bdry [N_RANK] ;
+#endif
+	decision_type cb = 0 ;
+    for (int i = N_RANK-1; i >= 0; --i) {
+#ifndef NDEBUG
+		dim_touching_bdry [i] = 0 ;
+#endif
+        //touch_boundary(i, lt, l_father_grid) ;
+        bool l_touch_boundary = touch_boundary(i, lt, l_father_grid) ;
+#ifndef NDEBUG
+		dim_touching_bdry [i] = l_touch_boundary ;
+#endif
+		cb |= l_touch_boundary ;
+    }
+	//decision_type call_boundary = projection_zoid->decision >> 
+	//				zoid<N_RANK>::NUM_BITS_DECISION - 1 ;
+	//assert (cb == call_boundary) ;
+	decision_type call_boundary = cb ;
+	
 #ifndef NDEBUG
     for (int i = N_RANK-1; i >= 0; --i) {
 		grid_info <N_RANK> & grid2 = projection_zoid->info ;
-		/*int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
-		int x1 = pmod(grid.x1 [i], phys_length_ [i]) ;
+		int x0, x1, x2, x3, x0_, x1_, x2_, x3_ ;
+		bool error = false ;
+		if (dim_touching_bdry [i])
+		{
+			x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
+			x1 = pmod(grid.x1 [i], phys_length_ [i]) ;
 
-		int x0_ = pmod(grid2.x0 [i], phys_length_ [i]) ;
-		int x1_ = pmod(grid2.x1 [i], phys_length_ [i]) ;
+			x0_ = pmod(grid2.x0 [i], phys_length_ [i]) ;
+			x1_ = pmod(grid2.x1 [i], phys_length_ [i]) ;
 
-		int x2 = pmod(grid.x0[i] + grid.dx0[i] * lt, phys_length_ [i]) ;
-		int x3 = pmod(grid.x1[i] + grid.dx1[i] * lt, phys_length_ [i]) ;
+			x2 = pmod(grid.x0[i] + grid.dx0[i] * lt, phys_length_ [i]) ;
+			x3 = pmod(grid.x1[i] + grid.dx1[i] * lt, phys_length_ [i]) ;
 
-		int x2_ = pmod(grid2.x0[i] + grid2.dx0[i] * lt, phys_length_ [i]) ;
-		int x3_ = pmod(grid2.x1[i] + grid2.dx1[i] * lt, phys_length_ [i]) ;*/
-	
-		int x0 = grid.x0 [i] ;
-		int x1 = grid.x1 [i] ;
+			x2_ = pmod(grid2.x0[i] + grid2.dx0[i] * lt, phys_length_ [i]) ;
+			x3_ = pmod(grid2.x1[i] + grid2.dx1[i] * lt, phys_length_ [i]) ;
+			if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_) 
+			{
+				error = true ;
+			}
+		}
+		else
+		{
+			x0 = grid.x0 [i] ;
+			x1 = grid.x1 [i] ;
 
-		int x0_ = grid2.x0 [i] ;
-		int x1_ = grid2.x1 [i] ;
+			x0_ = grid2.x0 [i] ;
+			x1_ = grid2.x1 [i] ;
 
-		int x2 = grid.x0[i] + grid.dx0[i] * lt ;
-		int x3 = grid.x1[i] + grid.dx1[i] * lt ;
+			x2 = grid.x0[i] + grid.dx0[i] * lt ;
+			x3 = grid.x1[i] + grid.dx1[i] * lt ;
 
-		int x2_ = grid2.x0[i] + grid2.dx0[i] * lt ;
-		int x3_ = grid2.x1[i] + grid2.dx1[i] * lt ;
-		//if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_) 
-		if (x1 - x0 != x1_ - x0_ || x3 - x2 != x3_ - x2_)
+			x2_ = grid2.x0[i] + grid2.dx0[i] * lt ;
+			x3_ = grid2.x1[i] + grid2.dx1[i] * lt ;
+			if (x1 - x0 != x1_ - x0_ || x3 - x2 != x3_ - x2_)
+			{
+				error = true ;
+			}
+		}
+		if (error)
 		{
 			cout << "zoid and proj zoid differ " << endl ;
 			for (int i = N_RANK - 1 ; i >= 0 ; i--)
@@ -1881,22 +1966,11 @@ trap_space_time_cut_boundary(int t0,
 				<< " lt " << lt << endl ;
 			}
 
-			cout << "decision " << projection_zoid->decision << endl ;
+			cout << "decision " << (int) projection_zoid->decision << endl ;
 			assert(0) ;
 		}
 	}
 #endif
-	decision_type cb = 0 ;
-    for (int i = N_RANK-1; i >= 0; --i) {
-        //touch_boundary(i, lt, l_father_grid) ;
-        bool l_touch_boundary = touch_boundary(i, lt, l_father_grid) ;
-		cb |= l_touch_boundary ;
-    }
-	//decision_type call_boundary = projection_zoid->decision >> 
-	//				zoid<N_RANK>::NUM_BITS_DECISION - 1 ;
-	//assert (cb == call_boundary) ;
-	decision_type call_boundary = cb ;
-
 	if (projection_zoid->decision & m_space_cut_mask)
 	{
 		//cout << "space cut " << endl ;
@@ -1989,6 +2063,10 @@ trap_space_time_cut_boundary(int t0,
 				3 << (zoid<N_RANK>::NUM_BITS_DECISION - 2) ||
 				projection_zoid->decision ==
 				1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2)) ;
+#ifndef NDEBUG
+		struct timespec start, end;
+		clock_gettime(CLOCK_MONOTONIC, &start) ;
+#endif
 		if (call_boundary) {
 #ifdef TIME_INVARIANCE_BOUNDARY
 			assert (projection_zoid->decision == 
@@ -2002,6 +2080,34 @@ trap_space_time_cut_boundary(int t0,
 #endif
             f(t0, t1, l_father_grid);
         }
+#ifndef NDEBUG
+		clock_gettime(CLOCK_MONOTONIC, &end) ;
+		double time = tdiff2(&end, &start) ;
+		if (time > 1.2 * projection_zoid->time)
+		{
+			cout << "runtime " << time * 1e3 << " ms exceeds predicted time " 
+				<< projection_zoid->time * 1e3 << " ms" << endl ;
+			grid_info <N_RANK> & grid2 = projection_zoid->info ;
+		
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+			cout << endl ;
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid2.x0 [i]
+				 << " x1 [" << i << "] " << grid2.x1 [i]
+				<< " x2 [" << i << "] " << grid2.x0[i] + grid2.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid2.x1[i] + grid2.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+		}
+#endif
 	}
 }
 

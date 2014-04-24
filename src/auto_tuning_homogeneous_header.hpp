@@ -100,14 +100,17 @@ class zoid
 		num_children = 0 ;
 		capacity = 0 ;
 		time = 0 ;
+#ifdef CHECK_CACHE_ALIGNMENT
+		ref_point = 0 ;
+#endif
 #ifdef SUBSUMPTION_SPACE
 		num_level_divide = 0 ;
 #endif
 #ifdef SUBSUMPTION_TIME
 		max_loop_time = 0 ;
 #endif
-		//height = 0 ;
 #ifndef NDEBUG
+		height = 0 ;
 		cache_penalty_time = 0 ;
 		stime = 0 ;
 		ttime = 0 ;
@@ -122,6 +125,9 @@ class zoid
 	{
 		decision = z.decision ;
 		time = z.time ;
+#ifdef CHECK_CACHE_ALIGNMENT
+		ref_point = z.ref_point ;
+#endif
 #ifdef SUBSUMPTION_SPACE
 		num_level_divide = z.num_level_divide ;
 #endif
@@ -137,11 +143,11 @@ class zoid
 		//num_children = z.num_children ;
 		num_children = 0 ;
 		capacity = 0 ;
-		//height = z.height ;
 		//assert (num_children <= capacity) ;
 #ifndef NDEBUG
-		id = z.id ;
 		info = z.info ;
+		height = z.height ;
+		id = z.id ;
 		for (int i = 0 ; i < z.parents.size() ; i++)
 		{
 			parents.push_back(z.parents [i]) ;
@@ -156,6 +162,9 @@ class zoid
 		{
 			decision = z.decision ;
 			time = z.time ;
+#ifdef CHECK_CACHE_ALIGNMENT
+			ref_point = z.ref_point ;
+#endif
 #ifdef SUBSUMPTION_SPACE
 			num_level_divide = z.num_level_divide ;
 #endif
@@ -170,7 +179,6 @@ class zoid
 #endif
 			assert (z.num_children <= z.capacity) ;
 			num_children = z.num_children ;
-			//height = z.height ;
 			/*if (num_children > 0)
 			{
 				if (capacity < z.capacity)
@@ -194,8 +202,9 @@ class zoid
 				children [i] = z.children [i] ;
 			}
 #ifndef NDEBUG
-			id = z.id ;
 			info = z.info ;
+			height = z.height ;
+			id = z.id ;
 			for (int i = 0 ; i < z.parents.size() ; i++)
 			{
 				parents.push_back(z.parents [i]) ;
@@ -209,6 +218,9 @@ class zoid
 	{
 		decision = z.decision ;
 		time = z.time ;
+#ifdef CHECK_CACHE_ALIGNMENT
+		ref_point = z.ref_point ;
+#endif
 #ifdef SUBSUMPTION_SPACE
 		num_level_divide = z.num_level_divide ;
 #endif
@@ -228,7 +240,6 @@ class zoid
 		//cout << "zoid : copy const for zoid " << z.id << " # children" << 
 		//		num_children << endl ;
 		children = 0 ;
-		//height = z.height ;
 		if (capacity > 0)
 		{
 			children = new unsigned long [capacity] ;
@@ -238,8 +249,9 @@ class zoid
 			}
 		}
 #ifndef NDEBUG
-		id = z.id ;
 		info = z.info ;
+		height = z.height ;
+		id = z.id ;
 		for (int i = 0 ; i < z.parents.size() ; i++)
 		{
 			parents.push_back(z.parents [i]) ;
@@ -262,14 +274,17 @@ class zoid
 		capacity = 0 ;
 		decision = 0 ; // 0 for looping
 		time = 0 ;
+#ifdef CHECK_CACHE_ALIGNMENT
+		ref_point = 0 ;
+#endif
 #ifdef SUBSUMPTION_SPACE
 		num_level_divide = 0 ;
 #endif
 #ifdef SUBSUMPTION_TIME
 		max_loop_time = 0 ;
 #endif
-		//height = 0 ;
 #ifndef NDEBUG
+		height = 0 ;
 		cache_penalty_time = 0 ;
 		stime = 0 ;
 		ttime = 0 ;
@@ -288,6 +303,9 @@ class zoid
 	unsigned short capacity ;
 	unsigned short num_children ;
 	double time ;
+#ifdef CHECK_CACHE_ALIGNMENT
+	unsigned long ref_point ;
+#endif
 #ifdef SUBSUMPTION_SPACE
 	unsigned char num_level_divide ; //# of levels of consecutive divisions
 #endif
@@ -295,9 +313,9 @@ class zoid
 	double max_loop_time ;
 #endif
 #ifndef NDEBUG
+	grid_info <N_RANK> info ;
 	int height ;
 	double cache_penalty_time ;
-	grid_info <N_RANK> info ;
 	unsigned long id ; //id of the zoid.
 	vector<unsigned long> parents ;
 	double stime ;
@@ -321,6 +339,9 @@ public :
 	{
 		decision = 0 ;
 		children = 0 ;
+#ifndef NDEBUG
+		time = 0 ;
+#endif
 	}
 
 	~simple_zoid()
@@ -328,6 +349,9 @@ public :
 		decision = 0 ;
 		delete [] children ;
 		children = 0 ;
+#ifndef NDEBUG
+		time = 0 ;
+#endif
 	}
 
 	void resize_children(int size)
@@ -358,6 +382,7 @@ private :
 	unsigned long * children ;
 #ifndef NDEBUG
 	grid_info <N_RANK> info ;
+	double time ;
 #endif
 } ;
 
@@ -406,6 +431,7 @@ private:
 			}
 #ifndef NDEBUG
 			dest.info = src.info ;
+			dest.time = src.time ;
 #endif
 		}
 		//clear the contents of m_zoids.
@@ -684,7 +710,8 @@ private:
 	}
 	
 	inline bool check_and_create_time_invariant_replica(unsigned long const key,
-					int const height, int const centroid, unsigned long & index,
+					int const height, int const centroid, int const ref_point, 
+					unsigned long & index,
 					grid_info <N_RANK> const & grid, int dim_key)
 	{
 
@@ -692,7 +719,6 @@ private:
 		assert (dim_key < (1 << N_RANK)) ;
 		vector <two_level_hash_table> & projections_boundary = 
 							m_projections_boundary [dim_key] ;
-							//m_projections_boundary ;
 		assert (projections_boundary.size()) ;
 		bool found = false ;
 		//try checking the 1st bucket
@@ -784,9 +810,8 @@ private:
 				assert (start1->first == key) ;
 				assert (start1->second < m_num_vertices) ;
 				zoid_type * z = &(m_zoids [start1->second]) ;
-				//assert (z->height == height) ;
-				index = start1->second ;
 #ifndef NDEBUG
+				assert (z->height == height) ;
 				grid_info <N_RANK> grid2 = z->info ;
 				int h = height ;
 				for (int i = N_RANK - 1 ; i >= 0 ; i--)
@@ -851,14 +876,23 @@ private:
 					}
 				}	
 #endif
-				return true ;
+#ifdef CHECK_CACHE_ALIGNMENT
+				if (z->ref_point % 64 == ref_point % 64)
+#endif
+				{
+					index = start1->second ;
+					return true ;
+				}
 			}
 			//key doesn't exist in hashtable
 			m_zoids.push_back(zoid_type ()) ;
 			zoid_type & z = m_zoids [m_num_vertices] ;
-			//z.height = height ;
+#ifdef CHECK_CACHE_ALIGNMENT
+			z.ref_point = ref_point ;
+#endif
 #ifndef NDEBUG
 			z.info = grid ;
+			z.height = height ;
 			z.id = m_num_vertices ;
 #endif
 			h.insert(std::pair<unsigned long, unsigned long>(key, 
@@ -871,9 +905,12 @@ private:
 		//centroid doesn't exist in the 2 level hash table
 		m_zoids.push_back(zoid_type ()) ;
 		zoid_type & z = m_zoids [m_num_vertices] ;
-		//z.height = height ;
+#ifdef CHECK_CACHE_ALIGNMENT
+		z.ref_point = ref_point ;
+#endif
 #ifndef NDEBUG
 		z.info = grid ;
+		z.height = height ;
 		z.id = m_num_vertices ;
 #endif
 		hash_table h ;
@@ -987,7 +1024,7 @@ private:
 
 	inline bool check_and_create_space_time_invariant_replica(
 					unsigned long const key, 
-					int const height, unsigned long & index,
+					int const height, int const centroid, unsigned long & index,
 					grid_info <N_RANK> const & grid)
 	{
 		//assert (dim_key < (1 << N_RANK) - 1) ;
@@ -1080,12 +1117,17 @@ private:
 		{
 			assert (start->first == key) ;
 			assert (start->second < m_num_vertices) ;
-#ifndef NDEBUG
 			zoid_type * z = &(m_zoids [start->second]) ;
-			//assert (z->height == height) ;
+#ifndef NDEBUG
+			assert (z->height == height) ;
 #endif
-			index = start->second ;
-			return true ;
+#ifdef CHECK_CACHE_ALIGNMENT
+			if (centroid % 64 == z->ref_point % 64)
+#endif
+			{
+				index = start->second ;
+				return true ;
+			}
 		}
 		if (m_num_vertices > m_zoids.capacity())
 		{
@@ -1093,9 +1135,12 @@ private:
 		}
 		m_zoids.push_back(zoid_type ()) ;
 		zoid_type & z = m_zoids [m_num_vertices] ;
-		//z.height = height ;
+#ifdef CHECK_CACHE_ALIGNMENT
+		z.ref_point = centroid ;
+#endif
 #ifndef NDEBUG
 		z.info = grid ;
+		z.height = height ;
 		z.id = m_num_vertices ;
 		/*cout << "inserting zoid " << z.id << " key " << key << endl ;
 		for (int i = N_RANK - 1 ; i >= 0 ; i--)
@@ -1320,7 +1365,9 @@ private:
 			int decision ;
 			int height, num_children ;
 			dag >> decision ;
-			//dag >> height ;
+#ifndef NDEBUG
+			dag >> height ;
+#endif
 			dag >> num_children ;
 			simple_zoid_type & z = m_simple_zoids [i] ;
 			//z.set_decision(decision) ;
@@ -1336,8 +1383,12 @@ private:
 				z.children [i] = child ;
 				//cout << child << " " ;
 			}
+			//read time
+			double t = 0 ;
+			dag >> t ;
 			//cout << endl ;
 #ifndef NDEBUG
+			z.time = t ;
 			//read grid info
 			grid_info<N_RANK> grid ;
 			for (int i = 0 ; i < N_RANK ; i++)
@@ -1346,10 +1397,7 @@ private:
 				dag >> grid.x1 [i] ;
 				dag >> grid.dx0 [i] ; 
 				dag >> grid.dx1 [i] ;
-				//cout << grid.x0 [i] << " " << grid.x1 [i] << " " << 
-				//	" " << grid.dx0 [i] << " " << grid.dx1 [i] << endl ;
 			}
-			//z.set_grid_info(grid) ;
 			z.info = grid ;
 #endif
 		}
@@ -1403,13 +1451,18 @@ private:
 		{
 			zoid_type & z = m_zoids [i] ;
 			//dag << (int) z.decision << " " << z.height << " " << 
-			dag << (int) z.decision << " " << //z.height << " " << 
+			dag << (int) z.decision << " " << 
+#ifndef NDEBUG
+				z.height << " " << 
+#endif
 				z.num_children << " " ;
 			//cout << "z.num_children " << z.num_children << endl ; 
 			for (int j = 0 ; j < z.num_children ; j++)
 			{
 				dag << z.children [j] << " " ;
 			}
+			//write time
+			dag << z.time << " " ;
 			dag << endl ;
 #ifndef NDEBUG
 			//write grid info
@@ -1461,7 +1514,7 @@ private:
 				assert (index < m_num_vertices) ;
 				zoid_type * z = &(m_zoids[index]) ;
 				//cout << "\nid " << z->id << " h " << z->height <<
-				cout << "\nid " << z->id << // " h " << z->height <<
+				cout << "\nid " << z->id << " h " << z->height <<
 					//" num children " << z->children.size() << 
 					" # children " << z->num_children << endl ;
 					//" num_parents " << z->parents.size() << 
@@ -1821,27 +1874,32 @@ private:
 				h2 = t1 - offset ;
 				index++ ;
 			}
-			clock_gettime(CLOCK_MONOTONIC, &end) ;
-			//copy data back.
-			//copy_data(array->data(), &(m_array[0]), volume) ;
-			copy_data(array, m_array, volume) ;
-			dag_time = tdiff2(&end, &start) ;
+
 			cout << "# vertices " << m_num_vertices << endl ;
 			cout << "DAG capacity " << m_zoids.capacity() << endl ;
-			std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
-					<< "ms" << std::endl;
+			
+			//compress the dag		
+			cout << "begin compress dag" << endl ;
+			struct timespec start1, end1 ;
+			clock_gettime(CLOCK_MONOTONIC, &start1) ;
+			compress_dag () ;
+			clock_gettime(CLOCK_MONOTONIC, &end1) ;
+			double compress_time = tdiff2(&end1, &start1) ;
+
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			dag_time = tdiff2(&end, &start) ;
+			cout << "compression took time : " << compress_time * 1e3 << "ms" << endl;
+			cout << "# vertices after compression " << m_num_vertices << endl ;
+			cout << "DAG capacity after compression " << m_zoids.capacity() << endl ;
+			std::cout << "DAG took time :" << dag_time * 1e3 << "ms" << std::endl;
 			cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
 			clear_projections() ;
 #ifndef NDEBUG
 			//print_dag() ;
 #endif
-			cout << "begin compress dag" << endl ;
-			compress_dag () ;
-			cout << "# vertices after compression " << m_num_vertices << endl ;
-			cout << "DAG capacity after compression " << m_zoids.capacity() << endl ;
-#ifndef NDEBUG
-			//print_dag() ;
-#endif
+			//copy data back.
+			//copy_data(array->data(), &(m_array[0]), volume) ;
+			copy_data(array, m_array, volume) ;
 			write_dag_to_file(grid, T) ;
 			create_simple_zoids() ;
 		}
@@ -1942,26 +2000,33 @@ private:
 				//set base case grid size to 1 in time/space.
 				m_algo.set_thres_auto_tuning() ;
 				m_head.push_back (ULONG_MAX) ;
-				//cout << "m_head.size() " << m_head.size() << endl ;
-				//cout << "mhead [0] " << m_head[0] << endl ;
 				clock_gettime(CLOCK_MONOTONIC, &start) ;
 				build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
-				clock_gettime(CLOCK_MONOTONIC, &end) ;
-				dag_time = tdiff2(&end, &start) ;
+				//clock_gettime(CLOCK_MONOTONIC, &end) ;
+				//dag_time = tdiff2(&end, &start) ;
 				expected_run_time += m_zoids[m_head[0]].time ;
 				cout << "# vertices " << m_num_vertices << endl ;
 				cout << "DAG capacity " << m_zoids.capacity() << endl ;
-				std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
-						<< "ms" << std::endl;
+					
+				//compress the dag		
+				cout << "begin compress dag" << endl ;
+				struct timespec start1, end1 ;
+				clock_gettime(CLOCK_MONOTONIC, &start1) ;
+				compress_dag () ;
+				clock_gettime(CLOCK_MONOTONIC, &end1) ;
+				double compress_time = tdiff2(&end1, &start1) ;
+
+				clock_gettime(CLOCK_MONOTONIC, &end) ;
+				dag_time = tdiff2(&end, &start) ;
+				cout << "compression took time : " << compress_time * 1e3 << "ms" << endl;
+				cout << "# vertices after compression " << m_num_vertices << endl ;
+				cout << "DAG capacity after compression " << m_zoids.capacity() << endl ;
+				std::cout << "DAG took time :" << dag_time * 1e3 << "ms" <<endl;
 				cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
 				clear_projections() ;
 #ifndef NDEBUG
 				//print_dag() ;
 #endif
-				cout << "begin compress dag" << endl ;
-				compress_dag () ;
-				cout << "# vertices after compression" << m_num_vertices << endl ;
-				cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
 				//copy data back.
 				//copy_data(array->data(), &(m_array[0]), volume) ;
 				copy_data(array, m_array, volume) ;
@@ -2026,21 +2091,27 @@ private:
 					build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid, f, bf, 1) ;
 					expected_run_time += m_zoids[m_head[1]].time ;
 				}
-				clock_gettime(CLOCK_MONOTONIC, &end) ;
-				dag_time = tdiff2(&end, &start) ;
 				cout << "# vertices " << m_num_vertices << endl ;
 				cout << "DAG capacity " << m_zoids.capacity() << endl ;
-				cout << "DAG : consumed time :" << 1.0e3 * dag_time
-						<< "ms" << std::endl;
+				//compress the dag		
+				cout << "begin compress dag" << endl ;
+				struct timespec start1, end1 ;
+				clock_gettime(CLOCK_MONOTONIC, &start1) ;
+				compress_dag () ;
+				clock_gettime(CLOCK_MONOTONIC, &end1) ;
+				double compress_time = tdiff2(&end1, &start1) ;
+
+				clock_gettime(CLOCK_MONOTONIC, &end) ;
+				dag_time = tdiff2(&end, &start) ;
+				cout << "compression took time : " << compress_time * 1e3 << "ms" << endl;
+				cout << "# vertices after compression " << m_num_vertices << endl ;
+				cout << "DAG capacity after compression " << m_zoids.capacity() << endl ;
+				cout << "DAG : consumed time :" << dag_time * 1e3 << "ms"<<endl;
 				cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
 				clear_projections() ;
 #ifndef NDEBUG
 				//print_dag() ;
 #endif
-				cout << "begin compress dag " << endl ;
-				compress_dag () ;
-				cout << "# vertices after compression" << m_num_vertices << endl ;
-				cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
 				//copy data back.
 				copy_data(array, m_array, volume) ;
 				write_dag_to_file(grid, T) ;
