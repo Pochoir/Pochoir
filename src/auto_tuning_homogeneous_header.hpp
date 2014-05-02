@@ -340,6 +340,7 @@ public :
 		decision = 0 ;
 		children = 0 ;
 #ifndef NDEBUG
+		num_children = 0 ;
 		time = 0 ;
 #endif
 	}
@@ -351,6 +352,7 @@ public :
 		children = 0 ;
 #ifndef NDEBUG
 		time = 0 ;
+		num_children = 0 ;
 #endif
 	}
 
@@ -362,6 +364,9 @@ public :
 		{
 			children = new unsigned long [size];
 		}
+#ifndef NDEBUG
+        num_children = size ;
+#endif
 	}
 
 	void resize_and_copy_children(int size, unsigned long * src)
@@ -383,9 +388,9 @@ private :
 #ifndef NDEBUG
 	grid_info <N_RANK> info ;
 	double time ;
+	int num_children ;
 #endif
 } ;
-
 
 template <int N_RANK>
 class auto_tune
@@ -709,6 +714,27 @@ private:
 		free (m_array) ;
 	}
 	
+	/* m_projections_boundary is 2-d array of "two level hash tables".
+	   The 1st dimension of the array is a "type" of zoid and the 2nd 
+	   dimension is the height of the zoid.
+	   There are 2^d different ways that a zoid may touch boundary in
+	   a d-dimensional grid.
+	   Accordingly zoids are classified into 2^d different "types" based
+	   on whether they touch boundary in the d-dimensions.
+	   There are atmost \Theta(lg h) different heights that we store.
+
+	   Given a zoid, we look up the m_projections_boundary structure
+	   with its type and height. This lookup gives us a two level hash table.
+	   The two level hash table stores <centroid, hashtable> pair,
+	   where the key is the centroid and value is a hashtable.
+       The hashtable stores <hash of zoid, index> pair where the key is  
+	   a hash of the zoid and the value is an index into the m_zoids array.	
+
+	   The centroid is calculated based on the dimensions in which the
+	   zoid touches the boundary. 
+	   The ref_point is a reference point of the zoid, typically its
+	   "absolute centroid".
+	*/
 	inline bool check_and_create_time_invariant_replica(unsigned long const key,
 					int const height, int const centroid, int const ref_point, 
 					unsigned long & index,
@@ -877,7 +903,8 @@ private:
 				}	
 #endif
 #ifdef CHECK_CACHE_ALIGNMENT
-				if (z->ref_point % 64 == ref_point % 64)
+				if ((z->ref_point * m_type_size) % 64 == 
+					(ref_point * m_type_size) % 64)
 #endif
 				{
 					index = start1->second ;
@@ -1022,17 +1049,26 @@ private:
 		return false ;
 	}*/
 
+	/* m_projections_interior is an array of "hash tables".
+	   There are atmost \Theta(lg h) different heights that we store.
+	   We hash the height of a zoid into an index into the array.
+
+	   Given a zoid, we look up the m_projections_interior array
+	   with its height. This lookup gives us a hash table.
+       The hashtable stores <hash of zoid, index> pair where the key is  
+	   a hash of the zoid and the value is an index into the m_zoids array.	
+
+	   The centroid is a reference point of the zoid, typically its
+	   "absolute centroid".
+	*/
 	inline bool check_and_create_space_time_invariant_replica(
 					unsigned long const key, 
 					int const height, int const centroid, unsigned long & index,
 					grid_info <N_RANK> const & grid)
 	{
-		//assert (dim_key < (1 << N_RANK) - 1) ;
 		vector <hash_table> & projections_interior = 
 							m_projections_interior ;
-							//m_projections_interior [dim_key] ;
 		assert (projections_interior.size()) ;
-		//int k = height - 1 ;  //index with the height for now.
 		bool found = false ;
 		//try checking the 1st bucket
 		int h1 = m_height_bucket [0][0] ;
@@ -1122,7 +1158,8 @@ private:
 			assert (z->height == height) ;
 #endif
 #ifdef CHECK_CACHE_ALIGNMENT
-			if (centroid % 64 == z->ref_point % 64)
+			if ((centroid * m_type_size) % 64 == 
+				(z->ref_point  * m_type_size) % 64)
 #endif
 			{
 				index = start->second ;
@@ -1160,11 +1197,6 @@ private:
 		return false ;
 	}
 
-	/*void set_clone_array(pochoir_clone_array <N_RANK> * clone_array)
-	{
-		m_clone_array = clone_array ;
-	}*/
-
 	void dfs(unsigned long node, vector <zoid_type> & temp_zoids,
 			 vector<unsigned long> & color, unsigned long & num_vertices)
 	{
@@ -1172,7 +1204,8 @@ private:
 		zoid_type & z = m_zoids [node] ;
 		//if leaf do not recurse further
 		if (z.decision == 1 << (zoid_type::NUM_BITS_DECISION - 2) || 
-			z.decision == 3 << (zoid_type::NUM_BITS_DECISION - 2))
+			z.decision == 3 << (zoid_type::NUM_BITS_DECISION - 2)) // ||
+			//z.num_children == 0)
 		{
 			//do not store node's children
 			//cout << "push back zoid " << z.id << endl ;
@@ -1230,6 +1263,9 @@ private:
 		//number of children was over allocated.
 		//To avoid dfs into the dummy node, we set color [0] = 0.
 		color [0] = 0 ;
+		//create a sentinel zoid in the beginning
+		//temp_zoids.push_back(zoid_type()) ;
+		//num_vertices++ ;
 		for (int j = 0 ; j < m_head.size() ; j++)
 		{
 			assert (m_head [j] < m_num_vertices) ;
@@ -1247,6 +1283,7 @@ private:
 		}
 #ifndef NDEBUG
 		//set the id/parents.
+		//for (unsigned long j = 1 ; j < num_vertices ; j++)
 		for (unsigned long j = 0 ; j < num_vertices ; j++)
 		{
 			zoid_type & z = temp_zoids [j] ;
@@ -1756,6 +1793,7 @@ private:
 		{
 			m_space_cut_mask |= 1 << (i + 1) ;
 		}
+		cout << "space cut mask " << (int) m_space_cut_mask << endl ;
 #ifdef WRITE_DAG
 		time_t now = time(0);
 		tm* localtm = localtime(&now);
@@ -1838,6 +1876,7 @@ private:
 		}
 		else
 		{
+			m_initial_height = h1 ;
 			initialize(grid, h1, h1, true) ;
 			//back up data
 			//copy_data(&(m_array[0]), array->data(), volume) ;
@@ -1977,6 +2016,7 @@ private:
 			clock_gettime(CLOCK_MONOTONIC, &start) ;
 			read_dag = read_dag_from_file(grid, T, T, expected_run_time) ;
 			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			//grid_info<N_RANK> grid2 = grid ;
 			if (read_dag)
 			{
 				dag_time = tdiff2(&end, &start) ;
@@ -1989,6 +2029,7 @@ private:
 			}
 			else
 			{
+				m_initial_height = T ;
 				initialize(grid, T, T, false) ;
 				//back up data
 				copy_data(m_array, array, volume) ;
@@ -1999,11 +2040,24 @@ private:
 				cout << "t0 " << t0 << " t1 " << t1 << " dry run time " << tdiff2(&end, &start) * 1e3 << "ms" << endl;
 				//set base case grid size to 1 in time/space.
 				m_algo.set_thres_auto_tuning() ;
+				//simulate only the interior
+				/*cout << "simulating the interior " << endl ;
+				for (int i = 0 ; i < N_RANK ; i++)
+            	{
+					//set grid2 at the interior
+                	grid2.x0 [i] = grid.x0 [i] + 1 ;
+                	grid2.x1 [i] = grid.x1 [i] - 1 ;
+                	grid2.dx0 [i] = m_algo.slope_ [i] ;
+                	grid2.dx1 [i] = -m_algo.slope_ [i] ;
+					cout << "grid2.x0 [ " << i << "] " << grid2.x0 [i] <<
+						" grid2.x1 [ " << i << "] " << grid2.x1 [i] <<
+						" grid2.dx0 [ " << i << "] " << grid2.dx0 [i] <<
+						" grid2.dx1 [ " << i << "] " << grid2.dx1 [i] << endl ;
+				}*/
 				m_head.push_back (ULONG_MAX) ;
 				clock_gettime(CLOCK_MONOTONIC, &start) ;
 				build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
-				//clock_gettime(CLOCK_MONOTONIC, &end) ;
-				//dag_time = tdiff2(&end, &start) ;
+				//build_auto_tune_dag_trap(t0, t1, grid2, f, bf, 0) ;
 				expected_run_time += m_zoids[m_head[0]].time ;
 				cout << "# vertices " << m_num_vertices << endl ;
 				cout << "DAG capacity " << m_zoids.capacity() << endl ;
@@ -2037,6 +2091,7 @@ private:
 			clock_gettime(CLOCK_MONOTONIC, &start) ;
 			trap_space_time_cut_boundary(t0, t1, grid, 
 				&(m_simple_zoids [m_head [0]]), f, bf) ;
+			//trap_space_time_cut_boundary(t0, t1, grid2, 
 			clock_gettime(CLOCK_MONOTONIC, &end) ;
 			compute_time = tdiff2(&end, &start) ;
 			std::cout << "Compute time :" << 1.0e3 * compute_time
@@ -2068,6 +2123,7 @@ private:
 			}
 			else
 			{
+				m_initial_height = h1 ;
 				initialize(grid, h1, h2, false) ;
 				//back up data
 				copy_data(m_array, array, volume) ;
