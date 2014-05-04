@@ -655,10 +655,24 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	}
 
 	bool force_divide = false ;
+	bool child_divides = true ;
 #ifdef SUBSUMPTION_SPACE
 	int max_num_level_divide = -1 ;
 	for (int i = 0 ; i < m_zoids [index].num_children ; i++)
 	{
+		unsigned long child_index = m_zoids [index].children [i] ;
+		decision_type d = m_zoids [child_index].decision ;
+		if (d & m_space_cut_mask || d & 1)
+		{
+			child_divides = true ;
+			//test if child passed inversion test
+			if ((int) m_zoids [child_index].num_level_divide == 1) 
+			{
+				force_divide = true ;
+			}
+		}
+	}
+	/*{
 		unsigned long child_index = m_zoids [index].children [i] ;
 		decision_type d = m_zoids [child_index].decision ;
 		if (d & m_space_cut_mask || d & 1) 
@@ -673,7 +687,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	if (m_zoids [index].num_level_divide >= DIVIDE_COUNTER)
 	{
 		force_divide = true ;
-	}
+	}*/
 #endif
 #ifndef SUBSUMPTION_TIME
 	max_loop_time = 0 ;
@@ -776,6 +790,14 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 				m_zoids [index].decision |= decision ;
 				projected_time += projected_time1 ;
 				m_zoids [index].time = necessary_time + projected_time1 ;
+#ifdef SUBSUMPTION_SPACE
+				if (child_divides)
+				{
+					m_zoids [index].num_level_divide = 
+						(int) m_zoids [index].num_level_divide + 1 ;
+					//continue from here.
+				}
+#endif
 			}
 			else
 			{
@@ -896,8 +918,8 @@ double & max_loop_time)
 			limit = dx_recursive_[i] ;
 		}
 		num_subzoids [i] = 0 ;
-		if (short_side >= (thres << 1) && lb > limit)
-		//if (short_side >= 2 * thres) 
+		//if (short_side >= (thres << 1) && lb > limit)
+		if (short_side >= 2 * thres) 
 		{
 			space_cut = true ;
 			//set if a space cut can be done in dimension i

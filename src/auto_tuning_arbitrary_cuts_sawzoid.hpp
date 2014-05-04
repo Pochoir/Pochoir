@@ -782,6 +782,14 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		centroid = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
 		//centroid = pmod(grid.x0[i], phys_length_ [i]) * width + 
 					centroid ;
+		/*	cout << " x0 [" << i << "] " << grid.x0 [i] 
+			 << " x1 [" << i << "] " << grid.x1 [i] 
+			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+			<< " lt " << lt << endl ;
+		*/
+		assert (lb >= 0) ;
+		assert (tb >= 0) ;
 		assert (centroid >= 0) ;
 		width *= phys_length_ [i] ;
 
@@ -789,11 +797,6 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		key |= lb ;
 		key <<= num_bits_width ;
 		key |= tb ;
-		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
-			 << " x1 [" << i << "] " << grid.x1 [i] 
-			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
-			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-			<< " lt " << lt << endl ;*/
         thres = slope_[i] * lt ;
 		int short_side ;
 		bool space_cut = false ;
@@ -808,14 +811,14 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 			short_side = tb ;
 		}
 		num_subzoids [i] = 0 ;
-		if (short_side >= (thres << 1) && lb > dx_recursive_[i])
-		//if (short_side >= 2 * thres)
+		//if (short_side >= (thres << 1) && lb > dx_recursive_[i])
+		if (short_side >= 2 * thres)
 		{
 			space_cut = true ;
 			//set if a space cut can happen in dimension i
 			decision |= 1 << (i + 1) ;
 			num_subzoids [i] = 3 ;
-			if (short_side - (thres << 2) >= 0)
+			if (short_side >= 4 * thres)
 			{
 				num_subzoids [i]= 5 ;
 				//set if space cut yields 5 pieces
@@ -825,15 +828,20 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		}
         sim_can_cut |= space_cut ;
     }
+	//if the zoid cannot be divided in space/time, loop and
+	//return
+	/*if (lt <= dt_recursive_ && ! sim_can_cut) 
+	{
+		f(t0, t1, grid);
+		return ;
+	}*/
 	unsigned long index ;
-	//bool projection_exists = check_and_create_projection (key, lt, 
-	//										centroid, index, grid) ;
 #ifdef TIME_INVARIANCE_INTERIOR
 	bool projection_exists = check_and_create_time_invariant_replica (key,
-					lt, centroid, centroid, index, grid, (1 << N_RANK) - 1) ;
+					lt, centroid, centroid, index, grid, (1 << N_RANK) - 1);
 #else
-	bool projection_exists = check_and_create_space_time_invariant_replica (key,
-								lt, centroid, index, grid) ;
+	bool projection_exists = check_and_create_space_time_invariant_replica (
+								key, lt, centroid, index, grid) ;
 #endif
 	zoid_type & z = m_zoids [index];
 	
@@ -859,15 +867,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	bool divide_and_conquer = false ;
 	double time_cut_elapsed_time = 0, space_cut_elapsed_time = ULONG_MAX ; 
 	double time_cut_ptime = 0, space_cut_ptime = 0 ;
-	double time_cut_rtime = 0 ;// space_cut_rtime = 0 ;
-	/*if (lt > dt_recursive_)
-	{
-		//cout << " time cut " << endl ;
-		divide_and_conquer = true ;
-		//m_zoids [index].resize_children(max (2, total_num_subzoids)) ;
-		m_zoids [index].set_capacity(max (2, total_num_subzoids)) ;
-		m_zoids [index].resize_children(2) ;
-	}*/
+	double time_cut_rtime = 0 ;//space_cut_rtime = 0 ;
 #ifdef FIXED_TIME_CUT
 	//cut in time only when space cut is not possible
 	if (lt > dt_recursive_ && ! sim_can_cut) 
@@ -884,16 +884,11 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	
 		double time1 = 0, time2 = 0 ;
         /* cut into time */
+		clock_gettime(CLOCK_MONOTONIC, &start1);
         int halflt = lt / 2;
         l_son_grid = grid;
-		clock_gettime(CLOCK_MONOTONIC, &start1);
         symbolic_sawzoid_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
 				index, 0, time_cut_rtime, time_cut_ptime, f, time1);
-		/*if (time1 > max_loop_time)
-		{
-			max_loop_time = time1 ;
-			//max_loop_decision = 11 ; 
-		}*/
         for (int i = 0; i < N_RANK; ++i) {
             l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
             l_son_grid.dx0[i] = grid.dx0[i];
@@ -901,13 +896,8 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
             l_son_grid.dx1[i] = grid.dx1[i];
         }
         symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
-				index, 1, time_cut_rtime, time_cut_ptime, f, time2) ;
+				index, 1, time_cut_rtime, time_cut_ptime, f, time2);
 		clock_gettime(CLOCK_MONOTONIC, &end1);
-		/*if (time2 > max_loop_time)
-		{
-			max_loop_time = time2 ;
-			//max_loop_decision = 1 ;
-		}*/
 		time1 = max(time1, time2) ;
 		max_loop_time = max(time1, max_loop_time) ;
 		time_cut_elapsed_time = tdiff2(&end1, &start1) - time_cut_rtime ;
@@ -942,8 +932,9 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		int best_case = 0, num_children_best_case = 1 ;
 #ifdef FIXED_SPACE_CUT
 		//do a hyper space cut
-		int start = decision >> 1 ;
-		for (int i = start ; i == start ; i--)
+		//int start = decision >> 1 ;
+		//for (int i = start ; i == start ; i--)
+		for (int i = (decision >> 1) ; i == (decision >> 1) ; i--)
 #else
 		for (int i = num_cases - 1 ; i > 0 ; i--)
 #endif
@@ -982,16 +973,6 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 							time, i) ;
 			clock_gettime(CLOCK_MONOTONIC, &end1);
 			max_loop_time = max(time, max_loop_time) ;
-			/*if (time > max_loop_time)
-			{
-				max_loop_time = time ;
-				max_loop_decision = 0 ;
-				for (int j = 0 ; j < N_RANK ; j++)
-				{
-					int bit = i & 1 << j ;
-					max_loop_decision |= (bit != 0) << j + 2 ;
-				}
-			}*/
 			elapsed_time = tdiff2(&end1, &start1) - rtime ;
 			assert (elapsed_time >= 0.) ;
 			assert (ptime >= 0.) ;
@@ -1070,38 +1051,53 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	}
 
 	bool force_divide = false ;
+	bool child_divides = true ;
 #ifdef SUBSUMPTION_SPACE
 	int max_num_level_divide = -1 ;
 	for (int i = 0 ; i < m_zoids [index].num_children ; i++)
 	{
 		unsigned long child_index = m_zoids [index].children [i] ;
 		decision_type d = m_zoids [child_index].decision ;
-    	if (d & m_space_cut_mask || d & 1) 
+		if (d & m_space_cut_mask || d & 1)
 		{
-			//find the max # of levels of division
+			child_divides = true ;
+			//test if child passed inversion test
+			if ((int) m_zoids [child_index].num_level_divide == 1) 
+			{
+				force_divide = true ;
+			}
+		}
+	}
+	/*{
+		unsigned long child_index = m_zoids [index].children [i] ;
+		decision_type d = m_zoids [child_index].decision ;
+		if (d & m_space_cut_mask || d & 1) 
+		{
+			//find the # of consecutive descendants that divided
 			max_num_level_divide = max(max_num_level_divide, 
-								(int) m_zoids [child_index].num_level_divide) ;
+							(int) m_zoids [child_index].num_level_divide) ;
 		}
 	}
 	m_zoids [index].num_level_divide = min(max_num_level_divide + 1, 
-										   DIVIDE_COUNTER) ; 
+										   DIVIDE_COUNTER) ;
 	if (m_zoids [index].num_level_divide >= DIVIDE_COUNTER)
 	{
 		force_divide = true ;
-	}
+	}*/
 #endif
 #ifndef SUBSUMPTION_TIME
 	max_loop_time = 0 ;
 #endif
-	
+
     //base case
 	//suppose loop_time(z) >= loop_time(z'), z' \in tree(z)
 	//if divide_and_conquer_time(z) < max_{z' \in tree(z)} loop_time(z')
 	//	then avoid computing loop_time(z).
 	//else compute loop_time(z).
-	double loop_time = 0 ;
+	double loop_time = ULONG_MAX ;
+	//assert (divide_and_conquer) ;
 	if ((divide_and_conquer && necessary_time + projected_time1 < max_loop_time)
-		|| force_divide)
+		|| force_divide || lt > m_initial_height / 2)
 	{
 		//do not compute loop_time.
 		m_zoids [index].decision |= decision ;
@@ -1111,19 +1107,22 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 	else if (! divide_and_conquer)
 	{
 		//determine the looping time on the zoid
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-		f(t0, t1, grid);
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
-		loop_time = tdiff2(&end1, &start1) ;
-		assert (loop_time >= 0.) ;
+		//for (int i = 0 ; i < 2 ; i++)
+		{
+			clock_gettime(CLOCK_MONOTONIC, &start1) ;
+			f(t0, t1, grid);
+			clock_gettime(CLOCK_MONOTONIC, &end1) ;
+			double t = tdiff2(&end1, &start1) ;
+			loop_time = min (t, loop_time) ;
+		}
+		//loop_time = tdiff2(&end1, &start1) ;
+		assert (loop_time > 0.) ;
 #ifndef NDEBUG
 		m_zoids [index].ltime = loop_time ;
 #endif
 		//max_loop_time = max(loop_time, max_loop_time) ;
-		max_loop_time = loop_time ;
-		//assert (loop_time >= max_loop_time) ;
 		//max_loop_time = loop_time ;
-		//m_zoids [index].decision = 0 ;
+		//assert (loop_time >= max_loop_time) ;
 		//set a flag to indicate that we looped on z.
 		m_zoids [index].decision = (decision_type) 1 << 
 					  (zoid_type::NUM_BITS_DECISION - 2) ;
@@ -1146,11 +1145,18 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 				necessary_time + projected_time1, f, loop_time, zoid_loop_time);
 #else
 		//determine the looping time on the zoid
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-		f(t0, t1, grid);
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
-		loop_time = tdiff2(&end1, &start1) ;
-		assert (loop_time >= 0.) ;
+#ifdef SUBSUMPTION_SPACE
+		//for (int i = 0 ; i < 2 ; i++)
+#endif
+		{
+			clock_gettime(CLOCK_MONOTONIC, &start1) ;
+			f(t0, t1, grid);
+			clock_gettime(CLOCK_MONOTONIC, &end1) ;
+			double t = tdiff2(&end1, &start1) ;
+			loop_time = min(t, loop_time) ;
+		}
+		//loop_time = tdiff2(&end1, &start1) ;
+		assert (loop_time > 0.) ;
 		//set a flag to indicate that we looped on z.
 		m_zoids [index].decision |= (decision_type) 1 << 
 					  (zoid_type::NUM_BITS_DECISION - 2) ;
@@ -1180,6 +1186,13 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 				m_zoids [index].decision |= decision ;
 				projected_time += projected_time1 ;
 				m_zoids [index].time = necessary_time + projected_time1 ;
+#ifdef SUBSUMPTION_SPACE
+				if (child_divides)
+				{
+					m_zoids [index].num_level_divide = 
+						(int) m_zoids [index].num_level_divide + 1 ;
+				}
+#endif
 			}
 			else
 			{
@@ -1189,6 +1202,23 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 						  (zoid_type::NUM_BITS_DECISION - 2) ;
 				necessary_time = zoid_loop_time ;
 				m_zoids [index].time = zoid_loop_time ;
+				/*if (force_divide)
+				{
+					//an inversion occurs
+					cout << "inversion" << endl ;
+					for (int i = N_RANK-1; i >= 0; --i)
+					{
+						cout << " x0 [" << i << "] " << grid.x0 [i] 
+						 << " x1 [" << i << "] " << grid.x1 [i] 
+						<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+						<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+						<< " lt " << lt << endl ;
+					}
+					cout << "loop time " << zoid_loop_time <<
+							"divide time " << necessary_time + 
+							projected_time1 << endl ;
+					//exit(0) ;
+				}*/
 			}
 		}
 		else
@@ -1233,7 +1263,6 @@ double & max_loop_time)
 	struct timespec start1, end1 ;
 	int dim_touching_bdry = 0 ;
 	int centroid_dim_touching_bdry = 0, width_dim_touching_bdry = 1 ;
-
     for (int i = N_RANK-1; i >= 0; --i) {
         unsigned long lb, tb;
         int thres ;
@@ -1284,14 +1313,14 @@ double & max_loop_time)
 			limit = dx_recursive_[i] ;
 		}
 		num_subzoids [i] = 0 ;
-		if (short_side >= (thres << 1) && lb > limit)
-		//if (short_side >= 2 * thres) 
+		//if (short_side >= (thres << 1) && lb > limit)
+		if (short_side >= 2 * thres) 
 		{
 			space_cut = true ;
 			//set if a space cut can be done in dimension i
 			decision |= 1 << (i + 1) ;
 			num_subzoids [i] = 3 ;
-			if (short_side - (thres << 2) >= 0)
+			if (short_side >= 4 * thres)
 			{
 				//set if space cut yields 5 pieces
 				//decision |= 1 << i + 1 + 2 * N_RANK ;
@@ -1308,32 +1337,52 @@ double & max_loop_time)
 
         call_boundary |= l_touch_boundary;
     }
+    if (call_boundary)
+	{
+        l_dt_stop = dt_recursive_boundary_;
+	}
+    else
+	{
+        l_dt_stop = dt_recursive_;
+	}
+	//if zoid cannot be divided in space/time, loop and return
+	/*if (lt <= l_dt_stop && ! sim_can_cut) 
+	{
+		if (call_boundary)
+		{
+			base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+		} 
+		else 
+		{ 
+			f(t0, t1, l_father_grid);
+		}
+		return ;
+	}*/
+	
 	unsigned long index ;
-	//bool projection_exists = check_and_create_projection (key, lt, 
-	//								centroid, index, l_father_grid) ;
 	bool projection_exists = false ;
 	if (call_boundary)
 	{
 #ifdef TIME_INVARIANCE_BOUNDARY
-		projection_exists = check_and_create_time_invariant_replica (key, lt, 
-				centroid, centroid, index, l_father_grid, (1 << N_RANK) - 1) ;
+		projection_exists = check_and_create_time_invariant_replica (key, 
+			lt, centroid, centroid, index, l_father_grid,(1 << N_RANK) - 1);
 #else
 		//space-time invariance at boundary
 		//you can use space invariance in some dimension
-		projection_exists = check_and_create_time_invariant_replica (key, lt, 
-	  							centroid_dim_touching_bdry, centroid, index, 
-								l_father_grid, dim_touching_bdry) ;
+		projection_exists = check_and_create_time_invariant_replica (key, 
+			lt, centroid_dim_touching_bdry, centroid, index, l_father_grid, 
+			dim_touching_bdry) ;
 #endif
 	}
 	else
 	{
 #ifdef TIME_INVARIANCE_INTERIOR
-		projection_exists = check_and_create_time_invariant_replica (key, lt, 
-				centroid, centroid, index, l_father_grid, (1 << N_RANK) - 1) ;
+		projection_exists = check_and_create_time_invariant_replica (key, 
+			lt, centroid, centroid, index, l_father_grid,(1 << N_RANK) - 1);
 #else
 		//space-time invariance at interior
-		projection_exists = check_and_create_space_time_invariant_replica (key,
-						lt, centroid, index, l_father_grid) ;
+		projection_exists = check_and_create_space_time_invariant_replica (
+						key, lt, centroid, index, l_father_grid) ;
 #endif
 	}
 	zoid_type & z = m_zoids [index] ;
@@ -1354,34 +1403,18 @@ double & max_loop_time)
 		//a zoid with the projection already exists. return
 		return ;
 	}
+	z.decision |= call_boundary << 
+				  (zoid<N_RANK>::NUM_BITS_DECISION - 1) ;
 
-    if (call_boundary)
-	{
-		z.decision |= (decision_type) 1 << 
-					  (zoid<N_RANK>::NUM_BITS_DECISION - 1) ;
-        l_dt_stop = dt_recursive_boundary_;
-	}
-    else
-	{
-        l_dt_stop = dt_recursive_;
-	}
 	bool divide_and_conquer = false ;
 	bool time_cut = false ;
 	double projected_time1 = 0, necessary_time = 0 ;
 	double time_cut_elapsed_time = 0, space_cut_elapsed_time = ULONG_MAX ; 
 	double time_cut_ptime = 0, space_cut_ptime = 0 ;
-	double time_cut_rtime = 0 ;//space_cut_rtime = 0 ;
-	/*if (lt > l_dt_stop)  //time cut
-	{
-		divide_and_conquer = true ;
-		//m_zoids [index].resize_children(max (2, total_num_subzoids)) ;
-		m_zoids [index].set_capacity(max (2, total_num_subzoids)) ;
-		m_zoids [index].resize_children(2) ;
-		//decision = 1 ;
-	}*/
+	double time_cut_rtime = 0 ;// space_cut_rtime = 0 ;
 #ifdef FIXED_TIME_CUT
 	//cut in time only when space cut is not possible
-	if (lt > dt_recursive_ && ! sim_can_cut) 
+	if (lt > l_dt_stop && ! sim_can_cut) 
 #else
 	if (lt > l_dt_stop)  //time cut
 #endif
@@ -1393,18 +1426,18 @@ double & max_loop_time)
 	
 		double time1 = 0, time2 = 0 ;
         // cut into time 
+		clock_gettime(CLOCK_MONOTONIC, &start1) ;
         int halflt = lt / 2;
         l_son_grid = l_father_grid;
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
     	for (int i = N_RANK-1; i >= 0; --i) {
         	touch_boundary(i, lt, l_father_grid) ;
     	}
         if (call_boundary) {
             symbolic_sawzoid_space_time_cut_boundary(t0, t0+halflt, l_son_grid,
-					index, 0, time_cut_rtime, time_cut_ptime , f, bf, time1) ;
+					index, 0, time_cut_rtime, time_cut_ptime , f, bf, time1);
         } else {
             symbolic_sawzoid_space_time_cut_interior(t0, t0+halflt, l_son_grid,
-					index, 0, time_cut_rtime, time_cut_ptime, f, time1) ;
+					index, 0, time_cut_rtime, time_cut_ptime, f, time1);
         }
 
         for (int i = 0; i < N_RANK; ++i) {
@@ -1415,10 +1448,10 @@ double & max_loop_time)
         }
         if (call_boundary) {
             symbolic_sawzoid_space_time_cut_boundary(t0+halflt, t1, l_son_grid,
-					index, 1, time_cut_rtime, time_cut_ptime, f, bf, time2) ;
+					index, 1, time_cut_rtime, time_cut_ptime, f, bf, time2);
         } else {
             symbolic_sawzoid_space_time_cut_interior(t0+halflt, t1, l_son_grid,
-					index, 1, time_cut_rtime, time_cut_ptime, f, time2) ;
+					index, 1, time_cut_rtime, time_cut_ptime, f, time2);
         }
 		clock_gettime(CLOCK_MONOTONIC, &end1) ;
 		time1 = max(time1, time2) ;
@@ -1454,8 +1487,9 @@ double & max_loop_time)
 		int best_case = 0 ; //num_children_best_case = 1 ;
 #ifdef FIXED_SPACE_CUT
 		//do a hyper space cut
-		int start = decision >> 1 ;
-		for (int i = start ; i == start ; i--)
+		//int start = decision >> 1 ;
+		//for (int i = start ; i == start ; i--)
+		for (int i = (decision >> 1) ; i == (decision >> 1) ; i--)
 #else
 		for (int i = num_cases - 1 ; i > 0 ; i--)
 #endif
@@ -1487,9 +1521,9 @@ double & max_loop_time)
 			assert (num_children <= total_num_subzoids) ;
 			m_zoids [index].resize_children(num_children) ;
 			clock_gettime(CLOCK_MONOTONIC, &start1);
-    		for (int i = N_RANK-1; i >= 0; --i) {
-        		touch_boundary(i, lt, l_father_grid) ;
-    		}
+			for (int i = N_RANK-1; i >= 0; --i) {
+				touch_boundary(i, lt, l_father_grid) ;
+			}
 			/* cut into space */
 			double time = 0, rtime = 0, ptime = 0, elapsed_time = 0  ;
 			if (call_boundary) 
@@ -1532,7 +1566,7 @@ double & max_loop_time)
 			int bit = best_case & 1 << j ;
 			decision = (decision & ~(1 << (j + 1))) | ((bit != 0) << (j + 1)) ;
 #ifndef NDEBUG
-			int decision_bit = decision & 1 << j + 1 ;
+			int decision_bit = decision & 1 << (j + 1) ;
 			assert (decision_bit == bit << 1) ;
 #endif
 		}
@@ -1550,7 +1584,6 @@ double & max_loop_time)
 	}
 #endif
 	
-	//if (lt > l_dt_stop && sim_can_cut)
 	if (time_cut && sim_can_cut)
 	{
 		if (space_cut_elapsed_time + space_cut_ptime < time_cut_elapsed_time +
@@ -1571,7 +1604,6 @@ double & max_loop_time)
 			assert (m_zoids [index].num_children == 2) ;
 		}
 	}
-	//else if (lt > l_dt_stop)
 	else if (time_cut)
 	{
 		//time cut is the only choice
@@ -1588,7 +1620,7 @@ double & max_loop_time)
 		necessary_time = space_cut_elapsed_time ;
 		//decision is already set in the initial loop above for space cut.
 	}
-	
+
 	bool force_divide = false ;
 #ifdef SUBSUMPTION_SPACE
 	int max_num_level_divide = -1 ;
@@ -1596,11 +1628,11 @@ double & max_loop_time)
 	{
 		unsigned long child_index = m_zoids [index].children [i] ;
 		decision_type d = m_zoids [child_index].decision ;
-    	if (d & m_space_cut_mask || d & 1) 
+		if (d & m_space_cut_mask || d & 1) 
 		{
 			//find the max # of levels of division
 			max_num_level_divide = max(max_num_level_divide, 
-								(int) m_zoids [child_index].num_level_divide) ;
+							(int) m_zoids [child_index].num_level_divide) ;
 		}
 	}
 	m_zoids [index].num_level_divide = min(max_num_level_divide + 1, 
@@ -1613,16 +1645,14 @@ double & max_loop_time)
 #ifndef SUBSUMPTION_TIME
 	max_loop_time = 0 ;
 #endif
-
 	// base case
 	//suppose loop_time(z) >= loop_time(z'), z' \in tree(z)
 	//if divide_and_conquer_time(z) < max_{z' \in tree(z)} loop_time(z')
 	//	then avoid computing loop_time(z).
 	//else compute loop_time(z).
-	double loop_time = 0. ;
-	//double loop_time_with_penalty = 0. ;
+	double loop_time = ULONG_MAX ;
 	if ((divide_and_conquer && necessary_time + projected_time1 < max_loop_time)
-		|| force_divide)
+		|| force_divide || lt > m_initial_height / 2)
 	{
 		//do not compute loop_time.
 		m_zoids [index].decision |= decision ;
@@ -1632,35 +1662,40 @@ double & max_loop_time)
 	else if (! divide_and_conquer)
 	{
 		//determine the looping time on the zoid
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-		if (call_boundary)
+		//for (int i = 0 ; i < 2 ; i++)
 		{
-			base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-		} 
-		else 
-		{ 
-			f(t0, t1, l_father_grid);
+			clock_gettime(CLOCK_MONOTONIC, &start1) ;
+			if (call_boundary)
+			{
+				base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+			} 
+			else 
+			{ 
+				f(t0, t1, l_father_grid);
+			}
+			clock_gettime(CLOCK_MONOTONIC, &end1) ;
+			double t = tdiff2(&end1, &start1) ;
+			loop_time = min (loop_time, t) ;
 		}
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
-		loop_time = tdiff2(&end1, &start1) ;
+		//loop_time = tdiff2(&end1, &start1) ;
+		assert (loop_time > 0.) ;
 #ifndef NDEBUG
 		m_zoids [index].ltime = loop_time ;
 #endif
 		//max_loop_time = max(loop_time, max_loop_time) ;
-		max_loop_time = loop_time ;
+		//max_loop_time = loop_time ;
 		//set a flag to indicate that we looped on z.
 		m_zoids [index].decision = (decision_type) 1 << 
 					  (zoid_type::NUM_BITS_DECISION - 2) ;
-		m_zoids [index].decision |=  call_boundary << 
+		m_zoids [index].decision |= call_boundary << 
 					  (zoid_type::NUM_BITS_DECISION - 1) ;
 		necessary_time = loop_time ;
 		m_zoids [index].time = loop_time ;
 	}
 	else 
 	{
-		//assert (! divide_and_conquer || 
 		assert (divide_and_conquer && 
-				necessary_time+projected_time1 >=max_loop_time);
+				necessary_time+projected_time1 >= max_loop_time);
 		double zoid_loop_time = 0 ; //the loop time of z
 #ifdef MARCHUP
 		//find the new max loop time in tree(z) instead of looping at z.
@@ -1672,17 +1707,25 @@ double & max_loop_time)
 			necessary_time + projected_time1, f, bf, loop_time, zoid_loop_time);
 #else
 		//determine the looping time on the zoid
-		clock_gettime(CLOCK_MONOTONIC, &start1) ;
-		if (call_boundary)
+#ifdef SUBSUMPTION_SPACE
+		//for (int i = 0 ; i < 2 ; i++)
+#endif
 		{
-			base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-		} 
-		else 
-		{ 
-			f(t0, t1, l_father_grid);
+			clock_gettime(CLOCK_MONOTONIC, &start1) ;
+			if (call_boundary)
+			{
+				base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+			} 
+			else 
+			{ 
+				f(t0, t1, l_father_grid);
+			}
+			clock_gettime(CLOCK_MONOTONIC, &end1) ;
+			double t = tdiff2(&end1, &start1) ;
+			loop_time = min(t, loop_time) ;
 		}
-		clock_gettime(CLOCK_MONOTONIC, &end1) ;
-		loop_time = tdiff2(&end1, &start1) ;
+		//loop_time = tdiff2(&end1, &start1) ;
+		assert (loop_time > 0.) ;
 		//set a flag to indicate that we looped on z.
 		m_zoids [index].decision |= (decision_type) 1 << 
 					  (zoid_type::NUM_BITS_DECISION - 2) ;
@@ -1690,14 +1733,14 @@ double & max_loop_time)
 #endif	
 #ifndef NDEBUG
 		//check if looping happened at z.
-		if (m_zoids [index].decision & 1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2))
+		if (m_zoids [index].decision & 
+			1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2))
 		{
 			m_zoids [index].ltime = zoid_loop_time ;
 		}
 #endif
 		//max_loop_time = max(loop_time, max_loop_time) ;
 		max_loop_time = zoid_loop_time ;
-		
 		//store the decision for the zoid and pass the redundant time 
 		//to the parent
 		//if we looped at z, then compare divide and conquer time with
@@ -2288,7 +2331,6 @@ sawzoid_space_time_cut_interior(int t0,
 		}
 	}
 #endif
-    //if (projection_zoid->decision & 2) 
     if (projection_zoid->decision & m_space_cut_mask) 
 	{
         /* cut into space */
@@ -2296,6 +2338,7 @@ sawzoid_space_time_cut_interior(int t0,
     } 
 	else if (projection_zoid->decision & 1)
 	{
+		assert (projection_zoid->num_children == 2) ;
         /* cut into time */
 		assert (projection_zoid->children [0]) ;
 		assert (projection_zoid->children [1]) ;
@@ -2336,15 +2379,48 @@ sawzoid_space_time_cut_interior(int t0,
 #endif
 #ifdef TIME_INVARIANCE_INTERIOR
 		assert (projection_zoid->decision == 
-					1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
+					1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2)) ; // ||
+				//projection_zoid->num_children == 0) ;
 #else
 		assert (projection_zoid->decision == 
-				3 << zoid<N_RANK>::NUM_BITS_DECISION - 2 ||
+				3 << (zoid<N_RANK>::NUM_BITS_DECISION - 2) ||
 				projection_zoid->decision ==
-				1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
+				1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2)) ; // ||
+				//projection_zoid->num_children == 0) ;
 #endif
 		//loop
+#ifndef NDEBUG
+		struct timespec start, end;
+		clock_gettime(CLOCK_MONOTONIC, &start) ;
+#endif
 		f(t0, t1, grid);
+#ifndef NDEBUG
+		clock_gettime(CLOCK_MONOTONIC, &end) ;
+		double time = tdiff2(&end, &start) ;
+		if (time > 100 * projection_zoid->time)
+		{
+			cout << "runtime " << time * 1e3 << " ms exceeds predicted time " 
+				<< projection_zoid->time * 1e3 << " ms" << endl ;
+			grid_info <N_RANK> & grid2 = projection_zoid->info ;
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+			cout << endl ;
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid2.x0 [i]
+				 << " x1 [" << i << "] " << grid2.x1 [i]
+				<< " x2 [" << i << "] " << grid2.x0[i] + grid2.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid2.x1[i] + grid2.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+		}
+#endif
 		return ;
 	}
 }
@@ -2362,22 +2438,19 @@ sawzoid_space_time_cut_boundary(int t0,
 #ifndef NDEBUG
 	bool dim_touching_bdry [N_RANK] ;
 #endif
-	decision_type cb = 0 ;
+	decision_type call_boundary = 0 ;
     for (int i = N_RANK-1; i >= 0; --i) {
-#ifndef NDEBUG
-		dim_touching_bdry [i] = 0 ;
-#endif
-        //touch_boundary(i, lt, l_father_grid) ;
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid) ;
 #ifndef NDEBUG
 		dim_touching_bdry [i] = l_touch_boundary ;
 #endif
-		cb |= l_touch_boundary ;
+		call_boundary |= l_touch_boundary ;
     }
 	//decision_type call_boundary = projection_zoid->decision >> 
 	//				zoid<N_RANK>::NUM_BITS_DECISION - 1 ;
 	//assert (cb == call_boundary) ;
-	decision_type call_boundary = cb ;
+	//decision_type call_boundary = cb ;
+	
 #ifndef NDEBUG
     for (int i = N_RANK-1; i >= 0; --i) {
 		grid_info <N_RANK> & grid2 = projection_zoid->info ;
@@ -2419,6 +2492,7 @@ sawzoid_space_time_cut_boundary(int t0,
 				error = true ;
 			}
 		}
+		//if (error && projection_zoid->num_children > 0)
 		if (error)
 		{
 			cout << "zoid and proj zoid differ " << endl ;
@@ -2463,6 +2537,7 @@ sawzoid_space_time_cut_boundary(int t0,
 	else if (projection_zoid->decision & 1)
 	{
 		//cout << "time cut " << endl ;
+		assert (projection_zoid->num_children == 2) ;
 		// cut into time 
 		assert (projection_zoid->children [0]) ;
 		assert (projection_zoid->children [1]) ;
@@ -2534,22 +2609,58 @@ sawzoid_space_time_cut_boundary(int t0,
 #endif
 		//loop
 		assert (projection_zoid->decision == 
-				3 << zoid<N_RANK>::NUM_BITS_DECISION - 2 ||
+				3 << (zoid<N_RANK>::NUM_BITS_DECISION - 2) ||
 				projection_zoid->decision ==
-				1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
+				1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2)) ; // ||
+				//projection_zoid->num_children == 0) ;
+#ifndef NDEBUG
+		struct timespec start, end;
+		clock_gettime(CLOCK_MONOTONIC, &start) ;
+#endif
 		if (call_boundary) {
 #ifdef TIME_INVARIANCE_BOUNDARY
 			assert (projection_zoid->decision == 
-					3 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
+					3 << (zoid<N_RANK>::NUM_BITS_DECISION - 2)) ; // ||
+					//projection_zoid->num_children == 0) ;
 #endif
             base_case_kernel_boundary(t0, t1, l_father_grid, bf);
         } else { 
 #ifdef TIME_INVARIANCE_INTERIOR
 			assert (projection_zoid->decision == 
-					1 << zoid<N_RANK>::NUM_BITS_DECISION - 2) ;
+					1 << (zoid<N_RANK>::NUM_BITS_DECISION - 2)) ; // ||
+					//projection_zoid->num_children == 0) ;
 #endif
             f(t0, t1, l_father_grid);
         }
+#ifndef NDEBUG
+		clock_gettime(CLOCK_MONOTONIC, &end) ;
+		double time = tdiff2(&end, &start) ;
+		if (time > 100 * projection_zoid->time &&
+			projection_zoid->time > 0)
+		{
+			cout << "runtime " << time * 1e3 << " ms exceeds predicted time " 
+				<< projection_zoid->time * 1e3 << " ms" << endl ;
+			grid_info <N_RANK> & grid2 = projection_zoid->info ;
+		
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+			cout << endl ;
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid2.x0 [i]
+				 << " x1 [" << i << "] " << grid2.x1 [i]
+				<< " x2 [" << i << "] " << grid2.x0[i] + grid2.dx0[i] * lt
+				<< " x3 [" << i << "] " << grid2.x1[i] + grid2.dx1[i] * lt
+				<< " lt " << lt << endl ;
+			}
+		}
+#endif
 	}
 }
 
