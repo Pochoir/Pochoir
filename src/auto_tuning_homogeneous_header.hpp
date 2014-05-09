@@ -16,6 +16,7 @@
 #ifndef AUTO_TUNING_HOMOGENEOUS_HEADER_HPP
 #define AUTO_TUNING_HOMOGENEOUS_HEADER_HPP
 
+#include "stopwatch.h"
 #include "rbq_common.h"
 #include <deque>
 #include <unordered_map>
@@ -34,6 +35,7 @@ class zoid
 	friend class auto_tune<N_RANK> ;
 	public :
 	typedef unsigned char decision_type ;
+	typedef long long time_type ;
 	inline void set_capacity(int size)
 	{
 		assert (size >= 0) ;
@@ -302,7 +304,7 @@ class zoid
 	unsigned long * children ;  
 	unsigned short capacity ;
 	unsigned short num_children ;
-	double time ;
+	time_type time ;
 #ifdef CHECK_CACHE_ALIGNMENT
 	unsigned long ref_point ;
 #endif
@@ -310,17 +312,17 @@ class zoid
 	unsigned char num_level_divide ; //# of levels of consecutive divisions
 #endif
 #ifdef SUBSUMPTION_TIME
-	double max_loop_time ;
+	time_type max_loop_time ;
 #endif
 #ifndef NDEBUG
 	grid_info <N_RANK> info ;
 	int height ;
-	double cache_penalty_time ;
+	time_type cache_penalty_time ;
 	unsigned long id ; //id of the zoid.
 	vector<unsigned long> parents ;
-	double stime ;
-	double ttime ;
-	double ltime ;
+	time_type stime ;
+	time_type ttime ;
+	time_type ltime ;
 #endif
 } ;
 
@@ -381,13 +383,14 @@ public :
 		}
 	}
 	typedef typename zoid<N_RANK>::decision_type decision_type ;
+	typedef typename zoid<N_RANK>::time_type time_type ;
 	//const int NUM_BITS_DECISION = zoid<N_RANK>::NUM_BITS_DECISION ;
 private :
     decision_type decision ;
 	unsigned long * children ;
 #ifndef NDEBUG
 	grid_info <N_RANK> info ;
-	double time ;
+	time_type time ;
 	int num_children ;
 #endif
 } ;
@@ -405,6 +408,7 @@ private:
 	typedef typename unordered_multimap<unsigned long, hash_table>::iterator 
 					two_level_hash_table_iterator ;
 	typedef typename zoid<N_RANK>::decision_type decision_type ;
+	typedef typename zoid<N_RANK>::time_type time_type ;
 
 	/*void flush_cache()
 	{
@@ -587,9 +591,9 @@ private:
 		assert (m_num_vertices == m_zoids.size()) ;
 		//m_head [index] = m_num_vertices ;
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
-		double rtime = 0, ntime = 0, max_loop_time = 0 ;
+		time_type rtime = 0, ctime = 0, max_loop_time = 0 ;
 		symbolic_trap_space_time_cut_boundary(t0, t1, grid, 
-					m_num_vertices - 1, 0, rtime, ntime, f, bf, max_loop_time) ;
+					m_num_vertices - 1, 0, rtime, ctime, f, bf, max_loop_time) ;
 		m_head [index] = m_zoids [index_head].children[0] ;
 		m_zoids [index_head].resize_children (0) ;
 #ifndef NDEBUG
@@ -629,7 +633,7 @@ private:
 		assert (m_num_vertices == m_zoids.size()) ;
 		//m_head [index] = m_num_vertices ;
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
-		double rtime = 0, ntime = 0, max_loop_time = 0 ;
+		time_type rtime = 0, ntime = 0, max_loop_time = 0 ;
 		symbolic_sawzoid_space_time_cut_boundary(t0, t1, grid, 
 					m_num_vertices - 1, 0, rtime, ntime, f, bf, max_loop_time);
 		m_head [index] = m_zoids [index_head].children[0] ;
@@ -1312,7 +1316,7 @@ private:
 	}
 
 	bool read_dag_from_file(grid_info<N_RANK> const & grid, int T, int h1,
-							double & time)
+							time_type & time)
 	{
 		string name = m_problem_name ;
 		if (name.size() == 0)
@@ -1372,7 +1376,7 @@ private:
 		//cout << "head nodes" << endl ;
 		//vector <unsigned long> head ;
 		m_head.resize(head_size) ;
-		double t ;
+		time_type t ;
 		//read head [0]
 		dag >> m_head [0] ;
 		//read predicted time
@@ -1421,7 +1425,7 @@ private:
 				//cout << child << " " ;
 			}
 			//read time
-			double t = 0 ;
+			time_type t = 0 ;
 			dag >> t ;
 			//cout << endl ;
 #ifndef NDEBUG
@@ -1555,7 +1559,7 @@ private:
 					//" num children " << z->children.size() << 
 					" # children " << z->num_children << endl ;
 					//" num_parents " << z->parents.size() << 
-				cout << " decision " << z->decision << 
+				cout << " decision " << (int) z->decision << 
 					" time " << z->time << 
 					" ptime " << z->cache_penalty_time << endl ;
 				cout << " stime " << z->stime  <<
@@ -1590,8 +1594,8 @@ private:
 					cout << "child index " << index << endl ;
 					assert (index < m_num_vertices) ;
 					zoid_type * child = &(m_zoids [index]);
-					//if (index && child && color [child->id] == 0)
-					if (color [child->id] == 0)
+					if (index && child && color [child->id] == 0)
+					//if (color [child->id] == 0)
 					{
 						assert (child->id < m_num_vertices) ;
 						color [child->id] = 1 ;
@@ -1615,23 +1619,23 @@ private:
 	template <typename F, typename BF>
 	inline void symbolic_trap_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, unsigned long,
-		int child_index, double &, double &, F const & f, BF const & bf,
-		double &) ;
+		int child_index, time_type &, time_type &, F const & f, BF const & bf,
+		time_type &) ;
 
 	template <typename F>
 	inline void symbolic_trap_space_time_cut_interior(int t0, int t1, 
 		grid_info<N_RANK> const & grid, unsigned long,
-		int child_index, double &, double &, F const & f, double &) ;
+		int child_index, time_type &, time_type &, F const & f, time_type &) ;
 
 	template <typename F, typename BF>
 	inline void symbolic_trap_space_cut_boundary(int t0, int t1,
 		grid_info<N_RANK> const & grid, unsigned long, F const & f, 
-		BF const & bf, int *, double &, double &, double &, int) ;
+		BF const & bf, int *, time_type &, time_type &, time_type &, int) ;
 
 	template <typename F>
 	inline void symbolic_trap_space_cut_interior(int t0, int t1,
 		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *,
-		double &, double &, double &, int) ;
+		time_type &, time_type &, time_type &, int) ;
 
 	template <typename F, typename BF>
 	inline void trap_space_time_cut_boundary(int t0, int t1,  
@@ -1765,10 +1769,32 @@ private:
 		int *, int *, int *, int const, int const) ;
 	public :
 
+	void stopwatch_print_elapsed_time(time_type time) 
+	{
+#ifdef USE_TIMING
+    	cout << time / 1000000ll << "." <<
+            	time % 1000000ll << "ms " << endl ;
+#else
+    	cout << time << " instructions" << endl ;
+#endif
+	}
+
+	void stopwatch_print_elapsed_time(stopwatch *s) 
+	{
+    	long long time = stopwatch_get_elapsed_time(s) ;
+#ifdef USE_TIMING
+    	cout << time / 1000000ll << "." <<
+            	time % 1000000ll << "ms " << endl ;
+#else
+    	cout << time << " instructions" << endl ;
+#endif
+	}
+
 	auto_tune(Algorithm<N_RANK> & alg, grid_info<N_RANK> const & grid,
 				  bool power_of_two, char * name, int T,
 				  int type_size):m_algo(alg)
 	{
+		stopwatches_setup() ;
 #ifdef SUBSUMPTION_SPACE
 		cout << "DIVIDE_COUNTER " << DIVIDE_COUNTER << endl ;
 #endif
@@ -1821,6 +1847,7 @@ private:
 
 	~auto_tune()
 	{
+		stopwatches_teardown();
 		//delete all zoids and clear the projections
 		destroy_auto_tune_dag() ;
 #ifdef WRITE_DAG
@@ -1848,7 +1875,8 @@ private:
 			}
 		}
 		struct timespec start, end;
-		double dag_time = 0. ;
+		//double dag_time = 0. ;
+		long long  dag_time = 0. ;
 		double expected_run_time = 0 ;
 		//find index of most significant bit that is set
 		int Wn = W / (slope << 1) ;
@@ -1861,12 +1889,15 @@ private:
 			h1 = 1 << index_msb ;
 		}
 		bool read_dag = false ;
-		clock_gettime(CLOCK_MONOTONIC, &start) ;
+		//clock_gettime(CLOCK_MONOTONIC, &start) ;
+		stopwatch_start(&s1) ;
 		read_dag = read_dag_from_file(grid, T, h1, expected_run_time) ;
-		clock_gettime(CLOCK_MONOTONIC, &end) ;
+		//clock_gettime(CLOCK_MONOTONIC, &end) ;
+		stopwatch_stop(&s1) ;
 		if (read_dag)
 		{
-			dag_time = tdiff2(&end, &start) ;
+			//dag_time = tdiff2(&end, &start) ;
+			dag_time = stopwatch_get_elapsed_time(&s1) ;
 			cout << "read dag from file " << endl ;
 			cout << "# vertices " << m_num_vertices << endl ;
 			cout << "DAG capacity " << m_zoids.capacity() << endl ;
@@ -1917,6 +1948,9 @@ private:
 			cout << "# vertices " << m_num_vertices << endl ;
 			cout << "DAG capacity " << m_zoids.capacity() << endl ;
 			
+#ifndef NDEBUG
+			print_dag() ;
+#endif
 			//compress the dag		
 			cout << "begin compress dag" << endl ;
 			struct timespec start1, end1 ;
@@ -1933,9 +1967,6 @@ private:
 			std::cout << "DAG took time :" << dag_time * 1e3 << "ms" << std::endl;
 			cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
 			clear_projections() ;
-#ifndef NDEBUG
-			//print_dag() ;
-#endif
 			//copy data back.
 			//copy_data(array->data(), &(m_array[0]), volume) ;
 			copy_data(array, m_array, volume) ;
@@ -2006,26 +2037,37 @@ private:
 			}		
 		}
 		struct timespec start, end;
-		double dag_time = 0. ;
-		double expected_run_time = 0 ;
+		//double dag_time = 0. ;
+		//long long dag_time = 0. ;
+		time_type expected_run_time = 0 ;
+	
+		stopwatch s1, s2 ;
+		stopwatch_init(&s1) ;
+		stopwatch_init(&s2) ;
 		if (W >= 2 * slope * T)
 		{
 			//max width is >= 2 * sigma * h implies the zoid is ready for 
 			//space cuts
 			bool read_dag = false ;
-			clock_gettime(CLOCK_MONOTONIC, &start) ;
+			//clock_gettime(CLOCK_MONOTONIC, &start) ;
+			stopwatch_start(&s1) ;
 			read_dag = read_dag_from_file(grid, T, T, expected_run_time) ;
-			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			stopwatch_stop(&s1) ;
+			//clock_gettime(CLOCK_MONOTONIC, &end) ;
 			//grid_info<N_RANK> grid2 = grid ;
 			if (read_dag)
 			{
-				dag_time = tdiff2(&end, &start) ;
+				//dag_time = tdiff2(&end, &start) ;
 				cout << "read dag from file " << endl ;
 				cout << "# vertices " << m_num_vertices << endl ;
 				cout << "DAG capacity " << m_zoids.capacity() << endl ;
-				std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
-						<< "ms" << std::endl;
-				cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
+				//std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
+				//		<< "ms" << std::endl;
+				cout << "DAG took :" ;
+				stopwatch_print_elapsed_time(&s1) ;
+				//cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
+				cout << "Predicted " ;
+				stopwatch_print_elapsed_time(expected_run_time) ;
 			}
 			else
 			{
@@ -2034,10 +2076,14 @@ private:
 				//back up data
 				copy_data(m_array, array, volume) ;
 				//do a dry run
-				clock_gettime(CLOCK_MONOTONIC, &start) ;
+				//clock_gettime(CLOCK_MONOTONIC, &start) ;
+				stopwatch_start(&s1) ;
     			m_algo.shorter_duo_sim_obase_bicut_p(t0, t1, grid, f, bf) ;
-				clock_gettime(CLOCK_MONOTONIC, &end) ;
-				cout << "t0 " << t0 << " t1 " << t1 << " dry run time " << tdiff2(&end, &start) * 1e3 << "ms" << endl;
+				stopwatch_stop(&s1) ;
+				//clock_gettime(CLOCK_MONOTONIC, &end) ;
+				//cout << "t0 " << t0 << " t1 " << t1 << " dry run time " << tdiff2(&end, &start) * 1e3 << "ms" << endl;
+				cout << "t0 " << t0 << " t1 " << t1 << " dry run took " ; 
+				stopwatch_print_elapsed_time(&s1) ;
 				//set base case grid size to 1 in time/space.
 				m_algo.set_thres_auto_tuning() ;
 				//simulate only the interior
@@ -2055,47 +2101,61 @@ private:
 						" grid2.dx1 [ " << i << "] " << grid2.dx1 [i] << endl ;
 				}*/
 				m_head.push_back (ULONG_MAX) ;
-				clock_gettime(CLOCK_MONOTONIC, &start) ;
+				//clock_gettime(CLOCK_MONOTONIC, &start) ;
+				stopwatch_start(&s1) ;
 				build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
 				//build_auto_tune_dag_trap(t0, t1, grid2, f, bf, 0) ;
 				expected_run_time += m_zoids[m_head[0]].time ;
 				cout << "# vertices " << m_num_vertices << endl ;
 				cout << "DAG capacity " << m_zoids.capacity() << endl ;
+#ifndef NDEBUG
+				print_dag() ;
+#endif
 					
 				//compress the dag		
 				cout << "begin compress dag" << endl ;
-				struct timespec start1, end1 ;
-				clock_gettime(CLOCK_MONOTONIC, &start1) ;
+				//struct timespec start1, end1 ;
+				//clock_gettime(CLOCK_MONOTONIC, &start1) ;
+				stopwatch_start(&s2) ;
 				compress_dag () ;
-				clock_gettime(CLOCK_MONOTONIC, &end1) ;
-				double compress_time = tdiff2(&end1, &start1) ;
+				stopwatch_stop(&s2) ;
+				//clock_gettime(CLOCK_MONOTONIC, &end1) ;
+				//double compress_time = tdiff2(&end1, &start1) ;
 
-				clock_gettime(CLOCK_MONOTONIC, &end) ;
-				dag_time = tdiff2(&end, &start) ;
-				cout << "compression took time : " << compress_time * 1e3 << "ms" << endl;
+				//clock_gettime(CLOCK_MONOTONIC, &end) ;
+				stopwatch_stop(&s1) ;
+				//dag_time = tdiff2(&end, &start) ;
+				//cout << "compression took time : " << compress_time * 1e3 << "ms" << endl;
+				cout << "compression took : " ;
+				stopwatch_print_elapsed_time(&s2) ;
 				cout << "# vertices after compression " << m_num_vertices << endl ;
 				cout << "DAG capacity after compression " << m_zoids.capacity() << endl ;
-				std::cout << "DAG took time :" << dag_time * 1e3 << "ms" <<endl;
-				cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
+				//std::cout << "DAG took time :" << dag_time * 1e3 << "ms" <<endl;
+				std::cout << "DAG took :" ;
+				stopwatch_print_elapsed_time(&s1) ;
+				//cout << "Predicted : " << expected_run_time * 1e3 << "ms" << endl;
+				cout << "Predicted " ;
+				stopwatch_print_elapsed_time(expected_run_time) ;
 				clear_projections() ;
-#ifndef NDEBUG
-				//print_dag() ;
-#endif
 				//copy data back.
 				//copy_data(array->data(), &(m_array[0]), volume) ;
 				copy_data(array, m_array, volume) ;
 				write_dag_to_file(grid, T) ;
 				create_simple_zoids() ;
 			}
-			double compute_time = 0. ;
-			clock_gettime(CLOCK_MONOTONIC, &start) ;
+			//double compute_time = 0. ;
+			//clock_gettime(CLOCK_MONOTONIC, &start) ;
+			stopwatch_start(&s1) ;
 			trap_space_time_cut_boundary(t0, t1, grid, 
 				&(m_simple_zoids [m_head [0]]), f, bf) ;
 			//trap_space_time_cut_boundary(t0, t1, grid2, 
-			clock_gettime(CLOCK_MONOTONIC, &end) ;
-			compute_time = tdiff2(&end, &start) ;
-			std::cout << "Compute time :" << 1.0e3 * compute_time
-				<< "ms" << std::endl;
+			stopwatch_stop(&s1) ;
+			//clock_gettime(CLOCK_MONOTONIC, &end) ;
+			//compute_time = tdiff2(&end, &start) ;
+			//std::cout << "Compute time :" << 1.0e3 * compute_time
+			//	<< "ms" << std::endl;
+			std::cout << "Actual :" ;
+			stopwatch_print_elapsed_time(&s1) ;
 		}
 		else
 		{
@@ -2108,18 +2168,24 @@ private:
 			int h2 = T - T / h1 * h1 ;
 			
 			bool read_dag = false ;
-			clock_gettime(CLOCK_MONOTONIC, &start) ;
+			//clock_gettime(CLOCK_MONOTONIC, &start) ;
+			stopwatch_start(&s1) ;
 			read_dag = read_dag_from_file(grid, T, h1, expected_run_time) ;
-			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			stopwatch_stop(&s1) ;
+			//clock_gettime(CLOCK_MONOTONIC, &end) ;
 			if (read_dag)
 			{
-				dag_time = tdiff2(&end, &start) ;
+				//dag_time = tdiff2(&end, &start) ;
 				cout << "read dag from file " << endl ;
 				cout << "# vertices " << m_num_vertices << endl ;
 				cout << "DAG capacity " << m_zoids.capacity() << endl ;
-				std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
-						<< "ms" << std::endl;
-				cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
+				//std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
+				//		<< "ms" << std::endl;
+				std::cout << "DAG took :" ;
+				stopwatch_print_elapsed_time(&s1) ;
+				//cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
+				cout << "Predicted " ;
+				stopwatch_print_elapsed_time(expected_run_time) ;
 			}
 			else
 			{
@@ -2129,14 +2195,19 @@ private:
 				copy_data(m_array, array, volume) ;
 
 				//do a dry run
-				clock_gettime(CLOCK_MONOTONIC, &start) ;
+				//clock_gettime(CLOCK_MONOTONIC, &start) ;
+				stopwatch_start(&s1) ;
     			m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h1, grid, f, bf) ;
-				clock_gettime(CLOCK_MONOTONIC, &end) ;
-				cout << "t0 " << t0 << " t1 " << t0 + h1 << " dry run time " << tdiff2(&end, &start) * 1e3 << "ms" << endl;
+				stopwatch_stop(&s1) ;
+				//clock_gettime(CLOCK_MONOTONIC, &end) ;
+				//cout << "t0 " << t0 << " t1 " << t0 + h1 << " dry run time " << tdiff2(&end, &start) * 1e3 << "ms" << endl;
+				cout << "t0 " << t0 << " t1 " << t0 + h1 << " dry run took " ;
+				stopwatch_print_elapsed_time(&s1) ;
 				//set base case grid size to 1 in time/space.
 				m_algo.set_thres_auto_tuning() ;
 				cout << "h1 " << h1 << " h2 " << h2 << endl ;
-				clock_gettime(CLOCK_MONOTONIC, &start) ;
+				//clock_gettime(CLOCK_MONOTONIC, &start) ;
+				stopwatch_start(&s1) ;
 				m_head.push_back (ULONG_MAX) ;
 				build_auto_tune_dag_trap(t0, t0 + h1, grid, f, bf, 0) ;
 				expected_run_time += m_zoids[m_head[0]].time * (int) (T / h1) ;
@@ -2152,18 +2223,27 @@ private:
 				//compress the dag		
 				cout << "begin compress dag" << endl ;
 				struct timespec start1, end1 ;
-				clock_gettime(CLOCK_MONOTONIC, &start1) ;
+				//clock_gettime(CLOCK_MONOTONIC, &start1) ;
+				stopwatch_start(&s2) ;
 				compress_dag () ;
-				clock_gettime(CLOCK_MONOTONIC, &end1) ;
-				double compress_time = tdiff2(&end1, &start1) ;
+				stopwatch_stop(&s2) ;
+				//clock_gettime(CLOCK_MONOTONIC, &end1) ;
+				//double compress_time = tdiff2(&end1, &start1) ;
 
-				clock_gettime(CLOCK_MONOTONIC, &end) ;
-				dag_time = tdiff2(&end, &start) ;
-				cout << "compression took time : " << compress_time * 1e3 << "ms" << endl;
+				stopwatch_stop(&s1) ;
+				//clock_gettime(CLOCK_MONOTONIC, &end) ;
+				//dag_time = tdiff2(&end, &start) ;
+				//cout << "compression took time : " << compress_time * 1e3 << "ms" << endl;
+				cout << "compression took : " ;
+				stopwatch_print_elapsed_time(&s2) ;
 				cout << "# vertices after compression " << m_num_vertices << endl ;
 				cout << "DAG capacity after compression " << m_zoids.capacity() << endl ;
-				cout << "DAG : consumed time :" << dag_time * 1e3 << "ms"<<endl;
-				cout << "Predicted run time " << expected_run_time * 1e3 << "ms" << endl;
+				cout << "DAG took :" ;
+				stopwatch_print_elapsed_time(&s1) ;
+				//cout << "DAG : consumed time :" << dag_time * 1e3 << "ms"<<endl;
+				//cout << "Predicted " << expected_run_time * 1e3 << "ms" << endl;
+				cout << "Predicted " ;
+				stopwatch_print_elapsed_time(expected_run_time) ;
 				clear_projections() ;
 #ifndef NDEBUG
 				//print_dag() ;
@@ -2174,8 +2254,9 @@ private:
 				create_simple_zoids() ;
 			}
 		
-			double compute_time = 0. ;
-			clock_gettime(CLOCK_MONOTONIC, &start) ;
+			//double compute_time = 0. ;
+			//clock_gettime(CLOCK_MONOTONIC, &start) ;
+			stopwatch_start(&s1) ;
 			int m = T / h1 ;
 			for (int i = 0 ; i < m ; i++)
 			{
@@ -2194,11 +2275,16 @@ private:
 				trap_space_time_cut_boundary(t0, t0 + h2, grid, 
 					&(m_simple_zoids [m_head [1]]), f, bf) ;
 			}
-			clock_gettime(CLOCK_MONOTONIC, &end) ;
-			compute_time = tdiff2(&end, &start) ;
-			std::cout << "Compute time :" << 1.0e3 * compute_time
-					<< "ms" << std::endl;
+			//clock_gettime(CLOCK_MONOTONIC, &end) ;
+			stopwatch_stop(&s1);
+			//compute_time = tdiff2(&end, &start) ;
+			cout << "Actual :" ;
+			stopwatch_print_elapsed_time(&s1) ;
+			//std::cout << "Compute time :" << 1.0e3 * compute_time
+			//		<< "ms" << std::endl;
 		}
+		stopwatch_destroy(&s1) ;
+		stopwatch_destroy(&s2) ;
 	}
 } ;
 
