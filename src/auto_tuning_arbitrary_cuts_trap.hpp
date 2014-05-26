@@ -33,7 +33,7 @@
 template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_trap_space_cut_interior(int t0,
 	int t1, grid_info<N_RANK> const & grid, unsigned long parent_index, 
-	F const & f, int * num_zoids, time_type & redundant_time, 
+	F const & f, int * num_zoids, time_type & linkage_time, 
 	time_type & child_time, time_type & max_loop_time, int bits)
 {
     queue_info *l_father;
@@ -63,7 +63,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_cut_interior(int t0,
                     assert(l_son->level == -1);
                     symbolic_trap_space_time_cut_interior(l_son->t0, 
 						l_son->t1, l_son->grid, parent_index, child_index, 
-						redundant_time, f);
+						linkage_time, f);
 					child_index++ ;
                 } // end cilk_for 
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
@@ -74,7 +74,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_cut_interior(int t0,
 				time_type time = 0 ;
 				symbolic_trap_space_time_cut_interior(l_father->t0, 
 					l_father->t1, l_father->grid, parent_index, child_index, 
-					redundant_time, child_time, f, time);
+					linkage_time, child_time, f, time);
 				max_loop_time = max(time, max_loop_time) ;
 				child_index++ ;
 #endif
@@ -181,7 +181,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_cut_interior(int t0,
 template <int N_RANK> template <typename F, typename BF> 
 inline void auto_tune<N_RANK>::symbolic_trap_space_cut_boundary(int t0,
 		int t1, grid_info<N_RANK> const & grid, unsigned long parent_index, 
-		F const & f, BF const & bf, int * num_zoids, time_type & redundant_time,
+		F const & f, BF const & bf, int * num_zoids, time_type & linkage_time,
 		time_type & child_time, time_type & max_loop_time, int bits)
 {
     queue_info *l_father;
@@ -212,7 +212,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_cut_boundary(int t0,
                     //assert(l_son->level == -1);
                     symbolic_trap_space_time_cut_boundary(l_son->t0, 
 						l_son->t1, l_son->grid, parent_index, child_index, 
-						redundant_time, f, bf);
+						linkage_time, f, bf);
 					child_index++ ; //this can be a race.
                 } // end cilk_for 
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
@@ -223,7 +223,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_cut_boundary(int t0,
 				time_type time = 0 ;
 				symbolic_trap_space_time_cut_boundary(l_father->t0, 
 					l_father->t1, l_father->grid, parent_index, child_index,
-					redundant_time, child_time, f, bf, time) ;
+					linkage_time, child_time, f, bf, time) ;
 				max_loop_time = max(time, max_loop_time) ;
 				child_index++ ; 
 #endif
@@ -365,13 +365,11 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_cut_boundary(int t0,
 template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		int t0, int t1, grid_info<N_RANK> const & grid, 
-		unsigned long parent_index, int child_index, time_type & redundant_time,
+		unsigned long parent_index, int child_index, time_type & linkage_time,
 		time_type & child_time, F const & f, time_type & max_loop_time)
 {
     const int lt = t1 - t0;
-	stopwatch s1, s2 ;
-	stopwatch_init(&s1) ;
-	stopwatch_start(&s1) ;
+	linkage_time += stopwatch_stop_and_start(&m_stopwatch) ;
 
     bool sim_can_cut = false;
     grid_info<N_RANK> l_son_grid;
@@ -450,13 +448,11 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		max_loop_time = z.max_loop_time ;
 #endif
 		//a zoid with the projection already exists. return
-		stopwatch_stop(&s1) ;
-		redundant_time += stopwatch_get_elapsed_time(&s1) ;
 		child_time += z.time ;
-		stopwatch_destroy(&s1) ;
+		//start measuring linkage time
+		stopwatch_stop_and_start(&m_stopwatch) ; 
 		return ;
 	}
-	stopwatch_init(&s2) ;
 	bool time_cut = false ;
 	bool divide_and_conquer = false ;
 	time_type time_cut_elapsed_time = 0, space_cut_elapsed_time = LONG_MAX ; 
@@ -472,13 +468,13 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		m_zoids [index].set_capacity(max (2, total_num_subzoids)) ;
 		m_zoids [index].resize_children(2) ;
 	
-		time_type time1 = 0, time2 = 0, rtime = 0, ctime = 0 ;
+		time_type time1 = 0, time2 = 0, ltime = 0, ctime = 0 ;
         /* cut into time */
-		stopwatch_start(&s2) ;
+		stopwatch_stop_and_start(&m_stopwatch) ;
         int halflt = lt / 2;
         l_son_grid = grid;
         symbolic_trap_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
-				index, 0, rtime, ctime, f, time1);
+				index, 0, ltime, ctime, f, time1);
         for (int i = 0; i < N_RANK; ++i) {
             l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
             l_son_grid.dx0[i] = grid.dx0[i];
@@ -486,13 +482,12 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
             l_son_grid.dx1[i] = grid.dx1[i];
         }
         symbolic_trap_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
-				index, 1, rtime, ctime, f, time2);
-		stopwatch_stop(&s2) ;
+				index, 1, ltime, ctime, f, time2);
+		//calculate the linkage time.
+		time_cut_elapsed_time = stopwatch_stop_and_start(&m_stopwatch) + ltime ;
 		time1 = max(time1, time2) ;
 		max_loop_time = max(time1, max_loop_time) ;
-		//calculate the linkage time.
-		time_cut_elapsed_time = stopwatch_get_elapsed_time(&s2) - rtime ;
-		assert (rtime >= 0) ;
+		assert (ltime >= 0) ;
 		assert (time_cut_elapsed_time >= 0) ;
 		assert (m_zoids [index].num_children == 2) ;
 		time_cut_elapsed_time += ctime ;
@@ -561,16 +556,15 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 			}
 			assert (num_children <= total_num_subzoids) ;
 			m_zoids [index].resize_children(num_children) ;
-			stopwatch_start(&s2) ;
+			stopwatch_stop_and_start(&m_stopwatch) ;
 			/* cut into space */
-			time_type time = 0, rtime = 0, ctime = 0, elapsed_time = 0  ;
+			time_type time = 0, ltime = 0, ctime = 0, elapsed_time = 0  ;
 			symbolic_trap_space_cut_interior(t0, t1, grid, index, f, 
-							num_subzoids, rtime, ctime, time, i) ;
-			stopwatch_stop(&s2) ;
-			max_loop_time = max(time, max_loop_time) ;
+							num_subzoids, ltime, ctime, time, i) ;
 			//calculate the linkage time
-			elapsed_time = stopwatch_get_elapsed_time(&s2) - rtime ;
-			assert (rtime >= 0) ;
+			elapsed_time = stopwatch_stop_and_start(&m_stopwatch) + ltime ;
+			max_loop_time = max(time, max_loop_time) ;
+			assert (ltime >= 0) ;
 			assert (elapsed_time >= 0) ;
 			assert (m_zoids [index].num_children == num_children) ;
 			assert (m_zoids [index].num_children <= total_num_subzoids) ;
@@ -705,10 +699,9 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		//determine the looping time on the zoid
 		//for (int i = 0 ; i < 2 ; i++)
 		{
-			stopwatch_start(&s2) ;
+			stopwatch_stop_and_start(&m_stopwatch) ;
 			f(t0, t1, grid);
-			stopwatch_stop(&s2) ;
-			time_type t = stopwatch_get_elapsed_time(&s2) ;
+			time_type t = stopwatch_stop_and_start(&m_stopwatch) ;
 			loop_time = min (t, loop_time) ;
 		}
 		assert (loop_time >= 0) ;
@@ -744,10 +737,9 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		//for (int i = 0 ; i < 2 ; i++)
 #endif
 		{
-			stopwatch_start(&s2) ;
+			stopwatch_stop_and_start(&m_stopwatch) ;
 			f(t0, t1, grid);
-			stopwatch_stop(&s2) ;
-			time_type t = stopwatch_get_elapsed_time(&s2) ;
+			time_type t = stopwatch_stop_and_start(&m_stopwatch) ;
 			loop_time = min(t, loop_time) ;
 		}
 		assert (loop_time >= 0) ;
@@ -823,26 +815,20 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	m_zoids [index].max_loop_time = max_loop_time ;
 #endif
 	
-	stopwatch_stop(&s1) ;
-	time_type total_time = stopwatch_get_elapsed_time(&s1) ;
-	redundant_time += total_time ;
-	assert(total_time >= 0) ;
 	child_time += m_zoids [index].time ;
-	stopwatch_destroy(&s1) ;
-	stopwatch_destroy(&s2) ;
+	//start measuring linkage time
+	stopwatch_stop_and_start(&m_stopwatch) ;
 }
 
 template <int N_RANK> template <typename F, typename BF>
 inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 	int t0, int t1,	grid_info<N_RANK> const & grid, 
-	unsigned long parent_index, int child_index, time_type & redundant_time, 
+	unsigned long parent_index, int child_index, time_type & linkage_time, 
 	time_type & child_time,
 	F const & f, BF const & bf, time_type & max_loop_time)
 {
     const int lt = t1 - t0;
-	stopwatch s1, s2 ;
-	stopwatch_init(&s1) ;
-	stopwatch_start(&s1) ;
+	linkage_time += stopwatch_stop_and_start(&m_stopwatch) ;
 
     bool sim_can_cut = false, call_boundary = false;
     grid_info<N_RANK> l_father_grid = grid, l_son_grid;
@@ -970,13 +956,11 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 		max_loop_time = z.max_loop_time ;
 #endif
 		//a zoid with the projection already exists. return
-		stopwatch_stop(&s1) ;
-		redundant_time += stopwatch_get_elapsed_time(&s1) ;
 		child_time += z.time ;
-		stopwatch_destroy(&s1) ;
+		//start measuring linkage time
+		stopwatch_stop_and_start(&m_stopwatch) ; 
 		return ;
 	}
-	stopwatch_init(&s2) ;
 	z.decision |= call_boundary << 
 				  (zoid<N_RANK>::NUM_BITS_DECISION - 1) ;
 
@@ -995,9 +979,9 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 		m_zoids [index].set_capacity(max (2, total_num_subzoids)) ;
 		m_zoids [index].resize_children(2) ;
 	
-		time_type time1 = 0, time2 = 0, rtime = 0, ctime = 0 ;
+		time_type time1 = 0, time2 = 0, ltime = 0, ctime = 0 ;
         // cut into time 
-		stopwatch_start(&s2) ;
+		stopwatch_stop_and_start(&m_stopwatch) ;
         int halflt = lt / 2;
         l_son_grid = l_father_grid;
     	for (int i = N_RANK-1; i >= 0; --i) {
@@ -1005,10 +989,10 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
     	}
         if (call_boundary) {
             symbolic_trap_space_time_cut_boundary(t0, t0+halflt, l_son_grid,
-					index, 0, rtime, ctime, f, bf, time1);
+					index, 0, ltime, ctime, f, bf, time1);
         } else {
             symbolic_trap_space_time_cut_interior(t0, t0+halflt, l_son_grid,
-					index, 0, rtime, ctime, f, time1);
+					index, 0, ltime, ctime, f, time1);
         }
 
         for (int i = 0; i < N_RANK; ++i) {
@@ -1019,17 +1003,16 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
         }
         if (call_boundary) {
             symbolic_trap_space_time_cut_boundary(t0+halflt, t1, l_son_grid,
-					index, 1, rtime, ctime, f, bf, time2);
+					index, 1, ltime, ctime, f, bf, time2);
         } else {
             symbolic_trap_space_time_cut_interior(t0+halflt, t1, l_son_grid,
-					index, 1, rtime, ctime, f, time2);
+					index, 1, ltime, ctime, f, time2);
         }
-		stopwatch_stop(&s2) ;
+		//calculate the linkage time.
+		time_cut_elapsed_time = stopwatch_stop_and_start(&m_stopwatch) + ltime ;
 		time1 = max(time1, time2) ;
 		max_loop_time = max(time1, max_loop_time) ;
-		//calculate the linkage time.
-		time_cut_elapsed_time = stopwatch_get_elapsed_time(&s2) - rtime ;
-		assert (rtime >= 0) ;
+		assert (ltime >= 0) ;
 		assert (time_cut_elapsed_time >= 0) ;
 		assert (m_zoids [index].num_children == 2) ;
 		time_cut_elapsed_time += ctime ;
@@ -1095,26 +1078,25 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 			}
 			assert (num_children <= total_num_subzoids) ;
 			m_zoids [index].resize_children(num_children) ;
-			stopwatch_start(&s2) ;
+			stopwatch_stop_and_start(&m_stopwatch) ;
 			for (int i = N_RANK-1; i >= 0; --i) {
 				touch_boundary(i, lt, l_father_grid) ;
 			}
 			/* cut into space */
-			time_type time = 0, rtime = 0, elapsed_time = 0, ctime = 0  ;
+			time_type time = 0, ltime = 0, elapsed_time = 0, ctime = 0  ;
 			if (call_boundary) 
 			{
 				symbolic_trap_space_cut_boundary(t0, t1, l_father_grid, 
-					index, f, bf, num_subzoids, rtime, ctime, time, i) ;
+					index, f, bf, num_subzoids, ltime, ctime, time, i) ;
 			}
 			else
 			{
 				symbolic_trap_space_cut_interior(t0, t1, l_father_grid, 
-					index, f, num_subzoids, rtime, ctime, time, i) ;
+					index, f, num_subzoids, ltime, ctime, time, i) ;
 			}
-			stopwatch_stop(&s2) ;
-			max_loop_time = max(time, max_loop_time) ;
 			//calculate the linkage time
-			elapsed_time = stopwatch_get_elapsed_time(&s2) - rtime ;
+			elapsed_time = stopwatch_stop_and_start(&m_stopwatch) + ltime ;
+			max_loop_time = max(time, max_loop_time) ;
 			/*
 			if (elapsed_time < 0)
 			{
@@ -1129,7 +1111,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 					<< " lt " << lt << endl ;
 				}
 			}*/
-			assert (rtime >= 0) ;
+			assert (ltime >= 0) ;
 			assert (elapsed_time >= 0) ;
 			assert (m_zoids [index].num_children == num_children) ;
 			assert (m_zoids [index].num_children <= total_num_subzoids) ;
@@ -1263,7 +1245,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 		//determine the looping time on the zoid
 		//for (int i = 0 ; i < 2 ; i++)
 		{
-			stopwatch_start(&s2) ;
+			stopwatch_stop_and_start(&m_stopwatch) ;
 			if (call_boundary)
 			{
 				base_case_kernel_boundary(t0, t1, l_father_grid, bf) ;
@@ -1272,8 +1254,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 			{ 
 				f(t0, t1, l_father_grid) ;
 			}
-			stopwatch_stop(&s2) ;
-			time_type t = stopwatch_get_elapsed_time(&s2) ;
+			time_type t = stopwatch_stop_and_start(&m_stopwatch) ;
 			loop_time = min (loop_time, t) ;
 		}
 		//loop_time = tdiff2(&end1, &start1) ;
@@ -1310,7 +1291,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 		//for (int i = 0 ; i < 2 ; i++)
 #endif
 		{
-			stopwatch_start(&s2) ;
+			stopwatch_stop_and_start(&m_stopwatch) ;
 			if (call_boundary)
 			{
 				base_case_kernel_boundary(t0, t1, l_father_grid, bf);
@@ -1319,8 +1300,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 			{
 				f(t0, t1, l_father_grid);
 			}
-			stopwatch_stop(&s2) ;
-			time_type t = stopwatch_get_elapsed_time(&s2) ;
+			time_type t = stopwatch_stop_and_start(&m_stopwatch) ;
 			loop_time = min(t, loop_time) ;
 		}
 		assert (loop_time >= 0) ;
@@ -1380,14 +1360,9 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 	m_zoids [index].max_loop_time = max_loop_time ;
 #endif
 
-	stopwatch_stop(&s1) ;
-	time_type total_time = stopwatch_get_elapsed_time(&s1) ;
-	assert (total_time >= 0) ;
-	redundant_time += total_time ;
 	child_time += m_zoids [index].time ;
-
-	stopwatch_destroy(&s1) ;
-	stopwatch_destroy(&s2) ;
+	//start measuring linkage time
+	stopwatch_stop_and_start(&m_stopwatch) ;
 }
 //template <int N_RANK> template <typename F, typename BF>
 //inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
