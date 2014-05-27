@@ -27,9 +27,9 @@
 #define EXPR_STENCIL_HPP
 
 #include "pochoir_common.hpp"
-//#include "pochoir_modified_cuts.hpp"
+#include "pochoir_modified_cuts.hpp"
 //#include "sawzoid2.hpp"
-#include "sawzoid.hpp"
+//#include "sawzoid.hpp"
 #include "pochoir_walk_recursive.hpp"
 #ifdef COUNT_PROJECTIONS
 //#include "projections.hpp"
@@ -93,6 +93,11 @@ class Pochoir {
 		ofstream * outputFile_ ;
 		char * problem_name_ ; //name of the problem we are solving
     public:
+	
+	/*inline void copy_data(void * dest, void * src, unsigned long length)
+	{
+		memcpy(dest, src, length * arr_type_size_) ;
+	}*/
 
 	void set_resolution(int r)
 	{
@@ -504,8 +509,10 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	algor.set_time_shift(time_shift_) ;
 	cout << "time_shift_ " << time_shift_ << " timestep " << timestep << endl ;
 	grid_info <N_RANK> grid = logic_grid_ ;
+	unsigned long volume = 1 ;
 	for (int i = N_RANK - 1 ; i >= 0 ; i--)
 	{
+		volume *= (phys_grid_.x1 [i] - phys_grid_.x0 [i]) ;
 		cout << "grid.dx0[i] " << grid.dx0[i] << endl ;
 		cout << "grid.dx1[i] " << grid.dx1[i] << endl ;
 		cout << " x0 [" << i << "] " << grid.x0 [i] 
@@ -532,8 +539,8 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	cout << "geneity testing" << endl ;
 #endif
 #ifdef AUTO_TUNE
-	algor.set_thres_auto_tuning() ;
-	cout << "auto tune" << endl ;
+	//set base case grid size to 1 in time/space.
+	//algor.set_thres_auto_tuning() ;
 #ifdef TIME_INVARIANCE_INTERIOR
 	cout << "time invariance interior " << endl ;
 #else
@@ -568,6 +575,15 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	cout << "subsumption in time " << endl ;
 #else
 	cout << "no subsumption in time " << endl ;
+#endif
+#ifdef CHECK_CACHE_ALIGNMENT
+	cout << "checking cache alignment " << endl ;
+#else
+	cout << "not checking cache alignment " << endl ;
+#endif
+
+#ifdef WRITE_ZOID_DIMENSIONS
+	cout << "writing zoid dimensions " << endl ;
 #endif
 #endif
 
@@ -611,14 +627,8 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	//cout << "address of home cell " << &home_cell_ << endl ;
 	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name_, timestep_,
 						 arr_type_size_) ;
-	struct timeval start, end;
-	//double compute_time = 0. ;
-	gettimeofday(&start, 0);
 	at.do_trap_space_time_cuts(time_shift_, timestep+time_shift_,
 								logic_grid_, f, bf, arr_) ;
-	gettimeofday(&end, 0);
-	//compute_time = tdiff(&end, &start) ;
-	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
 	//at.print_dag() ;
 #endif
 
@@ -668,20 +678,15 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	//cout << "address of home cell " << &home_cell_ << endl ;
 	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name_, timestep_,
 						arr_type_size_) ;
-	struct timeval start, end;
-	//double compute_time = 0. ;
-	gettimeofday(&start, 0);
 	at.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
 								logic_grid_, f, bf, arr_) ;
-	gettimeofday(&end, 0);
-	//compute_time = tdiff(&end, &start) ;
-	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
 
 	//at.print_dag() ;
 #endif
 
 #endif
 #endif
+
 #else
     printf("stevenj_p!\n");
     algor.stevenj_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);

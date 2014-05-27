@@ -63,7 +63,7 @@ static inline int StrToInt(const std::string& s)
 #define BIT_TRICK 0
 #define INF 100000000
 #define SUPPORT_RANK 9
-//#define TRAP
+#define TRAP
 
 #if defined (TRAP)
 #define DEFAULT_SPACE_CUT
@@ -83,7 +83,9 @@ static inline int StrToInt(const std::string& s)
 //#define FIXED_TIME_CUT
 //#define WRITE_DAG
 //#define SUBSUMPTION_TIME
-//#define SUBSUMPTION_SPACE
+#define SUBSUMPTION_SPACE
+//#define CHECK_CACHE_ALIGNMENT
+#define WRITE_ZOID_DIMENSIONS
 
 #define max_(a, b) ((a) > (b) ? (a) : (b))
 #define min_(a, b) ((a) < (b) ? (a) : (b))
