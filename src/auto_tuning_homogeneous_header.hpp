@@ -24,6 +24,7 @@
 #include <time.h>
 #include <cstring>
 #include <fstream>
+#include <algorithm>
 using namespace std ;
 
 typedef unsigned int word_type ;
