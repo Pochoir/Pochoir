@@ -554,16 +554,13 @@ private:
 		}
 		
 		m_zoids.reserve(volume) ;
-		/*if (power_of_two)
+#ifdef WRITE_ZOID_DIMENSIONS
+		for (int i = 0 ; i < N_RANK ; i++)
 		{
-			m_zoids.reserve(volume / 16) ;
-			cout << "Expected # of projections P " << volume / 16 << endl ;
+			m_zoid_width_interior [i].reserve(grid.x1[i] - grid.x0[i]) ;
+			m_zoid_width_bdry [i].reserve(grid.x1[i] - grid.x0[i]) ;
 		}
-		else
-		{
-			m_zoids.reserve(volume / 8) ;
-			cout << "Expected # of projections P " << volume / 8 << endl ;
-		}*/
+#endif
 	}
 
 	inline void copy_data(void * dest, void * src, unsigned long length)
@@ -744,8 +741,6 @@ private:
 					unsigned long & index,
 					grid_info <N_RANK> const & grid, int dim_key)
 	{
-
-		//assert (m_projections_boundary.size()) ;
 		assert (dim_key < (1 << N_RANK)) ;
 		vector <two_level_hash_table> & projections_boundary = 
 							m_projections_boundary [dim_key] ;
@@ -931,6 +926,21 @@ private:
 			index = m_num_vertices ;
 			m_num_vertices++ ;
 			assert (m_num_vertices == m_zoids.size()) ;
+#ifdef WRITE_ZOID_DIMENSIONS
+			for (int i = 0 ; i < N_RANK ; i++)
+			{
+				assert (grid.x1 [i] >= grid.x0 [i]) ;
+				if (dim_key == 0)
+				{
+					m_zoid_width_interior [i].push_back(
+												grid.x1 [i] - grid.x0 [i]) ;
+				}
+				else
+				{
+					m_zoid_width_bdry [i].push_back(grid.x1 [i] - grid.x0 [i]) ;
+				}
+			}
+#endif
 			return false ;
 		}
 		//centroid doesn't exist in the 2 level hash table
@@ -951,7 +961,20 @@ private:
 		assert (m_num_vertices == m_zoids.size()) ;
 		projections_boundary [k].insert(
 				std::pair<unsigned long, hash_table>(centroid, h)) ;
-		
+#ifdef WRITE_ZOID_DIMENSIONS
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			assert (grid.x1 [i] >= grid.x0 [i]) ;
+			if (dim_key == 0)
+			{
+				m_zoid_width_interior [i].push_back(grid.x1 [i] - grid.x0 [i]) ;
+			}
+			else
+			{
+				m_zoid_width_bdry [i].push_back(grid.x1 [i] - grid.x0 [i]) ;
+			}
+		}
+#endif
 		return false ;
 	}
 
@@ -1197,7 +1220,13 @@ private:
 		index = m_num_vertices ;
 		m_num_vertices++ ;
 		assert (m_num_vertices == m_zoids.size()) ;
-		
+#ifdef WRITE_ZOID_DIMENSIONS
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			assert (grid.x1 [i] >= grid.x0 [i]) ;
+			m_zoid_width_interior [i].push_back(grid.x1 [i] - grid.x0 [i]) ;
+		}
+#endif
 		return false ;
 	}
 
@@ -1208,11 +1237,9 @@ private:
 		zoid_type & z = m_zoids [node] ;
 		//if leaf do not recurse further
 		if (z.decision == 1 << (zoid_type::NUM_BITS_DECISION - 2) || 
-			z.decision == 3 << (zoid_type::NUM_BITS_DECISION - 2)) // ||
-			//z.num_children == 0)
+			z.decision == 3 << (zoid_type::NUM_BITS_DECISION - 2))
 		{
 			//do not store node's children
-			//cout << "push back zoid " << z.id << endl ;
 			temp_zoids.push_back(zoid_type()) ;
 			temp_zoids [num_vertices].shallow_copy(z) ;
 			temp_zoids [num_vertices].resize_children(0) ;
@@ -1229,7 +1256,6 @@ private:
 			for (int i = 0 ; i < z.num_children ; i++)
 			{
 				zoid_type & z1 = temp_zoids [index] ;	
-				//assert (z.children [i] > 0) ;
 				assert (z.children [i] < m_num_vertices) ;
 				if (color [z.children [i]] == ULONG_MAX) //node is white
 				{
@@ -1267,9 +1293,6 @@ private:
 		//number of children was over allocated.
 		//To avoid dfs into the dummy node, we set color [0] = 0.
 		color [0] = 0 ;
-		//create a sentinel zoid in the beginning
-		//temp_zoids.push_back(zoid_type()) ;
-		//num_vertices++ ;
 		for (int j = 0 ; j < m_head.size() ; j++)
 		{
 			assert (m_head [j] < m_num_vertices) ;
@@ -1287,7 +1310,6 @@ private:
 		}
 #ifndef NDEBUG
 		//set the id/parents.
-		//for (unsigned long j = 1 ; j < num_vertices ; j++)
 		for (unsigned long j = 0 ; j < num_vertices ; j++)
 		{
 			zoid_type & z = temp_zoids [j] ;
@@ -1448,6 +1470,9 @@ private:
 
 	void write_dag_to_file(grid_info<N_RANK> const & grid, int T)
 	{
+#ifdef WRITE_ZOID_DIMENSIONS
+		write_zoid_dimensions(grid, T) ;
+#endif
 		if (m_problem_name.size() == 0)
 		{
 			cout << "auto tune : writing dag to file. problem name unspecified "
@@ -1517,6 +1542,75 @@ private:
 		}
 		dag.close() ;
 	}
+
+	void write_zoid_dimensions(grid_info<N_RANK> const & grid, int T)
+	{
+		string name = m_problem_name ;
+		if (name.size() == 0)
+		{
+			cout << 
+			"auto tune : writing zoid widths to file. problem name unspecified " << endl ;
+			name = "auto_tune_width" ;
+		}
+		char tmp [100] ;
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			sprintf(tmp, "_%d", grid.x1[i] - grid.x0[i]) ;
+			name += tmp ;
+		}
+		sprintf(tmp, "_%d", T) ;
+		name += tmp ;
+#ifndef NDEBUG
+		name += "_debug" ;
+#endif
+#ifdef TRAP
+		name += "_trap" ;
+#else
+		name += "_sawzoid" ;
+#endif
+		//cout << "name of file " << name << endl ;
+		ofstream zoid_width ;
+		//write zoid widths in the interior
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			char c [2] ;
+			sprintf(c, "%d", i) ;
+			string name2 = name + "_dx" + c ; 
+			zoid_width.open(name2.c_str()) ;
+			sort(m_zoid_width_interior [i].begin(), 
+					m_zoid_width_interior [i].end()) ;
+			vector <unsigned long> & v = m_zoid_width_interior [i] ;
+			zoid_width << v [0] << " " ;
+			for (int j = 1 ; j < v.size() ; j++)
+			{
+				if (v [j] != v [j - 1])
+				{
+					zoid_width << v [j] << " " ;	
+				}
+			}
+			zoid_width.close() ;
+		}
+		//write zoid widths at the boundary
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			char c [2] ;
+			sprintf(c, "%d", i) ;
+			string name2 = name + "_dxb" + c ; 
+			zoid_width.open(name2.c_str()) ;
+			sort(m_zoid_width_bdry [i].begin(), m_zoid_width_bdry [i].end()) ;
+			vector <unsigned long> & v = m_zoid_width_bdry [i] ;
+			zoid_width << v [0] << " " ;
+			for (int j = 1 ; j < v.size() ; j++)
+			{
+				if (v [j] != v [j - 1])
+				{
+					zoid_width << v [j] << " " ;	
+				}
+			}
+			zoid_width.close() ;
+		}
+	}
+
 #ifndef NDEBUG
 	void print_dag()
 	{
@@ -1757,6 +1851,11 @@ private:
 	stopwatch m_stopwatch ; //stopwatch
 
 	vector<int> m_height_bucket [2] ; //array of vectors of height buckets.
+#ifdef WRITE_ZOID_DIMENSIONS
+	//array of vectors of zoid widths in each dimension
+	vector <unsigned long> m_zoid_width_interior [N_RANK] ;
+	vector <unsigned long> m_zoid_width_bdry [N_RANK] ;
+#endif
 	const int DIVIDE_COUNTER = 1 ;
 
 	inline void sawzoid_space_cut_interior_core
@@ -1856,6 +1955,13 @@ private:
 #ifdef WRITE_DAG
 		file_interior.close() ;
 		file_boundary.close() ;
+#endif
+#ifdef WRITE_ZOID_DIMENSIONS
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			m_zoid_width_interior [i].clear() ;
+			m_zoid_width_bdry [i].clear() ;
+		}
 #endif
 	}
 
