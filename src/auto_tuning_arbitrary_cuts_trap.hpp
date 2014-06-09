@@ -69,13 +69,14 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_cut_interior(int t0,
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
                 queue_len_[curr_dep_pointer] = 0;
 #else
-                // use cilk_spawn to spawn all the sub-grid 
                 pop_queue(curr_dep_pointer);
 				time_type time = 0 ;
 				symbolic_trap_space_time_cut_interior(l_father->t0, 
 					l_father->t1, l_father->grid, parent_index, child_index, 
 					linkage_time, child_time, f, time);
+#ifdef SUBSUMPTION_TIME 
 				max_loop_time = max(time, max_loop_time) ;
+#endif
 				child_index++ ;
 #endif
             } else {
@@ -218,13 +219,14 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_cut_boundary(int t0,
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
                 queue_len_[curr_dep_pointer] = 0;
 #else
-                // use cilk_spawn to spawn all the sub-grid 
                 pop_queue(curr_dep_pointer);
 				time_type time = 0 ;
 				symbolic_trap_space_time_cut_boundary(l_father->t0, 
 					l_father->t1, l_father->grid, parent_index, child_index,
 					linkage_time, child_time, f, bf, time) ;
+#ifdef SUBSUMPTION_TIME 
 				max_loop_time = max(time, max_loop_time) ;
+#endif
 				child_index++ ; 
 #endif
             } else {
@@ -368,8 +370,8 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		unsigned long parent_index, int child_index, time_type & linkage_time,
 		time_type & child_time, F const & f, time_type & max_loop_time)
 {
+	linkage_time += stopwatch_stop_and_start(&m_stopwatch) ; //, true) ;
     const int lt = t1 - t0;
-	linkage_time += stopwatch_stop_and_start(&m_stopwatch) ;
 
     bool sim_can_cut = false;
     grid_info<N_RANK> l_son_grid;
@@ -484,7 +486,8 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
         symbolic_trap_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
 				index, 1, ltime, ctime, f, time2);
 		//calculate the linkage time.
-		time_cut_elapsed_time = stopwatch_stop_and_start(&m_stopwatch) + ltime ;
+		time_cut_elapsed_time = stopwatch_stop_and_start(&m_stopwatch) + 
+														ltime ;
 		time1 = max(time1, time2) ;
 		max_loop_time = max(time1, max_loop_time) ;
 		assert (ltime >= 0) ;
@@ -562,7 +565,8 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 			symbolic_trap_space_cut_interior(t0, t1, grid, index, f, 
 							num_subzoids, ltime, ctime, time, i) ;
 			//calculate the linkage time
-			elapsed_time = stopwatch_stop_and_start(&m_stopwatch) + ltime ;
+			elapsed_time = stopwatch_stop_and_start(&m_stopwatch) + 
+													ltime ;
 			max_loop_time = max(time, max_loop_time) ;
 			assert (ltime >= 0) ;
 			assert (elapsed_time >= 0) ;
@@ -827,8 +831,8 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 	time_type & child_time,
 	F const & f, BF const & bf, time_type & max_loop_time)
 {
-    const int lt = t1 - t0;
 	linkage_time += stopwatch_stop_and_start(&m_stopwatch) ;
+    const int lt = t1 - t0;
 
     bool sim_can_cut = false, call_boundary = false;
     grid_info<N_RANK> l_father_grid = grid, l_son_grid;
@@ -1009,7 +1013,8 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 					index, 1, ltime, ctime, f, time2);
         }
 		//calculate the linkage time.
-		time_cut_elapsed_time = stopwatch_stop_and_start(&m_stopwatch) + ltime ;
+		time_cut_elapsed_time = stopwatch_stop_and_start(&m_stopwatch) 
+								+ ltime ;
 		time1 = max(time1, time2) ;
 		max_loop_time = max(time1, max_loop_time) ;
 		assert (ltime >= 0) ;
@@ -1095,7 +1100,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 					index, f, num_subzoids, ltime, ctime, time, i) ;
 			}
 			//calculate the linkage time
-			elapsed_time = stopwatch_stop_and_start(&m_stopwatch) + ltime ;
+			elapsed_time = stopwatch_stop_and_start(&m_stopwatch) + ltime;
 			max_loop_time = max(time, max_loop_time) ;
 			/*
 			if (elapsed_time < 0)
@@ -1982,7 +1987,6 @@ inline void auto_tune<N_RANK>::trap_space_cut_interior(
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
                 queue_len_[curr_dep_pointer] = 0;
 #else
-                // use cilk_spawn to spawn all the sub-grid 
                 pop_queue(curr_dep_pointer);
 				//assert(child_index < projection_zoid->num_children) ;
 				unsigned long index = projection_zoid->children [child_index] ;
@@ -1991,12 +1995,12 @@ inline void auto_tune<N_RANK>::trap_space_cut_interior(
 				child_index++ ;
                 if (queue_len_[curr_dep_pointer] == 0)
 				{
-                    trap_space_time_cut_interior(l_father->t0,
+                    this->trap_space_time_cut_interior(l_father->t0,
  							l_father->t1, l_father->grid, child, f);
 				}
                 else
 				{
-                    cilk_spawn this->trap_space_time_cut_interior(
+                    this->trap_space_time_cut_interior(
 						l_father->t0, l_father->t1, l_father->grid, child, f) ;
 				}
 #endif
@@ -2135,7 +2139,6 @@ inline void auto_tune<N_RANK>::trap_space_cut_boundary(
                 queue_head_[curr_dep_pointer] = queue_tail_[curr_dep_pointer] = 0;
                 queue_len_[curr_dep_pointer] = 0;
 #else
-                // use cilk_spawn to spawn all the sub-grid 
                 pop_queue(curr_dep_pointer);
 				//assert(child_index < projection_zoid->num_children) ;
 				unsigned long index = projection_zoid->children [child_index] ;
@@ -2143,10 +2146,10 @@ inline void auto_tune<N_RANK>::trap_space_cut_boundary(
 				//zoid_type * child = &(m_zoids [index]) ;
 				child_index++ ;
                 if (queue_len_[curr_dep_pointer] == 0) {
-                    trap_space_time_cut_boundary(l_father->t0,
+                    this->trap_space_time_cut_boundary(l_father->t0,
 						l_father->t1, l_father->grid, child, f, bf);
                 } else {
-                    cilk_spawn this->trap_space_time_cut_boundary(
+                    this->trap_space_time_cut_boundary(
 						l_father->t0, l_father->t1, l_father->grid, child, f, bf);
                 }
 #endif
