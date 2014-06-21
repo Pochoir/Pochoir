@@ -505,28 +505,37 @@ private:
 			}
 		}
 		unsigned long volume = 1 ;
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			volume *= (grid.x1[i] - grid.x0[i]) ;		
+		}
 		//m_space_cut_mask = 0 ;
+/*
 		for (int i = 0 ; i < N_RANK ; i++)
 		{
 			volume *= (grid.x1[i] - grid.x0[i]) ;		
 			//m_space_cut_mask |= 1 << i + 1 ;
 #ifdef WRITE_DAG
-			file_interior << " N" << i+1 << " " << grid.x1[i] - grid.x0[i] ;	
-			file_boundary << " N" << i+1 << " " << grid.x1[i] - grid.x0[i] ;	
+			file_interior [i] << " N" << i+1 << " " << grid.x1[i] - grid.x0[i] ;
+			file_boundary [i] << " N" << i+1 << " " << grid.x1[i] - grid.x0[i] ;
 #endif
 		}
 #ifdef WRITE_DAG
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
 #ifdef TIME_INVARIANCE_INTERIOR
-		file_interior << "\nTime invariant interior " << endl ;
+			file_interior [i] << "\nTime invariant interior " << endl ;
 #else
-		file_interior << "\nSpace-time invariant interior " << endl ;
+			file_interior [i] << "\nSpace-time invariant interior " << endl ;
 #endif
 #ifdef TIME_INVARIANCE_BOUNDARY
-		file_boundary << "\nTime invariant boundary " << endl ;
+			file_boundary [i] << "\nTime invariant boundary " << endl ;
 #else
-		file_boundary << "\nSpace-time invariant boundary " << endl ;
+			file_boundary [i] << "\nSpace-time invariant boundary " << endl ;
 #endif
+		}
 #endif
+*/
 		//cout << "space cut mask " << m_space_cut_mask << endl ;
 		max_level = log2(h1) + 1 ;
 		if (h2 > 0 && h1 != h2)
@@ -591,8 +600,11 @@ private:
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
 		time_type rtime = 0, ctime = 0, max_loop_time = 0 ;
 		stopwatch_reset_num_calls(&m_stopwatch) ;
+		time_type t ;
+		stopwatch_stop_and_start((&m_stopwatch), t) ;
 		symbolic_trap_space_time_cut_boundary(t0, t1, grid, 
 					m_num_vertices - 1, 0, rtime, ctime, f, bf, max_loop_time) ;
+		stopwatch_stop_and_start((&m_stopwatch), t) ;
 		m_head [index] = m_zoids [index_head].children[0] ;
 		m_zoids [index_head].resize_children (0) ;
 #ifndef NDEBUG
@@ -1754,6 +1766,27 @@ private:
 		F const & f) ;
 
 	template <typename F, typename BF>
+	inline void trap_space_time_cut_boundary_measure(int t0, int t1,  
+		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
+		F const & f, BF const & bf) ;
+
+	template <typename F>
+	inline void trap_space_time_cut_interior_measure(int t0, int t1, 
+		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
+		F const & f) ;
+
+	template <typename F, typename BF>
+	inline void trap_space_cut_boundary_measure(int t0, int t1,
+		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
+		F const & f, BF const & bf) ;
+
+	template <typename F>
+	inline void trap_space_cut_interior_measure(int t0, int t1,
+		grid_info<N_RANK> const & grid, simple_zoid_type * projection_zoid, 
+		F const & f) ;
+
+
+	template <typename F, typename BF>
 	inline void symbolic_sawzoid_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, unsigned long,
 		int child_index, double &, double &, F const & f, BF const & bf,
@@ -1847,8 +1880,8 @@ private:
 	int num_bits_dim ; //# of bits for bottom and top widths in a dimension
 	int m_initial_height ; //initial height of the zoid
 	string m_problem_name ; //name of the problem we solve.
-	ofstream file_interior ; //write height, widths of a zoid in the interior
-	ofstream file_boundary ; //write height, widths of a zoid at the boundary
+	ofstream file_interior [N_RANK] ; //write height, widths of a zoid in the interior
+	ofstream file_boundary [N_RANK] ; //write height, widths of a zoid at the boundary
 	int m_type_size ; //size of type of date that is backed up in tuning
 	stopwatch m_stopwatch ; //stopwatch
 	time_type m_dag_lookup_time  ; //time to lookup dag
@@ -1885,7 +1918,8 @@ private:
 
 	void stopwatch_print_elapsed_time(stopwatch *s) 
 	{
-    	long long time = stopwatch_get_elapsed_time(s) ;
+    	long long time ;
+		stopwatch_get_elapsed_time(s, time) ;
 #ifdef USE_TIMING
     	cout << time / 1000000ll << "." <<
             	time % 1000000ll << "ms " << endl ;
@@ -1929,23 +1963,52 @@ private:
 		time_t now = time(0);
 		tm* localtm = localtime(&now);
 		char time [100] ;
-		strftime(time, 100, "_interior_%m%d%Y_%H%M%S", localtm) ;
-		char interior_file [500], boundary_file [500] ;
-		strcpy(interior_file, name) ;
-		strcat(interior_file, time) ;
-		cout << "interior_file " << interior_file << endl ;
+		//strftime(time, 100, "_interior_%m%d%Y_%H%M%S", localtm) ;
+		strftime(time, 100, "_%m%d%Y_%H%M%S", localtm) ;
+		//strftime(time, 100, "_boundary_%m%d%Y_%H%M%S", localtm) ;
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			char interior_file [500], boundary_file [500] ;
+			char c [1] ;
+			sprintf(c, "%d", i) ;
+			strcpy(interior_file, name) ;
+			strcat(interior_file, "_interior_dim_") ;
+			strcat(interior_file, c) ;
+			strcat(interior_file, time) ;
+			cout << "interior_file " << interior_file << endl ;
 
-		strftime(time, 100, "_boundary_%m%d%Y_%H%M%S", localtm) ;
-		strcpy(boundary_file, name) ;
-		strcat(boundary_file, time) ;
-		cout << "boundary_file " << boundary_file << endl ;
+			strcpy(boundary_file, name) ;
+			strcat(boundary_file, "_boundary_dim_") ;
+			strcat(boundary_file, c) ;
+			strcat(boundary_file, time) ;
+			cout << "boundary_file " << boundary_file << endl ;
 
-		file_interior.open(interior_file) ;
-		file_boundary.open(boundary_file) ;
-		file_interior << "Problem " << name << endl ;
-		file_boundary << "Problem " << name << endl ;
-		file_interior << "h " << T ;
-		file_boundary << "h " << T ;
+			file_interior [i].open(interior_file) ;
+			file_boundary [i].open(boundary_file) ;
+			file_interior [i] << "Problem " << name << endl ;
+			file_boundary [i] << "Problem " << name << endl ;
+			file_interior [i] << "h " << T ;
+			file_boundary [i] << "h " << T ;
+		}
+
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			file_interior [i] << " N" << i+1 << " " << grid.x1[i] - grid.x0[i] ;
+			file_boundary [i] << " N" << i+1 << " " << grid.x1[i] - grid.x0[i] ;
+		}
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+#ifdef TIME_INVARIANCE_INTERIOR
+			file_interior [i] << "\nTime invariant interior " << endl ;
+#else
+			file_interior [i] << "\nSpace-time invariant interior " << endl ;
+#endif
+#ifdef TIME_INVARIANCE_BOUNDARY
+			file_boundary [i] << "\nTime invariant boundary " << endl ;
+#else
+			file_boundary [i] << "\nSpace-time invariant boundary " << endl ;
+#endif
+		}
 #endif
 		m_dag_lookup_time = 0 ; 
 		m_actual_time = 0 ; 
@@ -1959,8 +2022,11 @@ private:
 		//delete all zoids and clear the projections
 		destroy_auto_tune_dag() ;
 #ifdef WRITE_DAG
-		file_interior.close() ;
-		file_boundary.close() ;
+		for (int i = 0 ; i < N_RANK ; i++)
+		{
+			file_interior [i].close() ;
+			file_boundary [i].close() ;
+		}
 #endif
 #ifdef WRITE_ZOID_DIMENSIONS
 		for (int i = 0 ; i < N_RANK ; i++)
@@ -2012,7 +2078,7 @@ private:
 		if (read_dag)
 		{
 			//dag_time = tdiff2(&end, &start) ;
-			dag_time = stopwatch_get_elapsed_time(&s1) ;
+			stopwatch_get_elapsed_time(&s1, dag_time) ;
 			cout << "read dag from file " << endl ;
 			cout << "# vertices " << m_num_vertices << endl ;
 			cout << "DAG capacity " << m_zoids.capacity() << endl ;
@@ -2153,16 +2219,16 @@ private:
 		}
 		time_type dag_time = 0 ;
 		time_type expected_run_time = 0 ;
-	
+		stopwatch * stopwatch_ptr = &m_stopwatch ;
 		if (W >= 2 * slope * T)
 		{
 			//max width is >= 2 * sigma * h implies the zoid is ready for 
 			//space cuts
 			bool read_dag = false ;
-			//stopwatch_stop_and_start(&m_stopwatch) ;
-			stopwatch_start(&m_stopwatch) ;
+			//stopwatch_stop_and_start(stopwatch_ptr) ;
+			stopwatch_start(stopwatch_ptr) ;
 			read_dag = read_dag_from_file(grid, T, T, expected_run_time) ;
-			dag_time = stopwatch_stop_and_start(&m_stopwatch) ;
+			stopwatch_stop_and_start(stopwatch_ptr, dag_time) ;
 			//grid_info<N_RANK> grid2 = grid ;
 			if (read_dag)
 			{
@@ -2181,9 +2247,10 @@ private:
 				//back up data
 				copy_data(m_array, array, volume) ;
 				//do a dry run
-				stopwatch_stop_and_start(&m_stopwatch) ;
+				time_type t ;
+				stopwatch_stop_and_start(stopwatch_ptr, t) ;
     			m_algo.shorter_duo_sim_obase_bicut_p(t0, t1, grid, f, bf) ;
-				time_type t = stopwatch_stop_and_start(&m_stopwatch) ;
+				stopwatch_stop_and_start(stopwatch_ptr, t) ;
 				cout << "t0 " << t0 << " t1 " << t1 << " dry run took " ; 
 				stopwatch_print_elapsed_time(t) ;
 				//set base case grid size to 1 in time/space.
@@ -2203,7 +2270,7 @@ private:
 						" grid2.dx1 [ " << i << "] " << grid2.dx1 [i] << endl ;
 				}*/
 				m_head.push_back (ULONG_MAX) ;
-				//stopwatch_stop_and_start(&m_stopwatch) ;
+				//stopwatch_stop_and_start(stopwatch_ptr) ;
 				struct timespec start, end;
 				clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start) ;
 				build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
@@ -2217,10 +2284,10 @@ private:
 #endif
 				//compress the dag		
 				cout << "begin compress dag" << endl ;
-				stopwatch_stop_and_start(&m_stopwatch) ;
+				time_type compress_time ;
+				stopwatch_stop_and_start(stopwatch_ptr, compress_time) ;
 				compress_dag () ;
-				time_type compress_time = 
-					stopwatch_stop_and_start(&m_stopwatch) ;
+				stopwatch_stop_and_start(stopwatch_ptr, compress_time) ;
 
 				clock_gettime(CLOCK_THREAD_CPUTIME_ID, &end) ;
 				cout << "compression took : " ;
@@ -2236,17 +2303,33 @@ private:
 				//cout << "Cold miss penalty " ;
 				//stopwatch_print_elapsed_time(cold_miss_time) ;
 				clear_projections() ;
-				//copy data back.
-				copy_data(array, m_array, volume) ;
 				write_dag_to_file(grid, T) ;
 				create_simple_zoids() ;
 			}
-			stopwatch_reset_num_calls(&m_stopwatch) ;
-			stopwatch_stop_and_start(&m_stopwatch) ;
+#ifdef MEASURE_OVERHEAD
+			m_actual_time = 0 ;
+			stopwatch_reset_num_calls(stopwatch_ptr) ;
+			stopwatch_stop_and_start(stopwatch_ptr, m_actual_time) ;
+			trap_space_time_cut_boundary_measure(t0, t1, grid, 
+				&(m_simple_zoids [m_head [0]]), f, bf) ;
+			//time_type t = stopwatch_stop_and_start(stopwatch_ptr) ;
+			stopwatch_stop_and_start(stopwatch_ptr, m_actual_time) ;
+			cout << "Actual less redundant work :" ;
+			//stopwatch_print_elapsed_time(t) ;
+			stopwatch_print_elapsed_time(m_actual_time) ;
+#endif
+			if (! read_dag)
+			{
+				//copy data back.
+				copy_data(array, m_array, volume) ;
+			}
+			m_actual_time = 0 ;
+			stopwatch_reset_num_calls(stopwatch_ptr) ;
+			stopwatch_stop_and_start(stopwatch_ptr, m_actual_time) ;
 			trap_space_time_cut_boundary(t0, t1, grid, 
 				&(m_simple_zoids [m_head [0]]), f, bf) ;
-			//time_type t = stopwatch_stop_and_start(&m_stopwatch) ;
-			m_actual_time += stopwatch_stop_and_start(&m_stopwatch) ;
+			//time_type t = stopwatch_stop_and_start(stopwatch_ptr) ;
+			stopwatch_stop_and_start(stopwatch_ptr, m_actual_time) ;
 			std::cout << "Actual :" ;
 			//stopwatch_print_elapsed_time(t) ;
 			stopwatch_print_elapsed_time(m_actual_time) ;
@@ -2262,10 +2345,10 @@ private:
 			int h2 = T - T / h1 * h1 ;
 			
 			bool read_dag = false ;
-			//stopwatch_stop_and_start(&m_stopwatch) ;
-			stopwatch_start(&m_stopwatch) ;
+			//stopwatch_stop_and_start(stopwatch_ptr) ;
+			stopwatch_start(stopwatch_ptr) ;
 			read_dag = read_dag_from_file(grid, T, h1, expected_run_time) ;
-			dag_time = stopwatch_stop_and_start(&m_stopwatch) ;
+			stopwatch_stop_and_start(stopwatch_ptr, dag_time) ;
 			if (read_dag)
 			{
 				cout << "read dag from file " << endl ;
@@ -2284,16 +2367,17 @@ private:
 				copy_data(m_array, array, volume) ;
 
 				//do a dry run
-				stopwatch_stop_and_start(&m_stopwatch) ;
+				time_type t ;
+				stopwatch_stop_and_start(stopwatch_ptr, t) ;
     			m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h1, grid, f, bf) ;
-				time_type t = stopwatch_stop_and_start(&m_stopwatch) ;
+				stopwatch_stop_and_start(stopwatch_ptr, t) ;
 				cout << "t0 " << t0 << " t1 " << t0 + h1 << " dry run took " ;
 				stopwatch_print_elapsed_time(t) ;
 				//set base case grid size to 1 in time/space.
 				m_algo.set_thres_auto_tuning() ;
 				cout << "h1 " << h1 << " h2 " << h2 << endl ;
 
-				//stopwatch_stop_and_start(&m_stopwatch) ;
+				//stopwatch_stop_and_start(stopwatch_ptr) ;
 				struct timespec start, end;
 				clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start) ;
 
@@ -2314,10 +2398,10 @@ private:
 				cout << "DAG capacity " << m_zoids.capacity() << endl ;
 				//compress the dag		
 				cout << "begin compress dag" << endl ;
-				stopwatch_stop_and_start(&m_stopwatch) ;
+				time_type compress_time ;
+				stopwatch_stop_and_start(stopwatch_ptr, compress_time) ;
 				compress_dag () ;
-				time_type compress_time = 
-					stopwatch_stop_and_start(&m_stopwatch) ;
+				stopwatch_stop_and_start(stopwatch_ptr, compress_time) ;
 
 				clock_gettime(CLOCK_THREAD_CPUTIME_ID, &end) ;
 				cout << "compression took : " ;
@@ -2336,14 +2420,46 @@ private:
 #ifndef NDEBUG
 				//print_dag() ;
 #endif
-				//copy data back.
-				copy_data(array, m_array, volume) ;
 				write_dag_to_file(grid, T) ;
 				create_simple_zoids() ;
 			}
-			stopwatch_reset_num_calls(&m_stopwatch) ;
-			stopwatch_stop_and_start(&m_stopwatch) ;
 			int m = T / h1 ;
+#ifdef MEASURE_OVERHEAD
+			m_actual_time = 0 ;
+			int t2 = t0 ;
+			stopwatch_reset_num_calls(stopwatch_ptr) ;
+			stopwatch_stop_and_start(stopwatch_ptr, m_actual_time) ;
+			for (int i = 0 ; i < m ; i++)
+			{
+				cout << "t0 " << t2 << " t1 " << t1 << 
+					" h1 " << h1 << " t0 + h1 " <<
+					t2 + h1 << endl ;
+				trap_space_time_cut_boundary_measure(t2, t2 + h1, grid, 
+					&(m_simple_zoids [m_head [0]]), f, bf) ;
+				t2 += h1 ;
+			}
+			if (h2 > 0)
+			{
+				cout << "t0 " << t2 << " t1 " << t1 << 
+					" h2 " << h2 << " t0 + h2 " <<
+					t2 + h2 << endl ;
+				trap_space_time_cut_boundary_measure(t2, t2 + h2, grid, 
+					&(m_simple_zoids [m_head [1]]), f, bf) ;
+			}
+			//time_type t = stopwatch_stop_and_start(stopwatch_ptr);
+			stopwatch_stop_and_start(stopwatch_ptr, m_actual_time) ;
+			cout << "Actual less redundant work :" ;
+			//stopwatch_print_elapsed_time(t) ;
+			stopwatch_print_elapsed_time(m_actual_time) ;
+#endif
+			if (! read_dag)
+			{
+				//copy data back.
+				copy_data(array, m_array, volume) ;
+			}
+			m_actual_time = 0 ;
+			stopwatch_reset_num_calls(stopwatch_ptr) ;
+			stopwatch_stop_and_start(stopwatch_ptr, m_actual_time) ;
 			for (int i = 0 ; i < m ; i++)
 			{
 				cout << "t0 " << t0 << " t1 " << t1 << 
@@ -2361,11 +2477,12 @@ private:
 				trap_space_time_cut_boundary(t0, t0 + h2, grid, 
 					&(m_simple_zoids [m_head [1]]), f, bf) ;
 			}
-			//time_type t = stopwatch_stop_and_start(&m_stopwatch);
-			m_actual_time += stopwatch_stop_and_start(&m_stopwatch) ;
+			//time_type t = stopwatch_stop_and_start(stopwatch_ptr);
+			stopwatch_stop_and_start(stopwatch_ptr, m_actual_time) ;
 			cout << "Actual :" ;
 			//stopwatch_print_elapsed_time(t) ;
 			stopwatch_print_elapsed_time(m_actual_time) ;
+
 		}
 		cout << "DAG lookup took : " ; 
 		stopwatch_print_elapsed_time(m_dag_lookup_time) ;

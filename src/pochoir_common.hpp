@@ -44,12 +44,18 @@ static inline double tdiff (struct timeval *a, struct timeval *b)
 	    return a->tv_sec - b->tv_sec + 1e-6 * (a->tv_usec - b->tv_usec);
 }
 
+static inline long long tdiff2 (struct timespec *end, struct timespec *start)
+{
+		return (long long)(end->tv_sec - start->tv_sec) * 1000000000ll +
+								(end->tv_nsec - start->tv_nsec) ;
+}
+/*
 static inline double tdiff2 (struct timespec *end, struct timespec *start)
 {
 		return end->tv_sec - start->tv_sec + 1e-9 * 
 								(end->tv_nsec - start->tv_nsec) ;
 }
-
+*/
 static inline int StrToInt(const std::string& s)
 {
   return std::atoi(s.c_str());
@@ -85,7 +91,8 @@ static inline int StrToInt(const std::string& s)
 //#define SUBSUMPTION_TIME
 #define SUBSUMPTION_SPACE
 //#define CHECK_CACHE_ALIGNMENT
-#define WRITE_ZOID_DIMENSIONS
+//#define WRITE_ZOID_DIMENSIONS
+//#define MEASURE_OVERHEAD
 
 #define max_(a, b) ((a) > (b) ? (a) : (b))
 #define min_(a, b) ((a) < (b) ? (a) : (b))
