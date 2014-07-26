@@ -455,16 +455,11 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
 	//stack_depth-- ;
 }
 
-
+#ifdef HYPERSPACE_CUTS
 /* This is the version for interior region cut! */
 template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
 {
-	/*stack_depth++ ;
-	if (stack_depth > max_stack_depth)
-	{
-		max_stack_depth = stack_depth ;
-	}*/
     const int lt = t1 - t0;
     bool sim_can_cut = false;
     grid_info<N_RANK> l_son_grid;
@@ -544,6 +539,127 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_
     }  
 }
 
+#else
+
+template <int N_RANK> template <typename F>
+inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
+{
+    const int lt = t1 - t0;
+    bool sim_can_cut = false;
+    grid_info<N_RANK> l_son_grid;
+
+    for (int i = N_RANK-1; i >= 0; --i) {
+        int lb, thres, tb;
+        lb = (grid.x1[i] - grid.x0[i]);
+        tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
+			 << " x1 [" << i << "] " << grid.x1 [i] 
+			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+			<< " lt " << lt << endl ;*/
+        bool cut_lb = (lb < tb);
+        thres = (slope_[i] * lt);
+        //sim_can_cut = SIM_CAN_CUT_I ;
+        sim_can_cut = CAN_CUT_IN ;
+        /* as long as there's one dimension can conduct a cut, we conduct a 
+         * multi-dimensional cut!
+         */
+		if (sim_can_cut) 
+		{
+			// can_cut 
+			if (cut_lb) {
+				// if cutting lb, there's no initial cut! 
+				assert(lb != phys_length_[i] || grid.dx0[i] != 0 || grid.dx1[i] != 0);
+				const int mid = lb/2;
+				l_son_grid = grid;
+				const int l_start = grid.x0[i];
+				const int l_end = grid.x1[i];
+
+				//process the middle gray zoid
+				l_son_grid.x0[i] = l_start + mid - thres;
+				l_son_grid.dx0[i] = slope_[i];
+				l_son_grid.x1[i] = l_start + mid + thres;
+				l_son_grid.dx1[i] = -slope_[i];
+				shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+
+				l_son_grid.x0[i] = l_start;
+				l_son_grid.dx0[i] = grid.dx0[i];
+				l_son_grid.x1[i] = l_start + mid - thres;
+				l_son_grid.dx1[i] = slope_[i];
+				shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+
+				l_son_grid.x0[i] = l_start + mid + thres;
+				l_son_grid.dx0[i] = -slope_[i];
+				l_son_grid.x1[i] = l_end;
+				l_son_grid.dx1[i] = grid.dx1[i];
+				shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+			} // end if (cut_lb) 
+			else { // cut_tb 
+				const int mid = tb/2;
+				l_son_grid = grid;
+
+				const int l_start = (grid.x0[i]);
+				const int l_end = (grid.x1[i]);
+				const int ul_start = (grid.x0[i] + grid.dx0[i] * lt);
+				l_son_grid.x0[i] = l_start;
+				l_son_grid.dx0[i] = grid.dx0[i];
+				l_son_grid.x1[i] = ul_start + mid;
+				l_son_grid.dx1[i] = -slope_[i];
+				shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+
+				l_son_grid.x0[i] = ul_start + mid;
+				l_son_grid.dx0[i] = slope_[i];
+				l_son_grid.x1[i] = l_end;
+				l_son_grid.dx1[i] = grid.dx1[i];
+				shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+
+				l_son_grid.x0[i] = ul_start + mid;
+				l_son_grid.dx0[i] = -slope_[i];
+				l_son_grid.x1[i] = ul_start + mid;
+				l_son_grid.dx1[i] = slope_[i];
+				shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+			} // end if (cut_tb) 
+			return;
+		}
+    }
+
+	if (lt > dt_recursive_) {
+        /* cut into time */
+        assert(lt > dt_recursive_);
+        int halflt = lt / 2;
+        //int halflt = (lt + 1) / 2;
+        l_son_grid = grid;
+        shorter_duo_sim_obase_bicut(t0, t0+halflt, l_son_grid, f);
+
+        for (int i = 0; i < N_RANK; ++i) {
+            l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
+            l_son_grid.dx0[i] = grid.dx0[i];
+            l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
+            l_son_grid.dx1[i] = grid.dx1[i];
+        }
+        shorter_duo_sim_obase_bicut(t0+halflt, t1, l_son_grid, f);
+		//stack_depth-- ;
+        return;
+    } else {
+        // base case
+#if DEBUG
+        printf("call interior!\n");
+        print_grid(stdout, t0, t1, grid);
+        // fprintf(stderr, "l_total_points = %d\n", l_total_points);
+#endif
+#if STAT
+        ++interior_region_count;
+#endif
+        f(t0, t1, grid);
+//        base_case_kernel_interior(t0, t1, grid, f);
+		//stack_depth-- ;
+        return;
+    }  
+}
+#endif
+
+#ifdef HYPERSPACE_CUTS
+//#if 1
 /* This is the version for boundary region cut! */
 template <int N_RANK> template <typename F, typename BF>
 inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
@@ -665,5 +781,239 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
 		//stack_depth-- ;
         return;
 }
+
+#else
+
+template <int N_RANK> template <typename F, typename BF>
+inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
+{
+    const int lt = t1 - t0;
+    bool sim_can_cut = false, call_boundary = false;
+    grid_info<N_RANK> l_father_grid = grid, l_son_grid;
+    int l_dt_stop;
+    for (int i = N_RANK-1; i >= 0; --i) {
+        bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
+        call_boundary |= l_touch_boundary;
+	}
+    for (int i = N_RANK-1; i >= 0; --i) {
+        int lb, thres, tb;
+        lb = (grid.x1[i] - grid.x0[i]);
+        tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
+			 << " x1 [" << i << "] " << grid.x1 [i] 
+			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+			<< " lt " << lt << endl ; */
+        thres = (slope_[i] * lt);
+        bool cut_lb = (lb < tb);
+        bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
+        //sim_can_cut = SIM_CAN_CUT_B ;
+        sim_can_cut = CAN_CUT_BO ;
+
+		if (sim_can_cut) 
+		{
+			grid_info<N_RANK> grid_array [3] ;
+			bool initial_cut = false ;
+			// can_cut 
+			if (cut_lb) {
+				// if cutting lb, there's no initial cut! 
+				assert(lb != phys_length_[i] || l_father_grid.dx0[i] != 0 || l_father_grid.dx1[i] != 0);
+				const int mid = lb/2;
+				l_son_grid = l_father_grid;
+				const int l_start = l_father_grid.x0[i];
+				const int l_end = l_father_grid.x1[i];
+
+				//process the middle gray zoid
+				l_son_grid.x0[i] = l_start + mid - thres;
+				l_son_grid.dx0[i] = slope_[i];
+				l_son_grid.x1[i] = l_start + mid + thres;
+				l_son_grid.dx1[i] = -slope_[i];
+				grid_array [0] = l_son_grid ;
+				/*if (call_boundary)
+				{
+					shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
+				}
+				else
+				{
+					shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+				}*/
+
+				l_son_grid.x0[i] = l_start;
+				l_son_grid.dx0[i] = l_father_grid.dx0[i];
+				l_son_grid.x1[i] = l_start + mid - thres;
+				l_son_grid.dx1[i] = slope_[i];
+				grid_array [1] = l_son_grid ;
+				/*if (call_boundary)
+				{
+					shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
+				}
+				else
+				{
+					shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+				}*/
+
+				l_son_grid.x0[i] = l_start + mid + thres;
+				l_son_grid.dx0[i] = -slope_[i];
+				l_son_grid.x1[i] = l_end;
+				l_son_grid.dx1[i] = l_father_grid.dx1[i];
+				grid_array [2] = l_son_grid ;
+				/*if (call_boundary)
+				{
+					shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
+				}
+				else
+				{
+					shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+				}*/
+			} // end if (cut_lb) 
+			else { // cut_tb 
+				if (lb == phys_length_[i] && l_father_grid.dx0[i] == 0 && l_father_grid.dx1[i] == 0) {
+				   /* initial cut on the dimension */
+					initial_cut = true ;
+					const int mid = tb/2;
+					l_son_grid = l_father_grid;
+					const int l_start = l_father_grid.x0[i];
+					const int l_end = l_father_grid.x1[i];
+					//draw a triangle with a vertex at midpoint of 
+					//top base.
+					l_son_grid.x0[i] = mid - thres ;
+					l_son_grid.dx0[i] = slope_[i];
+					l_son_grid.x1[i] = mid + thres ;
+					l_son_grid.dx1[i] = -slope_[i];
+					grid_array [0] = l_son_grid ;
+					/*if (call_boundary)
+					{
+						shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
+					}
+					else
+					{
+						shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+					}*/
+
+					l_son_grid.x0[i] = mid + thres ;
+					l_son_grid.dx0[i] = -slope_[i];
+					l_son_grid.x1[i] = l_end + mid - thres ;
+					l_son_grid.dx1[i] = slope_[i];
+					grid_array [1] = l_son_grid ;
+					/*if (call_boundary)
+					{
+						shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
+					}
+					else
+					{
+						shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+					}*/
+				} else { /* NOT the initial cut! */
+					const int mid = tb/2;
+					l_son_grid = l_father_grid;
+					const int l_start = l_father_grid.x0[i];
+					const int l_end = l_father_grid.x1[i];
+					const int ul_start = l_father_grid.x0[i] + l_father_grid.dx0[i] * lt;
+					l_son_grid.x0[i] = l_start;
+					l_son_grid.dx0[i] = l_father_grid.dx0[i];
+					l_son_grid.x1[i] = ul_start + mid;
+					l_son_grid.dx1[i] = -slope_[i];
+					grid_array [0] = l_son_grid ;
+					/*if (call_boundary)
+					{
+						shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
+					}
+					else
+					{
+						shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+					}*/
+
+					l_son_grid.x0[i] = ul_start + mid;
+					l_son_grid.dx0[i] = slope_[i];
+					l_son_grid.x1[i] = l_end;
+					l_son_grid.dx1[i] = l_father_grid.dx1[i];
+					grid_array [1] = l_son_grid ;
+					/*if (call_boundary)
+					{
+						shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
+					}
+					else
+					{
+						shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+					}*/
+
+					l_son_grid.x0[i] = ul_start + mid;
+					l_son_grid.dx0[i] = -slope_[i];
+					l_son_grid.x1[i] = ul_start + mid;
+					l_son_grid.dx1[i] = slope_[i];
+					grid_array [2] = l_son_grid ;
+					/*if (call_boundary)
+					{
+						shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
+					}
+					else
+					{
+						shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+					}*/
+				}
+			} // end if (cut_tb) 
+			int end = initial_cut ? 2 : 3 ;
+			for (int begin = 0 ; begin < end ; begin++)
+			{
+				if (call_boundary)
+				{
+					shorter_duo_sim_obase_bicut_p(t0, t1, grid_array [begin], 
+													f, bf);
+				}
+				else
+				{
+					shorter_duo_sim_obase_bicut(t0, t1, grid_array [begin], f);
+				}
+			}
+			return;
+		} // end if (sim_can_cut) 
+    }
+
+    if (call_boundary)
+        l_dt_stop = dt_recursive_boundary_;
+    else
+        l_dt_stop = dt_recursive_;
+
+    if (lt > l_dt_stop) {
+        /* cut into time */
+        int halflt = lt / 2;
+        //int halflt = (lt + 1) / 2;
+        l_son_grid = l_father_grid;
+        if (call_boundary) {
+            shorter_duo_sim_obase_bicut_p(t0, t0+halflt, l_son_grid, f, bf);
+        } else {
+            shorter_duo_sim_obase_bicut(t0, t0+halflt, l_son_grid, f);
+        }
+
+        for (int i = 0; i < N_RANK; ++i) {
+            l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
+            l_son_grid.dx0[i] = l_father_grid.dx0[i];
+            l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
+            l_son_grid.dx1[i] = l_father_grid.dx1[i];
+        }
+        if (call_boundary) {
+            shorter_duo_sim_obase_bicut_p(t0+halflt, t1, l_son_grid, f, bf);
+        } else {
+            shorter_duo_sim_obase_bicut(t0+halflt, t1, l_son_grid, f);
+        }
+		//stack_depth-- ;
+        return;
+    } 
+
+    // if (l_total_area <= Z || base_cube_t) {
+        /* for base_cube_t: -- prevent too small time cut! 
+         *      (cut_lb && lb > dx_recursive_boundary_ && lb < 2 * thres)
+         *  ||  (!cut_lb && tb > dx_recursive_boundary_ && lb < thres)
+         */
+        // base case
+        if (call_boundary) {
+            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+        } else {
+            f(t0, t1, l_father_grid);
+        }
+		//stack_depth-- ;
+        return;
+}
+#endif
 
 #endif
