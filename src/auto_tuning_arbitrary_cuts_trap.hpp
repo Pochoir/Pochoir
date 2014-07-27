@@ -560,10 +560,17 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		int num_cases = 1 << N_RANK ;
 		int best_case = 0, num_children_best_case = 1 ;
 #ifdef FIXED_SPACE_CUT
-		//do a hyper space cut
+		//do only a hyper space cut
 		for (int i = (decision >> 1) ; i == (decision >> 1) ; i--)
 #else
+#ifdef SEQUENTIAL_SPACE_CUT
+		//try cutting each spatial dimension, one at a time 
+		for (int i = num_cases / 2 ; i > 0 ; i = i / 2)
+		//for (int i = 1 ; i < num_cases ; i = i * 2)
+#else
+		//try cutting the spatial dimensions in 2^N_RANK ways.
 		for (int i = num_cases - 1 ; i > 0 ; i--)
+#endif
 #endif
 		{
 			int invalid_case = 0 ;
@@ -1124,7 +1131,14 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 		//do a hyper space cut
 		for (int i = (decision >> 1) ; i == (decision >> 1) ; i--)
 #else
+#ifdef SEQUENTIAL_SPACE_CUT
+		//try cutting each spatial dimension, one at a time 
+		for (int i = num_cases / 2 ; i > 0 ; i = i / 2)
+		//for (int i = 1 ; i < num_cases ; i = i * 2)
+#else
+		//try cutting the spatial dimensions in 2^N_RANK ways.
 		for (int i = num_cases - 1 ; i > 0 ; i--)
+#endif
 #endif
 		{
 			int invalid_case = 0 ;

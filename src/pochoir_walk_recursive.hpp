@@ -829,42 +829,18 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
 				l_son_grid.x1[i] = l_start + mid + thres;
 				l_son_grid.dx1[i] = -slope_[i];
 				grid_array [0] = l_son_grid ;
-				/*if (call_boundary)
-				{
-					shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
-				}
-				else
-				{
-					shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-				}*/
 
 				l_son_grid.x0[i] = l_start;
 				l_son_grid.dx0[i] = l_father_grid.dx0[i];
 				l_son_grid.x1[i] = l_start + mid - thres;
 				l_son_grid.dx1[i] = slope_[i];
 				grid_array [1] = l_son_grid ;
-				/*if (call_boundary)
-				{
-					shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
-				}
-				else
-				{
-					shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-				}*/
 
 				l_son_grid.x0[i] = l_start + mid + thres;
 				l_son_grid.dx0[i] = -slope_[i];
 				l_son_grid.x1[i] = l_end;
 				l_son_grid.dx1[i] = l_father_grid.dx1[i];
 				grid_array [2] = l_son_grid ;
-				/*if (call_boundary)
-				{
-					shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
-				}
-				else
-				{
-					shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-				}*/
 			} // end if (cut_lb) 
 			else { // cut_tb 
 				if (lb == phys_length_[i] && l_father_grid.dx0[i] == 0 && l_father_grid.dx1[i] == 0) {
@@ -874,6 +850,19 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
 					l_son_grid = l_father_grid;
 					const int l_start = l_father_grid.x0[i];
 					const int l_end = l_father_grid.x1[i];
+
+					l_son_grid.x0[i] = l_start ;
+					l_son_grid.dx0[i] = slope_[i];
+					l_son_grid.x1[i] = l_end ;
+					l_son_grid.dx1[i] = -slope_[i];
+					grid_array [0] = l_son_grid ;
+
+					l_son_grid.x0[i] = l_end ;
+					l_son_grid.dx0[i] = -slope_[i];
+					l_son_grid.x1[i] = l_end ;
+					l_son_grid.dx1[i] = slope_[i];
+					grid_array [1] = l_son_grid ;
+					/*
 					//draw a triangle with a vertex at midpoint of 
 					//top base.
 					l_son_grid.x0[i] = mid - thres ;
@@ -881,28 +870,13 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
 					l_son_grid.x1[i] = mid + thres ;
 					l_son_grid.dx1[i] = -slope_[i];
 					grid_array [0] = l_son_grid ;
-					/*if (call_boundary)
-					{
-						shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
-					}
-					else
-					{
-						shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-					}*/
 
 					l_son_grid.x0[i] = mid + thres ;
 					l_son_grid.dx0[i] = -slope_[i];
 					l_son_grid.x1[i] = l_end + mid - thres ;
 					l_son_grid.dx1[i] = slope_[i];
 					grid_array [1] = l_son_grid ;
-					/*if (call_boundary)
-					{
-						shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
-					}
-					else
-					{
-						shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-					}*/
+					*/
 				} else { /* NOT the initial cut! */
 					const int mid = tb/2;
 					l_son_grid = l_father_grid;
@@ -914,42 +888,18 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, gri
 					l_son_grid.x1[i] = ul_start + mid;
 					l_son_grid.dx1[i] = -slope_[i];
 					grid_array [0] = l_son_grid ;
-					/*if (call_boundary)
-					{
-						shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
-					}
-					else
-					{
-						shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-					}*/
 
 					l_son_grid.x0[i] = ul_start + mid;
 					l_son_grid.dx0[i] = slope_[i];
 					l_son_grid.x1[i] = l_end;
 					l_son_grid.dx1[i] = l_father_grid.dx1[i];
 					grid_array [1] = l_son_grid ;
-					/*if (call_boundary)
-					{
-						shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
-					}
-					else
-					{
-						shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-					}*/
 
 					l_son_grid.x0[i] = ul_start + mid;
 					l_son_grid.dx0[i] = -slope_[i];
 					l_son_grid.x1[i] = ul_start + mid;
 					l_son_grid.dx1[i] = slope_[i];
 					grid_array [2] = l_son_grid ;
-					/*if (call_boundary)
-					{
-						shorter_duo_sim_obase_bicut_p(t0, t1, l_son_grid, f, bf);
-					}
-					else
-					{
-						shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-					}*/
 				}
 			} // end if (cut_tb) 
 			int end = initial_cut ? 2 : 3 ;

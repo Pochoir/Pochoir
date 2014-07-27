@@ -335,8 +335,10 @@ class zoid
 	private :
 	decision_type decision ;
 	unsigned long * children ;  
-	unsigned short capacity ;
-	unsigned short num_children ;
+	unsigned char capacity ;
+	unsigned char num_children ;
+	//unsigned short capacity ;
+	//unsigned short num_children ;
 	time_type time ;
 #ifdef CHECK_CACHE_ALIGNMENT
 	unsigned long ref_point ;
@@ -1105,6 +1107,15 @@ private:
 #ifndef NDEBUG
 			z.height = height ;
 			z.id = m_num_vertices ;
+			/*cout << "inserting zoid " << z.id << " key " << key << endl ;
+			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+			{
+				cout << " x0 [" << i << "] " << grid.x0 [i] 
+				 << " x1 [" << i << "] " << grid.x1 [i] 
+				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
+				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
+				<< " h " << height << endl ; 
+			}*/
 #endif
 			h.insert(std::pair<unsigned long, unsigned long>(key, 
 												m_num_vertices)) ;
@@ -1140,6 +1151,15 @@ private:
 #ifndef NDEBUG
 		z.height = height ;
 		z.id = m_num_vertices ;
+		/*cout << "inserting zoid " << z.id << " key " << key << endl ;
+		for (int i = N_RANK - 1 ; i >= 0 ; i--)
+		{
+			cout << " x0 [" << i << "] " << grid.x0 [i] 
+			 << " x1 [" << i << "] " << grid.x1 [i] 
+			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
+			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
+			<< " h " << height << endl ; 
+		}*/
 #endif
 		hash_table h ;
 		h.insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
@@ -1710,7 +1730,7 @@ private:
 #ifndef NDEBUG
 				z.height << " " << 
 #endif
-				z.num_children << " " ;
+				(int) z.num_children << " " ;
 			//cout << "z.num_children " << z.num_children << endl ; 
 			for (int j = 0 ; j < z.num_children ; j++)
 			{
@@ -1840,11 +1860,11 @@ private:
 				//cout << "\nid " << z->id << " h " << z->height <<
 				cout << "\nid " << z->id << " h " << z->height <<
 					//" num children " << z->children.size() << 
-					" # children " << z->num_children << endl ;
+					" # children " << (int) z->num_children << endl ;
 					//" num_parents " << z->parents.size() << 
 				cout << " decision " << (int) z->decision << 
-					" time " << z->time << 
-					" ptime " << z->cache_penalty_time << endl ;
+					" time " << z->time << endl ;
+					//" ptime " << z->cache_penalty_time << endl ;
 				cout << " stime " << z->stime  <<
 					" ttime " << z->ttime  <<
 					" ltime " << z->ltime << endl ;

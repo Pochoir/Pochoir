@@ -57,7 +57,11 @@
 //#include "auto_tuning_sawzoid_middle.hpp"
 #include "auto_tuning_arbitrary_cuts_sawzoid.hpp"
 //#include "auto_tuning_with_span_sawzoid.hpp"
+#ifdef HYPERSPACE_CUTS
 #include "auto_tuning_arbitrary_cuts_trap.hpp"
+#else
+#include "auto_tuning_trap_seq_space_cuts.hpp"
+#endif
 //#include "auto_tuning_arbitrary_cuts_sawzoid_middle.hpp"
 //#include "dag_sawzoid.hpp"
 #endif
@@ -563,6 +567,15 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 	cout << "fixed space cut" << endl ;
 #else
 	cout << "arbitrary space cut " << endl ;
+#endif
+#ifdef HYPERSPACE_CUTS
+	cout << "hyper space cut" << endl ;
+#else
+	cout << "sequential space cut" << endl ;
+#endif
+
+#ifdef SUBSUMPTION3
+	cout << "subsumption 3 " << endl ;
 #endif
 
 #ifdef SUBSUMPTION_SPACE

@@ -76,6 +76,7 @@ static inline int StrToInt(const std::string& s)
 #define DEFAULT_TIME_CUT
 #endif
 
+//#define HYPERSPACE_CUTS
 //#define COUNT_PROJECTIONS
 //#define COUNT_TRIANGLE
 //#define COUNT_TRAPEZOID
@@ -83,9 +84,9 @@ static inline int StrToInt(const std::string& s)
 //#define GENEITY_TEST
 //#define KERNEL_SELECTION
 #define AUTO_TUNE
-#define TIME_INVARIANCE_INTERIOR
-#define TIME_INVARIANCE_BOUNDARY
-//#define FIXED_SPACE_CUT //hyper space cut
+//#define TIME_INVARIANCE_INTERIOR
+//#define TIME_INVARIANCE_BOUNDARY
+//#define FIXED_SPACE_CUT //only hyper space cut
 //#define FIXED_TIME_CUT
 //#define WRITE_DAG
 //#define SUBSUMPTION_TIME
