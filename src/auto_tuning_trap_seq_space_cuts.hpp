@@ -52,7 +52,11 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	unsigned long num_grid_points = 1 ;
 	bool empty_zoid = false ;
 	vector<int> space_cut_dims ;
+//#ifndef PERMUTE
     for (int i = N_RANK-1; i >= 0; --i) {
+//#else
+//    for (int i = 1; i <= N_RANK-1; ++i) {
+//#endif
         unsigned long lb, tb;
         int thres ;
         lb = (grid.x1[i] - grid.x0[i]);
@@ -63,8 +67,8 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 			 << " x1 [" << i << "] " << grid.x1 [i] 
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-			<< " lt " << lt << endl ;
-		*/
+			<< " lt " << lt << endl ; */
+		
 		assert (lb >= 0) ;
 		assert (tb >= 0) ;
 		assert (centroid >= 0) ;
@@ -100,6 +104,60 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 			empty_zoid = true ;
 		}
     }
+#ifdef PERMUTE
+	if (sim_can_cut)
+	{
+		int size = space_cut_dims.size() ;
+		bool flag [size] ;
+		int permuted_dims [size] ;
+		//cout << "divisible dimensions " << endl ;
+		for (int i = 0 ; i < size ; i++)
+		{
+			//cout << space_cut_dims [i] << " " ;
+			flag [i] = false ;
+		}
+		//cout << endl ;
+		//assert (space_cut_dims [size - 1] == 0) ;
+		int end = size - 1 ;
+		bool cut_contiguous_dim = false ;
+		if (space_cut_dims [size - 1] == 0)
+		{
+			flag [size - 1] = true ; //mark index (size - 1) as taken
+			permuted_dims [size - 1] = 0 ;
+			cut_contiguous_dim = true ;
+			end = size - 2 ;
+		}
+		//permute the non-contiguous dimensions
+		for (int i = end ; i >= 0 ; i--)
+		{
+			while (1)
+			{
+				int index = rand () % size ;
+				if (flag [index] == false)
+				{
+					permuted_dims [i] = space_cut_dims [index] ;
+					//mark index as taken
+					flag [index] = true ;
+					break ;
+				}
+			}
+		}
+		for (int i = size - 1 ; i >= 0 ; i--)
+		{
+			space_cut_dims [i] = permuted_dims [i] ;
+		}
+#ifndef NDEBUG
+		for (int i = 0 ; i < size ; i++)
+		{
+			assert (flag [i]) ;
+		}
+		if (cut_contiguous_dim)
+		{
+			assert (space_cut_dims [size - 1] == 0) ; 
+		}
+#endif
+	}
+#endif
 	num_grid_points *= lt ;
 	unsigned long index ;
 #ifdef TIME_INVARIANCE_INTERIOR
@@ -128,6 +186,10 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		//stopwatch_stop_and_start(ptr, t) ;
 		stopwatch_start(ptr) ;
 		return ;
+	}
+	if (empty_zoid)
+	{
+		sim_can_cut = false ;
 	}
 	bool time_cut = false ;
 	bool divide_and_conquer = false ;
@@ -220,6 +282,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	int best_case = -1 ; 
     for (int j = 0 ; j < space_cut_dims.size() ; j++) {
 		int i = space_cut_dims [j] ;
+		//cout << "interior dividing dim " << i << endl ;
 		grid_info<N_RANK> grid_array [3] ;
 		bool initial_cut = false ;
 	
@@ -315,11 +378,14 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 
 			max_loop_time = max(time, max_loop_time) ;
 			assert (m_zoids [index].num_children == num_children) ;
+			unsigned long child_index = m_zoids [index].children [k] ;
 #ifdef SUBSUMPTION3
-			loop_time_children += m_zoids [k].loop_time ;
+			loop_time_children += m_zoids [child_index].loop_time ;
+			//loop_time_children += m_zoids [k].loop_time ;
 #endif
 #ifdef MEASURE_COLD_MISS
-			cache_penalty_children += m_zoids [k].cache_penalty_time ;
+			cache_penalty_children += m_zoids [child_index].cache_penalty_time ;
+			//cache_penalty_children += m_zoids [k].cache_penalty_time ;
 #endif
 		}
 		if (elapsed_time < space_cut_elapsed_time)
@@ -569,7 +635,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 	bool empty_zoid = false ;
 	vector<int> space_cut_dims ;
 
-	//meausre time to adjust boundaries of zoid
+	//measure time to adjust boundaries of zoid
 	stopwatch_start(ptr) ;
     for (int i = N_RANK-1; i >= 0; --i) {
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
@@ -579,7 +645,11 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 	stopwatch_get_elapsed_time(ptr, t) ;
 	time_type bdry_time = t ;
 
+//#ifndef PERMUTE
     for (int i = N_RANK-1; i >= 0; --i) {
+//#else
+//    for (int i = 1; i <= N_RANK-1; ++i) {
+//#endif
         unsigned long lb, tb;
         int thres ;
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
@@ -593,7 +663,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 			 << " x1 [" << i << "] " << grid.x1 [i] 
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-			<< " lt " << lt << endl ;*/
+			<< " lt " << lt << endl ; */
         thres = slope_[i] * lt ;
         /*if (lb == phys_length_[i] && grid.dx0[i] == 0 && grid.dx1[i] == 0) 
 		{ 
@@ -645,6 +715,60 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 			empty_zoid = true ;
 		}
     }
+#ifdef PERMUTE
+	if (sim_can_cut)
+	{
+		int size = space_cut_dims.size() ;
+		bool flag [size] ;
+		int permuted_dims [size] ;
+		//cout << "divisible dimensions " << endl ;
+		for (int i = 0 ; i < size ; i++)
+		{
+			//cout << space_cut_dims [i] << " " ;
+			flag [i] = false ;
+		}
+		//cout << endl ;
+		//assert (space_cut_dims [size - 1] == 0) ;
+		int end = size - 1 ;
+		bool cut_contiguous_dim = false ;
+		if (space_cut_dims [size - 1] == 0)
+		{
+			flag [size - 1] = true ; //mark index (size - 1) as taken
+			permuted_dims [size - 1] = 0 ;
+			cut_contiguous_dim = true ;
+			end = size - 2 ;
+		}
+		//permute the non-contiguous dimensions
+		for (int i = end ; i >= 0 ; i--)
+		{
+			while (1)
+			{
+				int index = rand () % size ;
+				if (flag [index] == false)
+				{
+					permuted_dims [i] = space_cut_dims [index] ;
+					//mark index as taken
+					flag [index] = true ;
+					break ;
+				}
+			}
+		}
+		for (int i = size - 1 ; i >= 0 ; i--)
+		{
+			space_cut_dims [i] = permuted_dims [i] ;
+		}
+#ifndef NDEBUG
+		for (int i = 0 ; i < size ; i++)
+		{
+			assert (flag [i]) ;
+		}
+		if (cut_contiguous_dim)
+		{
+			assert (space_cut_dims [size - 1] == 0) ; 
+		}
+#endif
+	}
+#endif
 	num_grid_points *= lt ;
     if (call_boundary)
 	{
@@ -698,9 +822,11 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 		stopwatch_start(ptr) ;
 		return ;
 	}
-	//z.decision |= call_boundary << 
-	//			  (zoid<N_RANK>::NUM_BITS_DECISION - 1) ;
-
+	//if empty internal zoid, do not divide any further
+	if (empty_zoid && ! call_boundary)
+	{
+		sim_can_cut = false ;
+	}
 	bool divide_and_conquer = false ;
 	bool time_cut = false ;
 	time_type time_cut_elapsed_time = 0, space_cut_elapsed_time = LONG_MAX ;
@@ -804,6 +930,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 	int best_case = -1 ; 
     for (int j = 0 ; j < space_cut_dims.size() ; j++) {
 		int i = space_cut_dims [j] ;
+		//cout << "dividing dim " << i << endl ;
 		grid_info<N_RANK> grid_array [3] ;
 		bool initial_cut = false ;
 	
@@ -945,11 +1072,14 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 			elapsed_time += ltime + ctime + t ;
 			max_loop_time = max(time, max_loop_time) ;
 			assert (m_zoids [index].num_children == num_children) ;
+			unsigned long child_index = m_zoids [index].children [k] ;
 #ifdef SUBSUMPTION3
-			loop_time_children += m_zoids [k].loop_time ;
+			//loop_time_children += m_zoids [k].loop_time ;
+			loop_time_children += m_zoids [child_index].loop_time ;
 #endif
 #ifdef MEASURE_COLD_MISS
-			cache_penalty_children += m_zoids [k].cache_penalty_time ;
+			//cache_penalty_children += m_zoids [k].cache_penalty_time ;
+			cache_penalty_children += m_zoids [child_index].cache_penalty_time ;
 #endif
 		}
 		if (elapsed_time < space_cut_elapsed_time)
@@ -1249,6 +1379,11 @@ trap_space_time_cut_interior(int t0,
 		decision_type dim_to_cut = projection_zoid->decision & m_space_cut_mask;
 		assert (__builtin_popcount((unsigned int) dim_to_cut) == 1) ;
 		int i = __builtin_ctz((int) dim_to_cut) - 1 ;
+		//cout << i << " " ; 
+#ifndef NDEBUG
+		decision_type d = (decision_type) 1 << (i + 1) ;
+		assert (d & projection_zoid->decision) ;
+#endif
 		assert (i >= 0 && i < N_RANK) ;
         int lb, thres, tb;
         lb = (grid.x1[i] - grid.x0[i]);
@@ -1318,6 +1453,7 @@ trap_space_time_cut_interior(int t0,
     }
 	else if (projection_zoid->decision & 1)
 	{
+		//cout << "T " ; 
 		assert (projection_zoid->num_children == 2) ;
         /* cut into time */
 		assert (projection_zoid->children [0]) ;
@@ -1341,8 +1477,18 @@ trap_space_time_cut_interior(int t0,
     }
 	else
 	{
+		//cout << "B " << endl ; 
 #ifdef WRITE_DAG
-		for (int i = 0 ; i < N_RANK ; i++) 
+		bool empty_zoid = false ;
+		for (int i = 0 ; lt == 1 && i < N_RANK ; i++) 
+		{
+			unsigned long lb = (grid.x1[i] - grid.x0[i]);
+			if (lb == 0)
+			{
+				empty_zoid = true ;
+			}
+		}
+		for (int i = 0 ; !empty_zoid && i < N_RANK ; i++) 
 		{
 			unsigned long lb, tb;
 			lb = (grid.x1[i] - grid.x0[i]);
@@ -1499,6 +1645,7 @@ trap_space_time_cut_boundary(int t0,
 		decision_type dim_to_cut = projection_zoid->decision & m_space_cut_mask;
 		assert (__builtin_popcount((unsigned int) dim_to_cut) == 1) ;
 		int i = __builtin_ctz((int) dim_to_cut) - 1 ;
+		//cout << i << " " ; 
 #ifndef NDEBUG
 		decision_type d = (decision_type) 1 << (i + 1) ;
 		assert (d & projection_zoid->decision) ;
@@ -1619,6 +1766,7 @@ trap_space_time_cut_boundary(int t0,
 	}
 	else if (projection_zoid->decision & 1)
 	{
+		//cout << "T " ; 
 		//cout << "time cut " << endl ;
 		assert (projection_zoid->num_children == 2) ;
 		// cut into time 
@@ -1653,8 +1801,21 @@ trap_space_time_cut_boundary(int t0,
 	}
 	else
 	{
+		/*if (! call_boundary)
+			cout << "B " << endl ; 
+		else
+			cout << "b " << endl ;*/
 #ifdef WRITE_DAG
-		for (int i = 0 ; i < N_RANK ; i++) 
+		bool empty_zoid = false ;
+		for (int i = 0 ; lt == 1 && i < N_RANK ; i++) 
+		{
+			unsigned long lb = (grid.x1[i] - grid.x0[i]);
+			if (lb == 0)
+			{
+				empty_zoid = true ;
+			}
+		}
+		for (int i = 0 ; !empty_zoid && i < N_RANK ; i++) 
 		{
 			unsigned long lb, tb;
 			lb = (grid.x1[i] - grid.x0[i]);

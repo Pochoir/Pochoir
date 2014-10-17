@@ -25,6 +25,8 @@
 #include <cstring>
 #include <fstream>
 #include <algorithm>
+#include <ctime>
+
 using namespace std ;
 
 typedef unsigned int word_type ;
@@ -2417,6 +2419,9 @@ private:
 				slope = m_algo.slope_ [i] ;
 			}		
 		}
+#ifdef PERMUTE
+		std::srand(std::time(0));
+#endif
 		time_type dag_time = 0 ;
 		time_type expected_run_time = 0 ;
 		stopwatch * stopwatch_ptr = &m_stopwatch ;
