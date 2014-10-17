@@ -1287,14 +1287,7 @@ inline void Algorithm<N_RANK>::power_of_two_time_cut(int t0, int t1,
 		cout << "t0 " << t0 << " t1 " << t1 << 
 			" h1 " << h1 << " t0 + h1 " <<
 			t0 + h1 << endl ;
-		if (bf)
-		{
-			space_time_cut_boundary(t0, t0 + h1, grid, f, bf) ;
-		}
-		else
-		{
-			space_time_cut_interior(t0, t0 + h1, grid, f) ;
-		}	
+		space_time_cut_boundary(t0, t0 + h1, grid, f, bf) ;
 		t0 += h1 ;
 	}
 
