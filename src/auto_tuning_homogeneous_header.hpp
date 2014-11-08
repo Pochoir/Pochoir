@@ -677,10 +677,11 @@ private:
 					<< m_height_bucket [1] [2 * i + 1] << endl ;
 			}
 		}
-		unsigned long volume = 1 ;
+		unsigned long volume = 1, phys_volume = 1 ;
 		for (int i = 0 ; i < N_RANK ; i++)
 		{
 			volume *= (grid.x1[i] - grid.x0[i]) ;		
+			phys_volume *= m_algo.phys_length_ [i] ;
 		}
 		//m_space_cut_mask = 0 ;
 /*
@@ -730,7 +731,7 @@ private:
 		}
 		cout << "volume " << volume << endl ;
 
-		m_array = malloc (volume * m_type_size) ;
+		m_array = malloc (phys_volume * m_type_size) ;
 		if (! m_array)
 		{
 			cout << "auto tune :Malloc Failed " << endl ;
@@ -1026,6 +1027,17 @@ private:
 				assert (z->height == height) ;
 				grid_info <N_RANK> grid2 = z->info ;
 				int h = height ;
+				/*cout << "found zoid " << endl ;
+				for (int j = N_RANK - 1 ; j >= 0 ; j--)
+				{
+					cout << " x0 [" << j << "] " << grid2.x0 [j] 
+					<< " x1 [" << j << "] " << grid2.x1 [j] 
+					<< " x2 [" << j << "] " << grid2.x0[j] + grid2.dx0[j] * h
+					<< " x3 [" << j << "] " << grid2.x1[j] + grid2.dx1[j] * h
+					<< " dx0 [" << j << "] " << grid2.dx0[j] 
+					<< " dx1 [" << j << "] " << grid2.dx1[j] 
+					<< " h " << h << endl ; 
+				}*/
 				for (int i = N_RANK - 1 ; i >= 0 ; i--)
 				{
 					bool error = false ;
@@ -1046,7 +1058,9 @@ private:
 							pmod(x2, m_algo.phys_length_ [i]) != 
 							pmod(x2_, m_algo.phys_length_ [i]) ||
 							pmod(x3, m_algo.phys_length_ [i]) != 
-							pmod(x3_, m_algo.phys_length_ [i]))
+							pmod(x3_, m_algo.phys_length_ [i]) ||
+							grid.dx0 [i] != grid2.dx0 [i] ||
+							grid.dx1 [i] != grid2.dx1 [i])
 						{
 							error = true ;
 						}
@@ -1054,7 +1068,9 @@ private:
 					else
 					{
 						//use space-time invariance
-						if (x1 - x0 != x1_ - x0_ || x3 - x2 != x3_ - x2_)
+						if (x1 - x0 != x1_ - x0_ || x3 - x2 != x3_ - x2_ ||
+							grid.dx0 [i] != grid2.dx0 [i] ||
+							grid.dx1 [i] != grid2.dx1 [i])
 						{
 							error = true ;
 						}
@@ -1073,6 +1089,8 @@ private:
 							<< " x1 [" << j << "] " << grid.x1 [j] 
 							<< " x2 [" << j << "] " << grid.x0[j] + grid.dx0[j] * h
 							<< " x3 [" << j << "] " << grid.x1[j] + grid.dx1[j] * h
+							<< " dx0 [" << j << "] " << grid.dx0[j] 
+							<< " dx1 [" << j << "] " << grid.dx1[j] 
 							<< " h " << h << endl ; 
 						}
 						cout << " grid 2 at index " << index << endl ;
@@ -1082,6 +1100,8 @@ private:
 							<< " x1 [" << j << "] " << grid2.x1 [j] 
 							<< " x2 [" << j << "] " << grid2.x0[j] + grid2.dx0[j] * h
 							<< " x3 [" << j << "] " << grid2.x1[j] + grid2.dx1[j] * h
+							<< " dx0 [" << j << "] " << grid2.dx0[j] 
+							<< " dx1 [" << j << "] " << grid2.dx1[j] 
 							<< " h " << h << endl ; 
 						}
 						assert (0) ;
@@ -1116,6 +1136,8 @@ private:
 				 << " x1 [" << i << "] " << grid.x1 [i] 
 				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
 				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
+				<< " dx0 [" << i << "] " << grid.dx0[i] 
+				<< " dx1 [" << i << "] " << grid.dx1[i]
 				<< " h " << height << endl ; 
 			}*/
 #endif
@@ -1123,6 +1145,7 @@ private:
 												m_num_vertices)) ;
 			index = m_num_vertices ;
 			m_num_vertices++ ;
+			m_num_boundary_zoids++ ;
 			assert (m_num_vertices == m_zoids.size()) ;
 #ifdef WRITE_ZOID_DIMENSIONS
 			for (int i = 0 ; i < N_RANK ; i++)
@@ -1160,6 +1183,8 @@ private:
 			 << " x1 [" << i << "] " << grid.x1 [i] 
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
+			<< " dx0 [" << i << "] " << grid.dx0[i] 
+			<< " dx1 [" << i << "] " << grid.dx1[i]
 			<< " h " << height << endl ; 
 		}*/
 #endif
@@ -1167,6 +1192,7 @@ private:
 		h.insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
 		index = m_num_vertices ;
 		m_num_vertices++ ;
+		m_num_boundary_zoids++ ;
 		assert (m_num_vertices == m_zoids.size()) ;
 		projections_boundary [k].insert(
 				std::pair<unsigned long, hash_table>(centroid, h)) ;
@@ -1391,7 +1417,62 @@ private:
 			assert (start->second < m_num_vertices) ;
 			zoid_type * z = &(m_zoids [start->second]) ;
 #ifndef NDEBUG
-			assert (z->height == height) ;
+				assert (z->height == height) ;
+				grid_info <N_RANK> grid2 = z->info ;
+				int h = height ;
+				/*cout << "found zoid " << endl ;
+				for (int j = N_RANK - 1 ; j >= 0 ; j--)
+				{
+					cout << " x0 [" << j << "] " << grid2.x0 [j] 
+					<< " x1 [" << j << "] " << grid2.x1 [j] 
+					<< " x2 [" << j << "] " << grid2.x0[j] + grid2.dx0[j] * h
+					<< " x3 [" << j << "] " << grid2.x1[j] + grid2.dx1[j] * h
+					<< " dx0 [" << j << "] " << grid2.dx0[j] 
+					<< " dx1 [" << j << "] " << grid2.dx1[j] 
+					<< " h " << h << endl ; 
+				}*/
+				for (int i = N_RANK - 1 ; i >= 0 ; i--)
+				{
+					int x0 = grid.x0 [i], x1 = grid.x1 [i] ;
+					int x2 = grid.x0 [i] + grid.dx0 [i] * h ;
+					int x3 = grid.x1 [i] + grid.dx1 [i] * h ;
+
+					int x0_ = grid2.x0 [i], x1_ = grid2.x1 [i] ;
+					int x2_ = grid2.x0 [i] + grid2.dx0 [i] * h ; 
+					int x3_ = grid2.x1 [i] + grid2.dx1 [i] * h ;
+					if (x1 - x0 != x1_ - x0_ || x3 - x2 != x3_ - x2_ ||
+						grid.dx0 [i] != grid2.dx0 [i] ||
+						grid.dx1 [i] != grid2.dx1 [i])
+					{
+						cout << "2 diff zoids hash to same key " << endl ;
+						cout << "diff dim " << i << endl ;
+						cout << "centroid " << centroid << endl ;
+						cout << "key " << key << endl ;
+						cout << " grid " << endl ;
+						for (int j = N_RANK - 1 ; j >= 0 ; j--)
+						{
+							cout << " x0 [" << j << "] " << grid.x0 [j] 
+							<< " x1 [" << j << "] " << grid.x1 [j] 
+							<< " x2 [" << j << "] " << grid.x0[j] + grid.dx0[j] * h
+							<< " x3 [" << j << "] " << grid.x1[j] + grid.dx1[j] * h
+							<< " dx0 [" << j << "] " << grid.dx0[j] 
+							<< " dx1 [" << j << "] " << grid.dx1[j] 
+							<< " h " << h << endl ; 
+						}
+						cout << " grid 2 at index " << index << endl ;
+						for (int j = N_RANK - 1 ; j >= 0 ; j--)
+						{
+							cout << " x0 [" << j << "] " << grid2.x0 [j] 
+							<< " x1 [" << j << "] " << grid2.x1 [j] 
+							<< " x2 [" << j << "] " << grid2.x0[j] + grid2.dx0[j] * h
+							<< " x3 [" << j << "] " << grid2.x1[j] + grid2.dx1[j] * h
+							<< " dx0 [" << j << "] " << grid2.dx0[j] 
+							<< " dx1 [" << j << "] " << grid2.dx1[j] 
+							<< " h " << h << endl ; 
+						}
+						assert (0) ;
+					}
+				}
 #endif
 #ifdef CHECK_CACHE_ALIGNMENT
 			if ((centroid * m_type_size) % 64 == 
@@ -1424,12 +1505,15 @@ private:
 			 << " x1 [" << i << "] " << grid.x1 [i] 
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
+			<< " dx0 [" << i << "] " << grid.dx0[i] 
+			<< " dx1 [" << i << "] " << grid.dx1[i]
 			<< " h " << height << endl ; 
 		}*/
 #endif
 		projections_interior [k].insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
 		index = m_num_vertices ;
 		m_num_vertices++ ;
+		m_num_interior_zoids++ ;
 		assert (m_num_vertices == m_zoids.size()) ;
 #ifdef WRITE_ZOID_DIMENSIONS
 		for (int i = 0 ; i < N_RANK ; i++)
@@ -1826,15 +1910,12 @@ private:
 	void print_dag()
 	{
 		cout << "# vertices " << m_num_vertices << endl ;
-		//cout << "# vertices " << m_num_vertices << " # projections " <<
-		//		m_num_projections_interior << endl ;
 		//do a BFS of the dag and print each zoid's info	
 		vector <unsigned long> color ;
 		color.reserve(m_num_vertices) ;
 		color.resize(m_num_vertices) ;
 		for (int j = 0 ; j < m_head.size() ; j++)
 		{
-			//if (m_head [j] == 0)
 			if (m_head [j] == ULONG_MAX)
 			{
 				continue ;
@@ -1855,13 +1936,10 @@ private:
 
 			while (!que.empty())
 			{
-				//zoid_type * z = que.front() ;
 				unsigned long index = que.front() ;
 				assert (index < m_num_vertices) ;
 				zoid_type * z = &(m_zoids[index]) ;
-				//cout << "\nid " << z->id << " h " << z->height <<
 				cout << "\nid " << z->id << " h " << z->height <<
-					//" num children " << z->children.size() << 
 					" # children " << (int) z->num_children << endl ;
 					//" num_parents " << z->parents.size() << 
 				cout << " decision " << (int) z->decision << 
@@ -1879,6 +1957,8 @@ private:
 					<< " x1 [" << i << "] " << grid.x1 [i] 
 					<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * h
 					<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * h
+					<< " dx0 [" << i << "] " << grid.dx0[i]
+					<< " dx1 [" << i << "] " << grid.dx1[i]
 					<< endl ; 
 				}
 				vector<unsigned long> & v = z->parents ;
@@ -2072,6 +2152,8 @@ private:
 	vector<unsigned long> m_head ; // the indices of start nodes in the dag
 	Algorithm <N_RANK> & m_algo ; // a reference to Algorithm
 	unsigned long m_num_vertices ; //# of zoids in the dag
+	unsigned long m_num_interior_zoids ; //# of interior zoids in the dag
+	unsigned long m_num_boundary_zoids ; //# of boundary zoids in the dag
 	const int NUM_BITS_IN_INT = 8 * sizeof(int) ;
 	typedef typename Algorithm<N_RANK>::queue_info queue_info ;
 	set<word_type> m_heterogeneity ;
@@ -2151,6 +2233,8 @@ private:
 		m_type_size = type_size ;
 		m_head.reserve(2) ;
 		m_num_vertices = 0 ;
+		m_num_interior_zoids = 0 ;
+		m_num_boundary_zoids = 0 ;
 		//initialize(grid, T, power_of_two) ;
 		num_bits_dim = sizeof (unsigned long) * 8 / N_RANK ;
 		num_bits_width = sizeof (unsigned long) * 8 / (2 * N_RANK) ;
@@ -2454,7 +2538,8 @@ private:
 				//do a dry run
 				time_type t ;
 				stopwatch_start(stopwatch_ptr) ;
-    			m_algo.shorter_duo_sim_obase_bicut_p(t0, t1, grid, f, bf) ;
+    			//m_algo.shorter_duo_sim_obase_bicut_p(t0, t1, grid, f, bf) ;
+    			m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + 1, grid, f, bf) ;
 				stopwatch_stop(stopwatch_ptr) ;
 			 	stopwatch_get_elapsed_time(stopwatch_ptr, t) ;
 				cout << "t0 " << t0 << " t1 " << t1 << " dry run took " ; 
@@ -2485,6 +2570,8 @@ private:
 									m_zoids[m_head[0]].cache_penalty_time ;
 #endif
 				cout << "# vertices " << m_num_vertices << endl ;
+				cout << "# interior vertices " << m_num_interior_zoids << endl ;
+				cout << "# boundary vertices " << m_num_boundary_zoids << endl ;
 				cout << "DAG capacity " << m_zoids.capacity() << endl ;
 #ifndef NDEBUG
 				//print_dag() ;
@@ -2533,27 +2620,30 @@ private:
 				//copy data back.
 				copy_data(array, m_array, volume) ;
 			}
+		//else
+		//{
 			m_actual_time = 0 ;
 			stopwatch_reset_num_calls(stopwatch_ptr) ;
 #ifndef MEASURE_STATISTICS
 			stopwatch_start(stopwatch_ptr) ;
 #else
 			struct timespec start, end;
-			clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start) ;
+			clock_gettime(CLOCK_FLAG, &start) ;
 #endif
-			trap_space_time_cut_boundary(t0, t1, grid, 
-				m_head [0], f, bf) ;
+				trap_space_time_cut_boundary(t0, t1, grid, 
+					m_head [0], f, bf) ;
 				//&(m_simple_zoids [m_head [0]]), f, bf) ;
 #ifndef MEASURE_STATISTICS
 			stopwatch_stop(stopwatch_ptr) ;
 			stopwatch_get_elapsed_time(stopwatch_ptr, m_actual_time) ;
 #else
-			clock_gettime(CLOCK_THREAD_CPUTIME_ID, &end) ;
+			clock_gettime(CLOCK_FLAG, &end) ;
 			m_actual_time = tdiff2(&end, &start) ;
 #endif
 			std::cout << "Actual :" ;
 			//stopwatch_print_elapsed_time(t) ;
 			stopwatch_print_elapsed_time(m_actual_time) ;
+		//}
 		}
 		else
 		{
@@ -2590,7 +2680,8 @@ private:
 				//do a dry run
 				time_type t ;
 				stopwatch_start(stopwatch_ptr) ;
-    			m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h1, grid, f, bf) ;
+    			//m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h1, grid, f, bf) ;
+    			m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + 1, grid, f, bf) ;
 				stopwatch_stop(stopwatch_ptr) ;
 				stopwatch_get_elapsed_time(stopwatch_ptr, t) ;
 				cout << "t0 " << t0 << " t1 " << t0 + h1 << " dry run took " ;
@@ -2613,6 +2704,7 @@ private:
 				if (h2 > 0)
 				{
 					m_head.push_back (ULONG_MAX) ;
+					m_initial_height = h2 ;
 					build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid, f, bf, 1) ;
 					expected_run_time += m_zoids [m_head [1]].time ;
 #ifdef MEASURE_COLD_MISS
@@ -2620,6 +2712,8 @@ private:
 #endif
 				}
 				cout << "# vertices " << m_num_vertices << endl ;
+				cout << "# interior vertices " << m_num_interior_zoids << endl ;
+				cout << "# boundary vertices " << m_num_boundary_zoids << endl ;
 				cout << "DAG capacity " << m_zoids.capacity() << endl ;
 				//compress the dag		
 				cout << "begin compress dag" << endl ;
@@ -2685,43 +2779,46 @@ private:
 				//copy data back.
 				copy_data(array, m_array, volume) ;
 			}
-			m_actual_time = 0 ;
-			stopwatch_reset_num_calls(stopwatch_ptr) ;
-#ifndef MEASURE_STATISTICS
-			stopwatch_start(stopwatch_ptr) ;
-#else
-			struct timespec start, end;
-			clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start) ;
-#endif
-			for (int i = 0 ; i < m ; i++)
+			//else
 			{
-				cout << "t0 " << t0 << " t1 " << t1 << 
-					" h1 " << h1 << " t0 + h1 " <<
-					t0 + h1 << endl ;
-				trap_space_time_cut_boundary(t0, t0 + h1, grid, 
-					m_head [0], f, bf) ;
-					//&(m_simple_zoids [m_head [0]]), f, bf) ;
-				t0 += h1 ;
-			}
-			if (h2 > 0)
-			{
-				cout << "t0 " << t0 << " t1 " << t1 << 
-					" h2 " << h2 << " t0 + h2 " <<
-					t0 + h2 << endl ;
-				trap_space_time_cut_boundary(t0, t0 + h2, grid, 
-					m_head [1], f, bf) ;
-					//&(m_simple_zoids [m_head [1]]), f, bf) ;
-			}
+				m_actual_time = 0 ;
+				stopwatch_reset_num_calls(stopwatch_ptr) ;
 #ifndef MEASURE_STATISTICS
-			stopwatch_stop(stopwatch_ptr) ;
-			stopwatch_get_elapsed_time(stopwatch_ptr, m_actual_time) ;
+				stopwatch_start(stopwatch_ptr) ;
 #else
-			clock_gettime(CLOCK_THREAD_CPUTIME_ID, &end) ;
-			m_actual_time = tdiff2(&end, &start) ;
+				struct timespec start, end;
+				clock_gettime(CLOCK_FLAG, &start) ;
 #endif
-			cout << "Actual :" ;
-			//stopwatch_print_elapsed_time(t) ;
-			stopwatch_print_elapsed_time(m_actual_time) ;
+				for (int i = 0 ; i < m ; i++)
+				{
+					cout << "t0 " << t0 << " t1 " << t1 << 
+						" h1 " << h1 << " t0 + h1 " <<
+						t0 + h1 << endl ;
+					trap_space_time_cut_boundary(t0, t0 + h1, grid, 
+						m_head [0], f, bf) ;
+						//&(m_simple_zoids [m_head [0]]), f, bf) ;
+					t0 += h1 ;
+				}
+				if (h2 > 0)
+				{
+					cout << "t0 " << t0 << " t1 " << t1 << 
+						" h2 " << h2 << " t0 + h2 " <<
+						t0 + h2 << endl ;
+					trap_space_time_cut_boundary(t0, t0 + h2, grid, 
+						m_head [1], f, bf) ;
+						//&(m_simple_zoids [m_head [1]]), f, bf) ;
+				}
+#ifndef MEASURE_STATISTICS
+				stopwatch_stop(stopwatch_ptr) ;
+				stopwatch_get_elapsed_time(stopwatch_ptr, m_actual_time) ;
+#else
+				clock_gettime(CLOCK_FLAG, &end) ;
+				m_actual_time = tdiff2(&end, &start) ;
+#endif
+				cout << "Actual :" ;
+				//stopwatch_print_elapsed_time(t) ;
+				stopwatch_print_elapsed_time(m_actual_time) ;
+			}
 		}
 #ifdef MEASURE_STATISTICS
 		print_statistics() ;

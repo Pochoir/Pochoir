@@ -1,12 +1,9 @@
 /*
  * ============================================================================
- *       Filename:  pochoir_modified_cuts.hpp
- *    Description:  Has routines 
- *					1. that implement the modified space/power of two
- *					time cuts.
- *					The code uses the time/space cut code framework in
- *					pochoir_walk_recursive.hpp
- *        Created:  10/02/2012
+ *       Filename:  auto_tuning_trap_seq_space_cuts.hpp
+ *    Description:  Has routines for autotuning trapezoidal divide-and-conquer
+ *					algorithm, which performs non hyperspace cuts.
+ *        Created:  10/02/2013
  *         Author:  Eka Palamadai, epn@mit.edu
  * ============================================================================
  */
@@ -36,7 +33,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 {
 	time_type t = 0 ;
 	stopwatch * ptr = &m_stopwatch ;
-    const int lt = t1 - t0;
+    const int lt = t1 - t0 ;
 	stopwatch_stop(ptr) ;
 	stopwatch_get_elapsed_time(ptr, t) ;
 	linkage_time += t ;
@@ -52,11 +49,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	unsigned long num_grid_points = 1 ;
 	bool empty_zoid = false ;
 	vector<int> space_cut_dims ;
-//#ifndef PERMUTE
     for (int i = N_RANK-1; i >= 0; --i) {
-//#else
-//    for (int i = 1; i <= N_RANK-1; ++i) {
-//#endif
         unsigned long lb, tb;
         int thres ;
         lb = (grid.x1[i] - grid.x0[i]);
@@ -74,10 +67,38 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		assert (centroid >= 0) ;
 		width *= phys_length_ [i] ;
 
-		key <<= num_bits_width ;
+		key <<= (num_bits_dim - 4) ;
 		key |= lb ;
-		key <<= num_bits_width ;
-		key |= tb ;
+		key <<= 2 ;
+		int dx0 = grid.dx0[i] ;
+		if (dx0 > 0)
+		{
+			key |= 1 ;
+		}
+		else if (dx0 < 0)
+		{
+			key |= 2 ;
+		}
+		else
+		{
+			key |= 0 ; //this is a no-op
+		}
+		key <<= 2 ; //shift by 2 bits
+		
+		int dx1 = grid.dx1[i] ;
+		if (dx1 > 0)
+		{
+			key |= 1 ;
+		}
+		else if (dx1 < 0)
+		{
+			key |= 2 ;
+		}
+		else
+		{
+			key |= 0 ; //this is a no-op
+		}
+		
         thres = slope_[i] * lt ;
 		unsigned long short_side ;
 		bool space_cut = false ;
@@ -92,8 +113,6 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		if (short_side >= 2 * thres)
 		{
 			space_cut = true ;
-			//set if a space cut can happen in dimension i
-			//decision |= 1 << (i + 1) ;
 			total_num_subzoids = 3 ;
 			space_cut_dims.push_back(i) ;
 		}
@@ -645,11 +664,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 	stopwatch_get_elapsed_time(ptr, t) ;
 	time_type bdry_time = t ;
 
-//#ifndef PERMUTE
     for (int i = N_RANK-1; i >= 0; --i) {
-//#else
-//    for (int i = 1; i <= N_RANK-1; ++i) {
-//#endif
         unsigned long lb, tb;
         int thres ;
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
@@ -703,12 +718,38 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 		}
         sim_can_cut |= space_cut ;
 
-		key <<= num_bits_width ;
+		key <<= (num_bits_dim - 4) ;
 		key |= lb ;
-		key <<= num_bits_width ;
-		key |= tb ;
+		key <<= 2 ;
+		int dx0 = grid.dx0[i] ;
+		if (dx0 > 0)
+		{
+			key |= 1 ;
+		}
+		else if (dx0 < 0)
+		{
+			key |= 2 ;
+		}
+		else
+		{
+			key |= 0 ; //this is a no-op
+		}
+		key <<= 2 ; //shift by 2 bits
+		
+		int dx1 = grid.dx1[i] ;
+		if (dx1 > 0)
+		{
+			key |= 1 ;
+		}
+		else if (dx1 < 0)
+		{
+			key |= 2 ;
+		}
+		else
+		{
+			key |= 0 ; //this is a no-op
+		}
 
-        //call_boundary |= l_touch_boundary;
 		num_grid_points *= ((lb + tb) / 2) ;
 		if (lb == 0 && lt == 1)
 		{
