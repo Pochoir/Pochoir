@@ -111,10 +111,7 @@ class zoid
 #ifdef SUBSUMPTION_SPACE
 		num_level_divide = 0 ;
 #endif
-#ifdef SUBSUMPTION_TIME
-		max_loop_time = 0 ;
-#endif
-#ifdef SUBSUMPTION3
+#if defined (SUBSUMPTION3) || defined (SUBSUMPTION_TIME)
 		loop_time = 0 ;
 #endif
 #ifdef MEASURE_COLD_MISS
@@ -141,10 +138,7 @@ class zoid
 #ifdef SUBSUMPTION_SPACE
 		num_level_divide = z.num_level_divide ;
 #endif
-#ifdef SUBSUMPTION_TIME
-		max_loop_time = z.max_loop_time ;
-#endif
-#ifdef SUBSUMPTION3
+#if defined (SUBSUMPTION3) || defined (SUBSUMPTION_TIME)
 		loop_time = z.loop_time ;
 #endif
 #ifdef MEASURE_COLD_MISS
@@ -185,10 +179,7 @@ class zoid
 #ifdef SUBSUMPTION_SPACE
 			num_level_divide = z.num_level_divide ;
 #endif
-#ifdef SUBSUMPTION_TIME
-			max_loop_time = z.max_loop_time ;
-#endif
-#ifdef SUBSUMPTION3
+#if defined (SUBSUMPTION3) || defined (SUBSUMPTION_TIME)
 			loop_time = z.loop_time ;
 #endif
 #ifdef MEASURE_COLD_MISS
@@ -248,10 +239,7 @@ class zoid
 #ifdef SUBSUMPTION_SPACE
 		num_level_divide = z.num_level_divide ;
 #endif
-#ifdef SUBSUMPTION_TIME
-		max_loop_time = z.max_loop_time ;
-#endif
-#ifdef SUBSUMPTION3
+#if defined (SUBSUMPTION3) || defined (SUBSUMPTION_TIME)
 		loop_time = z.loop_time ;
 #endif
 #ifdef MEASURE_COLD_MISS
@@ -311,10 +299,7 @@ class zoid
 #ifdef SUBSUMPTION_SPACE
 		num_level_divide = 0 ;
 #endif
-#ifdef SUBSUMPTION_TIME
-		max_loop_time = 0 ;
-#endif
-#ifdef SUBSUMPTION3
+#if defined (SUBSUMPTION3) || defined (SUBSUMPTION_TIME)
 		loop_time = 0 ;
 #endif
 #ifdef MEASURE_COLD_MISS
@@ -348,10 +333,7 @@ class zoid
 #ifdef SUBSUMPTION_SPACE
 	unsigned char num_level_divide ; //# of levels of consecutive divisions
 #endif
-#ifdef SUBSUMPTION_TIME
-	time_type max_loop_time ;
-#endif
-#ifdef SUBSUMPTION3
+#if defined (SUBSUMPTION3) || defined (SUBSUMPTION_TIME)
 	time_type loop_time ;
 #endif
 #ifdef MEASURE_COLD_MISS
@@ -772,12 +754,12 @@ private:
 		assert (m_num_vertices == m_zoids.size()) ;
 		//m_head [index] = m_num_vertices ;
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
-		time_type rtime = 0, ctime = 0, max_loop_time = 0 ;
+		time_type rtime = 0, ctime = 0 ;
 		stopwatch_reset_num_calls(&m_stopwatch) ;
-		time_type t ;
+		time_type best_time = LONG_MAX ;
 		stopwatch_start((&m_stopwatch)) ;
 		symbolic_trap_space_time_cut_boundary(t0, t1, grid, 
-					m_num_vertices - 1, 0, rtime, ctime, f, bf, max_loop_time) ;
+					m_num_vertices - 1, 0, rtime, ctime, f, bf, best_time) ;
 		stopwatch_stop((&m_stopwatch)) ;
 		m_head [index] = m_zoids [index_head].children[0] ;
 		m_zoids [index_head].resize_children (0) ;
@@ -818,9 +800,9 @@ private:
 		assert (m_num_vertices == m_zoids.size()) ;
 		//m_head [index] = m_num_vertices ;
 		cout << "t0 " << t0 << " t1 " << t1 << endl ;
-		time_type rtime = 0, ntime = 0, max_loop_time = 0 ;
+		time_type rtime = 0, ntime = 0 ;
 		symbolic_sawzoid_space_time_cut_boundary(t0, t1, grid, 
-					m_num_vertices - 1, 0, rtime, ntime, f, bf, max_loop_time);
+					m_num_vertices - 1, 0, rtime, ntime, f, bf);
 		m_head [index] = m_zoids [index_head].children[0] ;
 		m_zoids [index_head].resize_children (0) ;
 #ifndef NDEBUG
@@ -2005,12 +1987,13 @@ private:
 	inline void symbolic_trap_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, unsigned long,
 		int child_index, time_type &, time_type &, F const & f, BF const & bf,
-		time_type &) ;
+		time_type) ;
 
 	template <typename F>
 	inline void symbolic_trap_space_time_cut_interior(int t0, int t1, 
 		grid_info<N_RANK> const & grid, unsigned long,
-		int child_index, time_type &, time_type &, F const & f, time_type &) ;
+		int child_index, time_type &, time_type &, F const & f,
+		time_type) ;
 
 	template <typename F, typename BF>
 	inline void symbolic_trap_space_cut_boundary(int t0, int t1,
@@ -2479,10 +2462,10 @@ private:
 				<< "ms" << std::endl;
 	}
 
-	template <typename F, typename BF>
+	template <typename F, typename BF, typename TF>
     inline void do_trap_space_time_cuts(int t0, int t1,
         grid_info<N_RANK> const & grid, F const & f, BF const & bf, 
-		void * array)
+		TF const & tf, void * array)
 	{
 		assert (t0 < t1) ;
 		int T = t1 - t0 ;
@@ -2497,9 +2480,11 @@ private:
 		for (int i = 0 ; i < N_RANK ; i++)
 		{
 			volume *= m_algo.phys_length_ [i] ;
-			if (m_algo.phys_length_ [i] > W)
+			//if (m_algo.phys_length_ [i] > W)
+			if (grid.x1 [i] - grid.x0 [i] > W)
 			{
-				W = m_algo.phys_length_ [i] ;
+				//W = m_algo.phys_length_ [i] ;
+				W = grid.x1 [i] - grid.x0 [i] ;
 				slope = m_algo.slope_ [i] ;
 			}		
 		}
@@ -2563,7 +2548,8 @@ private:
 				m_head.push_back (ULONG_MAX) ;
 				struct timespec start, end;
 				clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start) ;
-				build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
+				//build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
+				build_auto_tune_dag_trap(t0, t1, grid, tf, bf, 0) ;
 				expected_run_time = m_zoids[m_head[0]].time ;
 #ifdef MEASURE_COLD_MISS
 				time_type cold_miss_time = 
@@ -2620,30 +2606,30 @@ private:
 				//copy data back.
 				copy_data(array, m_array, volume) ;
 			}
-		//else
-		//{
-			m_actual_time = 0 ;
-			stopwatch_reset_num_calls(stopwatch_ptr) ;
+			else
+			{
+				m_actual_time = 0 ;
+				stopwatch_reset_num_calls(stopwatch_ptr) ;
 #ifndef MEASURE_STATISTICS
-			stopwatch_start(stopwatch_ptr) ;
+				stopwatch_start(stopwatch_ptr) ;
 #else
-			struct timespec start, end;
-			clock_gettime(CLOCK_FLAG, &start) ;
+				struct timespec start, end;
+				clock_gettime(CLOCK_FLAG, &start) ;
 #endif
 				trap_space_time_cut_boundary(t0, t1, grid, 
-					m_head [0], f, bf) ;
-				//&(m_simple_zoids [m_head [0]]), f, bf) ;
+						m_head [0], f, bf) ;
+					//&(m_simple_zoids [m_head [0]]), f, bf) ;
 #ifndef MEASURE_STATISTICS
-			stopwatch_stop(stopwatch_ptr) ;
-			stopwatch_get_elapsed_time(stopwatch_ptr, m_actual_time) ;
+				stopwatch_stop(stopwatch_ptr) ;
+				stopwatch_get_elapsed_time(stopwatch_ptr, m_actual_time) ;
 #else
-			clock_gettime(CLOCK_FLAG, &end) ;
-			m_actual_time = tdiff2(&end, &start) ;
+				clock_gettime(CLOCK_FLAG, &end) ;
+				m_actual_time = tdiff2(&end, &start) ;
 #endif
-			std::cout << "Actual :" ;
-			//stopwatch_print_elapsed_time(t) ;
-			stopwatch_print_elapsed_time(m_actual_time) ;
-		//}
+				std::cout << "Actual :" ;
+				//stopwatch_print_elapsed_time(t) ;
+				stopwatch_print_elapsed_time(m_actual_time) ;
+			}
 		}
 		else
 		{
@@ -2694,7 +2680,8 @@ private:
 				clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start) ;
 
 				m_head.push_back (ULONG_MAX) ;
-				build_auto_tune_dag_trap(t0, t0 + h1, grid, f, bf, 0) ;
+				//build_auto_tune_dag_trap(t0, t0 + h1, grid, f, bf, 0) ;
+				build_auto_tune_dag_trap(t0, t0 + h1, grid, tf, bf, 0) ;
 				expected_run_time = m_zoids[m_head[0]].time * (int) (T / h1) ;
 #ifdef MEASURE_COLD_MISS
 				time_type cold_miss_time = 
@@ -2705,7 +2692,9 @@ private:
 				{
 					m_head.push_back (ULONG_MAX) ;
 					m_initial_height = h2 ;
-					build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid, f, bf, 1) ;
+					//build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid, f, bf, 1) ;
+					build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid, tf, bf,
+											 1) ;
 					expected_run_time += m_zoids [m_head [1]].time ;
 #ifdef MEASURE_COLD_MISS
 					cold_miss_time += m_zoids [m_head [1]].cache_penalty_time ;
@@ -2779,7 +2768,7 @@ private:
 				//copy data back.
 				copy_data(array, m_array, volume) ;
 			}
-			//else
+			else
 			{
 				m_actual_time = 0 ;
 				stopwatch_reset_num_calls(stopwatch_ptr) ;
