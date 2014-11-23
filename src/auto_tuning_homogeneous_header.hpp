@@ -1,14 +1,7 @@
 /*
  * ============================================================================
- *       Filename:  projections.hpp
- *    Description:  Has routines 
- *					1. that count the # of projections in
- *					the default space/time cut scheme and the
- *					modified space/power of two time cut scheme.
- *					2. that implement the modified space/power of two
- *					time cuts.
- *					The code uses the time/space cut code framework in
- *					pochoir_walk_recursive.hpp
+ *       Filename:  auto_tuning_homogeneous_header.hpp
+ *    Description:  Header for autotuning routines
  *        Created:  03/25/2013
  *         Author:  Eka Palamadai, epn@mit.edu
  * ============================================================================
