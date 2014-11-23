@@ -61,14 +61,9 @@ inline void stopwatch_stop(stopwatch *s);
 inline bool stopwatch_is_running(stopwatch *s);
 #endif
 
-//inline long long stopwatch_get_elapsed_time(stopwatch *s);
-
-/* Returns the elapsed time of the stopwatch. */
-//inline long long stopwatch_stop_and_start(stopwatch *s) ; 
-							//bool subtract_measure_time = false);
-
 /* Utility function. */
 inline void stopwatch_time_to_string(char *buffer, long long time);
+inline double stopwatch_time_to_double(long long time) ;
 
 inline void stopwatch_reset_num_calls(stopwatch *s) ;
 
@@ -266,81 +261,28 @@ inline bool stopwatch_is_running(stopwatch *s) {
 #endif
 }
 
-/*inline long long stopwatch_get_elapsed_time(stopwatch *s) {
-    assert(s->initialized);
-    //CILK_ASSERT(s->initialized);
-    assert(s->measurements_valid);
-    //CILK_ASSERT(s->measurements_valid);
-    return s->elapsed_time;
-}*/
-
-#define stopwatch_get_elapsed_time_corrected(s, t) { \
-    assert(s->initialized); \
-    assert(s->measurements_valid); \
-    t = s->elapsed_time; \
-}
-/*	if (t < 10 * s->measure_time) \
-	{ \
-		t = LONG_MAX / 1000 ; \
-	} \
-*/
 #define stopwatch_get_elapsed_time(s, t) { \
     assert(s->initialized); \
     assert(s->measurements_valid); \
     t = s->elapsed_time; \
 }
 
-/*
-inline long long stopwatch_stop_and_start(stopwatch *s) {
-//						bool subtract_measure_time) 
-#ifdef KXING_DEBUG_STOPWATCH
-    printf("stopping: %p\n", s);
-    printf("starting: %p\n", s);
-#endif
-
-#if defined(USE_TIMING) && defined(KXING_OPTIMIZED_STOPWATCH)
-    assert(s->running);
-    //CILK_ASSERT(s->running);
-
-    struct timespec current_time;
-    clock_gettime(CLOCK_FLAG, &current_time);
-    long long elapsed_time =
-        (long long)(current_time.tv_sec - s->start.tv_sec) * NANO_SEC +
-                    current_time.tv_nsec - s->start.tv_nsec;
-    s->start = current_time;
-    return elapsed_time;
-#endif
-#ifndef USE_TIMING
-    stopwatch_stop(s);
-    long long elapsed_time = stopwatch_get_elapsed_time(s);
-	s->num_calls++ ;
-    stopwatch_start(s);
-#endif
-#ifdef USE_TIMING
-    // Avoid imprecision from doing two timing calls. 
-    //s->start = s->end; //looks unnecessary for timing stencils.
-	clock_gettime(CLOCK_FLAG, &(s->end));
-    s->elapsed_time =
-            (long long)(s->end.tv_sec - s->start.tv_sec) * NANO_SEC +
-            s->end.tv_nsec - s->start.tv_nsec ;
-	//if (subtract_measure_time)
-	//{
-	//	s->elapsed_time -= s->measure_time ;
-	//	s->elapsed_time = max(s->elapsed_time, (long long) 0) ;
-	//}
-	assert (s->elapsed_time >= 0) ;
-    long long elapsed_time = s->elapsed_time ;
-	s->num_calls++ ;
-    clock_gettime(CLOCK_FLAG, &(s->start));
-#endif
-    return elapsed_time ;
-}*/
-
 #define stopwatch_stop_and_start(s, t) { \
     stopwatch_stop(s); \
 	stopwatch_get_elapsed_time(s, t); \
 	s->num_calls++ ; \
     stopwatch_start(s); \
+}
+
+inline double stopwatch_time_to_double(long long time) {
+	assert (time >= 0) ;
+	double t ;
+#ifdef USE_TIMING
+	t = (double) time / (double) 1000000 ; //in milliseconds
+#else
+	t = time ;
+#endif
+	return t ;
 }
 
 inline void stopwatch_time_to_string(char *buffer, long long time) {
@@ -376,7 +318,8 @@ inline long long stopwatch_compute_measurement_time()
 	struct timespec start1, start2 ;
 	struct timespec end1, end2 ;
 	clock_gettime(CLOCK_FLAG, &start1) ;
-	//for (int i = 0 ; i < TIMES ; i++)
+	int TIMES = 25000 ;
+	for (int i = 0 ; i < TIMES ; i++)
 	{
 		//1
 		clock_gettime(CLOCK_FLAG, &start2) ;
@@ -464,7 +407,8 @@ inline long long stopwatch_compute_measurement_time()
 	//		end1.tv_nsec - start1.tv_nsec;
 	long long elapsed_time = 0 ;
 	stopwatch_diff (start1, end1, elapsed_time) ;
-	elapsed_time /= 41 ;
+	//elapsed_time /= 41 ;
+	elapsed_time /= (40 * TIMES) ;
 	char c [100] ;
 	stopwatch_time_to_string(c, elapsed_time) ;
 	cout << "measurement time " << c << endl ;
