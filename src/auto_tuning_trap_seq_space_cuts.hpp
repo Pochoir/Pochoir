@@ -20,10 +20,93 @@
 #define touch_boundary m_algo.touch_boundary
 #define phys_length_ m_algo.phys_length_
 #define base_case_kernel_boundary m_algo.base_case_kernel_boundary
-#define base_case_kernel_boundary_rectangle m_algo.base_case_kernel_boundary_rectangle
+#define base_case_kernel_boundary_tune m_algo.base_case_kernel_boundary_tune
 #define uub_boundary m_algo.uub_boundary
 #define ulb_boundary m_algo.ulb_boundary
 #define lub_boundary m_algo.lub_boundary
+
+#ifdef STOP_TUNING_EARLY
+#define SPACE_CUT_INTERIOR(k_, x0_, x1_, dx0_, dx1_) \
+if (elapsed_time + ltime + ctime < best_time) \
+{ \
+	stopwatch_stop(ptr) ; \
+	stopwatch_get_elapsed_time(ptr, t) ; \
+	elapsed_time += t ; \
+	l_son_grid.x0[i] = x0_; \
+	l_son_grid.dx0[i] = dx0_; \
+	l_son_grid.x1[i] = x1_ ; \
+	l_son_grid.dx1[i] = dx1_ ; \
+	symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, \
+			index, k_, ltime, ctime, f, best_time) ; \
+	stopwatch_start(ptr) ; \
+}
+
+#define LOOP_INTERIOR \
+{ \
+	cilk_spawn loop_interior(t0, t1, grid, f, loop_time) ; \
+	timespec ts ; \
+	ts.tv_nsec = best_time ; \
+	ts.tv_sec = 0 ; \
+	if (nanosleep(&ts, 0) == 0) \
+	{ \
+		t1 = 0 ; \
+	} \
+	cilk_sync ; \
+}
+
+#else
+#define SPACE_CUT_INTERIOR(k_, x0_, x1_, dx0_, dx1_) \
+{ \
+	l_son_grid.x0[i] = x0_; \
+	l_son_grid.dx0[i] = dx0_; \
+	l_son_grid.x1[i] = x1_ ; \
+	l_son_grid.dx1[i] = dx1_ ; \
+	symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, \
+			index, k_, ltime, ctime, f, best_time) ; \
+}
+
+#define LOOP_INTERIOR loop_interior(t0, t1, grid, f, loop_time)
+#endif
+
+template <int N_RANK> template <typename F>
+inline void auto_tune<N_RANK>::loop_interior(int t0, VOLATILE_INT t1, 
+	grid_info<N_RANK> const & grid, F const & f, time_type & loop_time)
+{
+	stopwatch * ptr = &m_stopwatch ;
+	time_type t = 0 ;
+	stopwatch_start(ptr) ;
+	f(t0, t1, grid) ;
+	stopwatch_stop(ptr) ;
+	stopwatch_get_elapsed_time(ptr, t) ;
+	loop_time = t ;
+	assert (loop_time >= 0) ;
+}
+
+template <int N_RANK> template <typename F, typename BF>
+inline void auto_tune<N_RANK>::loop_boundary(int t0, VOLATILE_INT t1, 
+	grid_info<N_RANK> const & grid, F const & f, BF const & bf, 
+	time_type & loop_time, bool call_boundary)
+{
+	stopwatch * ptr = &m_stopwatch ;
+	time_type t = 0 ;
+	stopwatch_start(ptr) ;
+	if (call_boundary)
+	{
+#ifdef STOP_TUNING_EARLY
+		base_case_kernel_boundary_tune(t0, t1, grid, bf);
+#else
+		base_case_kernel_boundary(t0, t1, grid, bf);
+#endif
+	} 
+	else 
+	{
+		f(t0, t1, grid);
+	}
+	stopwatch_stop(ptr) ;
+	stopwatch_get_elapsed_time(ptr, t) ;
+	loop_time = t ;
+	assert (loop_time >= 0) ;
+}
 
 template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
@@ -214,25 +297,38 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
         int halflt = lt / 2;
         l_son_grid = grid;
         symbolic_trap_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
-				index, 0, ltime, ctime, f);
-        for (int i = 0; i < N_RANK; ++i) {
-            l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
-            l_son_grid.dx0[i] = grid.dx0[i];
-            l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
-            l_son_grid.dx1[i] = grid.dx1[i];
-        }
+				index, 0, ltime, ctime, f, best_time) ;
+		for (int i = 0; i < N_RANK; ++i) {
+			l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
+			l_son_grid.dx0[i] = grid.dx0[i];
+			l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
+			l_son_grid.dx1[i] = grid.dx1[i];
+		}
+#ifdef STOP_TUNING_EARLY
+		stopwatch_stop(ptr) ;
+		stopwatch_get_elapsed_time(ptr, t) ;
+		time_cut_elapsed_time += t ;
+
+		if (t + ltime + ctime < best_time)
+		{
+			stopwatch_start(ptr) ;
+        	symbolic_trap_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
+				index, 1, ltime, ctime, f, best_time) ;
+		}
+#else
         symbolic_trap_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
-				index, 1, ltime, ctime, f);
-		
+			index, 1, ltime, ctime, f, best_time) ;
+#endif
 		//measure the remaining function call overhead.
 		stopwatch_stop(ptr) ;
 		stopwatch_get_elapsed_time(ptr, t) ;
 		//ltime is division cost + partial function call overhead.
-		time_cut_elapsed_time = t + ltime + ctime ;
+		time_cut_elapsed_time += t + ltime + ctime ;
 		assert (ltime >= 0) ;
 		assert (ctime >= 0) ;
 		assert (t >= 0) ;
 		assert (m_zoids [index].num_children == 2) ;
+		best_time = min (best_time, time_cut_elapsed_time) ;
 #ifndef NDEBUG
 		m_zoids [index].ttime = time_cut_elapsed_time ;
 #endif
@@ -283,7 +379,8 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	int best_case = -1 ; 
     for (int j = 0 ; j < space_cut_dims.size() ; j++) {
 		int i = space_cut_dims [j] ;
-		time_type ltime = 0, ctime = 0  ;
+		time_type ltime = 0, ctime = 0 ;
+		time_type elapsed_time = 0 ;
 	
 		//measure the divide time
 		stopwatch_start(ptr) ;
@@ -300,27 +397,9 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 			const int l_start = grid.x0[i];
 			const int l_end = grid.x1[i];
 
-			//process the middle gray zoid
-			l_son_grid.x0[i] = l_start + mid - thres;
-			l_son_grid.dx0[i] = slope_[i];
-			l_son_grid.x1[i] = l_start + mid + thres;
-			l_son_grid.dx1[i] = -slope_[i];
-			symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid,
-					index, 0, ltime, ctime, f) ;
-
-			l_son_grid.x0[i] = l_start;
-			l_son_grid.dx0[i] = grid.dx0[i];
-			l_son_grid.x1[i] = l_start + mid - thres;
-			l_son_grid.dx1[i] = slope_[i];
-			symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid,
-					index, 1, ltime, ctime, f) ;
-
-			l_son_grid.x0[i] = l_start + mid + thres;
-			l_son_grid.dx0[i] = -slope_[i];
-			l_son_grid.x1[i] = l_end;
-			l_son_grid.dx1[i] = grid.dx1[i];
-			symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid,
-					index, 2, ltime, ctime, f) ;
+			SPACE_CUT_INTERIOR(0, l_start + mid - thres, l_start + mid + thres, slope_[i], -slope_[i]) ;
+			SPACE_CUT_INTERIOR(1, l_start, l_start + mid - thres, grid.dx0[i], slope_[i]) ;
+			SPACE_CUT_INTERIOR(2, l_start + mid + thres, l_end, -slope_[i], grid.dx1[i]) ;
 		} // end if (cut_lb) 
 		else { // cut_tb 
 				const int mid = tb/2;
@@ -329,26 +408,9 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 				const int l_end = grid.x1[i];
 				const int ul_start = grid.x0[i] + grid.dx0[i] * lt;
 
-				l_son_grid.x0[i] = l_start;
-				l_son_grid.dx0[i] = grid.dx0[i];
-				l_son_grid.x1[i] = ul_start + mid;
-				l_son_grid.dx1[i] = -slope_[i];
-				symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid,
-					index, 0, ltime, ctime, f) ;
-
-				l_son_grid.x0[i] = ul_start + mid;
-				l_son_grid.dx0[i] = slope_[i];
-				l_son_grid.x1[i] = l_end;
-				l_son_grid.dx1[i] = grid.dx1[i];
-				symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid,
-					index, 1, ltime, ctime, f) ;
-
-				l_son_grid.x0[i] = ul_start + mid;
-				l_son_grid.dx0[i] = -slope_[i];
-				l_son_grid.x1[i] = ul_start + mid;
-				l_son_grid.dx1[i] = slope_[i];
-				symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid,
-					index, 2, ltime, ctime, f) ;
+				SPACE_CUT_INTERIOR(0, l_start, ul_start + mid, grid.dx0[i], -slope_[i]) ;
+				SPACE_CUT_INTERIOR(1, ul_start + mid, l_end, slope_[i], grid.dx1[i]) ;
+				SPACE_CUT_INTERIOR(2, ul_start + mid, ul_start + mid, -slope_[i], slope_[i]) ;
 		} // end if (cut_tb) 
 		
 		stopwatch_stop(ptr) ;
@@ -357,13 +419,14 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		assert (t >= 0) ;
 		assert (ctime >= 0) ;
 		//ltime is division cost + partial function call overhead.
-		time_type elapsed_time = ltime + ctime + t ;
+		elapsed_time += ltime + ctime + t ;
 		if (elapsed_time < space_cut_elapsed_time)
 		{
 			space_cut_elapsed_time = elapsed_time ;
 			best_case = i ;
 			//back up the zoid with its children.
 			bak2 = m_zoids [index] ;
+			best_time = min(best_time, elapsed_time) ;
 		}
 		
 		assert (m_zoids [index].num_children == 3) ;
@@ -526,12 +589,13 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	{
 		//determine the looping time on the zoid
 		t = 0 ;
-		stopwatch_start(ptr) ;
-		f(t0, t1, grid) ;
-		stopwatch_stop(ptr) ;
-		stopwatch_get_elapsed_time(ptr, t) ;
-		loop_time = t ;
-		assert (loop_time >= 0) ;
+		//cout << "best time " << best_time << endl ;
+		//stopwatch_start(ptr) ;
+		LOOP_INTERIOR ;
+		//stopwatch_stop(ptr) ;
+		//stopwatch_get_elapsed_time(ptr, t) ;
+		//loop_time = t ;
+		//assert (loop_time >= 0) ;
 #ifndef NDEBUG
 		m_zoids [index].ltime = loop_time ;
 #endif
@@ -573,13 +637,51 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 if (call_boundary) \
 { \
 	symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, \
-			index, k, ltime, ctime, f, bf) ; \
+			index, k, ltime, ctime, f, bf, best_time) ; \
 } \
 else \
 { \
 	symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, \
-			index, k, ltime, ctime, f); \
+			index, k, ltime, ctime, f, best_time) ; \
 }
+
+#ifdef STOP_TUNING_EARLY
+#define SPACE_CUT_TUNE_BOUNDARY(k_, x0_, x1_, dx0_, dx1_) \
+if (elapsed_time + ltime + ctime < best_time) \
+{ \
+	stopwatch_stop(ptr) ; \
+	stopwatch_get_elapsed_time(ptr, t) ; \
+	elapsed_time += t ; \
+	l_son_grid.x0[i] = x0_; \
+	l_son_grid.dx0[i] = dx0_; \
+	l_son_grid.x1[i] = x1_ ; \
+	l_son_grid.dx1[i] = dx1_ ; \
+	SPACE_CUT_BOUNDARY(k_) ; \
+	stopwatch_start(ptr) ; \
+}
+
+#define LOOP_BOUNDARY \
+{ \
+	cilk_spawn loop_boundary(t0, t1, grid, f, bf, loop_time, call_boundary) ; \
+	timespec ts ; \
+	ts.tv_nsec = best_time ; \
+	ts.tv_sec = 0 ; \
+	if (nanosleep(&ts, 0) == 0) \
+	{ \
+		t1 = 0 ; \
+	} \
+	cilk_sync ; \
+}
+#else
+#define SPACE_CUT_TUNE_BOUNDARY(k_, x0_, x1_, dx0_, dx1_) \
+	l_son_grid.x0[i] = x0_; \
+	l_son_grid.dx0[i] = dx0_; \
+	l_son_grid.x1[i] = x1_ ; \
+	l_son_grid.dx1[i] = dx1_ ; \
+	SPACE_CUT_BOUNDARY(k_) ; 
+
+#define LOOP_BOUNDARY loop_boundary(t0, t1, grid, f, bf, loop_time, call_boundary)
+#endif
 
 template <int N_RANK> template <typename F, typename BF>
 inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
@@ -821,35 +923,46 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
         l_son_grid = l_father_grid;
         if (call_boundary) {
             symbolic_trap_space_time_cut_boundary(t0, t0+halflt, l_son_grid,
-					index, 0, ltime, ctime, f, bf);
+					index, 0, ltime, ctime, f, bf, best_time);
         } else {
             symbolic_trap_space_time_cut_interior(t0, t0+halflt, l_son_grid,
-					index, 0, ltime, ctime, f);
+					index, 0, ltime, ctime, f, best_time);
         }
+		for (int i = 0; i < N_RANK; ++i) {
+			l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
+			l_son_grid.dx0[i] = l_father_grid.dx0[i];
+			l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
+			l_son_grid.dx1[i] = l_father_grid.dx1[i];
+		}
+#ifdef STOP_TUNING_EARLY
+		stopwatch_stop(ptr) ;
+		stopwatch_get_elapsed_time(ptr, t) ;
+		time_cut_elapsed_time += t ;
 
-        for (int i = 0; i < N_RANK; ++i) {
-            l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
-            l_son_grid.dx0[i] = l_father_grid.dx0[i];
-            l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
-            l_son_grid.dx1[i] = l_father_grid.dx1[i];
-        }
-        if (call_boundary) {
-            symbolic_trap_space_time_cut_boundary(t0+halflt, t1, l_son_grid,
-					index, 1, ltime, ctime, f, bf);
-        } else {
-            symbolic_trap_space_time_cut_interior(t0+halflt, t1, l_son_grid,
-					index, 1, ltime, ctime, f);
-        }
-		
+		if (t + ltime + ctime < best_time)
+		{
+			stopwatch_start(ptr) ;
+#endif
+			if (call_boundary) {
+				symbolic_trap_space_time_cut_boundary(t0+halflt, t1, l_son_grid,
+						index, 1, ltime, ctime, f, bf, best_time);
+			} else {
+				symbolic_trap_space_time_cut_interior(t0+halflt, t1, l_son_grid,
+						index, 1, ltime, ctime, f, best_time);
+			}
+#ifdef STOP_TUNING_EARLY
+		}
+#endif
 		//measure the remaining function call overhead.
 		stopwatch_stop(ptr) ;
 		stopwatch_get_elapsed_time(ptr, t) ;
 		//ltime is division cost + partial function call overhead.
-		time_cut_elapsed_time = t + ltime + ctime ;
+		time_cut_elapsed_time += t + ltime + ctime ;
 		assert (ltime >= 0) ;
 		assert (ctime >= 0) ;
 		assert (t >= 0) ;
 		assert (m_zoids [index].num_children == 2) ;
+		best_time = min (best_time, time_cut_elapsed_time) ;
 #ifndef NDEBUG
 		m_zoids [index].ttime = time_cut_elapsed_time ;
 #endif
@@ -900,6 +1013,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
     for (int j = 0 ; j < space_cut_dims.size() ; j++) {
 		int i = space_cut_dims [j] ;
 		time_type ltime = 0, ctime = 0  ;
+		time_type elapsed_time = 0 ;
 		if (grid.x1[i] - grid.x0[i] == phys_length_[i] && 
 			l_father_grid.dx0[i] == 0 && l_father_grid.dx1[i] == 0)
 		{
@@ -926,23 +1040,9 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 			const int l_end = l_father_grid.x1[i];
 
 			//process the middle gray zoid
-			l_son_grid.x0[i] = l_start + mid - thres;
-			l_son_grid.dx0[i] = slope_[i];
-			l_son_grid.x1[i] = l_start + mid + thres;
-			l_son_grid.dx1[i] = -slope_[i];
-			SPACE_CUT_BOUNDARY(0) ;
-
-			l_son_grid.x0[i] = l_start;
-			l_son_grid.dx0[i] = l_father_grid.dx0[i];
-			l_son_grid.x1[i] = l_start + mid - thres;
-			l_son_grid.dx1[i] = slope_[i];
-			SPACE_CUT_BOUNDARY(1) ;
-
-			l_son_grid.x0[i] = l_start + mid + thres;
-			l_son_grid.dx0[i] = -slope_[i];
-			l_son_grid.x1[i] = l_end;
-			l_son_grid.dx1[i] = l_father_grid.dx1[i];
-			SPACE_CUT_BOUNDARY(2) ;
+			SPACE_CUT_TUNE_BOUNDARY(0, l_start + mid - thres, l_start + mid + thres, slope_[i], -slope_[i]) ;
+			SPACE_CUT_TUNE_BOUNDARY(1, l_start, l_start + mid - thres, l_father_grid.dx0[i], slope_[i]) ;
+			SPACE_CUT_TUNE_BOUNDARY(2, l_start + mid + thres, l_end, -slope_[i], l_father_grid.dx1[i]) ;
 		} // end if (cut_lb) 
 		else { // cut_tb 
 			if (lb == phys_length_[i] && l_father_grid.dx0[i] == 0 && l_father_grid.dx1[i] == 0) {
@@ -952,40 +1052,17 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 				const int l_start = l_father_grid.x0[i];
 				const int l_end = l_father_grid.x1[i];
 
-				l_son_grid.x0[i] = l_start ;
-				l_son_grid.dx0[i] = slope_[i];
-				l_son_grid.x1[i] = l_end ;
-				l_son_grid.dx1[i] = -slope_[i];
-				SPACE_CUT_BOUNDARY(0) ;
-
-				l_son_grid.x0[i] = l_end ;
-				l_son_grid.dx0[i] = -slope_[i];
-				l_son_grid.x1[i] = l_end ;
-				l_son_grid.dx1[i] = slope_[i];
-				SPACE_CUT_BOUNDARY(1) ;
+				SPACE_CUT_TUNE_BOUNDARY(0, l_start, l_end, slope_[i], -slope_[i]);
+				SPACE_CUT_TUNE_BOUNDARY(1, l_end, l_end, -slope_[i], slope_[i]);
 			} else { /* NOT the initial cut! */
 				const int mid = tb/2;
 				l_son_grid = l_father_grid;
 				const int l_start = l_father_grid.x0[i];
 				const int l_end = l_father_grid.x1[i];
 				const int ul_start = l_father_grid.x0[i] + l_father_grid.dx0[i] * lt;
-				l_son_grid.x0[i] = l_start;
-				l_son_grid.dx0[i] = l_father_grid.dx0[i];
-				l_son_grid.x1[i] = ul_start + mid;
-				l_son_grid.dx1[i] = -slope_[i];
-				SPACE_CUT_BOUNDARY(0) ;
-
-				l_son_grid.x0[i] = ul_start + mid;
-				l_son_grid.dx0[i] = slope_[i];
-				l_son_grid.x1[i] = l_end;
-				l_son_grid.dx1[i] = l_father_grid.dx1[i];
-				SPACE_CUT_BOUNDARY(1) ;
-
-				l_son_grid.x0[i] = ul_start + mid;
-				l_son_grid.dx0[i] = -slope_[i];
-				l_son_grid.x1[i] = ul_start + mid;
-				l_son_grid.dx1[i] = slope_[i];
-				SPACE_CUT_BOUNDARY(2) ;
+				SPACE_CUT_TUNE_BOUNDARY(0, l_start, ul_start + mid, l_father_grid.dx0[i], -slope_[i]) ;
+				SPACE_CUT_TUNE_BOUNDARY(1, ul_start + mid, l_end, slope_[i], l_father_grid.dx1[i]) ;
+				SPACE_CUT_TUNE_BOUNDARY(2, ul_start + mid, ul_start + mid, -slope_[i], slope_[i]) ;
 			}
 		} // end if (cut_tb) 
 	
@@ -995,13 +1072,14 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 		assert (t >= 0) ;
 		assert (ctime >= 0) ;
 		//ltime is division cost + partial function call overhead.
-		time_type elapsed_time = ltime + ctime + t ;
+		elapsed_time += t + ltime + ctime ;
 		if (elapsed_time < space_cut_elapsed_time)
 		{
 			space_cut_elapsed_time = elapsed_time ;
 			best_case = i ;
 			//back up the zoid with its children.
 			bak2 = m_zoids [index] ;
+			best_time = min(best_time, elapsed_time) ;
 		}
 		
 		assert (m_zoids [index].num_children <= num_subzoids) ;
@@ -1184,7 +1262,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 	else 
 	{
 		//determine the looping time on the zoid
-		t = 0 ;
+		/*
 		stopwatch_start(ptr) ;
 		if (call_boundary)
 		{
@@ -1198,6 +1276,9 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 		stopwatch_get_elapsed_time(ptr, t) ;
 		loop_time = t + bdry_time ;
 		assert (loop_time >= 0) ;
+		*/
+		LOOP_BOUNDARY ;
+		loop_time += bdry_time ;
 #ifndef NDEBUG
 		m_zoids [index].ltime = loop_time ;
 #endif
@@ -1745,6 +1826,6 @@ inline void auto_tune<N_RANK>::trap_space_time_cut_boundary(int t0, int t1,
 #undef slope_ 
 #undef touch_boundary 
 #undef base_case_kernel_boundary
-#undef base_case_kernel_boundary_rectangle
+#undef base_case_kernel_boundary_tune
 
 #endif
