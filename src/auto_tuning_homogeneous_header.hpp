@@ -1195,104 +1195,6 @@ private:
 		return false ;
 	}
 
-	/*
-	inline bool check_and_create_time_invariant_replica(unsigned long const key,
-					int const height, int const centroid, unsigned long & index,
-					grid_info <N_RANK> const & grid)
-	{
-		assert (m_projections_boundary.size()) ;
-		assert (centroid < m_projections_boundary.size()) ;
-		hash_table & h = m_projections_boundary [centroid] ;
-//#ifndef NDEBUG
-#if 0
-		cout << "centroid : "  << centroid << " key " << key << endl ;
-		for (int i = N_RANK - 1 ; i >= 0 ; i--)
-		{
-			cout << " x0 [" << i << "] " << grid.x0 [i] 
-			 << " x1 [" << i << "] " << grid.x1 [i] 
-			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
-			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
-			<< " h " << height << endl ; 
-		}
-#endif
-		std::pair<hash_table_iterator, hash_table_iterator> p = 
-													h.equal_range (key) ;
-		
-		//hash_table iterator has two elements, first and second.
-		for (hash_table_iterator start = p.first ; start != p.second ; start++)
-		{
-			assert (start->first == key) ;
-			assert (start->second < m_num_vertices) ;
-			zoid_type * z = &(m_zoids [start->second]) ;
-			if (z->height == height) 
-			{
-				index = start->second ;
-#ifndef NDEBUG
-				grid_info <N_RANK> grid2 = z->info ;
-				int h = height ;
-				for (int i = N_RANK - 1 ; i >= 0 ; i--)
-				{
-					int x2 = grid.x0 [i] + grid.dx0 [i] * h ;
-					int x3 = grid.x1 [i] + grid.dx1 [i] * h ;
-					int x2_ = grid2.x0 [i] + grid2.dx0 [i] * h ; 
-					int x3_ = grid2.x1 [i] + grid2.dx1 [i] * h ;
-					if (pmod(grid.x0 [i], m_algo.phys_length_ [i]) != 
-						pmod(grid2.x0 [i], m_algo.phys_length_ [i]) ||
-						pmod(grid.x1 [i], m_algo.phys_length_ [i]) != 
-						pmod(grid2.x1 [i], m_algo.phys_length_ [i]) ||
-						pmod(x2, m_algo.phys_length_ [i]) != 
-						pmod(x2_, m_algo.phys_length_ [i]) ||
-						pmod(x3, m_algo.phys_length_ [i]) != 
-						pmod(x3_, m_algo.phys_length_ [i]))
-					{
-						cout << "2 diff zoids hash to same key " << endl ;
-						cout << "diff dim " << i << endl ;
-						cout << "centroid " << centroid << endl ;
-						cout << "key " << key << endl ;
-						cout << " grid " << endl ;
-						for (int j = N_RANK - 1 ; j >= 0 ; j--)
-						{
-							cout << " x0 [" << j << "] " << grid.x0 [j] 
-							<< " x1 [" << j << "] " << grid.x1 [j] 
-							<< " x2 [" << j << "] " << grid.x0[j] + grid.dx0[j] * h
-							<< " x3 [" << j << "] " << grid.x1[j] + grid.dx1[j] * h
-							<< " h " << h << endl ; 
-						}
-						cout << " grid 2 at index " << index << endl ;
-						for (int j = N_RANK - 1 ; j >= 0 ; j--)
-						{
-							cout << " x0 [" << j << "] " << grid2.x0 [j] 
-							<< " x1 [" << j << "] " << grid2.x1 [j] 
-							<< " x2 [" << j << "] " << grid2.x0[j] + grid2.dx0[j] * h
-							<< " x3 [" << j << "] " << grid2.x1[j] + grid2.dx1[j] * h
-							<< " h " << h << endl ; 
-						}
-						assert (0) ;
-					}
-				}	
-#endif
-				return true ;
-			}
-		}
-		if (m_num_vertices > m_zoids.capacity())
-		{
-			cout << "# nodes of DAG " << m_num_vertices << " exceeds capacity " 				<< m_zoids.capacity() << endl ;
-		}
-		m_zoids.push_back(zoid_type ()) ;
-		zoid_type & z = m_zoids [m_num_vertices] ;
-		z.height = height ;
-#ifndef NDEBUG
-		z.info = grid ;
-		z.id = m_num_vertices ;
-#endif
-		m_projections_boundary [centroid].insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
-		index = m_num_vertices ;
-		m_num_vertices++ ;
-		assert (m_num_vertices == m_zoids.size()) ;
-		
-		return false ;
-	}*/
-
 	/* m_projections_interior is an array of "hash tables".
 	   There are atmost \Theta(lg h) different heights that we store.
 	   We hash the height of a zoid into an index into the array.
@@ -1983,17 +1885,32 @@ private:
 		}
 	}
 #endif
+#ifdef STOP_TUNING_EARLY 
+#define VOLATILE_INT volatile int &
+#else
+#define VOLATILE_INT int
+#endif
+
+	template <typename F>
+	inline void loop_interior(int t0, VOLATILE_INT t1, 
+		grid_info<N_RANK> const & grid, F const & f, time_type & loop_time) ;
+
+	template <typename F, typename BF>
+	inline void loop_boundary(int t0, VOLATILE_INT t1,
+    	grid_info<N_RANK> const & grid, F const & f, BF const & bf, 
+		time_type & loop_time, bool) ;
+
 	template <typename F, typename BF>
 	inline void symbolic_trap_space_time_cut_boundary(int t0, int t1,  
 		grid_info<N_RANK> const & grid, unsigned long,
 		int child_index, time_type &, time_type &, F const & f, BF const & bf,
-		time_type) ;
+		time_type & ) ;
 
 	template <typename F>
 	inline void symbolic_trap_space_time_cut_interior(int t0, int t1, 
 		grid_info<N_RANK> const & grid, unsigned long,
 		int child_index, time_type &, time_type &, F const & f,
-		time_type) ;
+		time_type & ) ;
 
 	template <typename F, typename BF>
 	inline void symbolic_trap_space_cut_boundary(int t0, int t1,
@@ -2548,8 +2465,11 @@ private:
 				m_head.push_back (ULONG_MAX) ;
 				struct timespec start, end;
 				clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start) ;
-				//build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
+#ifdef STOP_TUNING_EARLY
 				build_auto_tune_dag_trap(t0, t1, grid, tf, bf, 0) ;
+#else
+				build_auto_tune_dag_trap(t0, t1, grid, f, bf, 0) ;
+#endif
 				expected_run_time = m_zoids[m_head[0]].time ;
 #ifdef MEASURE_COLD_MISS
 				time_type cold_miss_time = 
@@ -2680,8 +2600,12 @@ private:
 				clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start) ;
 
 				m_head.push_back (ULONG_MAX) ;
-				//build_auto_tune_dag_trap(t0, t0 + h1, grid, f, bf, 0) ;
+#ifdef STOP_TUNING_EARLY
 				build_auto_tune_dag_trap(t0, t0 + h1, grid, tf, bf, 0) ;
+#else
+				build_auto_tune_dag_trap(t0, t0 + h1, grid, f, bf, 0) ;
+#endif
+
 				expected_run_time = m_zoids[m_head[0]].time * (int) (T / h1) ;
 #ifdef MEASURE_COLD_MISS
 				time_type cold_miss_time = 
@@ -2692,9 +2616,11 @@ private:
 				{
 					m_head.push_back (ULONG_MAX) ;
 					m_initial_height = h2 ;
-					//build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid, f, bf, 1) ;
-					build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid, tf, bf,
-											 1) ;
+#ifdef STOP_TUNING_EARLY
+					build_auto_tune_dag_trap(t0 + T / h1 * h1, t1,grid,tf,bf,1);
+#else
+					build_auto_tune_dag_trap(t0 + T / h1 * h1, t1, grid,f,bf,1);
+#endif
 					expected_run_time += m_zoids [m_head [1]].time ;
 #ifdef MEASURE_COLD_MISS
 					cold_miss_time += m_zoids [m_head [1]].cache_penalty_time ;
