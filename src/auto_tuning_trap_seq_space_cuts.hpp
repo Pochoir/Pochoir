@@ -112,7 +112,7 @@ template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 		int t0, int t1, grid_info<N_RANK> const & grid, 
 		unsigned long parent_index, int child_index, time_type & linkage_time,
-		time_type & child_time, F const & f, time_type best_time)
+		time_type & child_time, F const & f, time_type & best_time)
 {
 	time_type t = 0 ;
 	stopwatch * ptr = &m_stopwatch ;
@@ -139,11 +139,11 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
         tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
 		centroid = pmod(grid.x0[i] + (lb >> 1), phys_length_ [i]) * width + 
 					centroid ;
-		/*	cout << " x0 [" << i << "] " << grid.x0 [i] 
+			/*cout << " x0 [" << i << "] " << grid.x0 [i] 
 			 << " x1 [" << i << "] " << grid.x1 [i] 
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-			<< " lt " << lt << endl ; */
+			<< " lt " << lt << endl ;*/
 		
 		assert (lb >= 0) ;
 		assert (tb >= 0) ;
@@ -662,7 +662,7 @@ if (elapsed_time + ltime + ctime < best_time) \
 
 #define LOOP_BOUNDARY \
 { \
-	cilk_spawn loop_boundary(t0, t1, grid, f, bf, loop_time, call_boundary) ; \
+	cilk_spawn loop_boundary(t0, t1, l_father_grid, f, bf, loop_time, call_boundary) ; \
 	timespec ts ; \
 	ts.tv_nsec = best_time ; \
 	ts.tv_sec = 0 ; \
@@ -680,14 +680,14 @@ if (elapsed_time + ltime + ctime < best_time) \
 	l_son_grid.dx1[i] = dx1_ ; \
 	SPACE_CUT_BOUNDARY(k_) ; 
 
-#define LOOP_BOUNDARY loop_boundary(t0, t1, grid, f, bf, loop_time, call_boundary)
+#define LOOP_BOUNDARY loop_boundary(t0, t1, l_father_grid, f, bf, loop_time, call_boundary)
 #endif
 
 template <int N_RANK> template <typename F, typename BF>
 inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 	int t0, int t1,	grid_info<N_RANK> const & grid, 
 	unsigned long parent_index, int child_index, time_type & linkage_time, 
-	time_type & child_time, F const & f, BF const & bf, time_type best_time)
+	time_type & child_time, F const & f, BF const & bf, time_type & best_time)
 {
 	time_type t = 0 ;
 	stopwatch * ptr = &m_stopwatch ;
@@ -731,7 +731,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 		assert (centroid >= 0) ;
 		width *= phys_length_ [i] ;
         tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
+		/*cout << "  x0 [" << i << "] " << grid.x0 [i] 
 			 << " x1 [" << i << "] " << grid.x1 [i] 
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
