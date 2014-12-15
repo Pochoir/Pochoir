@@ -81,7 +81,7 @@ void LBM_compareVelocityField( Pochoir_Array_3D(PoCellEntry) & pa, int t,
 #define LBM_performStreamCollide_macro( pa, t, z, y, x ) do { \
 	double ux, uy, uz, u2, rho; \
 \
-	if( TEST_FLAG_SWEEP( pa, t-1, z, y, x, OBSTACLE )) { \
+/*	if( TEST_FLAG_SWEEP( pa, t-1, z, y, x, OBSTACLE )) { \
 		DST_C ( pa, t, z, y, x ) = SRC_C ( pa, t-1, z, y, x ); \
 		DST_S ( pa, t, z, y, x ) = SRC_N ( pa, t-1, z, y, x ); \
 		DST_N ( pa, t, z, y, x ) = SRC_S ( pa, t-1, z, y, x ); \
@@ -101,9 +101,9 @@ void LBM_compareVelocityField( Pochoir_Array_3D(PoCellEntry) & pa, int t,
 		DST_WT( pa, t, z, y, x ) = SRC_EB( pa, t-1, z, y, x ); \
 		DST_EB( pa, t, z, y, x ) = SRC_WT( pa, t-1, z, y, x ); \
 		DST_ET( pa, t, z, y, x ) = SRC_WB( pa, t-1, z, y, x ); \
-        /* return; */                                          \
+        // return;                                           \
 		continue; \
-	} \
+	} \*/ \
 \
 	rho = + SRC_C ( pa, t-1, z, y, x ) + SRC_N ( pa, t-1, z, y, x ) \
 	      + SRC_S ( pa, t-1, z, y, x ) + SRC_E ( pa, t-1, z, y, x ) \
