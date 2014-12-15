@@ -59,8 +59,8 @@ void LBM_loadRandomObstacle( Pochoir_Array_3D(PoCellEntry) & pa, int t ) {
 	for( int z = 0 + MARGIN_Z; z < SIZE_Z + MARGIN_Z; ++z ) {
 		for( int y = 0; y < SIZE_Y; ++y ) {
 	for( int x = 0; x < SIZE_X; ++x ) {
-        if (rand() & 0x1)
-            SET_FLAG_SWEEP( pa, t, z, y, x, OBSTACLE );
+        //if (rand() & 0x1)
+        //    SET_FLAG_SWEEP( pa, t, z, y, x, OBSTACLE );
 	}
 		}
 	}
