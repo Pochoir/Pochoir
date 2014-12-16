@@ -4,8 +4,12 @@ CC = ../pochoir
 ICC = icpc
 #OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
 
+#options without vectorization
+#OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -fno-alias -fno-fnalias -fp-model precise -std=c++0x -no-vec -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
+
 #more options for lanka cluster
 OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -march=corei7-avx -mtune=corei7x-avx -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
+#use -vec-report for generating vectorization report
 
 #O0 option for lanka
 #OPT_FLAGS = -O0 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -march=corei7-avx -mtune=corei7x-avx -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
