@@ -57,8 +57,8 @@ void print_usage( char *prog )
 
   printf( "\t-S value : spot price ( default: %0.2lf )\n", DEFAULT_S );
   printf( "\t-E value : exercise price ( default: %0.2lf )\n", DEFAULT_E );
-  printf( "\t-r value : interest rate ( default: %0.2lf\% )\n", DEFAULT_r * 100 );    
-  printf( "\t-V value : volatility ( default: %0.2lf\% )\n", DEFAULT_V * 100 );  
+  printf( "\t-r value : interest rate ( default: %0.2lf%% )\n", DEFAULT_r * 100 );    
+  printf( "\t-V value : volatility ( default: %0.2lf%% )\n", DEFAULT_V * 100 );  
   printf( "\t-T value : time to mature in years ( default: %0.2lf )\n\n", DEFAULT_T );    
 
   printf( "\t-s value : steps in space dimension ( default: %d )\n", DEFAULT_s );
@@ -276,8 +276,8 @@ int read_command_line( int argc, char *argv[ ],
   
    printf( "\t spot price = %0.2lf\n", S );
    printf( "\t exercise price = %0.2lf\n", E );
-   printf( "\t interest rate = %0.2lf\%\n", r * 100 );    
-   printf( "\t volatility = %0.2lf\%\n", V * 100 );  
+   printf( "\t interest rate = %0.2lf%%\n", r * 100 );    
+   printf( "\t volatility = %0.2lf%%\n", V * 100 );  
    printf( "\t time to mature ( in years ) = %0.2lf\n\n", T );    
   
    printf( "\t steps in space dimension = %d\n", ns );
