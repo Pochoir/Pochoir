@@ -55,7 +55,7 @@ main = do args <- getArgs
           whilst (mode /= PNoPP) $ do
              ppopp (mode, debug, showFile, userArgs) (zip inFiles inDirs)
           -- pass everything to icc after preprocessing and Pochoir optimization
-          let iccArgs = userArgs
+          let iccArgs = userArgs ++ ["-wd1292", "-wd780",  "-wd488", "-wd161"]
           putStrLn (icc ++ " " ++ intercalate " " iccArgs)
           rawSystem icc iccArgs
           whilst (showFile == False) $ do
@@ -140,7 +140,7 @@ iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "
 iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++0x"]
 
 -- iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
-iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x"]
+iccDebugPPFlags = ["-P", "-C", "-DCHECK_SHAPE", "-DDEBUG", "-g3", "-std=c++0x", "-wd1292"]
 
 parseArgs :: ([String], [String], PMode, Bool, Bool, [String]) -> [String] -> ([String], [String], PMode, Bool, Bool, [String])
 parseArgs (inFiles, inDirs, mode, debug, showFile, userArgs) aL 

@@ -1,4 +1,5 @@
 #!/bin/bash
+default: apop heat_1D_NP
 CC = ../pochoir
 ICC = icpc
 OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x
