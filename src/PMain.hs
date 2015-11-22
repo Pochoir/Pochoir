@@ -127,8 +127,8 @@ icc = "icpc"
 iccFlags = ["-O3", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 --iccFlags = ["-O3", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 
-iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
---iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
+--iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-DNDEBUG", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
+iccPPFlags = ["-P", "-C", "-DNCHECK_SHAPE", "-std=c++0x", "-Wall", "-Werror", "-ipo"]
 
 -- iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++0x", "-include", "cilk_stub.h"]
 iccDebugFlags = ["-DDEBUG", "-O0", "-g3", "-std=c++0x"]

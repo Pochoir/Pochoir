@@ -29,7 +29,7 @@
 
 template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_interior(int t0,
-int t1, grid_info<N_RANK> const & grid, unsigned long parent_index, 
+int t1, grid_info<N_RANK> const & grid, unsigned int parent_index, 
 F const & f, int * num_zoids, double & redundant_time, double & projected_time)
 {
     queue_info *l_father;
@@ -232,7 +232,7 @@ F const & f, int * num_zoids, double & redundant_time, double & projected_time)
  */
 template <int N_RANK> template <typename F, typename BF> 
 inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_boundary(int t0,
-		int t1, grid_info<N_RANK> const & grid, unsigned long parent_index, 
+		int t1, grid_info<N_RANK> const & grid, unsigned int parent_index, 
 		F const & f, BF const & bf, int * num_zoids, double & redundant_time, 
 		double & projected_time)
 {
@@ -485,7 +485,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_cut_boundary(int t0,
 template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		int t0, int t1, grid_info<N_RANK> const & grid, 
-		unsigned long parent_index, int child_index, 
+		unsigned int parent_index, int child_index, 
 		double & redundant_time, double & projected_time, F const & f)
 {
     const int lt = t1 - t0;
@@ -552,7 +552,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 		}
         sim_can_cut |= space_cut ;
     }
-	unsigned long index ;
+	unsigned int index ;
 	bool projection_exists = check_and_create_projection (key, lt, 
 											centroid, index, grid) ;
 	zoid_type & z = m_zoids [index];
@@ -657,7 +657,7 @@ inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_interior(
 template <int N_RANK> template <typename F, typename BF>
 inline void auto_tune<N_RANK>::symbolic_sawzoid_space_time_cut_boundary(
 int t0, int t1,	grid_info<N_RANK> const & grid, 
-unsigned long parent_index, int child_index, 
+unsigned int parent_index, int child_index, 
 double & redundant_time, double & projected_time, F const & f, BF const & bf)
 {
     const int lt = t1 - t0;
@@ -744,7 +744,7 @@ double & redundant_time, double & projected_time, F const & f, BF const & bf)
 		offset += num_bits_dim ;
         call_boundary |= l_touch_boundary;
     }
-	unsigned long index ;
+	unsigned int index ;
 	bool projection_exists = check_and_create_projection (key, lt, 
 									centroid, index, l_father_grid) ;
 	zoid_type & z = m_zoids [index] ;
@@ -1485,7 +1485,7 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_interior(
 		//iterate over children in each dependency level and spawn them
 		for (int i = 0 ; i < num_children_level ; i++)
 		{
-			unsigned long index = pzoid->children [child_index] ;
+			unsigned int index = pzoid->children [child_index] ;
 			child_index++ ;
 			cilk_spawn sawzoid_space_time_cut_interior(t0, t1,
 						&(m_simple_zoids [index]), f);
@@ -1545,7 +1545,7 @@ inline void auto_tune<N_RANK>::sawzoid_space_cut_boundary(
 		//iterate over children in each dependency level and spawn them
 		for (int i = 0 ; i < num_children_level ; i++)
 		{
-			unsigned long index = pzoid->children [child_index] ;
+			unsigned int index = pzoid->children [child_index] ;
 			child_index++ ;
 			cilk_spawn sawzoid_space_time_cut_boundary(t0, t1,
 						&(m_simple_zoids [index]), f, bf);
@@ -1605,7 +1605,7 @@ sawzoid_space_time_cut_interior(int t0, int t1,
 		assert (pzoid->children [1]) ;
         assert(lt > dt_recursive_);
         int halflt = lt / 2;
-		unsigned long index = pzoid->children [0] ;
+		unsigned int index = pzoid->children [0] ;
         sawzoid_space_time_cut_interior(t0, t0+halflt, 
 									&(m_simple_zoids [index]), f);
 
@@ -1656,7 +1656,7 @@ sawzoid_space_time_cut_boundary(int t0, int t1,
 		assert (pzoid->children [1]) ;
 		
 		int halflt = lt / 2;
-		unsigned long index = pzoid->children [0] ;
+		unsigned int index = pzoid->children [0] ;
 		if (call_boundary) {
 			sawzoid_space_time_cut_boundary(t0, t0+halflt, 
 								&(m_simple_zoids [index]), f, bf);

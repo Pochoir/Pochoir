@@ -3,7 +3,9 @@ SHELL = /bin/bash
 CC = ../../pochoir
 ICC = icc
 
-CFLAGS = -restrict -unroll-aggressive -funroll-loops -scalar-rep -ipo -xHOST -fno-alias -O3 -no-prec-div -std=c++0x -lrt
+CFLAGS = -restrict -unroll-aggressive -funroll-loops -scalar-rep -ipo -xHOST -fno-alias -O3 -no-prec-div -std=c++0x -lrt -lpfm -L../ -I$(POCHOIR_LIB_PATH)
+#more options for lanka cluster
+CFLAGS = -restrict -unroll-aggressive -funroll-loops -scalar-rep -ipo -xHOST -fno-alias -O3 -no-prec-div -std=c++0x -march=corei7-avx -mtune=corei7x-avx -lrt -lpfm -L../ -I$(POCHOIR_LIB_PATH)
 # CFLAGS = -restrict -no-prec-div 
 #debugging
 #POFLAGS = -debug
@@ -16,6 +18,8 @@ MY_OPTS = -DMYOPT
 
 DEFAULT_OPTIONS = $(CFLAGS) $(REPORT_FLAGS) $(MY_OPTS)
 OMP_OPTIONS = -D_OPENMP -openmp
+#NOVEC_OPTIONS = -vec-report
+#NOVEC_OPTIONS =
 NOVEC_OPTIONS = -no-vec
 VEC_OPTIONS = -DVECTORIZE
 SOA_OPTIONS = -DSOA
@@ -90,6 +94,7 @@ lbm_xo_novec.exe: $(INCLUDE) $(XO_SRC)
 
 lbm_tang: $(INCLUDE_TANG) $(POCHOIR_SRC)
 	${CC} ${POFLAGS} ${DEFAULT_OPTIONS} ${NOVEC_OPTIONS} -DNDEBUG -Wall -Werror -o BIN/$@ ${POCHOIR_SRC}
+#	${CC} ${POFLAGS} ${DEFAULT_OPTIONS} ${NOVEC_OPTIONS} -DNDEBUG -Wall -Werror -o BIN/$@ ${POCHOIR_SRC} $(POCHOIR_LIB_PATH)/stopwatch.c
 #	${CC} ${DEBUGFLAGS} ${NOVEC_OPTIONS} -Wall -Werror -o BIN/$@ ${POCHOIR_SRC}
 #	${ICC} ${POFLAGS} ${DEFAULT_OPTIONS} ${NOVEC_OPTIONS} -I${POCHOIR_LIB_PATH} -DNDEBUG -Wall -Werror -o BIN/$@ ${POCHOIR_SRC}
 #	${ICC} ${DEBUGFLAGS} ${NOVEC_OPTIONS} -I${POCHOIR_LIB_PATH} -DNDEBUG -Wall -Werror -o BIN/$@ ${POCHOIR_SRC}

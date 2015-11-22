@@ -183,11 +183,17 @@ class zoid
 			int h1 = W / (2 * slope) ;
 			int h2 = T - T / h1 * h1 ;
 			cout << "h1 " << h1 << " h2 " << h2 << endl ;
+			struct timespec start, end;
+			clock_gettime(CLOCK_MONOTONIC, &start) ;
 			symbolic_space_time_cut_boundary(t0, t0 + h1, grid, p) ;
 			if (h2 > 0)
 			{
 				symbolic_space_time_cut_boundary(t0, t0 + h2, grid, p) ;
 			}
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			double ks_time = tdiff2(&end, &start) ;
+			std::cout << "KS : consumed time :" << 1.0e3 * ks_time
+				<< "ms" << std::endl;
 
 #ifndef NDEBUG
 			//print contents
@@ -212,6 +218,7 @@ class zoid
 #endif
 			int m = T / h1 ;
 			cout << " m " << m << endl ;
+			clock_gettime(CLOCK_MONOTONIC, &start) ;
 			for (int i = 0 ; i < m ; i++)
 			{
 				heterogeneous_space_time_cut_boundary(t0, t0 + h1, grid, f, bf);
@@ -222,6 +229,9 @@ class zoid
 				//cout << "t0 " << t0 << endl ;
 				heterogeneous_space_time_cut_boundary(t0, t0 + h2, grid, f, bf);
 			}
+			clock_gettime(CLOCK_MONOTONIC, &end) ;
+			std::cout << "Compute time :" << 1.0e3 * tdiff2(&end, &start)
+				<< "ms" << std::endl;
 		}
 	}
 } ;

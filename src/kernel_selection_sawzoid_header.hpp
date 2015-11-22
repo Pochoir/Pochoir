@@ -221,6 +221,8 @@ class zoid
 			h1 = 1 << index_msb ;
 		}
 		cout << "h1 " << h1 << endl ;
+		struct timespec start, end;
+		clock_gettime(CLOCK_MONOTONIC, &start) ;
 		symbolic_modified_space_time_cut_boundary(t0, t0 + h1, grid, p) ;
 		int offset = t0 + T / h1 * h1 ;
 		int h2 = t1 - offset ;
@@ -237,8 +239,13 @@ class zoid
 			offset += h ;
 			h2 = t1 - offset ;
 		}
+		clock_gettime(CLOCK_MONOTONIC, &end) ;
+		double ks_time = tdiff2(&end, &start) ;
+		std::cout << "KS : consumed time :" << 1.0e3 * ks_time
+				<< "ms" << std::endl;
 		int m = T / h1 ;
 		cout << " m " << m << endl ;
+		clock_gettime(CLOCK_MONOTONIC, &start) ;
 		for (int i = 0 ; i < m ; i++)
 		{
 			/*cout << "t0 " << t0 << " t1 " << t1 << 
@@ -278,15 +285,15 @@ class zoid
 				m_algo.num_triangles [i] = max(1, num_triangles) ;
 				cout << "num_triangles [ " << i << " ] " << m_algo.num_triangles [i] << endl ;
 			}*/
-			if (h > 2)
-			{
+			//if (h > 2)
+			//{
 				m_algo.space_time_cut_boundary(t0, t0 + h, grid, f, bf) ;
-			}
-			else
+			//}
+			/*else
 			{
 				//seems to be a race bug for h <= 2
 				m_algo.abnormal_region_space_time_cut_boundary(t0, t0 + h, grid, f, bf) ;
-			}
+			}*/
 			t0 += h ;
 			h2 = t1 - t0 ;
 		}
@@ -297,6 +304,9 @@ class zoid
 			//base_case_kernel_boundary(t0, t0 + h2, grid, bf);
 			m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h2, grid, f, bf) ;
 		}
+		clock_gettime(CLOCK_MONOTONIC, &end) ;
+		std::cout << "Compute time :" << 1.0e3 * tdiff2(&end, &start)
+				<< "ms" << std::endl;
 	}
 } ;
 

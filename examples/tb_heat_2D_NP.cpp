@@ -70,7 +70,6 @@ int main(int argc, char * argv[])
     N2 = StrToInt(argv[2]);
     T_SIZE = StrToInt(argv[3]);
 	
-    printf("N1 = %d, N2 = %d, T_SIZE = %d\n", N1, N2, T_SIZE);
     /*N_SIZE = StrToInt(argv[1]);
     T_SIZE = StrToInt(argv[2]);
     printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);*/
@@ -83,7 +82,6 @@ int main(int argc, char * argv[])
 #endif
     Pochoir_2D heat_2D(heat_shape_2D);
 
-	cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
     Pochoir_Kernel_2D(heat_2D_fn, t, i, j)
 	   a(t+1, i, j) = 0.125 * (a(t, i+1, j) - 2.0 * a(t, i, j) + a(t, i-1, j)) + 0.125 * (a(t, i, j+1) - 2.0 * a(t, i, j) + a(t, i, j-1)) + a(t, i, j);
     Pochoir_Kernel_End
@@ -116,6 +114,8 @@ int main(int argc, char * argv[])
     }
 	std::cout << "Pochoir ET: consumed time :" << min_tdiff << "ms" << std::endl;
 
+    printf("N1 = %d, N2 = %d, T_SIZE = %d\n", N1, N2, T_SIZE);
+    cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
 //#if 1
 #ifdef CHECK_RESULT
     min_tdiff = INF;

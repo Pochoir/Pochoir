@@ -271,7 +271,7 @@ int read_command_line( int argc, char *argv[ ],
         return 0;
        }
     }
-    
+  /*   
    printf( "Parameters:\n\n" );
   
    printf( "\t spot price = %0.2lf\n", S );
@@ -282,7 +282,7 @@ int read_command_line( int argc, char *argv[ ],
   
    printf( "\t steps in space dimension = %d\n", ns );
    printf( "\t steps in time dimension = %d\n\n", nt );
-    
+  */
    return 1;
 }
 
@@ -401,7 +401,6 @@ double iterativeStencilAPOP( double S, double E, double r, double V, double T,
 
 int main( int argc, char *argv[ ] )
 {
-    printf( "\nStencil-based DP for the price of American put option ( Run with option -h for help ).\n\n" );
 
     double S, E, r, V, T; 
     int ns, nt;
@@ -416,7 +415,6 @@ int main( int argc, char *argv[ ] )
 
     struct timeval start, end;
 
-    printf( "Running pochoir-based DP..." );
     fflush( stdout );
            
     gettimeofday( &start, 0 );        
@@ -424,6 +422,8 @@ int main( int argc, char *argv[ ] )
     gettimeofday( &end, 0 );
 
     double t0 = tdiff( &end, &start );
+    printf( "\nStencil-based DP for the price of American put option ( Run with option -h for help ).\n\n" );
+    printf( "Running pochoir-based DP..." );
           
     printf( "\n\nPochoir:\n" );
     printf( "\t option price = %.2lf\n", price0 );    

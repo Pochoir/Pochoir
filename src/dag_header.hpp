@@ -35,7 +35,7 @@ class zoid
 	{
 		//cout << "resize child for zoid " << id << " # children " << size << endl ;
 		assert (size) ;
-		children = new unsigned long [size];
+		children = new unsigned int [size];
 		num_children = size ;
 		for (int i = 0 ; i < size ; i++)
 		{
@@ -44,7 +44,7 @@ class zoid
 		//cout << "resize done " << endl ;
 	}
 
-	void add_child(zoid * child, int pos, unsigned long index)
+	void add_child(zoid * child, int pos, unsigned int index)
 	{
 		//cout << "adding child for zoid " << id << endl ; 
 		assert (num_children) ;
@@ -98,7 +98,7 @@ class zoid
 			height = z.height ;
 			if (num_children > 0)
 			{
-				children = new unsigned long [num_children];
+				children = new unsigned int [num_children];
 				for (int i = 0 ; i < num_children ; i++)
 				{
 					children [i] = z.children [i] ;
@@ -133,7 +133,7 @@ class zoid
 		height = z.height ;
 		if (num_children > 0)
 		{
-			children = new unsigned long [num_children];
+			children = new unsigned int [num_children];
 			for (int i = 0 ; i < num_children ; i++)
 			{
 				children [i] = z.children [i] ;
@@ -151,7 +151,7 @@ class zoid
 	}
 
 
-	int add_parent(unsigned long parent_id)
+	int add_parent(unsigned int parent_id)
 	{
 #ifndef NDEBUG
 		parents.push_back(parent_id) ;
@@ -183,14 +183,14 @@ class zoid
 	unsigned char decision ;
 	//unsigned short decision ;
 	int height ;
-	unsigned long * children ;  
+	unsigned int * children ;  
 	int num_children ;
 	double time ;
 	unsigned int dependency ; //number of children in each dependency level.
 #ifndef NDEBUG
 	grid_info <N_RANK> grid ;
-	unsigned long id ; //id of the zoid.
-	vector<unsigned long> parents ;
+	unsigned int id ; //id of the zoid.
+	vector<unsigned int> parents ;
 	double stime ;
 	double ttime ;
 	double ltime ;
@@ -219,11 +219,11 @@ public :
 		num_children = 0 ;
 	}
 
-	void resize_and_copy_children(int size, unsigned long * src)
+	void resize_and_copy_children(int size, unsigned int * src)
 	{
 		assert (size >= 0) ;
 		assert (children == 0) ;
-		children = new unsigned long [size];
+		children = new unsigned int [size];
 		for (int i = 0 ; i < size ; i++)
 		{
 			children [i] = src [i] ;
@@ -234,7 +234,7 @@ private :
     unsigned char decision ;
     //unsigned short decision ;
 	unsigned int dependency ; //number of children in each dependency level.
-	unsigned long * children ;
+	unsigned int * children ;
 #ifndef NDEBUG
 	grid_info <N_RANK> grid ;
 #endif
@@ -247,8 +247,8 @@ class auto_tune
 private:
 	typedef zoid <N_RANK> zoid_type ;
 	typedef simple_zoid <N_RANK> simple_zoid_type ;
-	typedef unordered_multimap<unsigned long, unsigned long> hash_table ;
-	typedef typename unordered_multimap<unsigned long, unsigned long>::iterator 
+	typedef unordered_multimap<unsigned long, unsigned int> hash_table ;
+	typedef typename unordered_multimap<unsigned long, unsigned int>::iterator 
 					hash_table_iterator ;
 
 	void flush_cache()
@@ -298,7 +298,7 @@ private:
 		//memset(m_cache, 0, size) ;
 
 		unsigned long volume = 1 ;
-		unsigned long leaf_size = m_algo.dt_recursive_ ;
+		unsigned int leaf_size = m_algo.dt_recursive_ ;
 		m_space_cut_mask = 0 ;
 		for (int i = 0 ; i < N_RANK ; i++)
 		{
@@ -497,7 +497,7 @@ private:
 	
 	//key is the bottom volume + top volume.
 	inline bool check_and_create_projection (unsigned long key, 
-					int height, int centroid, unsigned long & index, 
+					int height, int centroid, unsigned int & index, 
 					grid_info <N_RANK> const & grid)
 	{
 		assert (m_projections.size()) ;
@@ -550,7 +550,7 @@ private:
 #endif
 		//*zoid = z ;
 		//h.insert(std::pair<unsigned long, zoid_type *>(key, z)) ;
-		h.insert(std::pair<unsigned long, unsigned long>(key, m_num_vertices)) ;
+		h.insert(std::pair<unsigned long, unsigned int>(key, m_num_vertices)) ;
 		//cout << "inserted key" << endl ;
 		index = m_num_vertices ;
 		//cout << "created zoid " << m_zoids [index].id << endl ;
@@ -565,8 +565,8 @@ private:
 		m_clone_array = clone_array ;
 	}*/
 
-	void dfs(unsigned long node, vector <zoid_type> & temp_zoids,
-			 vector<unsigned long> & color, unsigned long & num_vertices)
+	void dfs(unsigned int node, vector <zoid_type> & temp_zoids,
+			 vector<unsigned int> & color, unsigned int & num_vertices)
 	{
 		color [node] = num_vertices ; //color node gray
 		zoid_type & z = m_zoids [node] ;
@@ -589,7 +589,7 @@ private:
 		else
 		{
 			temp_zoids.push_back(z) ; //copy the zoid z
-			unsigned long index = num_vertices ; //index into the vector
+			unsigned int index = num_vertices ; //index into the vector
 			num_vertices++ ;
 			assert (num_vertices == temp_zoids.size()) ;
 			for (int i = 0 ; i < z.num_children ; i++)
@@ -613,14 +613,14 @@ private:
 	//remove children of all homogeneous nodes.
 	void compress_dag()
 	{
-		vector <unsigned long> color ;
+		vector <unsigned int> color ;
 		color.reserve(m_num_vertices) ;
 		color.resize(m_num_vertices) ;
 
 		vector<zoid_type> temp_zoids ;
-		vector<unsigned long> head ;
-		unsigned long num_vertices = 0 ;
-		for (unsigned long j = 0 ; j < m_num_vertices ; j++)
+		vector<unsigned int> head ;
+		unsigned int num_vertices = 0 ;
+		for (unsigned int j = 0 ; j < m_num_vertices ; j++)
 		{
 			color [j] = ULONG_MAX ; //color node white
 		}
@@ -646,7 +646,7 @@ private:
 		//cout << "# vertices " << m_num_vertices << " # projections " <<
 		//		m_num_projections << endl ;
 		//do a BFS of the dag and print each zoid's grid	
-		vector <unsigned long> color ;
+		vector <unsigned int> color ;
 		color.reserve(m_num_vertices) ;
 		color.resize(m_num_vertices) ;
 		for (int j = 0 ; j < m_head.size() ; j++)
@@ -664,13 +664,13 @@ private:
 			
 			color [0] = 1 ;
 			//deque<zoid_type *> que ;
-			deque<unsigned long> que ;
+			deque<unsigned int> que ;
 			que.push_front(m_head [j]) ;
 
 			while (!que.empty())
 			{
 				//zoid_type * z = que.front() ;
-				unsigned long index = que.front() ;
+				unsigned int index = que.front() ;
 				assert (index < m_num_vertices) ;
 				zoid_type * z = &(m_zoids[index]) ;
 				cout << "\nzoid " << z->id << " height " << z->height <<
@@ -737,7 +737,7 @@ private:
 					}
 				}*/
 				//if (z->num_parents > 1)
-				vector<unsigned long> & v = z->parents ;
+				vector<unsigned int> & v = z->parents ;
 				cout << "parents " << endl ;
 				for (int i = 0 ; i < v.size() ; i++)
 				{
@@ -757,7 +757,7 @@ private:
 					for (int i = 0 ; i < z->num_children ; i++)
 					{
 						//zoid_type * child = z->children[i] ;
-						unsigned long index = z->children[i] ;
+						unsigned int index = z->children[i] ;
 						cout << "child index " << index << endl ;
 						assert (index < m_num_vertices) ;
 						zoid_type * child = &(m_zoids [index]);
@@ -786,22 +786,22 @@ private:
 
 	template <typename F, typename BF>
 	inline void symbolic_sawzoid_space_time_cut_boundary(int t0, int t1,  
-		grid_info<N_RANK> const & grid, unsigned long,
+		grid_info<N_RANK> const & grid, unsigned int,
 		int child_index, double &, double &, F const & f, BF const & bf) ;
 
 	template <typename F>
 	inline void symbolic_sawzoid_space_time_cut_interior(int t0, int t1, 
-		grid_info<N_RANK> const & grid, unsigned long,
+		grid_info<N_RANK> const & grid, unsigned int,
 		int child_index, double &, double &, F const & f) ;
 
 	template <typename F, typename BF>
 	inline void symbolic_sawzoid_space_cut_boundary(int t0, int t1,
-		grid_info<N_RANK> const & grid, unsigned long, F const & f, 
+		grid_info<N_RANK> const & grid, unsigned int, F const & f, 
 		BF const & bf, int *, double &, double &) ;
 
 	template <typename F>
 	inline void symbolic_sawzoid_space_cut_interior(int t0, int t1,
-		grid_info<N_RANK> const & grid, unsigned long, F const & f, int *,
+		grid_info<N_RANK> const & grid, unsigned int, F const & f, int *,
 		double &, double &) ;
 
 #if 0
@@ -876,9 +876,9 @@ private:
 	vector<hash_table> m_projections ; //the array of hashtable of <key, zoid index>
 	//zoid_type * m_head [2] ; // the start nodes of the dag
 	//unsigned long m_head [2] ; // the indices of start nodes in the dag
-	vector<unsigned long> m_head ; // the indices of start nodes in the dag
+	vector<unsigned int> m_head ; // the indices of start nodes in the dag
 	Algorithm <N_RANK> & m_algo ; // a reference to Algorithm
-	unsigned long m_num_vertices ; //# of zoids in the dag
+	unsigned int m_num_vertices ; //# of zoids in the dag
 	//unsigned long m_num_projections ; //# of projections created
 	const int NUM_BITS_IN_INT = 8 * sizeof(int) ;
 	typedef typename Algorithm<N_RANK>::queue_info queue_info ;

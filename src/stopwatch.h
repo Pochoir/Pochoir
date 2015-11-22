@@ -306,13 +306,6 @@ inline void stopwatch_reset_num_calls(stopwatch *s)
 	elapsed_time = (long long) (end.tv_sec - start.tv_sec) * NANO_SEC + end.tv_nsec - start.tv_nsec ; \
 }
 
-/*	if ((end.tv_nsec - start.tv_nsec) < 0) { \
-		elapsed_time = (long long) (end.tv_sec - start.tv_sec - 1) * NANO_SEC + NANO_SEC + end.tv_nsec - start.tv_nsec ; \
-	} else { \
-		elapsed_time = (long long) (end.tv_sec - start.tv_sec) * NANO_SEC + end.tv_nsec - start.tv_nsec ; \
-	} \
-}*/
-
 inline long long stopwatch_compute_measurement_time()
 {
 	struct timespec start1, start2 ;
@@ -402,16 +395,12 @@ inline long long stopwatch_compute_measurement_time()
 		clock_gettime(CLOCK_FLAG, &end2) ;	
 	}
 	clock_gettime(CLOCK_FLAG, &end1) ;
-	//long long elapsed_time = 
-	//		(long long)(end1.tv_sec - start1.tv_sec) * NANO_SEC +
-	//		end1.tv_nsec - start1.tv_nsec;
 	long long elapsed_time = 0 ;
 	stopwatch_diff (start1, end1, elapsed_time) ;
-	//elapsed_time /= 41 ;
 	elapsed_time /= (40 * TIMES) ;
 	char c [100] ;
 	stopwatch_time_to_string(c, elapsed_time) ;
-	cout << "measurement time " << c << endl ;
+	//cout << "measurement time " << c << endl ;
 	
 	return elapsed_time ;
 }

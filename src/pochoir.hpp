@@ -30,7 +30,11 @@
 #include "pochoir_modified_cuts.hpp"
 //#include "sawzoid2.hpp"
 //#include "sawzoid.hpp"
+#ifdef FS
+#include "fs_walk_recursive.hpp"
+#else
 #include "pochoir_walk_recursive.hpp"
+#endif
 #ifdef COUNT_PROJECTIONS
 //#include "projections.hpp"
 #endif
@@ -49,18 +53,22 @@
 //#include "symbolic_walk_better_memory.hpp"
 //#include "geneity_problem_trap.hpp"
 //#include "pochoir_modified_cuts_heterogeneity.hpp"
-#include "sawzoid_middle_heterogeneity.hpp"
+//#include "sawzoid_middle_heterogeneity.hpp"
 //#include "symbolic_walk.hpp"
 #elif defined AUTO_TUNE
 //#include "auto_tuning_trap.hpp"
 //#include "auto_tuning_sawzoid.hpp"
 //#include "auto_tuning_sawzoid_middle.hpp"
-#include "auto_tuning_arbitrary_cuts_sawzoid.hpp"
+//#include "auto_tuning_arbitrary_cuts_sawzoid.hpp"
 //#include "auto_tuning_with_span_sawzoid.hpp"
 #ifdef HYPERSPACE_CUTS
 #include "auto_tuning_arbitrary_cuts_trap.hpp"
 #else
+#ifdef FS
+#include "auto_tuning_fs.hpp"
+#else
 #include "auto_tuning_trap_seq_space_cuts.hpp"
+#endif
 #endif
 //#include "auto_tuning_arbitrary_cuts_sawzoid_middle.hpp"
 //#include "dag_sawzoid.hpp"
@@ -90,18 +98,17 @@ class Pochoir {
         int shape_size_;
         int num_arr_;
         int arr_type_size_;
-		//eka - adding a pointer to pochoir array
-		//Pochoir_Array<double, N_RANK> * arr_ ;
-		void * arr_ ;
-		int resolution_ ;
-		ofstream * outputFile_ ;
-		char * problem_name_ ; //name of the problem we are solving
+	//eka - adding a pointer to data stored in pochoir array
+        void * arr_ ;
+        void ** arr_addr_ ;
+        int resolution_ ;
+        ofstream * outputFile_ ;
+        char * problem_name_ ; //name of the problem we are solving
     public:
-	
-	/*inline void copy_data(void * dest, void * src, unsigned long length)
-	{
-		memcpy(dest, src, length * arr_type_size_) ;
-	}*/
+        ~Pochoir() 
+        {
+          delete [] shape_ ;
+        }
 
 	void set_resolution(int r)
 	{
@@ -174,6 +181,9 @@ class Pochoir {
     /* obase for interior and ExecSpec for boundary */
     template <typename F, typename BF>
     void Run_Obase(int timestep, F const & f, BF const & bf);
+	//the autotune version
+    template <typename F, typename BF, typename TF>
+    void Run_Obase(int timestep, F const & f, BF const & bf, TF const & tf);
 };
 
 template <int N_RANK>
@@ -247,9 +257,9 @@ void Pochoir<N_RANK>::Register_Array(Pochoir_Array<T, N_RANK> & arr) {
     arr.alloc_mem();
 #endif
     regArrayFlag = true;
-	//eka - storing a pointer to pochoir array
-	//arr_ = &(arr) ;
-	arr_ = arr.data() ;
+    //eka - storing a pointer to pochoir array
+    arr_ = arr.data() ;
+    arr_addr_ = (void **) arr.get_data_address() ;
 }
 
 template <int N_RANK> template <size_t N_SIZE>
@@ -275,8 +285,8 @@ void Pochoir<N_RANK>::Register_Shape(Pochoir_Shape<N_RANK> (& shape)[N_SIZE]) {
             slope_[r] = max(slope_[r], abs((int)ceil((float)shape[i].shift[r+1]/(l_max_time_shift - shape[i].shift[0]))));
         }
     }
+    //cout << "time_shift_ = " << time_shift_ << ", toggle = " << toggle_ << endl;
 #if DEBUG 
-    cout << "time_shift_ = " << time_shift_ << ", toggle = " << toggle_ << endl;
     for (int r = 0; r < N_RANK; ++r) {
         printf("slope[%d] = %d, ", r, slope_[r]);
     }
@@ -490,230 +500,306 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f) {
 /* obase for interior and ExecSpec for boundary */
 template <int N_RANK> template <typename F, typename BF>
 void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
-    //int l_total_points = 1;
-    Algorithm<N_RANK> algor(slope_);
-    algor.set_phys_grid(phys_grid_);
-    algor.set_thres(arr_type_size_);
-    /* this version uses 'f' to compute interior region, 
-     * and 'bf' to compute boundary region
-     */
-    timestep_ = timestep;
-    checkFlags();
+  //int l_total_points = 1;
+  Algorithm<N_RANK> algor(slope_);
+  algor.set_phys_grid(phys_grid_);
+  algor.set_thres(arr_type_size_);
+  /* this version uses 'f' to compute interior region, 
+   * and 'bf' to compute boundary region
+   */
+  timestep_ = timestep;
+  checkFlags();
 #if BICUT
 #if 0
-    fprintf(stderr, "Call obase_bicut_boundary_P\n");
+  fprintf(stderr, "Call obase_bicut_boundary_P\n");
 #pragma isat marker M2_begin
-    algor.obase_bicut_boundary_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+  algor.obase_bicut_boundary_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #pragma isat marker M2_end
 #else
-//    fprintf(stderr, "Call sim_obase_bicut_P\n");
+  //    fprintf(stderr, "Call sim_obase_bicut_P\n");
 #pragma isat marker M2_begin
 #if 1
-    algor.set_time_step(timestep_);
-	algor.set_time_shift(time_shift_) ;
-	cout << "time_shift_ " << time_shift_ << " timestep " << timestep << endl ;
-	grid_info <N_RANK> grid = logic_grid_ ;
-	unsigned long volume = 1 ;
-	for (int i = N_RANK - 1 ; i >= 0 ; i--)
-	{
-		volume *= (phys_grid_.x1 [i] - phys_grid_.x0 [i]) ;
-		cout << "grid.dx0[i] " << grid.dx0[i] << endl ;
-		cout << "grid.dx1[i] " << grid.dx1[i] << endl ;
-		cout << " x0 [" << i << "] " << grid.x0 [i] 
-			<< " x1 [" << i << "] " << grid.x1 [i] 
-			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * timestep_
-			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * timestep_
-			<< endl ; 
-		cout << "slope_ [i] " << slope_ [i] << endl ;
-	}
-	
+  algor.set_time_step(timestep_);
+  algor.set_time_shift(time_shift_) ;
+  //cout << "time_shift_ " << time_shift_ << " timestep " << timestep << endl ;
+  grid_info <N_RANK> grid = logic_grid_ ;
+  /*for (int i = N_RANK - 1 ; i >= 0 ; i--)
+  {
+    cout << "grid.dx0[i] " << grid.dx0[i] << endl ;
+    cout << "grid.dx1[i] " << grid.dx1[i] << endl ;
+    cout << " x0 [" << i << "] " << grid.x0 [i] 
+            << " x1 [" << i << "] " << grid.x1 [i] 
+            << " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * timestep_
+            << " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * timestep_
+            << endl ; 
+    cout << "slope_ [i] " << slope_ [i] << endl ;
+  }*/
+#ifdef AUTO_TUNE
+  Run_Obase(timestep, f, bf, f) ;
+#endif
+      
 #ifdef COUNT_PROJECTIONS
-//    algor.compute_projections(0+time_shift_, timestep+time_shift_, logic_grid_) ;
-	algor.set_thres_auto_tuning() ;
+  //    algor.compute_projections(0+time_shift_, timestep+time_shift_, logic_grid_) ;
 #endif
 #ifdef COARSEN_BASE_CASE_WRT_BOTTOM_SIDE
-	cout << "coarsen base case wrt bottom side " << endl ;
+  cout << "coarsen base case wrt bottom side " << endl ;
 #else
-	cout << "coarsen base case wrt shorter side " << endl ;
+  cout << "coarsen base case wrt shorter side " << endl ;
 #endif
 #ifdef KERNEL_SELECTION
-	cout << "kernel selection" << endl ;
+  cout << "kernel selection" << endl ;
 #endif
 #ifdef GENEITY_TEST
-	cout << "geneity testing" << endl ;
-#endif
-#ifdef AUTO_TUNE
-	//set base case grid size to 1 in time/space.
-	//algor.set_thres_auto_tuning() ;
-#ifdef TIME_INVARIANCE_INTERIOR
-	cout << "time invariance interior " << endl ;
-#else
-	cout << "space-time invariance interior " << endl ;
+  cout << "geneity testing" << endl ;
 #endif
 
-#ifdef TIME_INVARIANCE_BOUNDARY
-	cout << "time invariance boundary " << endl ;
-#else
-	cout << "space-time invariance boundary " << endl ;
+#ifdef FS
+  cout << "FS " << endl ;
 #endif
-
-#ifdef FIXED_TIME_CUT
-	cout << "fixed time cut" << endl ;
-#else
-	cout << "arbitrary time cut" << endl ;
-#endif
-
-#ifdef FIXED_SPACE_CUT
-	cout << "fixed space cut" << endl ;
-#else
-	cout << "arbitrary space cut " << endl ;
-#endif
-#ifdef HYPERSPACE_CUTS
-	cout << "hyper space cut" << endl ;
-#else
-	cout << "sequential space cut" << endl ;
-#endif
-
-#ifdef SUBSUMPTION3
-	cout << "subsumption 3 " << endl ;
-#endif
-
-#ifdef SUBSUMPTION_SPACE
-	cout << "subsumption in space " << endl ;
-#else
-	cout << "no subsumption in space " << endl ;
-#endif
-
-#ifdef SUBSUMPTION_TIME
-	cout << "subsumption in time " << endl ;
-#else
-	cout << "no subsumption in time " << endl ;
-#endif
-#ifdef CHECK_CACHE_ALIGNMENT
-	cout << "checking cache alignment " << endl ;
-#else
-	cout << "not checking cache alignment " << endl ;
-#endif
-
-#ifdef WRITE_ZOID_DIMENSIONS
-	cout << "writing zoid dimensions " << endl ;
-#endif
-#endif
-
 #ifdef DEFAULT_SPACE_CUT
-	cout << "default space cut " << endl ;
+  cout << "default space cut " << endl ;
 #else
-	cout << "modified space cut " << endl ;
+  cout << "modified space cut " << endl ;
 #endif
 #ifdef TRAP
-	cout << "default time cut " << endl ;
-	//algor.set_thres_auto_tuning() ;
+  cout << "default time cut " << endl ;
+  //algor.set_thres_auto_tuning() ;
 #ifndef USE_PROJECTION
-    algor.shorter_duo_sim_obase_bicut_p(time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+  algor.shorter_duo_sim_obase_bicut_p(time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #else
 #ifdef KERNEL_SELECTION
-	predicate <N_RANK> p (phys_grid_) ; 
-	p.set_resolution(resolution_) ;
-	p.set_output_file(outputFile_) ;
-	pochoir_clone_array <N_RANK> c1(*arr_, p) ; //may not compile
-	kernel_selection_trap<N_RANK> ks(algor, phys_grid_, 0) ;
-	ks.set_clone_array(&c1) ;
-	ks.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
-							logic_grid_, f, bf, p) ;
+  predicate <N_RANK> p (phys_grid_) ; 
+  p.set_resolution(resolution_) ;
+  p.set_output_file(outputFile_) ;
+  pochoir_clone_array <N_RANK> c1(*arr_, p) ; //may not compile
+  kernel_selection_trap<N_RANK> ks(algor, phys_grid_, 0) ;
+  ks.set_clone_array(&c1) ;
+  ks.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
+                                                  logic_grid_, f, bf, p) ;
 #elif defined GENEITY_TEST
-	predicate <N_RANK> p (phys_grid_) ; 
-	p.set_resolution(resolution_) ;
-	//p.set_output_file(outputFile_) ;
-	pochoir_clone_array <N_RANK> c1(*arr_, p) ; //may not compile
-	heterogeneity<N_RANK> hg(algor, phys_grid_, 0) ;
-	//geneity_problem<N_RANK> hg(algor, phys_grid_, 0) ;
-	hg.set_clone_array(&c1) ;
-	//hg.build_heterogeneity_dag(0, timestep, logic_grid_, p, 0) ;
-	hg.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
-							logic_grid_, f, bf, p) ;
+  predicate <N_RANK> p (phys_grid_) ; 
+  p.set_resolution(resolution_) ;
+  //p.set_output_file(outputFile_) ;
+  pochoir_clone_array <N_RANK> c1(*arr_, p) ; //may not compile
+  heterogeneity<N_RANK> hg(algor, phys_grid_, 0) ;
+  //geneity_problem<N_RANK> hg(algor, phys_grid_, 0) ;
+  hg.set_clone_array(&c1) ;
+  //hg.build_heterogeneity_dag(0, timestep, logic_grid_, p, 0) ;
+  hg.do_default_space_time_cuts(time_shift_, timestep+time_shift_,
+                                                  logic_grid_, f, bf, p) ;
 #ifndef NDEBUG
-	cout << "calling print dag " << endl ;
-	hg.print_dag() ;
-	hg.print_heterogeneity() ;
+  cout << "calling print dag " << endl ;
+  hg.print_dag() ;
+  hg.print_heterogeneity() ;
 #endif
-#elif defined AUTO_TUNE
-	//cout << "address of home cell " << &home_cell_ << endl ;
-	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name_, timestep_,
-						 arr_type_size_) ;
-	at.do_trap_space_time_cuts(time_shift_, timestep+time_shift_,
-								logic_grid_, f, bf, arr_) ;
-	//at.print_dag() ;
 #endif
 
 #endif
 #else
-	cout << "pow2 time cut " << endl ;
-	//algor.set_thres_auto_tuning() ;
+  cout << "pow2 time cut " << endl ;
+  //algor.set_thres_auto_tuning() ;
 #ifndef USE_PROJECTION
-	struct timespec start, end;
-	clock_gettime(CLOCK_MONOTONIC, &start);
-    algor.power_of_two_time_cut(time_shift_, timestep+time_shift_, logic_grid_, f, bf);
-	clock_gettime(CLOCK_MONOTONIC, &end) ;
-	cout << "compute time " << tdiff2(&end, &start) * 1e3 << "ms" << endl ;
+  struct timespec start, end;
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  algor.power_of_two_time_cut(time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+  clock_gettime(CLOCK_MONOTONIC, &end) ;
+  cout << "compute time " << tdiff2(&end, &start) * 1e3 << "ms" << endl ;
 #else
 #ifdef KERNEL_SELECTION
-	predicate <N_RANK> p (phys_grid_) ; 
-	p.set_resolution(resolution_) ;
-	p.set_output_file(outputFile_) ;
-	pochoir_clone_array <N_RANK> c1(*arr_, p) ; //may not compile
-    kernel_selection_sawzoid<N_RANK> ks(algor, phys_grid_, 0) ;
-    ks.set_clone_array(&c1) ;
-    ks.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
-                            logic_grid_, f, bf, p) ;
+  predicate <N_RANK> p (phys_grid_) ; 
+  p.set_resolution(resolution_) ;
+  p.set_output_file(outputFile_) ;
+  pochoir_clone_array <N_RANK> c1(*arr_, p) ; //may not compile
+  kernel_selection_sawzoid<N_RANK> ks(algor, phys_grid_, 0) ;
+  ks.set_clone_array(&c1) ;
+  ks.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
+                      logic_grid_, f, bf, p) ;
 #elif defined GENEITY_TEST
-	algor.set_thres_auto_tuning() ;
-	predicate <N_RANK> p (phys_grid_) ; 
-	p.set_resolution(resolution_) ;
-	p.set_output_file(outputFile_) ;
-	pochoir_clone_array <N_RANK> c1(*arr_, p) ; //may not compile
-	heterogeneity<N_RANK> hg(algor, phys_grid_, 1) ;
-	hg.set_clone_array(&c1) ;
-	struct timeval start, end;
-	double compute_time = 0. ;
-	//hg.build_heterogeneity_dag_modified(0, timestep, logic_grid_, p, 0) ;
-	gettimeofday(&start, 0);
-	hg.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
-								logic_grid_, f, bf, p) ;
-	gettimeofday(&end, 0);
-	compute_time = tdiff(&end, &start) ;
-	//std::cout << "compute time :" << 1.0e3 * compute_time << "ms" << std::endl;
-#ifndef NDEBUG
-	//cout << "calling print dag " << endl ;
-	//hg.print_dag() ;
-	//hg.print_heterogeneity() ;
-#endif
-#elif defined AUTO_TUNE
-	//cout << "address of home cell " << &home_cell_ << endl ;
-	auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name_, timestep_,
-						arr_type_size_) ;
-	at.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
-								logic_grid_, f, bf, arr_) ;
-
-	//at.print_dag() ;
+  algor.set_thres_auto_tuning() ;
+  predicate <N_RANK> p (phys_grid_) ; 
+  p.set_resolution(resolution_) ;
+  p.set_output_file(outputFile_) ;
+  pochoir_clone_array <N_RANK> c1(*arr_, p) ; //may not compile
+  heterogeneity<N_RANK> hg(algor, phys_grid_, 1) ;
+  hg.set_clone_array(&c1) ;
+  struct timeval start, end;
+  double compute_time = 0. ;
+  //hg.build_heterogeneity_dag_modified(0, timestep, logic_grid_, p, 0) ;
+  gettimeofday(&start, 0);
+  hg.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
+                                                          logic_grid_, f, bf, p) ;
+  gettimeofday(&end, 0);
+  compute_time = tdiff(&end, &start) ;
 #endif
 
 #endif
 #endif
 
 #else
-    printf("stevenj_p!\n");
-    algor.stevenj_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+  printf("stevenj_p!\n");
+  algor.stevenj_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #endif
 #pragma isat marker M2_end
 #if STAT
-    for (int i = 1; i < SUPPORT_RANK; ++i) {
-        fprintf(stderr, "sim_count_cut[%d] = %ld\n", i, algor.sim_count_cut[i].get_value());
-    }
+  for (int i = 1; i < SUPPORT_RANK; ++i) {
+      fprintf(stderr, "sim_count_cut[%d] = %ld\n", i, algor.sim_count_cut[i].get_value());
+  }
 #endif
 #endif
 #else
 #pragma isat marker M2_begin
-    algor.obase_boundary_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+  algor.obase_boundary_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+#pragma isat marker M2_end
+#endif
+}
+
+//the autotune version
+template <int N_RANK> template <typename F, typename BF, typename TF>
+void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf,
+                                TF const & tf) {
+  Algorithm<N_RANK> algor(slope_);
+  algor.set_phys_grid(phys_grid_);
+  algor.set_thres(arr_type_size_);
+  timestep_ = timestep;
+  checkFlags();
+#if BICUT
+#if 0
+  fprintf(stderr, "Call obase_bicut_boundary_P\n");
+#pragma isat marker M2_begin
+  algor.obase_bicut_boundary_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+#pragma isat marker M2_end
+#else
+  //    fprintf(stderr, "Call sim_obase_bicut_P\n");
+#pragma isat marker M2_begin
+#if 1
+  algor.set_time_step(timestep_);
+  algor.set_time_shift(time_shift_) ;
+  algor.set_thres_auto_tuning() ;
+#ifdef AUTO_TUNE
+  auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name_, timestep_,
+                                           arr_type_size_) ;
+#ifdef TRAP
+  at.do_trap_space_time_cuts(time_shift_, timestep+time_shift_,
+              logic_grid_, f, bf, tf, arr_, toggle_, arr_addr_) ;
+#else
+  at.do_power_of_two_time_cut(time_shift_, timestep+time_shift_,
+              logic_grid_, f, bf, arr_) ;
+#endif
+  //at.print_dag() ;
+#else
+
+#ifdef TRAP
+  algor.shorter_duo_sim_obase_bicut_p(time_shift_, timestep+time_shift_, 
+      logic_grid_, f, bf);
+#else
+  algor.power_of_two_time_cut(time_shift_, timestep+time_shift_, logic_grid_, 
+      f, bf);
+#endif
+
+#endif
+  /*
+  cout << "time_shift_ " << time_shift_ << " timestep " << timestep << endl ;
+
+  grid_info <N_RANK> grid = logic_grid_ ;
+  for (int i = N_RANK - 1 ; i >= 0 ; i--) {
+    cout << "grid.dx0[i] " << grid.dx0[i] << endl ;
+    cout << "grid.dx1[i] " << grid.dx1[i] << endl ;
+    cout << " x0 [" << i << "] " << grid.x0 [i] 
+            << " x1 [" << i << "] " << grid.x1 [i] 
+            << " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * timestep_
+            << " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * timestep_
+            << endl ; 
+    cout << "slope_ [i] " << slope_ [i] << endl ;
+  }
+  */
+#ifdef DEFAULT_TIME_CUT
+  cout << "default time cut " << endl ;
+#else
+  cout << "pow2 time cut " << endl ;
+#endif
+#ifdef STOP_TUNING_EARLY
+  cout << "STOP_TUNING_EARLY " << endl ;
+#endif
+#ifdef DEFAULT_CUTS_BOUNDARY
+  cout << "DEFAULT_CUTS_BOUNDARY " << endl ;
+#endif
+#ifdef FULL_ST_INVARIANCE_BOUNDARY
+  cout << "FULL_ST_INVARIANCE_BOUNDARY " << endl ;
+#endif
+#ifdef FS
+  cout << "FS " << endl ;
+#endif
+#ifdef DEFAULT_SPACE_CUT
+  cout << "default space cut " << endl ;
+#else
+  cout << "modified space cut " << endl ;
+#endif
+
+#ifdef TIME_INVARIANCE_INTERIOR
+  cout << "time invariance interior " << endl ;
+#else
+  cout << "space-time invariance interior " << endl ;
+#endif
+
+#ifdef TIME_INVARIANCE_BOUNDARY
+  cout << "time invariance boundary " << endl ;
+#else
+  cout << "space-time invariance boundary " << endl ;
+#endif
+
+#ifdef FIXED_TIME_CUT
+  cout << "fixed time cut" << endl ;
+#else
+  cout << "arbitrary time cut" << endl ;
+#endif
+
+#ifdef FIXED_SPACE_CUT
+  cout << "favored dimension" << endl ;
+#else
+  cout << "no favored dimension" << endl ;
+#endif
+#ifdef HYPERSPACE_CUTS
+  cout << "hyper space cut" << endl ;
+#else
+  cout << "sequential space cut" << endl ;
+#endif
+
+#ifdef SUBSUMPTION3
+  cout << "subsumption 3 " << endl ;
+#endif
+
+#ifdef SUBSUMPTION_SPACE
+  cout << "subsumption in space " << endl ;
+#endif
+
+#ifdef SUBSUMPTION_TIME
+  cout << "subsumption in time " << endl ;
+#endif
+#ifdef CHECK_CACHE_ALIGNMENT
+  cout << "checking cache alignment " << endl ;
+#endif
+
+#ifdef WRITE_ZOID_DIMENSIONS
+  cout << "writing zoid dimensions " << endl ;
+#endif
+
+#ifdef LOOP_TWICE
+  cout << "looping twice" << endl ;
+#endif
+#else
+  printf("stevenj_p!\n");
+  algor.stevenj_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
+#endif
+#pragma isat marker M2_end
+#if STAT
+  for (int i = 1; i < SUPPORT_RANK; ++i) {
+      fprintf(stderr, "sim_count_cut[%d] = %ld\n", i, algor.sim_count_cut[i].get_value());
+  }
+#endif
+#endif
+#else
+#pragma isat marker M2_begin
+  algor.obase_boundary_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #pragma isat marker M2_end
 #endif
 }

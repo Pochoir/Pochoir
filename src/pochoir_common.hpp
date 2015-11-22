@@ -46,8 +46,8 @@ static inline double tdiff (struct timeval *a, struct timeval *b)
 
 static inline long long tdiff2 (struct timespec *end, struct timespec *start)
 {
-		return (long long)(end->tv_sec - start->tv_sec) * 1000000000ll +
-								(end->tv_nsec - start->tv_nsec) ;
+  return (long long)(end->tv_sec - start->tv_sec) * 1000000000ll +
+            (end->tv_nsec - start->tv_nsec) ;
 }
 /*
 static inline double tdiff2 (struct timespec *end, struct timespec *start)
@@ -69,6 +69,7 @@ static inline int StrToInt(const std::string& s)
 #define BIT_TRICK 0
 #define INF 100000000
 #define SUPPORT_RANK 9
+//#define FS
 #define TRAP
 
 #if defined (TRAP)
@@ -80,22 +81,31 @@ static inline int StrToInt(const std::string& s)
 //#define COUNT_PROJECTIONS
 //#define COUNT_TRIANGLE
 //#define COUNT_TRAPEZOID
-#define USE_PROJECTION
 //#define GENEITY_TEST
 //#define KERNEL_SELECTION
+
+#define USE_PROJECTION
 #define AUTO_TUNE
+//#define FIXED_SPACE_CUT 
+#define SUBSUMPTION_SPACE
+//#define LOOP_TWICE
+
+//#define WRITE_DAG
+//#define STOP_TUNING_EARLY
+//#define DEFAULT_CUTS_BOUNDARY
+//#define FULL_ST_INVARIANCE_BOUNDARY
+//#define HOMOGENEOUS
+
 //#define TIME_INVARIANCE_INTERIOR
 //#define TIME_INVARIANCE_BOUNDARY
-//#define FIXED_SPACE_CUT //only hyper space cut
 //#define FIXED_TIME_CUT
-//#define WRITE_DAG
 //#define SUBSUMPTION_TIME
-#define SUBSUMPTION_SPACE
 //#define CHECK_CACHE_ALIGNMENT
 //#define WRITE_ZOID_DIMENSIONS
 //#define MEASURE_OVERHEAD
 //#define SUBSUMPTION3
 //#define MEASURE_STATISTICS
+//#define PERMUTE
 
 #define max_(a, b) ((a) > (b) ? (a) : (b))
 #define min_(a, b) ((a) < (b) ? (a) : (b))

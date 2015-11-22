@@ -242,17 +242,17 @@ struct meta_grid_boundary <2, BF>{
 
 template <typename BF>
 struct meta_grid_boundary <1, BF>{
-	static inline void single_step(int t, grid_info<1> const & grid, grid_info<1> const & initial_grid, BF const & bf) {
-		for (int i = grid.x0[0]; i < grid.x1[0]; ++i) {
-            int new_i = pmod_lu(i, initial_grid.x0[0], initial_grid.x1[0]);
+static inline void single_step(int t, grid_info<1> const & grid, grid_info<1> const & initial_grid, BF const & bf) {
+    for (int i = grid.x0[0]; i < grid.x1[0]; ++i) {
+      int new_i = pmod_lu(i, initial_grid.x0[0], initial_grid.x1[0]);
 #ifdef CHECK_SHAPE
-            do {
-                home_cell_[1] = inRun ? new_i : 0;
-            } while (0);
+      do {
+      home_cell_[1] = inRun ? new_i : 0;
+      } while (0);
 #endif
-		    bf(t, new_i);
-        }
-	} 
+      bf(t, new_i);
+    }
+  } 
 };
 
 template <int N_RANK, typename F>
@@ -490,22 +490,23 @@ struct Algorithm {
     
     /* constructor */
     Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1) {
+//#if 0
 #ifndef TRAP
 		struct rlimit rl;
     	int result = getrlimit(RLIMIT_STACK, &rl);
 		static bool increase_stack_size = true ;
     	if (increase_stack_size && result == 0)
-    	{
-			cout << "stack current limit " << rl.rlim_cur << endl ;
-			cout << "stack max limit " << rl.rlim_max << endl ;
-			rl.rlim_cur *= 100 ;
-			result = setrlimit(RLIMIT_STACK, &rl);
-            if (result != 0)
-            {
-                fprintf(stderr, "setrlimit returned result = %d\n", result);
-            }
-			increase_stack_size = false ;
-		}
+        {
+          cout << "stack current limit " << rl.rlim_cur << endl ;
+          cout << "stack max limit " << rl.rlim_max << endl ;
+          rl.rlim_cur *= 100 ;
+          result = setrlimit(RLIMIT_STACK, &rl);
+          if (result != 0)
+          {
+          fprintf(stderr, "setrlimit returned result = %d\n", result);
+          }
+          increase_stack_size = false ;
+        }
 #endif
         for (int i = 0; i < N_RANK; ++i) {
             slope_[i] = _slope[i];
@@ -788,14 +789,16 @@ struct Algorithm {
 #endif
     }
 
-    inline void set_thres_auto_tuning() 
-	{
-        dt_recursive_ = 1;
-        dx_recursive_[0] = 1;
-        for (int i = N_RANK-1; i >= 1; --i)
-            dx_recursive_[i] = 1;
-		cout << "Reset all base cases to 1 for auto-tuning" << endl ;
-	}
+    inline void set_thres_auto_tuning() {
+      dt_recursive_ = 1;
+      dt_recursive_boundary_ = 1 ;
+      dx_recursive_[0] = 1;
+      dx_recursive_boundary_[0] = 1 ;
+      for (int i = N_RANK-1; i >= 1; --i) {
+        dx_recursive_[i] = 1;
+        dx_recursive_boundary_[i] = 1 ;
+      }
+    }
 
     /* README!!!: set_phys_grid()/set_stride() must be called before call to 
      * - walk_adaptive 
@@ -803,52 +806,44 @@ struct Algorithm {
      * - walk_ncores_boundary
      */
     inline void set_thres(int arr_type_size) {
-#if 0
-        dt_recursive_ = 1;
-        dx_recursive_[0] = 1;
-        for (int i = N_RANK-1; i >= 1; --i)
-            dx_recursive_[i] = 1;
-#else
 #ifdef DEFAULT_TIME_CUT 
-        dt_recursive_ = (N_RANK == 1) ? 20 : ((N_RANK == 2) ? 40 : 5);
-        dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((100 * sizeof(double))/arr_type_size)) : (int)floor(float((600 * sizeof(double))/arr_type_size));
-//        dx_recursive_[0] = 30;
-        for (int i = N_RANK-1; i >= 1; --i)
-            dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(100 * sizeof(double))/arr_type_size): 10;
+      dt_recursive_ = (N_RANK == 1) ? 20 : ((N_RANK == 2) ? 40 : 5);
+      //dx_recursive_[0] = 4096 / (2 * slope_ [0]) ; //tried hand tuning.
+      dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((100 * sizeof(double))/arr_type_size)) : (int)floor(float((600 * sizeof(double))/arr_type_size));
+      //dx_recursive_[0] = 30;
+      for (int i = N_RANK-1; i >= 1; --i)
+        dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(100 * sizeof(double))/arr_type_size): 10;
 #else
-        dt_recursive_ = (N_RANK == 1) ? 64 : ((N_RANK == 2) ? 32 : 4);
-		int sigma_dt_times_two = 2 * slope_ [0] * dt_recursive_ ; 
-        dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1  : (int)floor(float((sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1 ;
-		if (N_RANK == 1)
-		{
-			dx_recursive_ [0] = 511 ;
-		}
-		if (N_RANK == 3)
-		{
-			//dx_recursive_ [0] = (int)floor(float((32 * sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1 ;
-			dx_recursive_ [0] = 511 ;
-		}
-        for (int i = N_RANK-1; i >= 1; --i)
-            dx_recursive_[i] = (N_RANK == 2) ? (int)ceil(float(2 * slope_ [i] * dt_recursive_ * sizeof(double))/arr_type_size) - 1 : 2 * slope_ [i] * dt_recursive_ - 1 ;
+      dt_recursive_ = (N_RANK == 1) ? 64 : ((N_RANK == 2) ? 32 : 4);
+      int sigma_dt_times_two = 2 * slope_ [0] * dt_recursive_ ; 
+      dx_recursive_[0] = (N_RANK == 2) ? (int)ceil(float((sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1  : (int)floor(float((sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1 ;
+      if (N_RANK == 1) {
+        dx_recursive_ [0] = 511 ;
+      }
+      if (N_RANK == 3) {
+        //dx_recursive_ [0] = (int)floor(float((32 * sigma_dt_times_two * sizeof(double))/arr_type_size)) - 1 ;
+        dx_recursive_ [0] = 511 ;
+      }
+      for (int i = N_RANK-1; i >= 1; --i)
+        dx_recursive_[i] = (N_RANK == 2) ? 
+          (int)ceil(float(2 * slope_ [i] * dt_recursive_ * sizeof(double))/arr_type_size) - 1 : 2 * slope_ [i] * dt_recursive_ - 1 ;
 #endif
-#endif
-		//for counting projections, set dt and dx to 1
-		//dt_recursive_ = 1 ;
-		cout << "dt_recursive_" << dt_recursive_ << 
-				" dt_recursive_boundary_ " << dt_recursive_boundary_ << endl ; 
-		for (int i = 0 ; i < N_RANK ; i++)
-		{
-			//dx_recursive_ [i] = 1 ;
-			cout << " dx_recursive [" << i << "]" << dx_recursive_[i]
-				<< " dx_recursive_boundary_[" << i << "]" 
-				<< dx_recursive_boundary_[i] << endl ;
-		}
+      //for counting projections, set dt and dx to 1
+      //dt_recursive_ = 1 ;
+      //cout << "dt_recursive_" << dt_recursive_ << 
+      //  " dt_recursive_boundary_ " << dt_recursive_boundary_ << endl ; 
+      //for (int i = 0 ; i < N_RANK ; i++) {
+        //dx_recursive_ [i] = 1 ;
+        //cout << " dx_recursive [" << i << "]" << dx_recursive_[i]
+        //<< " dx_recursive_boundary_[" << i << "]" 
+        //<< dx_recursive_boundary_[i] << endl ;
+      //}
 #if DEBUG
-        printf("arr_type_size = %d\n", arr_type_size);
-        printf("dt_thres = %d, ", dt_recursive_);
-        for (int i = N_RANK-1; i >=1; --i)
-            printf("dx_thres[%d] = %d, ", i, dx_recursive_[i]);
-        printf("dx_thres[%d] = %d\n", 0, dx_recursive_[0]);
+      printf("arr_type_size = %d\n", arr_type_size);
+      printf("dt_thres = %d, ", dt_recursive_);
+      for (int i = N_RANK-1; i >=1; --i)
+          printf("dx_thres[%d] = %d, ", i, dx_recursive_[i]);
+      printf("dx_thres[%d] = %d\n", 0, dx_recursive_[0]);
 #endif
     }
 
@@ -971,6 +966,8 @@ struct Algorithm {
 	inline void base_case_kernel_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
     template <typename BF> 
 	inline void base_case_kernel_boundary(int t0, int t1, grid_info<N_RANK> const grid, BF const & bf);
+    template <typename BF> 
+	inline void base_case_kernel_boundary_tune(int t0, volatile int & t1, grid_info<N_RANK> const grid, BF const & bf);
     /*template <typename F> 
 	inline void walk_serial(int t0, int t1, grid_info<N_RANK> const grid, F const & f);
 	*/
@@ -1022,22 +1019,22 @@ struct Algorithm {
 template <int N_RANK>
 void Algorithm<N_RANK>::set_phys_grid(grid_info<N_RANK> const & grid)
 {
-    phys_grid_ = grid;
-    for (int i = 0; i < N_RANK; ++i)
-        phys_length_[i] = grid.x1[i] - grid.x0[i];
-    physGridSet = true;
-    if (slopeSet) {
-        /* set up the lb/ub_boundary */
-        for (int i = 0; i < N_RANK; ++i) {
-            ulb_boundary[i] = phys_grid_.x1[i] - slope_[i];
-            uub_boundary[i] = phys_grid_.x1[i] + slope_[i];
-            lub_boundary[i] = phys_grid_.x0[i] + slope_[i];
+  phys_grid_ = grid;
+  for (int i = 0; i < N_RANK; ++i)
+      phys_length_[i] = grid.x1[i] - grid.x0[i];
+  physGridSet = true;
+  if (slopeSet) {
+      /* set up the lb/ub_boundary */
+    for (int i = 0; i < N_RANK; ++i) {
+      ulb_boundary[i] = phys_grid_.x1[i] - slope_[i];
+      uub_boundary[i] = phys_grid_.x1[i] + slope_[i];
+      lub_boundary[i] = phys_grid_.x0[i] + slope_[i];
 
-			cout << " ulb_boundary[ " << i << " ] " << ulb_boundary[i] <<
-			" uub_boundary[ " << i << " ] " << uub_boundary[i] <<
-			" lub_boundary[ " << i << " ] " << lub_boundary[i] << endl ;
-        }
+      //cout << " ulb_boundary[ " << i << " ] " << ulb_boundary[i] <<
+      //    " uub_boundary[ " << i << " ] " << uub_boundary[i] <<
+      //    " lub_boundary[ " << i << " ] " << lub_boundary[i] << endl ;
     }
+  }
 }
 
 template <int N_RANK>
@@ -1072,6 +1069,23 @@ inline void Algorithm<N_RANK>::base_case_kernel_interior(int t0, int t1, grid_in
 
 template <int N_RANK> template <typename BF>
 inline void Algorithm<N_RANK>::base_case_kernel_boundary(int t0, int t1, grid_info<N_RANK> const grid, BF const & bf) {
+  grid_info<N_RANK> l_grid = grid;
+  for (int t = t0; t < t1; ++t) {
+#ifdef CHECK_SHAPE
+    home_cell_[0] = t;
+#endif
+    /* execute one single time step */
+    meta_grid_boundary<N_RANK, BF>::single_step(t, l_grid, phys_grid_, bf);
+
+    /* because the shape is trapezoid! */
+    for (int i = 0; i < N_RANK; ++i) {
+      l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
+    }
+  }
+}
+
+template <int N_RANK> template <typename BF>
+inline void Algorithm<N_RANK>::base_case_kernel_boundary_tune(int t0, volatile int & t1, grid_info<N_RANK> const grid, BF const & bf) {
 	grid_info<N_RANK> l_grid = grid;
 	for (int t = t0; t < t1; ++t) {
 #ifdef CHECK_SHAPE
@@ -1084,9 +1098,11 @@ inline void Algorithm<N_RANK>::base_case_kernel_boundary(int t0, int t1, grid_in
 		for (int i = 0; i < N_RANK; ++i) {
 			l_grid.x0[i] += l_grid.dx0[i]; l_grid.x1[i] += l_grid.dx1[i];
 		}
+
+		if (t1 == 0)
+			cout << " t1 is 0 " << endl ;
 	}
 }
-
 
 #if DEBUG 
 template <int N_RANK>

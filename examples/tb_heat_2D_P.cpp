@@ -84,7 +84,6 @@ int main(int argc, char * argv[])
     N2 = StrToInt(argv[2]);
     T_SIZE = StrToInt(argv[3]);
 	
-    printf("N1 = %d, N2 = %d, T_SIZE = %d\n", N1, N2, T_SIZE);
     Pochoir_Shape_2D heat_shape_2D[] = {{0, 0, 0}, {-1, 1, 0}, {-1, 0, 0}, {-1, -1, 0}, {-1, 0, -1}, {-1, 0, 1}};
     //Pochoir_Shape_2D heat_shape_2D[] = {{1, 0, 0}, {0, 1, 0}, {0, 0, 0}, {0, -1, 0}, {0, 0, -1}, {0, 0, 1}};
     Pochoir<N_RANK> heat_2D(heat_shape_2D);
@@ -112,7 +111,6 @@ int main(int argc, char * argv[])
 #endif
 	} }
 
-	cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
     Pochoir_Kernel_2D(heat_2D_fn, t, i, j)
 	/*if (j <  N2  / 2 && i < N1  / 2)
 	   	a(t, i, j) = 0.125 * (a(t-1, i+1, j) - 2.0 * a(t-1, i, j) + a(t-1, i-1, j)) + 0.125 * (a(t-1, i, j+1) - 2.0 * a(t-1, i, j) + a(t-1, i, j-1)) + a(t-1, i, j);
@@ -137,6 +135,8 @@ int main(int argc, char * argv[])
 	gettimeofday(&end, 0);
 	std::cout << "Pochoir ET: consumed time :" << 1.0e3 * tdiff(&end, &start)/TIMES << "ms" << std::endl;
 
+    printf("N1 = %d, N2 = %d, T_SIZE = %d\n", N1, N2, T_SIZE);
+    cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
 //#if 1	
 #ifdef CHECK_RESULT
 	gettimeofday(&start, 0);

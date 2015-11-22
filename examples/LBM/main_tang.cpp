@@ -18,7 +18,7 @@
 #include <sys/stat.h>
 
 //Pochoir_Boundary_3D(lbm_bv_3D, arr, t, i, j, k)
- //   return 0;
+//    return 0;
 //Pochoir_Boundary_End
 Pochoir_Boundary_3D( lbm_bdry , a , t , z , y , x)
 	PoCellEntry result ;
@@ -175,6 +175,7 @@ void MAIN_parseCommandLine( int nArgs, char* arg[], MAIN_Param* param ) {
 void MAIN_printInfo( const MAIN_Param* param ) {
 	const char actionString[3][32] = {"nothing", "compare", "store"};
 	const char simTypeString[3][32] = {"lid-driven cavity", "channel flow"};
+        /*
 	printf( "MAIN_printInfo:\n"
 	        "\tgrid size      : %i x %i x %i = %.2f * 10^6 Cells\n"
 	        "\tnTimeSteps     : %i\n"
@@ -187,6 +188,7 @@ void MAIN_printInfo( const MAIN_Param* param ) {
 	        actionString[param->action], simTypeString[param->simType],
 	        (param->obstacleFilename == NULL) ? "<none>" :
 	                                            param->obstacleFilename );
+        */
 }
 
 /*############################################################################*/

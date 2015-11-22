@@ -18,7 +18,7 @@
 
 #endif
 
-void stopwatches_setup() {
+inline void stopwatches_setup() {
 #ifndef USE_TIMING
     /* (kxing): Initialize system for profiling off hardware counters. */
     int return_value = pfm_initialize();
@@ -28,14 +28,14 @@ void stopwatches_setup() {
 #endif
 }
 
-void stopwatches_teardown() {
+inline void stopwatches_teardown() {
 #ifndef USE_TIMING
     /* (kxing): Shut down the hardware counter measurements for profiling. */
     pfm_terminate();
 #endif
 }
 
-void stopwatch_init(stopwatch *s) {
+inline void stopwatch_init(stopwatch *s) {
 #ifdef KXING_DEBUG_STOPWATCH
     printf("starting: %p\n", s);
 #endif
@@ -60,15 +60,16 @@ void stopwatch_init(stopwatch *s) {
 
     s->running = false;
     s->measurements_valid = false;
+	s->num_calls = 0 ;
 }
 
-void stopwatch_destroy(stopwatch *s) {
+inline void stopwatch_destroy(stopwatch *s) {
 #ifndef USE_TIMING
     close(s->file_descriptor);
 #endif
 }
 
-void stopwatch_start(stopwatch *s) {
+inline void stopwatch_start(stopwatch *s) {
 #ifdef KXING_DEBUG_STOPWATCH
     printf("stopping: %p\n", s);
 #endif
@@ -88,7 +89,7 @@ void stopwatch_start(stopwatch *s) {
     s->measurements_valid = false;
 }
 
-void stopwatch_stop(stopwatch *s) {
+inline void stopwatch_stop(stopwatch *s) {
     assert(s->initialized);
     assert(s->running);
 
@@ -145,11 +146,11 @@ void stopwatch_stop(stopwatch *s) {
     s->measurements_valid = true;
 }
 
-bool stopwatch_is_running(stopwatch *s) {
+inline bool stopwatch_is_running(stopwatch *s) {
     return s->running;
 }
 
-long long stopwatch_get_elapsed_time(stopwatch *s) {
+inline long long stopwatch_get_elapsed_time(stopwatch *s) {
     assert(s->initialized);
     //CILK_ASSERT(s->initialized);
     assert(s->measurements_valid);
@@ -157,7 +158,7 @@ long long stopwatch_get_elapsed_time(stopwatch *s) {
     return s->elapsed_time;
 }
 
-long long stopwatch_stop_and_start(stopwatch *s) {
+inline long long stopwatch_stop_and_start(stopwatch *s) {
 #ifdef KXING_DEBUG_STOPWATCH
     printf("stopping: %p\n", s);
     printf("starting: %p\n", s);
@@ -177,6 +178,7 @@ long long stopwatch_stop_and_start(stopwatch *s) {
 #else
     stopwatch_stop(s);
     long long elapsed_time = stopwatch_get_elapsed_time(s);
+	s->num_calls++ ;
     stopwatch_start(s);
 #ifdef USE_TIMING
     /* Avoid imprecision from doing two timing calls. */
@@ -186,7 +188,7 @@ long long stopwatch_stop_and_start(stopwatch *s) {
 #endif
 }
 
-void stopwatch_time_to_string(char *buffer, long long time) {
+inline void stopwatch_time_to_string(char *buffer, long long time) {
 #ifdef USE_TIMING
     sprintf(buffer,
             "%lld.%09lld seconds",
@@ -195,5 +197,10 @@ void stopwatch_time_to_string(char *buffer, long long time) {
 #else
     sprintf(buffer, "%lld instructions", time);
 #endif
+}
+
+inline void stopwatch_reset_num_calls(stopwatch *s)
+{
+	s->num_calls = 0 ;
 }
 

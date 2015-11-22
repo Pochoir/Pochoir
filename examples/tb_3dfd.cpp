@@ -469,8 +469,6 @@ int main(int argc, char *argv[])
   if (argc > 4)
     T = atoi(argv[4]);
 
-  printf("Order-%d 3D-Stencil (%d points) with space %dx%dx%d and time %d\n", 
-	 ds, ds*2*3+1, Nx, Ny, Nz, T);
 
   Pochoir_Shape_3D fd_shape_3D[26] = {{1, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 1}, {0, 0, 0, -1}, {0, 0, 1, 0}, {0, 0, -1, 0}, {0, 1, 0, 0}, {0, -1, 0, 0}, {0, 0, 0, 2}, {0, 0, 0, -2}, {0, 0, 2, 0}, {0, 0, -2, 0}, {0, 2, 0, 0}, {0, -2, 0, 0}, {0, 0, 0, 3}, {0, 0, 0, -3}, {0, 0, 3, 0}, {0, 0, -3, 0}, {0, 3, 0, 0}, {0, -3, 0, 0}, {0, 0, 0, 4}, {0, 0, 0, -4}, {0, 0, 4, 0}, {0, 0, -4, 0}, {0, 4, 0, 0}, {0, -4, 0, 0}};
   Pochoir_Array_3D(float) pa(Nz, Ny, Nx);
@@ -499,7 +497,8 @@ int main(int argc, char *argv[])
      pa(t+1, i, j, k) = 2 * pa(t, i, j, k) - pa(t+1, i, j, k) + vsq[i * Nxy + j * Nx + k] * div;
   Pochoir_Kernel_End
 
-  dotest();
+  //dotest();
+  vsq = new float[Nx * Ny * Nz];
 
   char name [500] ;
   sprintf(name, "3dfd") ;
@@ -509,9 +508,11 @@ int main(int argc, char *argv[])
   gettimeofday(&start, 0);
   fd_3D.Run(T, fd_3D_fn);
   gettimeofday(&end, 0);
-  print_summary("Pochoir", tdiff(&end, &start));
+  //print_summary("Pochoir", tdiff(&end, &start));
 
-  delete[] A;
+  printf("Order-%d 3D-Stencil (%d points) with space %dx%dx%d and time %d\n", 
+	 ds, ds*2*3+1, Nx, Ny, Nz, T);
+  //delete[] A;
   delete[] vsq;
   return 0;
 }

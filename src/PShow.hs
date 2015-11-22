@@ -297,6 +297,25 @@ pShowOptPointerKernel l_name l_kernel =
         breakline ++ pShowOptPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
         pShowObaseTail l_rank ++ breakline ++ "};\n"
 
+
+pShowOptPointerTuneKernel :: String -> PKernel -> String
+pShowOptPointerTuneKernel l_name l_kernel = 
+    let l_rank = length (kParams l_kernel) - 1
+        l_iter = kIter l_kernel
+        l_array = unionArrayIter l_iter
+        l_t = head $ kParams l_kernel
+    in  breakline ++ "auto " ++ l_name ++ " = [&] (" ++
+        "int t0, volatile int & t1, grid_info<" ++ show l_rank ++ "> const & grid) {" ++ 
+        breakline ++ "grid_info<" ++ show l_rank ++ "> l_grid = grid;" ++
+        pShowPointers l_iter ++ breakline ++ 
+        pShowArrayInfo l_array ++ pShowArrayGaps l_rank l_array ++
+        breakline ++ pShowStrides l_rank l_array ++ breakline ++
+        "for (int " ++ l_t ++ " = t0; " ++ l_t ++ " < t1; ++" ++ l_t ++ ") { " ++ 
+        pShowOptPointerSet l_iter (kParams l_kernel)++
+        breakline ++ pShowPointerForHeader l_rank l_iter (tail $ kParams l_kernel) ++
+        breakline ++ pShowOptPointerStmt l_kernel ++ breakline ++ pShowObaseForTail l_rank ++
+        pShowObaseTail l_rank ++ breakline ++ "};\n"
+
 pShowCPointerKernel :: String -> PKernel -> String
 pShowCPointerKernel l_name l_kernel = 
     let l_rank = length (kParams l_kernel) - 1

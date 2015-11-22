@@ -473,6 +473,7 @@ void LBM_showGridStatistics( Pochoir_Array_3D(PoCellEntry) & pa, int t ) {
     }
         }
     }
+        /*
         printf( "LBM_showGridStatistics:\n"
         "\tnObstacleCells: %7i nAccelCells: %7i nFluidCells: %7i\n"
         "\tminRho: %8.4f maxRho: %8.4f mass: %e\n"
@@ -480,6 +481,7 @@ void LBM_showGridStatistics( Pochoir_Array_3D(PoCellEntry) & pa, int t ) {
         nObstacleCells, nAccelCells, nFluidCells,
         minRho, maxRho, mass,
         sqrt( minU2 ), sqrt( maxU2 ) );
+        */
 
 }
 

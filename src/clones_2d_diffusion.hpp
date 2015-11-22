@@ -84,6 +84,10 @@ public :
 		resolution = r ;
 		initialize_parameters ();
 	}
+
+	void set_output_file(ofstream * file)
+	{
+	}
 } ;
 
 template<>

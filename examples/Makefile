@@ -2,7 +2,12 @@
 TARGET = heat_1D_NP heat_2D_NP heat_2D_P 3dfd heat_3D_NP heat_4D_NP life rna psa_struct lcs apop 
 CC = ../pochoir
 ICC = icpc
-#OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
+#DEBUG = 1
+ifeq ($(DEBUG),1)
+	OPT_FLAGS = -O0 -g -Wall -Werror -std=c++0x -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
+else
+	OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
+endif
 
 #options without vectorization
 #OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -fno-alias -fno-fnalias -fp-model precise -std=c++0x -no-vec -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
@@ -16,7 +21,6 @@ OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fna
 
 #O0 option for cloud
 #OPT_FLAGS = -O0 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
-#OPT_FLAGS = -O0 -g -Wall -Werror -std=c++0x -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x
 #ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h  
 ICC_DEBUG_FLAGS = -O3 -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h  

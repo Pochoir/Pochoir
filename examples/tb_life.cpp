@@ -78,7 +78,6 @@ int main(int argc, char * argv[])
     N2 = StrToInt(argv[2]);
     T_SIZE = StrToInt(argv[3]);
 	
-    printf("N1 = %d, N2 = %d, T_SIZE = %d\n", N1, N2, T_SIZE);
     /*N_SIZE = StrToInt(argv[1]);
     T_SIZE = StrToInt(argv[2]);
     printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);*/
@@ -114,7 +113,6 @@ int main(int argc, char * argv[])
 #endif
 	} }
 
-    printf("Game of Life : %d x %d, %d time steps\n", N1, N2, T_SIZE);
 
     Pochoir_Kernel_2D(life_2D_fn, t, i, j)
     int neighbors = a(t-1, i-1, j-1) + a(t-1, i-1, j) + a(t-1, i-1, j+1) +
@@ -142,6 +140,8 @@ int main(int argc, char * argv[])
     }
 	gettimeofday(&end, 0);
 	std::cout << "Pochoir : consumed time :" << 1.0e3 * tdiff(&end, &start)/TIMES << "ms" << std::endl;
+    printf("N1 = %d, N2 = %d, T_SIZE = %d\n", N1, N2, T_SIZE);
+    printf("Game of Life : %d x %d, %d time steps\n", N1, N2, T_SIZE);
 
 #ifdef LIFE_BIT_TRICK
     Pochoir_Kernel_2D(bt_life_2D_fn, t, i, j)
@@ -195,15 +195,6 @@ int main(int argc, char * argv[])
 	gettimeofday(&end, 0);
 	std::cout << "Naive Loop: consumed time :" << 1.0e3 * tdiff(&end, &start) / TIMES << "ms" << std::endl;
 #endif
-#ifdef LIFE_BIT_TRICK
-	t = T_SIZE;
-    printf("compare a with c : ");
-	for (int i = 0; i < N1; ++i) {
-	for (int j = 0; j < N2; ++j) {
-		check_result(t, i, j, a.interior(t, i, j), c.interior(t, i, j));
-	} } 
-    printf("passed!\n");
-#endif
 //#if 1
 #ifdef CHECK_RESULT
     printf("compare a with b : ");
@@ -213,12 +204,21 @@ int main(int argc, char * argv[])
 	} } 
     printf("passed!\n");
 
+#ifdef LIFE_BIT_TRICK
+	t = T_SIZE;
+    printf("compare a with c : ");
+	for (int i = 0; i < N1; ++i) {
+	for (int j = 0; j < N2; ++j) {
+		check_result(t, i, j, a.interior(t, i, j), c.interior(t, i, j));
+	} } 
+    printf("passed!\n");
     printf("compare c with b : ");
 	for (int i = 0; i < N1; ++i) {
 	for (int j = 0; j < N2; ++j) {
 		check_result(t, i, j, c.interior(t, i, j), b.interior(t, i, j));
 	} } 
     printf("passed!\n");
+#endif
 #endif
 
 	return 0;

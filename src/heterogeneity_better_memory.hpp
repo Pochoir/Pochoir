@@ -82,6 +82,7 @@ class zoid
 		geneity = 0 ;
 		children = 0 ;
 		num_children = 0 ;
+		height = 0 ;
 #ifndef NDEBUG
 		id = ULONG_MAX ;
 #endif
@@ -287,6 +288,12 @@ private:
 			m_1d_index_by_length_trapezoid.reserve(volume + 1) ;
 			m_1d_index_by_length_trapezoid.resize(volume + 1) ;
 
+			m_1d_count_proj_centroid.reserve(volume + 1) ; 
+			m_1d_count_proj_centroid.resize(volume + 1) ; 
+			
+			m_1d_tallest_zoid_per_centroid.reserve(volume + 1) ; 
+			m_1d_tallest_zoid_per_centroid.resize(volume + 1) ; 
+
 			m_num_triangles = 0 ;
 			m_num_trapezoids = 0 ;
 		}
@@ -412,6 +419,18 @@ private:
 			}
 		}
 		cout << " # of trapezoid lengths > " << T << " : " << num_trap_lengths << endl ;
+		int count = 0, centroid = -1 ;
+		for (int i = 0 ; i < m_1d_count_proj_centroid.size() ; i++)
+		{
+			if (m_1d_count_proj_centroid [i] > count)
+			{
+				count = m_1d_count_proj_centroid [i] ;
+				centroid = i ;
+			}
+		}
+		cout << " max # of projections : " << count << " at centroid : " <<
+				centroid << endl ; 
+		cout << " log 2 (" << T << ") : " << log2(T) << endl ;
 	}
 	/*{
 		cout << " Triangles " << endl ;
@@ -493,10 +512,7 @@ private:
 													h.equal_range (key) ;
 		
 		//hash_table iterator has two elements, first and second.
-		//atmost one zoid can exist at a centroid with a given 
-		//top volume + bottom volume
 		for (hash_table_iterator start = p.first ; start != p.second ; start++)
-		//if (p.first != p.second)
 		{
 			assert (start->first == key) ;
 			assert (start->second < m_num_vertices) ;
@@ -506,8 +522,73 @@ private:
 			if (z->height == height) 
 			{
 				//*zoid = z ;
-				index = start->second ;
 				//cout << "found entry" << endl ;
+				index = start->second ;
+				grid_info <N_RANK> grid2 = z->info ;
+				int h = height ;
+				/*bool found = true ;
+				for (int i = N_RANK - 1 ; i >= 0 ; i--)
+				{
+					int x2 = grid.x0 [i] + grid.dx0 [i] * h ;
+					int x3 = grid.x1 [i] + grid.dx1 [i] * h ;
+					int x2_ = grid2.x0 [i] + grid2.dx0 [i] * h ; 
+					int x3_ = grid2.x1 [i] + grid2.dx1 [i] * h ;
+					int l = m_algo.phys_length_ [i] ;
+					if (pmod(grid.x0 [i], l) != pmod(grid2.x0 [i], l) ||
+						pmod(grid.x1 [i], l) != pmod(grid2.x1 [i], l) ||
+						pmod(x2, l) != pmod(x2_, l) ||
+						pmod(x3, l) != pmod(x3_, l))
+					{
+						found = false ;
+					}
+				}
+				if (found)
+				{
+					index = start->second ;
+					return true ;
+				}*/
+#ifndef NDEBUG
+//#if 0
+				for (int i = N_RANK - 1 ; i >= 0 ; i--)
+				{
+					int x2 = grid.x0 [i] + grid.dx0 [i] * h ;
+					int x3 = grid.x1 [i] + grid.dx1 [i] * h ;
+					int x2_ = grid2.x0 [i] + grid2.dx0 [i] * h ; 
+					int x3_ = grid2.x1 [i] + grid2.dx1 [i] * h ;
+					if (pmod(grid.x0 [i], m_algo.phys_length_ [i]) != 
+						pmod(grid2.x0 [i], m_algo.phys_length_ [i]) ||
+						pmod(grid.x1 [i], m_algo.phys_length_ [i]) != 
+						pmod(grid2.x1 [i], m_algo.phys_length_ [i]) ||
+						pmod(x2, m_algo.phys_length_ [i]) != 
+						pmod(x2_, m_algo.phys_length_ [i]) ||
+						pmod(x3, m_algo.phys_length_ [i]) != 
+						pmod(x3_, m_algo.phys_length_ [i]))
+					{
+						cout << "2 diff zoids hash to same key " << endl ;
+						cout << "diff dim " << i << endl ;
+						cout << "centroid " << centroid << endl ;
+						cout << " grid " << endl ;
+						for (int j = N_RANK - 1 ; j >= 0 ; j--)
+						{
+							cout << " x0 [" << j << "] " << grid.x0 [j] 
+							<< " x1 [" << j << "] " << grid.x1 [j] 
+							<< " x2 [" << j << "] " << grid.x0[j] + grid.dx0[j] * h
+							<< " x3 [" << j << "] " << grid.x1[j] + grid.dx1[j] * h
+							<< " h " << h << endl ; 
+						}
+						cout << " grid 2 at index " << index << endl ;
+						for (int j = N_RANK - 1 ; j >= 0 ; j--)
+						{
+							cout << " x0 [" << j << "] " << grid2.x0 [j] 
+							<< " x1 [" << j << "] " << grid2.x1 [j] 
+							<< " x2 [" << j << "] " << grid2.x0[j] + grid2.dx0[j] * h
+							<< " x3 [" << j << "] " << grid2.x1[j] + grid2.dx1[j] * h
+							<< " h " << h << endl ; 
+						}
+						assert (0) ;
+					}
+				}
+#endif
 				return true ;
 			}
 		}
@@ -527,7 +608,7 @@ private:
 		z.id = m_num_vertices ;
 		//m_num_projections ;
 		//assert (m_num_vertices == m_num_projections) ;
-		cout << "inserting zoid " << z.id << " key " << key << endl ;
+		/*cout << "inserting zoid " << z.id << " key " << key << endl ;
 		for (int i = N_RANK - 1 ; i >= 0 ; i--)
 		{
 			cout << " x0 [" << i << "] " << grid.x0 [i] 
@@ -535,7 +616,7 @@ private:
 			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
 			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
 			<< " h " << height << endl ; 
-		}
+		}*/
 #endif
 #ifdef COUNT_PROJECTIONS
 		if (N_RANK == 1)
@@ -555,31 +636,85 @@ private:
 				length = tb ;
 				index = grid.x0[0] + grid.dx0[0] * height ;
 			}
-			if (length > 0)
+			index = centroid ;
+			//if (length > 0)
 			{
+				bool found = true ;
 				if (lb == 0 || tb == 0)
 				{
-					set <unsigned long> & s = 
+					/*set <unsigned long> & s = 
 						m_1d_index_by_length_triangle [length] ;
 					if (s.find(index) == s.end())
-					{
+					{*/
 						//insert if index is not already in the set
 						m_num_triangles++ ;
 						m_1d_count_proj_length_triangle [length]++ ;
 						m_1d_index_by_length_triangle [length].insert(index) ;
-					}
+
+					//	found = false ;
+					//}
 				}			
 				else
 				{
-					set <unsigned long> & s = 
+					/*set <unsigned long> & s = 
 						m_1d_index_by_length_trapezoid [length] ;
 					if (s.find(index) == s.end())
-					{
+					{*/
 						//insert if index is not already in the set
 						m_num_trapezoids++ ;
 						m_1d_count_proj_length_trapezoid [length]++ ;
 						m_1d_index_by_length_trapezoid [length].insert(index) ;
+
+					//	found = false ;
+					//}
+				}
+				/*if (! found)
+				{
+					m_1d_count_proj_centroid [centroid]++ ;
+				}*/
+				//if (lb != 0 && tb != 0)
+				{
+					if (lb != 0 && tb != 0)
+					{
+						m_1d_count_proj_centroid [centroid]++ ;
 					}
+					int i = m_1d_tallest_zoid_per_centroid [centroid] ;
+					zoid_type & z1 = m_zoids [i] ;
+					if (height > z1.height)
+					{
+						m_1d_tallest_zoid_per_centroid [centroid] = m_num_vertices ;
+					}
+					/*else if (height == z1.height)
+					{
+						grid_info <N_RANK> grid1 = z1.info ;
+						unsigned long lb1 = grid1.x1 [0] - grid1.x0 [0] ;
+						unsigned long tb1 = grid1.x1[0] + grid1.dx1[0] * height-
+								(grid1.x0[0] + grid1.dx0[0] * height) ;
+						unsigned long length1 = max(lb1, tb1) ;
+						if (lb != 0 && tb != 0 && lb1 != 0 && tb1 != 0 &&
+						 abs((int) (length - length1)) > 0)
+						{
+						cout << " 2 Diff zoids have max height at centroid : "
+							<< centroid << endl ;
+						cout << " length :  " << length << " length 1 : " <<
+							length1 << endl ;
+						cout << " index : " << m_num_vertices << " index 1 : " 
+							<< i << endl ; 
+						for (int i = N_RANK - 1 ; i >= 0 ; i--)
+						{
+							cout << " x0 [" << i << "] " << grid.x0 [i] 
+							 << " x1 [" << i << "] " << grid.x1 [i] 
+							<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * height
+							<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * height
+							<< " h " << height << endl ; 
+							cout << " x0 [" << i << "] " << grid1.x0 [i] 
+							 << " x1 [" << i << "] " << grid1.x1 [i] 
+							<< " x2 [" << i << "] " << grid1.x0[i] + grid1.dx0[i] * height
+							<< " x3 [" << i << "] " << grid1.x1[i] + grid1.dx1[i] * height
+							<< " h " << height << endl ;
+						}
+						}
+					}*/
 				}
 			}
 		}
@@ -981,6 +1116,10 @@ private:
 	// keeps a count of each projection length in 1D
 	vector<unsigned long> m_1d_count_proj_length_triangle ; 
 	vector<unsigned long> m_1d_count_proj_length_trapezoid ; 
+	//keeps a count of # of projections whose centroid is a given point
+	vector<unsigned long> m_1d_count_proj_centroid ;
+	vector<unsigned long> m_1d_tallest_zoid_per_centroid ;
+
 	//set of starting points for each projection length.
     vector<set<unsigned long> > m_1d_index_by_length_triangle ;
     vector<set<unsigned long> > m_1d_index_by_length_trapezoid ;
@@ -1061,8 +1200,8 @@ private:
 		int offset = t0 + T / h1 * h1 ;
 		int h2 = t1 - offset ;
 		int index = 1 ;
-		//while (h2 > 1)
-		while (h2 > m_algo.dt_recursive_)
+		while (h2 >= 1)
+		//while (h2 > m_algo.dt_recursive_)
 		{
 			//find index of most significant bit that is set
 			index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
@@ -1085,6 +1224,7 @@ private:
 		std::cout << "DAG : consumed time :" << 1.0e3 * dag_time
 				<< "ms" << std::endl;
 		clear_projections() ;
+		//print_dag() ;
 #ifdef GENEITY_TEST
 		compress_dag () ;
 		cout << "# vertices after compression" << m_num_vertices << endl ;
@@ -1104,8 +1244,8 @@ private:
 		h2 = t1 - t0 ;
 		index = 1 ;
 		//time cuts happen only if height > dt_recursive_
-		while (h2 > m_algo.dt_recursive_)
-		//while (h2 > 1)
+		//while (h2 > m_algo.dt_recursive_)
+		while (h2 >= 1)
 		{
 			//find index of most significant bit that is set
 			index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
@@ -1119,7 +1259,7 @@ private:
 			h2 = t1 - t0 ;
 			index++ ;
 		}
-		while (h2 > 1)
+		/*while (h2 > 1)
 		{
 			//find index of most significant bit that is set
 			index_msb = (sizeof(int) << 3) - __builtin_clz(h2) - 1 ;
@@ -1144,7 +1284,7 @@ private:
 				 " t0 + h " << t0 + h2 << endl ;
 			//base_case_kernel_boundary(t0, t0 + h2, grid, bf);
 			m_algo.shorter_duo_sim_obase_bicut_p(t0, t0 + h2, grid, f, bf) ;
-		}
+		}*/
 	}
 
 	template <typename F, typename BF, typename P>
@@ -1192,7 +1332,7 @@ private:
 #endif
 			gettimeofday(&end, 0);
 			dag_time = tdiff(&end, &start) ;
-			//print_dag() ;
+			print_dag() ;
 			//print_heterogeneity() ;
 			cout << "done building dag"  << endl ;
 			cout << "# vertices " << m_num_vertices << endl ;
@@ -1255,7 +1395,7 @@ private:
 			cout << "# vertices after compression" << m_num_vertices << endl ;
 			cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
 #endif
-			//print_dag() ;
+			print_dag() ;
 			int m = T / h1 ;
 			for (int i = 0 ; i < m ; i++)
 			{

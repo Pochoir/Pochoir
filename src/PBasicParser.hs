@@ -174,10 +174,11 @@ ppStencil l_id l_state =
                                               if sRank l_newStencil < 3
                                                  then pShowOptPointerKernel
                                                  else pShowPointerKernel
-                                        in  pSplitObase 
+                                        --in  pSplitObase 
+                                        in  pSplitTuneObase 
                                              ("Default_", l_id, l_tstep, l_revKernel, 
                                                l_newStencil) 
-                                             l_showKernel
+                                             l_showKernel pShowOptPointerTuneKernel
                                     PMacroShadow -> 
                                         pSplitScope 
                                           ("macro_", l_id, l_tstep, l_revKernel, 
@@ -243,6 +244,27 @@ pSplitScope (l_tag, l_id, l_tstep, l_kernel, l_stencil) l_showKernel =
                 l_id ++ ".Run(" ++ l_tstep ++ ", " ++ runKernel ++ ");" ++ breakline ++ 
                 "}" ++ breakline)
 
+pSplitTuneObase :: (String, String, String, PKernel, PStencil) -> (String -> PKernel -> String) -> (String -> PKernel -> String) -> GenParser Char ParserState String
+pSplitTuneObase (l_tag, l_id, l_tstep, l_kernel, l_stencil) l_showKernel l_tuneKernel = 
+    let oldKernelName = kName l_kernel 
+        bdryKernelName = "bdry_" ++ oldKernelName
+        obaseKernelName = l_tag ++ oldKernelName 
+        tuneKernelName = "tune_" ++ oldKernelName 
+        regBound = sRegBound l_stencil
+        bdryKernel = pShowMacroKernel ".boundary" (sArrayInUse l_stencil) 
+                                                  bdryKernelName l_kernel
+        obaseKernel = l_showKernel obaseKernelName l_kernel 
+        tuneKernel = l_tuneKernel tuneKernelName l_kernel 
+        runKernel = 
+			obaseKernelName ++ ", " ++ bdryKernelName ++ ", " ++ tuneKernelName
+--            if regBound then obaseKernelName ++ ", " ++ bdryKernelName
+            -- if the boundary function is NOT registered, we guess user are using 
+            -- zero-padding. Note: there's no zero-padding for Periodic stencils
+--                        else obaseKernelName
+    in  return ("{" ++ breakline ++ bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ tuneKernel ++ breakline ++
+                l_id ++ ".Run_Obase(" ++ l_tstep ++ ", " ++ runKernel ++ ");" ++ 
+                breakline ++ "}" ++ breakline)
+
 pSplitObase :: (String, String, String, PKernel, PStencil) -> (String -> PKernel -> String) -> GenParser Char ParserState String
 pSplitObase (l_tag, l_id, l_tstep, l_kernel, l_stencil) l_showKernel = 
     let oldKernelName = kName l_kernel 
@@ -261,6 +283,7 @@ pSplitObase (l_tag, l_id, l_tstep, l_kernel, l_stencil) l_showKernel =
     in  return ("{" ++ breakline ++ bdryKernel ++ breakline ++ obaseKernel ++ breakline ++ 
                 l_id ++ ".Run_Obase(" ++ l_tstep ++ ", " ++ runKernel ++ ");" ++ 
                 breakline ++ "}" ++ breakline)
+
 -------------------------------------------------------------------------------------------
 --                             Following are C++ Grammar Parser                         ---
 -------------------------------------------------------------------------------------------

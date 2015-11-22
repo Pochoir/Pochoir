@@ -59,32 +59,41 @@ int main(int argc, char * argv[])
 	int t;
 	struct timeval start, end;
     double min_tdiff = INF;
-    int N_SIZE = 0, T_SIZE = 0;
+    //int N_SIZE = 0, T_SIZE = 0;
+    int N1 = 0, N2 = 0, N3 = 0, N4 = 0, T_SIZE = 0;
 
-    if (argc < 3) {
-        printf("argc < 3, quit! \n");
+    if (argc < 6) {
+        printf("argc < 6, quit! \n");
         exit(1);
     }
-    N_SIZE = StrToInt(argv[1]);
-    T_SIZE = StrToInt(argv[2]);
-    printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);
+    //N_SIZE = StrToInt(argv[1]);
+    //T_SIZE = StrToInt(argv[2]);
+    N1 = StrToInt(argv[1]);
+    N2 = StrToInt(argv[2]);
+    N3 = StrToInt(argv[3]);
+    N4 = StrToInt(argv[4]);
+    T_SIZE = StrToInt(argv[5]);
+    //printf("N_SIZE = %d, T_SIZE = %d\n", N_SIZE, T_SIZE);
     //Pochoir_Shape_4D heat_shape_4D[] = {{0, 0, 0, 0}, {-1, 1, 0, 0}, {-1, -1, 0, 0}, {-1, 0, 0, 0}, {-1, 0, 0, -1}, {-1, 0, 0, 1}, {-1, 0, 1, 0}, {-1, 0, -1, 0}};
     Pochoir_Shape_4D heat_shape_4D[] = {{0, 0, 0, 0, 0}, {-1, 1, 0, 0, 0}, {-1, -1, 0, 0, 0}, {-1, 0, 0, 0, 0}, {-1, 0, 0, -1, 0}, {-1, 0, 0, 1, 0}, {-1, 0, 1, 0, 0}, {-1, 0, -1, 0, 0}, {-1, 0, 0, 0, 1}, {-1, 0, 0, 0, -1}};
     Pochoir_4D heat_4D(heat_shape_4D);
-	Pochoir_Array_4D(double) a(N_SIZE, N_SIZE, N_SIZE, N_SIZE) ;
-    Pochoir_Domain I(1, N_SIZE-1), J(1, N_SIZE-1), K(1, N_SIZE-1), L(1, N_SIZE - 1);
+	//Pochoir_Array_4D(double) a(N_SIZE, N_SIZE, N_SIZE, N_SIZE) ;
+	Pochoir_Array_4D(double) a(N1, N2, N3, N4) ;
+    //Pochoir_Domain I(1, N_SIZE-1), J(1, N_SIZE-1), K(1, N_SIZE-1), L(1, N_SIZE - 1);
+    Pochoir_Domain I(1, N1-1), J(1, N2-1), K(1, N3-1), L(1, N4 - 1);
     heat_4D.Register_Array(a);
     a.Register_Boundary(heat_bv_4D);
 #ifdef CHECK_RESULT
-	Pochoir_Array_4D(double) b(N_SIZE, N_SIZE, N_SIZE, N_SIZE);
+	//Pochoir_Array_4D(double) b(N_SIZE, N_SIZE, N_SIZE, N_SIZE);
+	Pochoir_Array_4D(double) b(N1, N2, N3, N4) ;
     b.Register_Shape(heat_shape_4D);
     b.Register_Boundary(heat_bv_4D);
 #endif
 
-	for (int i = 0; i < N_SIZE; ++i) {
-	for (int j = 0; j < N_SIZE; ++j) {
-    for (int k = 0; k < N_SIZE; ++k) {
-    for (int l = 0; l < N_SIZE; ++l) {
+	for (int i = 0; i < N1; ++i) {
+	for (int j = 0; j < N2; ++j) {
+    for (int k = 0; k < N3; ++k) {
+    for (int l = 0; l < N4; ++l) {
         a(0, i, j, k, l) = 1.0 * (rand() % BASE); 
         a(1, i, j, k, l) = 0; 
 #ifdef CHECK_RESULT
@@ -121,6 +130,8 @@ int main(int argc, char * argv[])
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
 	std::cout << "Pochoir ET: consumed time :" << min_tdiff << "ms" << std::endl;
+    printf("N1 = %d, N2 = %d, N3 = %d, N4 = %d, T_SIZE = %d\n", N1, N2, N3, N4,
+			T_SIZE);
 
 //#if 1
 #ifdef CHECK_RESULT
@@ -129,10 +140,10 @@ int main(int argc, char * argv[])
     for (int times = 0; times < TIMES; ++times) {
 	gettimeofday(&start, 0);
 	for (int t = 0; t < T_SIZE; ++t) {
-    cilk_for (int i = 0; i < N_SIZE; ++i) {
-	for (int j = 0; j < N_SIZE; ++j) {
-    for (int k = 0; k < N_SIZE; ++k) {
-    for (int l = 0; l < N_SIZE; ++l) {
+    cilk_for (int i = 0; i < N1 ; ++i) {
+	for (int j = 0; j < N2 ; ++j) {
+    for (int k = 0; k < N3 ; ++k) {
+    for (int l = 0; l < N4 ; ++l) {
 	   b(t + 1, i, j, k, l) = 
            0.125 * (b(t, i+1, j, k, l) - 2.0 * b(t, i, j, k, l) + b(t, i-1, j, k, l)) 
          + 0.125 * (b(t, i, j+1, k, l) - 2.0 * b(t, i, j, k, l) + b(t, i, j-1, k, l)) 
@@ -146,10 +157,10 @@ int main(int argc, char * argv[])
 	std::cout << "Naive Loop: consumed time :" << min_tdiff << "ms" << std::endl;
 
 	t = T_SIZE;
-	for (int i = 0; i < N_SIZE; ++i) {
-	for (int j = 0; j < N_SIZE; ++j) {
-    for (int k = 0; k < N_SIZE; ++k) {
-    for (int l = 0; l < N_SIZE; ++l) {
+	for (int i = 0; i < N1; ++i) {
+	for (int j = 0; j < N2; ++j) {
+    for (int k = 0; k < N3; ++k) {
+    for (int l = 0; l < N4; ++l) {
 		check_result(t, i, j, k, l, a.interior(t, i, j, k, l), b.interior(t, i, j, k, l));
 	} } } }
 #endif

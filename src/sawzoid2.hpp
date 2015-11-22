@@ -86,14 +86,14 @@ do { \
 template <int N_RANK> template <typename F, typename BF>
 inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
 {
-	//cout << "bhere" << endl ;
+	cout << "bhere" << endl ;
 	int h = t1 - t0 ;
 	//cout << "h " << h << endl ;
 	int num_upright_zoids [N_RANK], num_inverted_zoids [N_RANK] ; 
 	int offset [N_RANK], two_sigma_h [N_RANK] ;
 	int l_slope [N_RANK] ;
 	grid_info<N_RANK> grid2 = grid ;
-	cout << "done" << endl ; 
+	//cout << "done" << endl ; 
 	for (int i = N_RANK - 1 ; i >= 0 ; i--)
 	{
 		int lb = grid.x1[i] - grid.x0[i] ;
@@ -108,16 +108,23 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 //#endif
 		two_sigma_h [i] = 2 * slope_ [i] * h ;
 		l_slope [i] = slope_ [i] ;
-		//num_upright_zoids [i] = lb / (two_sigma_h [i]) ; 
-		if (l_touch_boundary)
+		num_upright_zoids [i] = lb / two_sigma_h [i] ; 
+		/*if (l_touch_boundary)
 		{
 			num_upright_zoids [i] = lb / (two_sigma_h [i]) ; 
 		}
 		else
 		{
-			num_upright_zoids [i] = max (lb / (two_sigma_h [i]), 
-									(lb - dx_recursive_ [i]) / two_sigma_h [i]);
-		}
+			if (lb >= dx_recursive_ [i])
+			{
+				num_upright_zoids [i] = (lb - dx_recursive_ [i] + 
+									2 * two_sigma_h [i] - 1) / two_sigma_h [i] ;
+			}
+			else
+			{
+				num_upright_zoids [i] = lb <= tb ? 0 : 1 ;
+			}
+		}*/
 		assert (num_upright_zoids [i] >= 0) ;
 		if (lb <= tb)
 		{
@@ -131,8 +138,8 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 			num_inverted_zoids [i] = max (num_upright_zoids [i] - 1, 0) ;
 			offset [i]  = two_sigma_h [i] ;
 		}
-		//cout << " num_upright_zoids [" << i << "] " << num_upright_zoids [i] << endl ;
-		//cout << " num_inverted_zoids [" << i << "] " << num_inverted_zoids [i] << endl ;
+		cout << " num_upright_zoids [" << i << "] " << num_upright_zoids [i] << endl ;
+		cout << " num_inverted_zoids [" << i << "] " << num_inverted_zoids [i] << endl ;
 		assert (num_inverted_zoids [i] >= 0) ;
 
 		if (lb == tb)
@@ -262,7 +269,7 @@ inline void Algorithm<N_RANK>::space_cut_boundary(int t0, int t1, grid_info<N_RA
 template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
 {
-	//cout << "here" << endl ;
+	cout << "here" << endl ;
 	int h = t1 - t0 ;
 	//cout << "h " << h << endl ;
 	int num_upright_zoids [N_RANK], num_inverted_zoids [N_RANK] ; 
@@ -280,9 +287,18 @@ inline void Algorithm<N_RANK>::space_cut_interior(int t0, int t1, grid_info<N_RA
 		<< " h " << h << endl ; 
 #endif
 		two_sigma_h [i] = 2 * slope_ [i] * h ;
-		//num_upright_zoids [i] = lb / (two_sigma_h [i]) ; 
-		num_upright_zoids [i] = max (lb / (two_sigma_h [i]), 
-									(lb - dx_recursive_ [i]) / two_sigma_h [i]);
+		num_upright_zoids [i] = lb / two_sigma_h [i] ; 
+		//num_upright_zoids [i] = max (lb / (two_sigma_h [i]), 
+		//							(lb - dx_recursive_ [i]) / two_sigma_h [i]);
+		/*if (lb >= dx_recursive_ [i])
+		{
+			num_upright_zoids [i] = (lb - dx_recursive_ [i] + 
+									2 * two_sigma_h [i] - 1) / two_sigma_h [i] ;
+		}
+		else
+		{
+			num_upright_zoids [i] = lb <= tb ? 0 : 1 ;
+		}*/
 		//cout << " num_upright_zoids [" << i << "] " << num_upright_zoids [i] << endl ;
 		assert (num_upright_zoids [i] >= 0) ;
 		if (lb <= tb)
@@ -1314,13 +1330,13 @@ inline void Algorithm<N_RANK>::space_time_cut_boundary(int t0, int t1, grid_info
 		bool cut_lb = (lb < tb);
 		sim_can_cut = SIM_CAN_CUT_B ;
         call_boundary |= l_touch_boundary;
-#ifndef NDEBUG
-		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
+//#ifndef NDEBUG
+		cout << " x0 [" << i << "] " << grid.x0 [i] 
 		<< " x1 [" << i << "] " << grid.x1 [i] 
 		<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
 		<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-		<< " lt " << lt << endl ;*/
-#endif
+		<< " lt " << lt << endl ;
+//#endif
     }
     if (call_boundary)
 	{
@@ -1338,6 +1354,7 @@ inline void Algorithm<N_RANK>::space_time_cut_boundary(int t0, int t1, grid_info
 			//cout << "space cut b" << endl ;
 			if (initial_cut)
 			{
+				cout << "space cut b initial" << endl ;
             	space_cut_boundary_initial(t0, t1, l_father_grid, f, bf) ;
 			}
 			else

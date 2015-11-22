@@ -349,12 +349,14 @@ class Pochoir_Array {
 		}
 
 		/* destructor : free memory */
-		~Pochoir_Array() {
-			view_->dec_ref();
-            allocMemFlag_ = false;
-            if (shape_ != NULL) 
-                delete[] shape_;
-		}
+        ~Pochoir_Array() 
+        {
+          view_->dec_ref();
+          allocMemFlag_ = false;
+          delete view_ ;
+          if (shape_ != NULL) 
+            delete[] shape_;
+        }
 
 		inline Storage<T> * view() {
 			return view_;
@@ -580,12 +582,20 @@ class Pochoir_Array {
         }
         void set_toggle(int _toggle) { toggle_ = _toggle; }
         void alloc_mem(void) {
-            if (!allocMemFlag_) {
-                view_ = new Storage<T>(toggle_*total_size_) ;
-                data_ = view_->data();
-                allocMemFlag_ = true;
-            }
+          if (!allocMemFlag_) {
+            //cout << "toggle_ " << toggle_ << " total_size_ " << total_size_ << endl ;
+            view_ = new Storage<T>(toggle_*total_size_) ;
+            data_ = view_->data();
+            allocMemFlag_ = true;
+          }
         }
+
+		//eka - adding procedure to swap data pointer
+		T ** get_data_address()
+		{
+			return &data_ ;
+		}
+		
 		/* return size */
 		int phys_size(int _dim) const { return phys_size_[_dim]; }
 		int logic_size(int _dim) const { return logic_size_[_dim]; }
@@ -1149,16 +1159,17 @@ class Pochoir_Array {
 			return (*view_)[l_idx];
 		}
 
-		inline T & boundary (int _idx1, int _idx0) {
-            bool l_boundary = check_boundary1(_idx1, _idx0);
-            bool set_boundary = (l_boundary && bv1_ != NULL);
-            if (set_boundary) {
+            inline T & boundary (int _idx1, int _idx0) 
+            {
+              bool l_boundary = check_boundary1(_idx1, _idx0);
+              bool set_boundary = (l_boundary && bv1_ != NULL);
+              if (set_boundary) {
                 ret_v() = bv1_(*this, _idx1, _idx0);
                 return ret_v();
+              }
+              int l_idx = _idx0 * stride_[0] + (_idx1 % toggle_) * total_size_;
+              return (*(data_ + l_idx));
             }
-			int l_idx = _idx0 * stride_[0] + (_idx1 % toggle_) * total_size_;
-            return (*(data_ + l_idx));
-		}
 
 		inline T & boundary (int _idx2, int _idx1, int _idx0) {
             bool l_boundary = check_boundary2(_idx2, _idx1, _idx0);

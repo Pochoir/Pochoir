@@ -29,14 +29,68 @@ int main(int argc, char * argv[])
 	//cd into the dir
 	//sprintf(cmd, "cd %s", dir) ;
 	//system (cmd) ;
-	
-
+	int option = 0 ; 
+	if (argc > 1) 
+	{
+		option = atoi(argv[1]) ;
+	}
 	sprintf(prefix, "CILK_NWORKERS=1 ") ; 
 	int NCORES = 1 ;
 	//simulate each of the test cases for TRAP
 	//for (int i = 0 ; i < 2 ; i ++)
 	for (int i = 0 ; i < 1 ; i ++)
 	{
+	sprintf(suffix, "_trap_%d_core", NCORES) ; 
+	strcpy(file, dir) ;
+	strcat(file, "/heat_2D_NP_1000_5000") ;
+	strcat(file, suffix) ;
+	strcpy(cmd, prefix) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/heat_2D_NP %d %d %d >> %s 2>&1", 1000, 5000, 2048, file) ;
+	strcat(cmd, tmp) ;
+	cout << cmd << endl ;
+	system(cmd) ;
+	
+	sprintf(suffix, "_trap_%d_core", NCORES) ; 
+	strcpy(file, dir) ;
+	strcat(file, "/heat_2D_NP_3000_6000") ;
+	strcat(file, suffix) ;
+	strcpy(cmd, prefix) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/heat_2D_NP %d %d %d >> %s 2>&1", 3000, 6000, 2048, file) ;
+	strcat(cmd, tmp) ;
+	cout << cmd << endl ;
+	system(cmd) ;
+	
+	sprintf(suffix, "_trap_%d_core", NCORES) ; 
+	strcpy(file, dir) ;
+	strcat(file, "/heat_2D_NP_5000_10000") ;
+	strcat(file, suffix) ;
+	strcpy(cmd, prefix) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/heat_2D_NP %d %d %d >> %s 2>&1", 5000, 10000, 4096, file) ;
+	strcat(cmd, tmp) ;
+	cout << cmd << endl ;
+	system(cmd) ;
+
+	sprintf(suffix, "_trap_%d_core", NCORES) ; 
+	strcpy(file, dir) ;
+	strcat(file, "/heat_2D_NP_10000_20000") ;
+	strcat(file, suffix) ;
+	strcpy(cmd, prefix) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/heat_2D_NP %d %d %d >> %s 2>&1", 10000, 20000, 8192, file) ;
+	strcat(cmd, tmp) ;
+	cout << cmd << endl ;
+	system(cmd) ;
+
+	sprintf(suffix, "_trap_%d_core", NCORES) ; 
+	strcpy(file, dir) ;
+	strcat(file, "/heat_3D_NP") ;
+	strcat(file, suffix) ;
+	strcpy(cmd, prefix) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/heat_3D_NP %d %d %d %d >> %s 2>&1", 200, 300, 600, 256, file) ;
+	strcat(cmd, tmp) ;
+	cout << cmd << endl ;
+	system(cmd) ;
+
+#if 0
 	sprintf(suffix, "_trap_%d_core", NCORES) ; 
 	strcpy(file, dir) ;
 	strcat(file, "/heat_2D_NP") ;
@@ -47,33 +101,12 @@ int main(int argc, char * argv[])
 	cout << cmd << endl ;
 	system(cmd) ;
 	
-	
-	sprintf(suffix, "_sawzoid_%d_core", NCORES) ; 
-	strcpy(file, dir) ;
-	strcat(file, "/heat_2D_NP") ;
-	strcat(file, suffix) ;
-	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/sawzoid/heat_2D_NP %d %d %d >> %s 2>&1", 1000, 2000, 512, file) ;
-	strcat(cmd, tmp) ;
-	cout << cmd << endl ;
-	system(cmd) ;
-	
 	sprintf(suffix, "_trap_%d_core", NCORES) ; 
 	strcpy(file, dir) ;
 	strcat(file, "/heat_2D_P") ;
 	strcat(file, suffix) ;
 	strcpy(cmd, prefix) ;
 	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/heat_2D_P %d %d %d >> %s 2>&1", 4000, 4000, 1024, file) ;
-	strcat(cmd, tmp) ;
-	cout << cmd << endl ;
-	system(cmd) ;
-	
-	sprintf(suffix, "_sawzoid_%d_core", NCORES) ; 
-	strcpy(file, dir) ;
-	strcat(file, "/heat_2D_P") ;
-	strcat(file, suffix) ;
-	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/sawzoid/heat_2D_P %d %d %d >> %s 2>&1", 4000, 4000, 1024, file) ;
 	strcat(cmd, tmp) ;
 	cout << cmd << endl ;
 	system(cmd) ;
@@ -88,32 +121,12 @@ int main(int argc, char * argv[])
 	cout << cmd << endl ;
 	system(cmd) ;
 
-	sprintf(suffix, "_sawzoid_%d_core", NCORES) ;
-	strcpy(file, dir) ;
-	strcat(file, "/life") ;
-	strcat(file, suffix) ;
-	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/sawzoid/life %d %d %d >> %s 2>&1", 3000, 2000, 1024, file) ;
-	strcat(cmd, tmp) ;
-	cout << cmd << endl ;
-	system(cmd) ;
-
 	sprintf(suffix, "_trap_%d_core", NCORES) ;
 	strcpy(file, dir) ;
 	strcat(file, "/3dfd") ;
 	strcat(file, suffix) ;
 	strcpy(cmd, prefix) ;
 	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/3dfd %d %d %d %d >> %s 2>&1", 200, 200, 200, 16, file) ;
-	strcat(cmd, tmp) ;
-	cout << cmd << endl ;
-	system(cmd) ;
-	
-	sprintf(suffix, "_sawzoid_%d_core", NCORES) ;
-	strcpy(file, dir) ;
-	strcat(file, "/3dfd") ;
-	strcat(file, suffix) ;
-	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/sawzoid/3dfd %d %d %d %d >> %s 2>&1", 200, 200, 200, 16, file) ;
 	strcat(cmd, tmp) ;
 	cout << cmd << endl ;
 	system(cmd) ;
@@ -124,36 +137,6 @@ int main(int argc, char * argv[])
 	strcat(file, suffix) ;
 	strcpy(cmd, prefix) ;
 	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/lbm_tang %d %d %d %d %s %d %d >> %s 2>&1", 64, 100, 100, 130, "result_lbm", 0, 0, file) ;
-	strcat(cmd, tmp) ;
-	cout << cmd << endl ;
-	system(cmd) ;
-	
-	sprintf(suffix, "_sawzoid_%d_core", NCORES) ;
-	strcpy(file, dir) ;
-	strcat(file, "/lbm_tang") ;
-	strcat(file, suffix) ;
-	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/sawzoid/lbm_tang %d %d %d %d %s %d %d >> %s 2>&1", 64, 100, 100, 130, "result_lbm", 0, 0, file) ;
-	strcat(cmd, tmp) ;
-	cout << cmd << endl ;
-	system(cmd) ;
-
-	sprintf(suffix, "_trap_%d_core", NCORES) ;
-	strcpy(file, dir) ;
-	strcat(file, "/heat_4D_NP") ;
-	strcat(file, suffix) ;
-	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/heat_4D_NP %d %d >> %s 2>&1", 70, 32, file) ;
-	strcat(cmd, tmp) ;
-	cout << cmd << endl ;
-	system(cmd) ;
-	
-	sprintf(suffix, "_sawzoid_%d_core", NCORES) ;
-	strcpy(file, dir) ;
-	strcat(file, "/heat_4D_NP") ;
-	strcat(file, suffix) ;
-	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/sawzoid/heat_4D_NP %d %d >> %s 2>&1", 70, 32, file) ;
 	strcat(cmd, tmp) ;
 	cout << cmd << endl ;
 	system(cmd) ;
@@ -168,78 +151,96 @@ int main(int argc, char * argv[])
 	cout << cmd << endl ;
 	system(cmd) ;
 
-	sprintf(suffix, "_sawzoid_%d_core", NCORES) ;
+	sprintf(suffix, "_trap_%d_core", NCORES) ; 
 	strcpy(file, dir) ;
-	strcat(file, "/apop") ;
+	strcat(file, "/heat_2D_P_10000") ;
 	strcat(file, suffix) ;
 	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/sawzoid/apop -s %d -t %d >> %s 2>&1", 2000000, 524288, file) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/heat_2D_P %d %d %d >> %s 2>&1", 10000, 10000, 4096, file) ;
+	strcat(cmd, tmp) ;
+	cout << cmd << endl ;
+	system(cmd) ;
+
+	sprintf(suffix, "_trap_%d_core", NCORES) ; 
+	strcpy(file, dir) ;
+	strcat(file, "/heat_2D_P2_100_20000") ;
+	strcat(file, suffix) ;
+	strcpy(cmd, prefix) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/heat_2D_P %d %d %d >> %s 2>&1", 100, 20000, 8192, file) ;
+	strcat(cmd, tmp) ;
+	cout << cmd << endl ;
+	system(cmd) ;
+
+	sprintf(suffix, "_trap_%d_core", NCORES) ; 
+	strcpy(file, dir) ;
+	strcat(file, "/heat_2D_P2_20000_100") ;
+	strcat(file, suffix) ;
+	strcpy(cmd, prefix) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/heat_2D_P %d %d %d >> %s 2>&1", 20000, 100, 8192, file) ;
 	strcat(cmd, tmp) ;
 	cout << cmd << endl ;
 	system(cmd) ;
 	
 	sprintf(suffix, "_trap_%d_core", NCORES) ;
 	strcpy(file, dir) ;
-	strcat(file, "/rna") ;
+	strcat(file, "/heat_4D_NP") ;
 	strcat(file, suffix) ;
 	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/rna -r %d >> %s 2>&1", 300, file) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/heat_4D_NP %d %d >> %s 2>&1", 70, 32, file) ;
 	strcat(cmd, tmp) ;
 	cout << cmd << endl ;
 	system(cmd) ;
 	
-	sprintf(suffix, "_sawzoid_%d_core", NCORES) ;
+	sprintf(suffix, "_trap_%d_core", NCORES) ; 
 	strcpy(file, dir) ;
-	strcat(file, "/rna") ;
+	strcat(file, "/heat_2D_P_2000_3000") ;
 	strcat(file, suffix) ;
 	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/sawzoid/rna -r %d >> %s 2>&1", 300, file) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/heat_2D_P %d %d %d >> %s 2>&1", 2000, 3000, 1024, file) ;
 	strcat(cmd, tmp) ;
 	cout << cmd << endl ;
 	system(cmd) ;
 
 	sprintf(suffix, "_trap_%d_core", NCORES) ;
 	strcpy(file, dir) ;
-	strcat(file, "/psa_struct") ;
+	strcat(file, "/life_2000_3000") ;
 	strcat(file, suffix) ;
 	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/psa_struct -r %d %d >> %s 2>&1", 100000, 100000, file) ;
-	strcat(cmd, tmp) ;
-	cout << cmd << endl ;
-	system(cmd) ;
-	
-	sprintf(suffix, "_sawzoid_%d_core", NCORES) ;
-	strcpy(file, dir) ;
-	strcat(file, "/psa_struct") ;
-	strcat(file, suffix) ;
-	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/sawzoid/psa_struct -r %d %d >> %s 2>&1", 100000, 100000, file) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/life %d %d %d >> %s 2>&1", 2000, 3000, 1024, file) ;
 	strcat(cmd, tmp) ;
 	cout << cmd << endl ;
 	system(cmd) ;
 
 	sprintf(suffix, "_trap_%d_core", NCORES) ;
 	strcpy(file, dir) ;
-	strcat(file, "/lcs") ;
+	strcat(file, "/life_10000_10000") ;
 	strcat(file, suffix) ;
 	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/lcs -r %d %d >> %s 2>&1", 200000, 200000, file) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/life %d %d %d >> %s 2>&1", 10000, 10000, 4096, file) ;
 	strcat(cmd, tmp) ;
 	cout << cmd << endl ;
 	system(cmd) ;
 
-	sprintf(suffix, "_sawzoid_%d_core", NCORES) ;
+	sprintf(suffix, "_trap_%d_core", NCORES) ;
 	strcpy(file, dir) ;
-	strcat(file, "/lcs") ;
+	strcat(file, "/lbm_tang_1000^3") ;
 	strcat(file, suffix) ;
 	strcpy(cmd, prefix) ;
-	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/sawzoid/lcs -r %d %d >> %s 2>&1", 200000, 200000, file) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/lbm_tang %d %d %d %d %s %d %d >> %s 2>&1", 256, 1000, 1000, 1000, "result_lbm", 0, 0, file) ;
 	strcat(cmd, tmp) ;
 	cout << cmd << endl ;
 	system(cmd) ;
-	
-	sprintf(prefix, "CILK_NWORKERS=12 ") ; 
-	NCORES=12 ;
+
+	sprintf(suffix, "_trap_%d_core", NCORES) ;
+	strcpy(file, dir) ;
+	strcat(file, "/3dfd_1000^3") ;
+	strcat(file, suffix) ;
+	strcpy(cmd, prefix) ;
+	sprintf(tmp, "~/research/git/pochoir/examples/tc_tune_sub_space/trap/3dfd %d %d %d %d >> %s 2>&1", 1000, 1000, 1000, 64, file) ;
+	strcat(cmd, tmp) ;
+	cout << cmd << endl ;
+	system(cmd) ;
+#endif	
 	}
 
 	sprintf(dir, "tc_tune_sub_space_%s/", time) ;

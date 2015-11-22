@@ -83,6 +83,7 @@ class zoid
 		geneity = 0 ;
         height = 0 ;
 		start = end = 0 ;
+		decision = 0 ;
 #ifndef NDEBUG
 		id = ULONG_MAX ;
 #endif
@@ -97,6 +98,7 @@ class zoid
 			height = z.height ;
 			start = z.start ;
 			end = z.end ;
+			decision = z.decision ;
 			assert (start <= end) ;
 #ifndef NDEBUG
 			id = z.id ;
@@ -118,6 +120,7 @@ class zoid
 		height = z.height ;
 		start = z.start ;
 		end = z.end ;
+		decision = z.decision ;
 		assert (start <= end) ;
 #ifndef NDEBUG
 		id = z.id ;
@@ -141,13 +144,16 @@ class zoid
 		//cout << "zoid : destructor for zoid " << id << endl ;
 		start = end = 0 ;
 		geneity = 0 ;
+		decision = 0 ;
 	}
 	
+	const int NUM_BITS_DECISION = sizeof(unsigned short) * 8 ;
 	private :
 	word_type geneity ;
 	int height ;
 	unsigned int start ;
 	unsigned int end ;
+	unsigned short decision ;
 #ifndef NDEBUG
 	grid_info <N_RANK> info ;
 	unsigned long id ; //id of the zoid.
@@ -956,7 +962,7 @@ private:
 				<< "ms" << std::endl;
 		clear_projections() ;
 #ifdef GENEITY_TEST
-		compress_dag () ;
+		//compress_dag () ;
 		cout << "# vertices after compression" << m_num_vertices << endl ;
 		cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
 		//create_simple_zoids() ;
@@ -1081,7 +1087,7 @@ private:
 					<< "ms" << std::endl;
 			clear_projections() ;
 #ifdef GENEITY_TEST
-			compress_dag () ;
+			//compress_dag () ;
 			cout << "# vertices after compression" << m_num_vertices << endl ;
 			cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
 			//create_simple_zoids() ;
@@ -1134,7 +1140,7 @@ private:
 			clear_projections() ;
 			//print_dag() ;
 #ifdef GENEITY_TEST
-			compress_dag () ;
+			//compress_dag () ;
 			cout << "# vertices after compression" << m_num_vertices << endl ;
 			cout << "DAG capacity after compression" << m_zoids.capacity() << endl ;
 			//create_simple_zoids() ;

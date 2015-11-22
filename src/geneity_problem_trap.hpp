@@ -445,6 +445,7 @@ inline void geneity_problem<N_RANK>::symbolic_space_time_cut_interior(int t0,
 	}
     if (sim_can_cut) 
 	{
+		z.decision |= 2 ;
 		//z.resize_children(num_subzoids) ;
         z.set_start(m_children.size()) ;
 		z.set_num_children(num_subzoids) ;
@@ -458,6 +459,7 @@ inline void geneity_problem<N_RANK>::symbolic_space_time_cut_interior(int t0,
     } 
 	else if (lt > dt_recursive_) 
 	{
+		z.decision |= 1 ;
 		//z.resize_children(2) ;
         z.set_start(m_children.size()) ;
 		z.set_num_children(2) ;
@@ -482,6 +484,7 @@ inline void geneity_problem<N_RANK>::symbolic_space_time_cut_interior(int t0,
 	else 
 	{
         // base case
+		z.decision = 0 ;
 		//determine the geneity of the leaf
 		compute_geneity(lt, grid, z.geneity, f) ;
 		//print_bits(&(z->geneity), sizeof(word_type) * 8) ;
@@ -574,6 +577,7 @@ inline void geneity_problem<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 	//projection doesn't exist.
     if (call_boundary)
 	{
+		z.decision |= 1 << zoid<N_RANK>::NUM_BITS_DECISION - 1 ;
         l_dt_stop = dt_recursive_boundary_;
 	}
     else
@@ -582,6 +586,7 @@ inline void geneity_problem<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 	}
     if (sim_can_cut) 
 	{
+		z.decision |= 2 ;
 		//cout << "space cut " << endl ;
 		//z.resize_children(num_subzoids) ;
 		z.set_start(m_children.size()) ;
@@ -602,6 +607,7 @@ inline void geneity_problem<N_RANK>::symbolic_space_time_cut_boundary(int t0,
     } 
 	else if (lt > l_dt_stop)  //time cut
 	{
+		z.decision |= 1 ;
 		//cout << "time cut " << endl ;
 		//z.resize_children(2) ;
 		z.set_start(m_children.size()) ;
@@ -636,6 +642,7 @@ inline void geneity_problem<N_RANK>::symbolic_space_time_cut_boundary(int t0,
 	else
 	{
 		// base case
+		z.decision = 0 ;
 		//determine the geneity of the leaf
 		compute_geneity(lt, l_father_grid, z.geneity, f) ;
 		//print_bits(&(z->geneity), sizeof(word_type) * 8) ;
@@ -1660,7 +1667,6 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_cut_boundary(int t0,
     } // end for (curr_dep < N_RANK+1) 
 }
 
-
 //This routine does a heterogeneous space/time cut on interior zoids
 template <int N_RANK> template <typename F>
 inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_interior(
@@ -1673,7 +1679,8 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_interior(
 
 	assert (projection_zoid) ;
 	assert (projection_zoid->height == lt) ;
-#ifdef GENEITY_TEST
+#if 0
+//#ifdef GENEITY_TEST
 	if (__builtin_popcount(projection_zoid->geneity) == 1)
 	{
 		//zoid is homogeneous
@@ -1690,6 +1697,7 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_interior(
 #endif
 	}
 #endif
+	/*
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
         lb = (grid.x1[i] - grid.x0[i]);
@@ -1738,13 +1746,15 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_interior(
         bool cut_lb = (lb < tb);
         thres = (slope_[i] * lt);
         sim_can_cut = SIM_CAN_CUT_I ;
-    }
-    if (sim_can_cut) 
+    }*/
+    //if (sim_can_cut) 
+	if (projection_zoid->decision & (unsigned short) 2)
 	{
         /* cut into space */
         heterogeneous_space_cut_interior(t0, t1, grid, projection_zoid, f);
     } 
-	else if (lt > dt_recursive_) 
+	//else if (lt > dt_recursive_) 
+	else if (projection_zoid->decision & (unsigned short) 1)
 	{
         /* cut into time */
 		assert (projection_zoid->end - projection_zoid->start == 2) ;
@@ -1773,7 +1783,9 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_interior(
     }
 	else 
 	{
-#ifdef GENEITY_TEST
+		assert (projection_zoid->decision == 0) ;
+#if 0
+//#ifdef GENEITY_TEST
         // base case
 		f(t0, t1, grid);
 #else
@@ -1792,6 +1804,136 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_interior(
 	}
 }
 
+//This routine does a heterogeneous space/time cut on interior zoids
+//template <int N_RANK> template <typename F>
+//inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_interior(
+//				int t0, int t1, grid_info<N_RANK> const & grid, 
+//				zoid_type * projection_zoid, F const & f)
+//{
+//    const int lt = t1 - t0;
+//    bool sim_can_cut = false;
+//    grid_info<N_RANK> l_son_grid;
+//
+//	assert (projection_zoid) ;
+//	assert (projection_zoid->height == lt) ;
+//#ifdef GENEITY_TEST
+//	if (__builtin_popcount(projection_zoid->geneity) == 1)
+//	{
+//		//zoid is homogeneous
+//		int index = __builtin_ffs(projection_zoid->geneity) ;
+//		//cout << "zoid is homogeneous" << endl ;
+//		//print_bits(&(projection_zoid->geneity), sizeof(word_type) * 8);
+////#ifndef NDEBUG
+//#if 0
+//		return homogeneous_space_time_cut_interior(t0, t1,	grid, 
+//								projection_zoid, (*m_clone_array) [index]) ; 
+//#else
+//		return homogeneous_space_time_cut_interior(t0, t1,	grid, 
+//								(*m_clone_array) [index]) ; 
+//#endif
+//	}
+//#endif
+//    for (int i = N_RANK-1; i >= 0; --i) {
+//        int lb, thres, tb;
+//        lb = (grid.x1[i] - grid.x0[i]);
+//        tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+//
+//#ifndef NDEBUG
+//		zoid_type * z = projection_zoid ;
+//		grid_info <N_RANK> & grid2 = z->info ;
+//		int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
+//		int x1 = pmod(grid.x1 [i], phys_length_ [i]) ;
+//
+//		int x0_ = pmod(grid2.x0 [i], phys_length_ [i]) ;
+//		int x1_ = pmod(grid2.x1 [i], phys_length_ [i]) ;
+//
+//		int x2 = pmod(grid.x0[i] + grid.dx0[i] * lt, phys_length_ [i]) ;
+//		int x3 = pmod(grid.x1[i] + grid.dx1[i] * lt, phys_length_ [i]) ;
+//
+//		int x2_ = pmod(grid2.x0[i] + grid2.dx0[i] * lt, phys_length_ [i]) ;
+//		int x3_ = pmod(grid2.x1[i] + grid2.dx1[i] * lt, phys_length_ [i]) ;
+//
+//		if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_)
+//		{
+//            int num_children = z->end - z->start ;
+//			cout << "zoid and proj zoid differ " << endl ;
+//			cout << "\nzoid " << z->id << " height " << z->height <<
+//				" num children " << num_children <<
+//				" num_parents " << z->parents.size() << " geneity " ;
+//			print_bits(&(z->geneity), sizeof(word_type) * 8);
+//			int h = z->height ;
+//			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+//			{
+//				cout << " x0 [" << i << "] " << grid.x0 [i] 
+//				 << " x1 [" << i << "] " << grid.x1 [i] 
+//				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+//				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+//				<< " lt " << lt << endl ;
+//				cout << " x0 [" << i << "] " << grid2.x0 [i]
+//				 << " x1 [" << i << "] " << grid2.x1 [i]
+//				<< " x2 [" << i << "] " << grid2.x0[i] + grid2.dx0[i] * h
+//				<< " x3 [" << i << "] " << grid2.x1[i] + grid2.dx1[i] * h
+//				<< " h " << h << endl ;
+//			}
+//			//assert(0) ;
+//		}
+//#endif
+//        bool cut_lb = (lb < tb);
+//        thres = (slope_[i] * lt);
+//        sim_can_cut = SIM_CAN_CUT_I ;
+//    }
+//    if (sim_can_cut) 
+//	{
+//        /* cut into space */
+//        heterogeneous_space_cut_interior(t0, t1, grid, projection_zoid, f);
+//    } 
+//	else if (lt > dt_recursive_) 
+//	{
+//        /* cut into time */
+//		assert (projection_zoid->end - projection_zoid->start == 2) ;
+//        assert(lt > dt_recursive_);
+//        int halflt = lt / 2;
+//        l_son_grid = grid;
+//		int index = projection_zoid->start ;
+//		assert (index < projection_zoid->end) ;
+//		int pos = m_children [index] ;
+//		assert (pos < m_num_vertices) ;
+//        heterogeneous_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
+//					&(m_zoids [pos]), f);
+//
+//        for (int i = 0; i < N_RANK; ++i) {
+//            l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
+//            l_son_grid.dx0[i] = grid.dx0[i];
+//            l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
+//            l_son_grid.dx1[i] = grid.dx1[i];
+//        }
+//        index++ ;
+//		assert (index < projection_zoid->end) ;
+//		pos = m_children [index] ;
+//		assert (pos < m_num_vertices) ;
+//        heterogeneous_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
+//					&(m_zoids [pos]), f);
+//    }
+//	else 
+//	{
+//#ifdef GENEITY_TEST
+//        // base case
+//		f(t0, t1, grid);
+//#else
+//		if (__builtin_popcount(projection_zoid->geneity) == 1)
+//		{
+//			//zoid is homogeneous
+//			int index = __builtin_ffs(projection_zoid->geneity) ;
+//			//cout << "zoid is homogeneous" << endl ;
+//			(*m_clone_array) [index] (t0, t1, grid);
+//		}
+//		else
+//		{
+//			f(t0, t1, grid);
+//		}
+//#endif
+//	}
+//}
 
 //This routine does a heterogeneous space/time cut on boundary zoid
 template <int N_RANK> template <typename F, typename BF>
@@ -1814,7 +1956,8 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_boundary(
 		assert (projection_zoid->height == lt) ;
 	}
 #endif
-#ifdef GENEITY_TEST
+#if 0
+//#ifdef GENEITY_TEST
 	if (__builtin_popcount(projection_zoid->geneity) == 1)
 	{
 		//zoid is homogeneous
@@ -1831,6 +1974,7 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_boundary(
 #endif
 	}
 #endif
+	/*
     for (int i = N_RANK-1; i >= 0; --i) {
         int lb, thres, tb;
         bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
@@ -1881,7 +2025,10 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_boundary(
 
         sim_can_cut = SIM_CAN_CUT_B ;
         call_boundary |= l_touch_boundary;
-    }
+    }*/
+	call_boundary = projection_zoid->decision & (unsigned short) 1 << 
+					zoid<N_RANK>::NUM_BITS_DECISION - 1 ;
+	cout << "decision " << projection_zoid->decision << endl ;
     if (call_boundary)
 	{
         l_dt_stop = dt_recursive_boundary_;
@@ -1890,7 +2037,8 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_boundary(
 	{
         l_dt_stop = dt_recursive_;
 	}
-    if (sim_can_cut) 
+    //if (sim_can_cut) 
+    if (projection_zoid->decision & (unsigned short) 2) 
 	{
 		//cout << "space cut " << endl ;
         //cut into space 
@@ -1905,7 +2053,8 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_boundary(
 											projection_zoid, f);
 		}
     } 
-	else if (lt > l_dt_stop)  //time cut
+    else if (projection_zoid->decision & (unsigned short) 1) 
+	//else if (lt > l_dt_stop)  //time cut
 	{
 		//cout << "time cut " << endl ;
         // cut into time 
@@ -1944,7 +2093,9 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_boundary(
     } 
 	else
 	{
-#ifdef GENEITY_TEST
+		assert (projection_zoid->decision == 0) ;
+#if 0
+//#ifdef GENEITY_TEST
 		// base case
 		if (call_boundary) {
             base_case_kernel_boundary(t0, t1, l_father_grid, bf);
@@ -1975,6 +2126,188 @@ inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_boundary(
 #endif
 	}
 }
+//This routine does a heterogeneous space/time cut on boundary zoid
+//template <int N_RANK> template <typename F, typename BF>
+//inline void geneity_problem<N_RANK>::heterogeneous_space_time_cut_boundary(
+//					int t0,
+//					int t1,	grid_info<N_RANK> const & grid, 
+//					zoid_type * projection_zoid, F const & f, BF const & bf)
+//{
+//    const int lt = t1 - t0;
+//    bool sim_can_cut = false, call_boundary = false;
+//    grid_info<N_RANK> l_father_grid = grid, l_son_grid;
+//    int l_dt_stop;
+//
+//	assert (projection_zoid) ;
+//#ifndef NDEBUG
+//	if (projection_zoid->height != lt)
+//	{
+//		cout << "heights differ : " << projection_zoid->height << "  " <<
+//				lt << endl ;
+//		assert (projection_zoid->height == lt) ;
+//	}
+//#endif
+//#ifdef GENEITY_TEST
+//	if (__builtin_popcount(projection_zoid->geneity) == 1)
+//	{
+//		//zoid is homogeneous
+//		int index = __builtin_ffs(projection_zoid->geneity) ;
+//		//cout << "zoid is homogeneous" << endl ;
+//		//print_bits(&(projection_zoid->geneity), sizeof(word_type) * 8);
+////#ifndef NDEBUG
+//#if 0
+//		return homogeneous_space_time_cut_boundary(t0, t1,	grid, 
+//								projection_zoid, (*m_clone_array) [index]) ; 
+//#else
+//		return homogeneous_space_time_cut_boundary(t0, t1,	grid, 
+//								(*m_clone_array) [index]) ; 
+//#endif
+//	}
+//#endif
+//    for (int i = N_RANK-1; i >= 0; --i) {
+//        int lb, thres, tb;
+//        bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
+//        lb = (grid.x1[i] - grid.x0[i]);
+//        tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+//#ifndef NDEBUG
+//		zoid_type * z = projection_zoid ;
+//		grid_info <N_RANK> & grid2 = z->info ;
+//		int x0 = pmod(grid.x0 [i], phys_length_ [i]) ;
+//		int x1 = pmod(grid.x1 [i], phys_length_ [i]) ;
+//
+//		int x0_ = pmod(grid2.x0 [i], phys_length_ [i]) ;
+//		int x1_ = pmod(grid2.x1 [i], phys_length_ [i]) ;
+//
+//		int x2 = pmod(grid.x0[i] + grid.dx0[i] * lt, phys_length_ [i]) ;
+//		int x3 = pmod(grid.x1[i] + grid.dx1[i] * lt, phys_length_ [i]) ;
+//
+//		int x2_ = pmod(grid2.x0[i] + grid2.dx0[i] * lt, phys_length_ [i]) ;
+//		int x3_ = pmod(grid2.x1[i] + grid2.dx1[i] * lt, phys_length_ [i]) ;
+//
+//		if (x0 != x0_ || x1 != x1_ || x2 != x2_ || x3 != x3_)
+//		{
+//            int num_children = z->end - z->start ;
+//			cout << "zoid and proj zoid differ " << endl ;
+//			cout << "\nzoid " << z->id << " height " << z->height <<
+//				" num children " << num_children <<
+//				" num_parents " << z->parents.size() << " geneity " ;
+//			print_bits(&(z->geneity), sizeof(word_type) * 8);
+//			int h = z->height ;
+//			for (int i = N_RANK - 1 ; i >= 0 ; i--)
+//			{
+//				cout << " x0 [" << i << "] " << grid.x0 [i] 
+//				 << " x1 [" << i << "] " << grid.x1 [i] 
+//				<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+//				<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+//				<< " lt " << lt << endl ;
+//				cout << " x0 [" << i << "] " << grid2.x0 [i]
+//				 << " x1 [" << i << "] " << grid2.x1 [i]
+//				<< " x2 [" << i << "] " << grid2.x0[i] + grid2.dx0[i] * h
+//				<< " x3 [" << i << "] " << grid2.x1[i] + grid2.dx1[i] * h
+//				<< " h " << h << endl ;
+//			}
+//			assert(0) ;
+//		}
+//#endif
+//        thres = slope_[i] * lt ;
+//        bool cut_lb = (lb < tb);
+//
+//        sim_can_cut = SIM_CAN_CUT_B ;
+//        call_boundary |= l_touch_boundary;
+//    }
+//    if (call_boundary)
+//	{
+//        l_dt_stop = dt_recursive_boundary_;
+//	}
+//    else
+//	{
+//        l_dt_stop = dt_recursive_;
+//	}
+//    if (sim_can_cut) 
+//	{
+//		//cout << "space cut " << endl ;
+//        //cut into space 
+//        if (call_boundary) 
+//		{
+//            heterogeneous_space_cut_boundary(t0, t1, l_father_grid, 
+//											projection_zoid, f, bf);
+//        }
+//		else
+//		{
+//            heterogeneous_space_cut_interior(t0, t1, l_father_grid, 
+//											projection_zoid, f);
+//		}
+//    } 
+//	else if (lt > l_dt_stop)  //time cut
+//	{
+//		//cout << "time cut " << endl ;
+//        // cut into time 
+//        assert (projection_zoid->end - projection_zoid->start == 2) ;
+//        int halflt = lt / 2;
+//        l_son_grid = l_father_grid;
+//		int index = projection_zoid->start ;
+//        assert (index < projection_zoid->end) ;
+//		int pos = m_children [index] ;
+//		assert (pos < m_num_vertices) ;
+//        if (call_boundary) {
+//            heterogeneous_space_time_cut_boundary(t0, t0+halflt, l_son_grid, 
+//								&(m_zoids [pos]), f, bf);
+//        } else {
+//            heterogeneous_space_time_cut_interior(t0, t0+halflt, l_son_grid, 
+//								&(m_zoids [pos]), f);
+//        }
+//
+//        for (int i = 0; i < N_RANK; ++i) {
+//            l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
+//            l_son_grid.dx0[i] = l_father_grid.dx0[i];
+//            l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
+//            l_son_grid.dx1[i] = l_father_grid.dx1[i];
+//        }
+//		index++ ;
+//        assert (index < projection_zoid->end) ;
+//		pos = m_children [index] ;
+//		assert (pos < m_num_vertices) ;
+//        if (call_boundary) {
+//            heterogeneous_space_time_cut_boundary(t0+halflt, t1, l_son_grid, 
+//								&(m_zoids [pos]), f, bf);
+//        } else {
+//            heterogeneous_space_time_cut_interior(t0+halflt, t1, l_son_grid, 
+//								&(m_zoids [pos]), f);
+//        }
+//    } 
+//	else
+//	{
+//#ifdef GENEITY_TEST
+//		// base case
+//		if (call_boundary) {
+//            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+//        } else { 
+//            f(t0, t1, l_father_grid);
+//        }
+//#else
+//		if (__builtin_popcount(projection_zoid->geneity) == 1)
+//		{
+//			//zoid is homogeneous
+//			int index = __builtin_ffs(projection_zoid->geneity) ;
+//			//cout << "zoid is homogeneous" << endl ;
+//			if (call_boundary) {
+//				base_case_kernel_boundary(t0, t1, l_father_grid, 
+//										(*m_clone_array) [index]);
+//			} else { 
+//				(*m_clone_array) [index] (t0, t1, l_father_grid);
+//			}
+//		}
+//		else
+//		{
+//			if (call_boundary) {
+//				base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+//			} else { 
+//				f(t0, t1, l_father_grid);
+//			}
+//		}
+//#endif
+//	}
+//}
 #undef dx_recursive_boundary_  
 #undef dx_recursive_ 
 #undef dt_recursive_boundary_ 
