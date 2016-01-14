@@ -27426,7 +27426,7 @@ namespace std __attribute__ ((__visibility__ ("default"))) {
 
 static inline double tdiff (struct timeval *a, struct timeval *b)
 {
-	    return a->tv_sec - b->tv_sec + 1e-6 * (a->tv_usec - b->tv_usec);
+  return a->tv_sec - b->tv_sec + 1e-6 * (a->tv_usec - b->tv_usec);
 }
 
 static inline long long tdiff2 (struct timespec *end, struct timespec *start)
@@ -27460,8 +27460,11 @@ static inline int StrToInt(const std::string& s)
 //#define GENEITY_TEST
 //#define KERNEL_SELECTION
 
+//#define USE_PROJECTION
 //#define FIXED_SPACE_CUT 
+//#define SUBSUMPTION_SPACE
 //#define LOOP_TWICE
+//#define FIXED_TIME_CUT
 
 //#define WRITE_DAG
 //#define STOP_TUNING_EARLY
@@ -27471,7 +27474,6 @@ static inline int StrToInt(const std::string& s)
 
 //#define TIME_INVARIANCE_INTERIOR
 //#define TIME_INVARIANCE_BOUNDARY
-//#define FIXED_TIME_CUT
 //#define SUBSUMPTION_TIME
 //#define CHECK_CACHE_ALIGNMENT
 //#define WRITE_ZOID_DIMENSIONS
@@ -65144,11 +65146,6 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut(int t0, int t1, g
 template <int N_RANK> template <typename F, typename BF>
 inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
 {
-	/*stack_depth++ ;
-	if (stack_depth > max_stack_depth)
-	{
-		max_stack_depth = stack_depth ;
-	}*/
     queue_info *l_father;
     queue_info circular_queue_[2][(power<N_RANK> ::value)];
     int queue_head_[2], queue_tail_[2], queue_len_[2];
@@ -65318,290 +65315,269 @@ inline void Algorithm<N_RANK>::shorter_duo_sim_obase_space_cut_p(int t0, int t1,
 template <int N_RANK> template <typename F>
 inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut(int t0, int t1, grid_info<N_RANK> const grid, F const & f)
 {
-    const int lt = t1 - t0;
-    bool sim_can_cut = false;
-    grid_info<N_RANK> l_son_grid;
+  const int lt = t1 - t0;
+  bool sim_can_cut = false;
+  grid_info<N_RANK> l_son_grid;
 
-    for (int i = N_RANK-1; i >= 0; --i) {
-        int lb, thres, tb;
-        lb = (grid.x1[i] - grid.x0[i]);
-        tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-		/*cout << " x0 [" << i << "] " << grid.x0 [i] 
-			 << " x1 [" << i << "] " << grid.x1 [i] 
-			<< " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
-			<< " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-			<< " lt " << lt << endl ;*/
-        bool cut_lb = (lb < tb);
-        thres = (slope_[i] * lt);
-        //sim_can_cut = SIM_CAN_CUT_I ;
-        sim_can_cut = (cut_lb ? (lb >= 2 * thres && lb > dx_recursive_[i]) : (tb >= 2 * thres && lb > dx_recursive_[i])) ;
-        /* as long as there's one dimension can conduct a cut, we conduct a 
-         * multi-dimensional cut!
-         */
-		if (sim_can_cut) 
-		{
-			// can_cut 
-			if (cut_lb) {
-				// if cutting lb, there's no initial cut! 
-				(static_cast<void> (0));
-				const int mid = lb/2;
-				l_son_grid = grid;
-				const int l_start = grid.x0[i];
-				const int l_end = grid.x1[i];
-
-				//process the middle gray zoid
-				l_son_grid.x0[i] = l_start + mid - thres;
-				l_son_grid.dx0[i] = slope_[i];
-				l_son_grid.x1[i] = l_start + mid + thres;
-				l_son_grid.dx1[i] = -slope_[i];
-				shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-
-				l_son_grid.x0[i] = l_start;
-				l_son_grid.dx0[i] = grid.dx0[i];
-				l_son_grid.x1[i] = l_start + mid - thres;
-				l_son_grid.dx1[i] = slope_[i];
-				shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-
-				l_son_grid.x0[i] = l_start + mid + thres;
-				l_son_grid.dx0[i] = -slope_[i];
-				l_son_grid.x1[i] = l_end;
-				l_son_grid.dx1[i] = grid.dx1[i];
-				shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-			} // end if (cut_lb) 
-			else { // cut_tb 
-				const int mid = tb/2;
-				l_son_grid = grid;
-
-				const int l_start = (grid.x0[i]);
-				const int l_end = (grid.x1[i]);
-				const int ul_start = (grid.x0[i] + grid.dx0[i] * lt);
-				l_son_grid.x0[i] = l_start;
-				l_son_grid.dx0[i] = grid.dx0[i];
-				l_son_grid.x1[i] = ul_start + mid;
-				l_son_grid.dx1[i] = -slope_[i];
-				shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-
-				l_son_grid.x0[i] = ul_start + mid;
-				l_son_grid.dx0[i] = slope_[i];
-				l_son_grid.x1[i] = l_end;
-				l_son_grid.dx1[i] = grid.dx1[i];
-				shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-
-				l_son_grid.x0[i] = ul_start + mid;
-				l_son_grid.dx0[i] = -slope_[i];
-				l_son_grid.x1[i] = ul_start + mid;
-				l_son_grid.dx1[i] = slope_[i];
-				shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
-			} // end if (cut_tb) 
-			return;
-		}
-    }
-
-	if (lt > dt_recursive_) {
-        /* cut into time */
+  for (int i = N_RANK-1; i >= 0; --i) {
+    int lb, thres, tb;
+    lb = (grid.x1[i] - grid.x0[i]);
+    tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+    bool cut_lb = (lb < tb);
+    thres = (slope_[i] * lt);
+    //sim_can_cut = SIM_CAN_CUT_I ;
+    sim_can_cut = (cut_lb ? (lb >= 2 * thres && lb > dx_recursive_[i]) : (tb >= 2 * thres && lb > dx_recursive_[i])) ;
+    /* as long as there's one dimension can conduct a cut, we conduct a 
+     * multi-dimensional cut!
+     */
+    if (sim_can_cut) 
+    {
+      // can_cut 
+      if (cut_lb) {
+        // if cutting lb, there's no initial cut! 
         (static_cast<void> (0));
-        int halflt = lt / 2;
-        //int halflt = (lt + 1) / 2;
+        const int mid = lb/2;
         l_son_grid = grid;
-        shorter_duo_sim_obase_bicut(t0, t0+halflt, l_son_grid, f);
+        const int l_start = grid.x0[i];
+        const int l_end = grid.x1[i];
 
-        for (int i = 0; i < N_RANK; ++i) {
-            l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
-            l_son_grid.dx0[i] = grid.dx0[i];
-            l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
-            l_son_grid.dx1[i] = grid.dx1[i];
-        }
-        shorter_duo_sim_obase_bicut(t0+halflt, t1, l_son_grid, f);
-		//stack_depth-- ;
-        return;
-    } else {
-        // base case
-        f(t0, t1, grid);
-//        base_case_kernel_interior(t0, t1, grid, f);
-		//stack_depth-- ;
-        return;
-    }  
+        //process the middle gray zoid
+        l_son_grid.x0[i] = l_start + mid - thres;
+        l_son_grid.dx0[i] = slope_[i];
+        l_son_grid.x1[i] = l_start + mid + thres;
+        l_son_grid.dx1[i] = -slope_[i];
+        shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+
+        l_son_grid.x0[i] = l_start;
+        l_son_grid.dx0[i] = grid.dx0[i];
+        l_son_grid.x1[i] = l_start + mid - thres;
+        l_son_grid.dx1[i] = slope_[i];
+        shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+
+        l_son_grid.x0[i] = l_start + mid + thres;
+        l_son_grid.dx0[i] = -slope_[i];
+        l_son_grid.x1[i] = l_end;
+        l_son_grid.dx1[i] = grid.dx1[i];
+        shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+      } // end if (cut_lb) 
+      else { // cut_tb 
+        const int mid = tb/2;
+        l_son_grid = grid;
+
+        const int l_start = (grid.x0[i]);
+        const int l_end = (grid.x1[i]);
+        const int ul_start = (grid.x0[i] + grid.dx0[i] * lt);
+        l_son_grid.x0[i] = l_start;
+        l_son_grid.dx0[i] = grid.dx0[i];
+        l_son_grid.x1[i] = ul_start + mid;
+        l_son_grid.dx1[i] = -slope_[i];
+        shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+
+        l_son_grid.x0[i] = ul_start + mid;
+        l_son_grid.dx0[i] = slope_[i];
+        l_son_grid.x1[i] = l_end;
+        l_son_grid.dx1[i] = grid.dx1[i];
+        shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+
+        l_son_grid.x0[i] = ul_start + mid;
+        l_son_grid.dx0[i] = -slope_[i];
+        l_son_grid.x1[i] = ul_start + mid;
+        l_son_grid.dx1[i] = slope_[i];
+        shorter_duo_sim_obase_bicut(t0, t1, l_son_grid, f);
+      } // end if (cut_tb) 
+      return;
+    }
+  }
+
+  if (lt > dt_recursive_) {
+    /* cut into time */
+    (static_cast<void> (0));
+    int halflt = lt / 2;
+    //int halflt = (lt + 1) / 2;
+    l_son_grid = grid;
+    shorter_duo_sim_obase_bicut(t0, t0+halflt, l_son_grid, f);
+
+    for (int i = 0; i < N_RANK; ++i) {
+        l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
+        l_son_grid.dx0[i] = grid.dx0[i];
+        l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
+        l_son_grid.dx1[i] = grid.dx1[i];
+    }
+    shorter_duo_sim_obase_bicut(t0+halflt, t1, l_son_grid, f);
+    return;
+  } else {
+    // base case
+    f(t0, t1, grid);
+    //base_case_kernel_interior(t0, t1, grid, f);
+    return;
+  }  
 }
 
 
 template <int N_RANK> template <typename F, typename BF>
 inline void Algorithm<N_RANK>::shorter_duo_sim_obase_bicut_p(int t0, int t1, grid_info<N_RANK> const grid, F const & f, BF const & bf)
 {
-    const int lt = t1 - t0;
-    bool sim_can_cut = false, call_boundary = false;
-    grid_info<N_RANK> l_father_grid = grid, l_son_grid;
-    int l_dt_stop;
-    for (int i = N_RANK-1; i >= 0; --i) {
-        bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
-        call_boundary |= l_touch_boundary;
-	}
-    for (int i = N_RANK-1; i >= 0; --i) {
-      int lb, thres, tb;
-      lb = (grid.x1[i] - grid.x0[i]);
-      tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-      /*cout << " x0 [" << i << "] " << grid.x0 [i] 
-         << " x1 [" << i << "] " << grid.x1 [i] 
-        << " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
-        << " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-        << " lt " << lt << endl ;*/
-      thres = (slope_[i] * lt);
-      bool cut_lb = (lb < tb);
-      bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
-      //sim_can_cut = SIM_CAN_CUT_B ;
-      sim_can_cut = (cut_lb ? (l_touch_boundary ? (lb >= 2 * thres && lb > dx_recursive_boundary_[i]) : (lb >= 2 * thres && lb > dx_recursive_[i])) : (l_touch_boundary ? (tb >= 2 * thres && lb > dx_recursive_boundary_[i]) : (tb >= 2 * thres && lb > dx_recursive_[i]))) ;
+  const int lt = t1 - t0;
+  bool sim_can_cut = false, call_boundary = false;
+  grid_info<N_RANK> l_father_grid = grid, l_son_grid;
+  int l_dt_stop;
+  for (int i = N_RANK-1; i >= 0; --i) {
+    bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
+    call_boundary |= l_touch_boundary;
+  }
+  for (int i = N_RANK-1; i >= 0; --i) {
+    int lb, thres, tb;
+    lb = (grid.x1[i] - grid.x0[i]);
+    tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+    thres = (slope_[i] * lt);
+    bool cut_lb = (lb < tb);
+    bool l_touch_boundary = touch_boundary(i, lt, l_father_grid);
+    //sim_can_cut = SIM_CAN_CUT_B ;
+    sim_can_cut = (cut_lb ? (l_touch_boundary ? (lb >= 2 * thres && lb > dx_recursive_boundary_[i]) : (lb >= 2 * thres && lb > dx_recursive_[i])) : (l_touch_boundary ? (tb >= 2 * thres && lb > dx_recursive_boundary_[i]) : (tb >= 2 * thres && lb > dx_recursive_[i]))) ;
 
-      if (sim_can_cut) 
-      {
-        grid_info<N_RANK> grid_array [3] ;
-        bool initial_cut = false ;
-        // can_cut 
-        if (cut_lb) {
-          // if cutting lb, there's no initial cut! 
-          (static_cast<void> (0));
-          const int mid = lb/2;
+    if (sim_can_cut) 
+    {
+      grid_info<N_RANK> grid_array [3] ;
+      bool initial_cut = false ;
+      // can_cut 
+      if (cut_lb) {
+        // if cutting lb, there's no initial cut! 
+        (static_cast<void> (0));
+        const int mid = lb/2;
+        l_son_grid = l_father_grid;
+        const int l_start = l_father_grid.x0[i];
+        const int l_end = l_father_grid.x1[i];
+
+        //process the middle gray zoid
+        l_son_grid.x0[i] = l_start + mid - thres;
+        l_son_grid.dx0[i] = slope_[i];
+        l_son_grid.x1[i] = l_start + mid + thres;
+        l_son_grid.dx1[i] = -slope_[i];
+        grid_array [0] = l_son_grid ;
+
+        l_son_grid.x0[i] = l_start;
+        l_son_grid.dx0[i] = l_father_grid.dx0[i];
+        l_son_grid.x1[i] = l_start + mid - thres;
+        l_son_grid.dx1[i] = slope_[i];
+        grid_array [1] = l_son_grid ;
+
+        l_son_grid.x0[i] = l_start + mid + thres;
+        l_son_grid.dx0[i] = -slope_[i];
+        l_son_grid.x1[i] = l_end;
+        l_son_grid.dx1[i] = l_father_grid.dx1[i];
+        grid_array [2] = l_son_grid ;
+      } // end if (cut_lb) 
+      else { // cut_tb 
+        if (lb == phys_length_[i] && l_father_grid.dx0[i] == 0 && l_father_grid.dx1[i] == 0) {
+          /* initial cut on the dimension */
+          initial_cut = true ;
+          const int mid = tb/2;
           l_son_grid = l_father_grid;
           const int l_start = l_father_grid.x0[i];
           const int l_end = l_father_grid.x1[i];
 
-          //process the middle gray zoid
-          l_son_grid.x0[i] = l_start + mid - thres;
+          l_son_grid.x0[i] = l_start ;
           l_son_grid.dx0[i] = slope_[i];
-          l_son_grid.x1[i] = l_start + mid + thres;
+          l_son_grid.x1[i] = l_end ;
           l_son_grid.dx1[i] = -slope_[i];
           grid_array [0] = l_son_grid ;
 
-          l_son_grid.x0[i] = l_start;
-          l_son_grid.dx0[i] = l_father_grid.dx0[i];
-          l_son_grid.x1[i] = l_start + mid - thres;
+          l_son_grid.x0[i] = l_end ;
+          l_son_grid.dx0[i] = -slope_[i];
+          l_son_grid.x1[i] = l_end ;
           l_son_grid.dx1[i] = slope_[i];
           grid_array [1] = l_son_grid ;
+          /*
+          //draw a triangle with a vertex at midpoint of 
+          //top base.
+          l_son_grid.x0[i] = mid - thres ;
+          l_son_grid.dx0[i] = slope_[i];
+          l_son_grid.x1[i] = mid + thres ;
+          l_son_grid.dx1[i] = -slope_[i];
+          grid_array [0] = l_son_grid ;
 
-          l_son_grid.x0[i] = l_start + mid + thres;
+          l_son_grid.x0[i] = mid + thres ;
           l_son_grid.dx0[i] = -slope_[i];
+          l_son_grid.x1[i] = l_end + mid - thres ;
+          l_son_grid.dx1[i] = slope_[i];
+          grid_array [1] = l_son_grid ;
+          */
+        } else { /* NOT the initial cut! */
+          const int mid = tb/2;
+          l_son_grid = l_father_grid;
+          const int l_start = l_father_grid.x0[i];
+          const int l_end = l_father_grid.x1[i];
+          const int ul_start = l_father_grid.x0[i] + l_father_grid.dx0[i] * lt;
+          l_son_grid.x0[i] = l_start;
+          l_son_grid.dx0[i] = l_father_grid.dx0[i];
+          l_son_grid.x1[i] = ul_start + mid;
+          l_son_grid.dx1[i] = -slope_[i];
+          grid_array [0] = l_son_grid ;
+
+          l_son_grid.x0[i] = ul_start + mid;
+          l_son_grid.dx0[i] = slope_[i];
           l_son_grid.x1[i] = l_end;
           l_son_grid.dx1[i] = l_father_grid.dx1[i];
+          grid_array [1] = l_son_grid ;
+
+          l_son_grid.x0[i] = ul_start + mid;
+          l_son_grid.dx0[i] = -slope_[i];
+          l_son_grid.x1[i] = ul_start + mid;
+          l_son_grid.dx1[i] = slope_[i];
           grid_array [2] = l_son_grid ;
-        } // end if (cut_lb) 
-        else { // cut_tb 
-          if (lb == phys_length_[i] && l_father_grid.dx0[i] == 0 && l_father_grid.dx1[i] == 0) {
-            /* initial cut on the dimension */
-            initial_cut = true ;
-            const int mid = tb/2;
-            l_son_grid = l_father_grid;
-            const int l_start = l_father_grid.x0[i];
-            const int l_end = l_father_grid.x1[i];
-
-            l_son_grid.x0[i] = l_start ;
-            l_son_grid.dx0[i] = slope_[i];
-            l_son_grid.x1[i] = l_end ;
-            l_son_grid.dx1[i] = -slope_[i];
-            grid_array [0] = l_son_grid ;
-
-            l_son_grid.x0[i] = l_end ;
-            l_son_grid.dx0[i] = -slope_[i];
-            l_son_grid.x1[i] = l_end ;
-            l_son_grid.dx1[i] = slope_[i];
-            grid_array [1] = l_son_grid ;
-            /*
-            //draw a triangle with a vertex at midpoint of 
-            //top base.
-            l_son_grid.x0[i] = mid - thres ;
-            l_son_grid.dx0[i] = slope_[i];
-            l_son_grid.x1[i] = mid + thres ;
-            l_son_grid.dx1[i] = -slope_[i];
-            grid_array [0] = l_son_grid ;
-
-            l_son_grid.x0[i] = mid + thres ;
-            l_son_grid.dx0[i] = -slope_[i];
-            l_son_grid.x1[i] = l_end + mid - thres ;
-            l_son_grid.dx1[i] = slope_[i];
-            grid_array [1] = l_son_grid ;
-            */
-          } else { /* NOT the initial cut! */
-            const int mid = tb/2;
-            l_son_grid = l_father_grid;
-            const int l_start = l_father_grid.x0[i];
-            const int l_end = l_father_grid.x1[i];
-            const int ul_start = l_father_grid.x0[i] + l_father_grid.dx0[i] * lt;
-            l_son_grid.x0[i] = l_start;
-            l_son_grid.dx0[i] = l_father_grid.dx0[i];
-            l_son_grid.x1[i] = ul_start + mid;
-            l_son_grid.dx1[i] = -slope_[i];
-            grid_array [0] = l_son_grid ;
-
-            l_son_grid.x0[i] = ul_start + mid;
-            l_son_grid.dx0[i] = slope_[i];
-            l_son_grid.x1[i] = l_end;
-            l_son_grid.dx1[i] = l_father_grid.dx1[i];
-            grid_array [1] = l_son_grid ;
-
-            l_son_grid.x0[i] = ul_start + mid;
-            l_son_grid.dx0[i] = -slope_[i];
-            l_son_grid.x1[i] = ul_start + mid;
-            l_son_grid.dx1[i] = slope_[i];
-            grid_array [2] = l_son_grid ;
-          }
-        } // end if (cut_tb) 
-        int end = initial_cut ? 2 : 3 ;
-        for (int begin = 0 ; begin < end ; begin++)
-        {
-          if (call_boundary)
-          {
-            shorter_duo_sim_obase_bicut_p(t0, t1, grid_array [begin], f, bf);
-          }
-          else
-          {
-            shorter_duo_sim_obase_bicut(t0, t1, grid_array [begin], f);
-          }
         }
-        return;
-      } // end if (sim_can_cut) 
+      } // end if (cut_tb) 
+      int end = initial_cut ? 2 : 3 ;
+      for (int begin = 0 ; begin < end ; begin++)
+      {
+        if (call_boundary)
+        {
+          shorter_duo_sim_obase_bicut_p(t0, t1, grid_array [begin], f, bf);
+        }
+        else
+        {
+          shorter_duo_sim_obase_bicut(t0, t1, grid_array [begin], f);
+        }
+      }
+      return;
+    } // end if (sim_can_cut) 
+  }
+
+  if (call_boundary)
+    l_dt_stop = dt_recursive_boundary_;
+  else
+    l_dt_stop = dt_recursive_;
+
+  if (lt > l_dt_stop) {
+    /* cut into time */
+    int halflt = lt / 2;
+    l_son_grid = l_father_grid;
+    if (call_boundary) {
+        shorter_duo_sim_obase_bicut_p(t0, t0+halflt, l_son_grid, f, bf);
+    } else {
+        shorter_duo_sim_obase_bicut(t0, t0+halflt, l_son_grid, f);
     }
 
-    if (call_boundary)
-        l_dt_stop = dt_recursive_boundary_;
-    else
-        l_dt_stop = dt_recursive_;
+    for (int i = 0; i < N_RANK; ++i) {
+        l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
+        l_son_grid.dx0[i] = l_father_grid.dx0[i];
+        l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
+        l_son_grid.dx1[i] = l_father_grid.dx1[i];
+    }
+    if (call_boundary) {
+        shorter_duo_sim_obase_bicut_p(t0+halflt, t1, l_son_grid, f, bf);
+    } else {
+        shorter_duo_sim_obase_bicut(t0+halflt, t1, l_son_grid, f);
+    }
+    return;
+  } 
 
-    if (lt > l_dt_stop) {
-        /* cut into time */
-        int halflt = lt / 2;
-        //int halflt = (lt + 1) / 2;
-        l_son_grid = l_father_grid;
-        if (call_boundary) {
-            shorter_duo_sim_obase_bicut_p(t0, t0+halflt, l_son_grid, f, bf);
-        } else {
-            shorter_duo_sim_obase_bicut(t0, t0+halflt, l_son_grid, f);
-        }
-
-        for (int i = 0; i < N_RANK; ++i) {
-            l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
-            l_son_grid.dx0[i] = l_father_grid.dx0[i];
-            l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
-            l_son_grid.dx1[i] = l_father_grid.dx1[i];
-        }
-        if (call_boundary) {
-            shorter_duo_sim_obase_bicut_p(t0+halflt, t1, l_son_grid, f, bf);
-        } else {
-            shorter_duo_sim_obase_bicut(t0+halflt, t1, l_son_grid, f);
-        }
-		//stack_depth-- ;
-        return;
-    } 
-
-    // if (l_total_area <= Z || base_cube_t) {
-        /* for base_cube_t: -- prevent too small time cut! 
-         *      (cut_lb && lb > dx_recursive_boundary_ && lb < 2 * thres)
-         *  ||  (!cut_lb && tb > dx_recursive_boundary_ && lb < thres)
-         */
-        // base case
-        if (call_boundary) {
-            base_case_kernel_boundary(t0, t1, l_father_grid, bf);
-        } else {
-            f(t0, t1, l_father_grid);
-        }
-		//stack_depth-- ;
-        return;
+    // base case
+  if (call_boundary) {
+    base_case_kernel_boundary(t0, t1, l_father_grid, bf);
+  } else {
+    f(t0, t1, l_father_grid);
+  }
 }
 
 /*
@@ -71154,7 +71130,7 @@ class Pochoir_Array {
  * ============================================================================
  *       Filename:  auto_tuning_trap_seq_space_cuts.hpp
  *    Description:  Has routines for autotuning trapezoidal divide-and-conquer
- *					algorithm, which performs non hyperspace cuts.
+ *		    algorithm, which performs non hyperspace cuts.
  *        Created:  10/02/2013
  *         Author:  Eka Palamadai, epn@mit.edu
  * ============================================================================
@@ -80889,9 +80865,9 @@ class zoid
   typedef long long time_type ;
   inline void set_capacity(int size)
   {
-          (static_cast<void> (0)) ;
-          if (capacity < size)
-  {
+    (static_cast<void> (0)) ;
+    if (capacity < size)
+    {
       capacity = size ;
       delete [] children ;
       //if # of children increases, create and initialize a new children 
@@ -80899,131 +80875,98 @@ class zoid
       children = new unsigned long [size];
       for (int i = 0 ; i < size ; i++)
       {
-          children [i] = 0 ;
+        children [i] = 0 ;
       }
-  }
-          (static_cast<void> (0)) ;
+    }
+    (static_cast<void> (0)) ;
   }
   
   inline void resize_children(int size)
   {
-          //cout << "resize child for zoid " << id << " # children " << size << endl ;
-          (static_cast<void> (0)) ;
-          set_capacity(size) ;
-          /*if (capacity < size)
-          {
-                  capacity = size ;
-                  delete [] children ;
-                  //if # of children increases, create and initialize a new children 
-                  //array
-                  children = new unsigned long [size];
-                  for (int i = 0 ; i < size ; i++)
-                  {
-                          children [i] = 0 ;
-                  }
-          }*/
-          num_children = size ;
-          (static_cast<void> (0)) ;
-          //cout << "resize done " << endl ;
+    (static_cast<void> (0)) ;
+    set_capacity(size) ;
+    num_children = size ;
+    (static_cast<void> (0)) ;
   }
 
   void add_child(zoid * child, int pos, unsigned long index)
   {
-          //cout << "adding child for zoid " << id << " index " << index << 
-          //		" pos " << pos << endl ; 
-          (static_cast<void> (0)) ;
-          (static_cast<void> (0)) ;
-          (static_cast<void> (0)) ;
-          
-          //don't add the zoid as its own child
-          if (this != child)
-          {
-                  children [pos] = index ;
-          }
+    //cout << "adding child for zoid " << id << " index " << index << 
+    //		" pos " << pos << endl ; 
+    (static_cast<void> (0)) ;
+    (static_cast<void> (0)) ;
+    (static_cast<void> (0)) ;
+    
+    //don't add the zoid as its own child
+    if (this != child)
+    {
+      children [pos] = index ;
+    }
   }
   
   zoid() 
   {
-          //cout << "zoid : constructor " << endl ;
-          decision = 0 ; //0 for loop
-          children = 0 ;
-          num_children = 0 ;
-          capacity = 0 ;
-          time = 0 ;
-          num_level_divide = 0 ;
+    decision = 0 ; //0 for undefined
+    children = 0 ;
+    num_children = 0 ;
+    capacity = 0 ;
+    time = 0 ;
   };
   
   //does a shallow copy of the contents of z.
   //does not copy children. 
   void shallow_copy(const zoid & z)
   {
-          decision = z.decision ;
-          time = z.time ;
-          num_level_divide = z.num_level_divide ;
-          //num_children = z.num_children ;
-          num_children = 0 ;
-          capacity = 0 ;
-          //assert (num_children <= capacity) ;
+    decision = z.decision ;
+    time = z.time ;
+    num_children = 0 ;
+    capacity = 0 ;
   }
 
   zoid & operator = (const zoid & z)
   {
-          //cout << "zoid : assignment op for zoid " << z.id << endl ;
-          if (this != &z)
-          {
-                  decision = z.decision ;
-                  time = z.time ;
-                  num_level_divide = z.num_level_divide ;
-                  (static_cast<void> (0)) ;
-                  num_children = z.num_children ;
-                  /*if (num_children > 0)
-                  {
-                          if (capacity < z.capacity)
-                          {
-                                  capacity = z.capacity ;
-                                  delete [] children ;
-                                  children = new unsigned long [capacity] ;
-                          }
-                          assert (children) ;
-                  }*/
-                  //resize the children array if necessary
-                  if (capacity < num_children)
-                  {
-                          capacity = num_children ;
-                          delete [] children ;
-                          children = new unsigned long [capacity] ;
-                  }
-                  (static_cast<void> (0)) ;
-                  for (int i = 0 ; i < num_children ; i++)
-                  {
-                          children [i] = z.children [i] ;
-                  }
-          }
-          return *this ;
+    //cout << "zoid : assignment op for zoid " << z.id << endl ;
+    if (this != &z)
+    {
+      decision = z.decision ;
+      time = z.time ;
+      (static_cast<void> (0)) ;
+      num_children = z.num_children ;
+      //resize the children array if necessary
+      if (capacity < num_children)
+      {
+        capacity = num_children ;
+        delete [] children ;
+        children = new unsigned long [capacity] ;
+      }
+      (static_cast<void> (0)) ;
+      for (int i = 0 ; i < num_children ; i++)
+      {
+        children [i] = z.children [i] ;
+      }
+    }
+    return *this ;
   }
   
   zoid(const zoid & z)
   {
-          decision = z.decision ;
-          time = z.time ;
-          num_level_divide = z.num_level_divide ;
-          num_children = z.num_children ;
-          capacity = num_children ;
-          //capacity = z.capacity ;
-          (static_cast<void> (0)) ;
-          //cout << "zoid : copy const for zoid " << z.id << " # children" << 
-          //		num_children << endl ;
-          children = 0 ;
-          if (capacity > 0)
-          {
-                  children = new unsigned long [capacity] ;
-                  for (int i = 0 ; i < num_children ; i++)
-                  {
-                          children [i] = z.children [i] ;
-                  }
-          }
+    decision = z.decision ;
+    time = z.time ;
+    num_children = z.num_children ;
+    capacity = num_children ;
+    (static_cast<void> (0)) ;
+    //cout << "zoid : copy const for zoid " << z.id << " # children" << 
+    //		num_children << endl ;
+    children = 0 ;
+    if (capacity > 0)
+    {
+      children = new unsigned long [capacity] ;
+      for (int i = 0 ; i < num_children ; i++)
+      {
+        children [i] = z.children [i] ;
+      }
+    }
   }
-
 
   void add_parent(unsigned long parent_id)
   {
@@ -81031,33 +80974,32 @@ class zoid
   //destructor for zoid
   ~zoid()
   {
-          //cout << "zoid : destructor for zoid " << id << endl ;
-          num_children = 0 ;
-          capacity = 0 ;
-          decision = 0 ; // 0 for looping
-          time = 0 ;
-          num_level_divide = 0 ;
-          delete [] children ;
-          children = 0 ;
-          //cout << "zoid : end destructor for zoid " << id << endl ;
+    //cout << "zoid : destructor for zoid " << id << endl ;
+    num_children = 0 ;
+    capacity = 0 ;
+    decision = 0 ; // 0 for looping
+    time = 0 ;
+    delete [] children ;
+    children = 0 ;
+    //cout << "zoid : end destructor for zoid " << id << endl ;
   }
   
   static const int NUM_BITS_DECISION ;
-  static const double FUZZ ;
+  static const double INTERIOR_FUZZ ;
+  static const double BOUNDARY_FUZZ ;
   static const int SUBSUME_FACTOR ;
   private :
   decision_type decision ;
   unsigned long * children ;  
   unsigned char capacity ;
   unsigned char num_children ;
-  //unsigned short capacity ;
-  //unsigned short num_children ;
   time_type time ;
-  unsigned char num_level_divide ; //# of levels of consecutive divisions
 } ;
 
 template <int N_RANK>
-double const zoid<N_RANK>::FUZZ = 1 ;
+double const zoid<N_RANK>::INTERIOR_FUZZ = 1 ;
+template <int N_RANK>
+double const zoid<N_RANK>::BOUNDARY_FUZZ = 1 ;
 
 template <int N_RANK>
 int const zoid<N_RANK>::SUBSUME_FACTOR = 1 ;
@@ -81069,45 +81011,45 @@ template <int N_RANK>
 class simple_zoid
 {
   friend class auto_tune<N_RANK> ;
-public :
+  public :
   simple_zoid()
   {
-          decision = 0 ;
-          children = 0 ;
+    decision = 0 ;
+    children = 0 ;
   }
 
   ~simple_zoid()
   {
-          decision = 0 ;
-          delete [] children ;
-          children = 0 ;
+    decision = 0 ;
+    delete [] children ;
+    children = 0 ;
   }
 
   void resize_children(int size)
   {
-          (static_cast<void> (0)) ;
-          (static_cast<void> (0)) ;
-          if (size > 0)
-          {
-                  children = new unsigned long [size];
-          }
+    (static_cast<void> (0)) ;
+    (static_cast<void> (0)) ;
+    if (size > 0)
+    {
+      children = new unsigned long [size];
+    }
   }
 
   void resize_and_copy_children(int size, unsigned long * src)
   {
-          //assert (size >= 0) ;
-          //assert (children == 0) ;
-          //children = new unsigned long [size];
-          resize_children(size) ;
-          for (int i = 0 ; i < size ; i++)
-          {
-                  children [i] = src [i] ;
-          }
+    //assert (size >= 0) ;
+    //assert (children == 0) ;
+    //children = new unsigned long [size];
+    resize_children(size) ;
+    for (int i = 0 ; i < size ; i++)
+    {
+      children [i] = src [i] ;
+    }
   }
   typedef typename zoid<N_RANK>::decision_type decision_type ;
   typedef typename zoid<N_RANK>::time_type time_type ;
   //const int NUM_BITS_DECISION = zoid<N_RANK>::NUM_BITS_DECISION ;
-private :
+  private :
   decision_type decision ;
   unsigned long * children ;
 } ;
@@ -81194,15 +81136,15 @@ private:
                       compare_index <N_RANK> (m_statistics)) ;
     cout << "actual_total_time " << "pred_total_time " << 
               "mean " << "predicted " << " variance " <<  " min " << 
-              " max " << endl ;
+              " max " << " count " << endl ;
     double grand_pred_total = 0, grand_actual_total = 0 ;
     for (int i = m_num_vertices - 1 ; i >= 0 ; i--)
     {
       zoid_statistics <N_RANK> & z = m_statistics [sorted_indices [i]] ;
       if (z.count == 0)
       {
-              (static_cast<void> (0)) ;
-              continue ;
+        (static_cast<void> (0)) ;
+        continue ;
       }
       double mean = z.total / z.count ;
       double predicted = stopwatch_time_to_double(z.predicted) ;
@@ -81210,7 +81152,8 @@ private:
       cout << z.total << " " << z.count * predicted << " " <<
                       mean << " " << predicted << " " << variance << " " <<
                       stopwatch_time_to_double(z.min) << " " <<
-                      stopwatch_time_to_double(z.max) << endl ;
+                      stopwatch_time_to_double(z.max) << " " <<
+                      z.count << endl ;
       grand_pred_total += (z.count * predicted) ;
       grand_actual_total += z.total ;
       
@@ -81219,21 +81162,20 @@ private:
       cout << "height " << z.height ;
       if (z.boundary)
       {
-              cout << " boundary " << endl ;
+        cout << " boundary " << endl ;
       }
       else
       {
-              cout << " interior " << endl ;
+        cout << " interior " << endl ;
       }
       for (int i = N_RANK - 1 ; i >= 0 ; i--)
       {
-              cout << " x0 [" << i << "] " << grid.x0 [i]
-               << " x1 [" << i << "] " << grid.x1 [i]
-              << " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
-              << " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-              << endl ;
+        cout << " x0 [" << i << "] " << grid.x0 [i]
+         << " x1 [" << i << "] " << grid.x1 [i]
+        << " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
+        << " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
+        << endl ;
       }
-
     }
 
     /*for (int i = m_num_vertices ; i >= 0 ; i--)
@@ -81264,13 +81206,13 @@ private:
     m_simple_zoids.resize (m_num_vertices) ;
     for (int i = 0 ; i < m_num_vertices ; i++)
     {
-            simple_zoid_type & dest = m_simple_zoids [i] ;
-            zoid_type & src = m_zoids [i] ;
-            dest.decision = src.decision ;
-            if (src.num_children > 0)
-            {
-                    dest.resize_and_copy_children(src.num_children, src.children) ;
-            }
+      simple_zoid_type & dest = m_simple_zoids [i] ;
+      zoid_type & src = m_zoids [i] ;
+      dest.decision = src.decision ;
+      if (src.num_children > 0)
+      {
+        dest.resize_and_copy_children(src.num_children, src.children) ;
+      }
     }
     //clear the contents of m_zoids.
     m_zoids.clear() ;
@@ -81384,7 +81326,6 @@ inline void build_auto_tune_dag_trap(int t0, int t1,
   unsigned long index_head = m_num_vertices ;
   m_num_vertices++ ;
   (static_cast<void> (0)) ;
-  //m_head [index] = m_num_vertices ;
   time_type rtime = 0, ctime = 0 ;
   stopwatch_reset_num_calls(&m_stopwatch) ;
   time_type best_time = 0x7fffffffffffffffL ;
@@ -81429,53 +81370,53 @@ inline void build_auto_tune_dag_trap(int t0, int t1,
 
   inline void clear_projections()
   {
-          int two_to_the_d = 1 << N_RANK ;
-          /*
-          for (int i = 0 ; i < two_to_the_d ; i++)
-          {
-                  vector<hash_table> & p = m_projections_interior [i] ; 
-                  for (int i = 0 ; i < p.size() ; i++)
-                  {
-                          p [i].clear() ;	//clear the contents of hash table
-                  }
-                  p.clear() ; //clear the contents of vector
-                  //empty the vector.
-                  vector<hash_table>().swap(p) ; 
-          }*/
-          for (int i = 0 ; i < m_projections_interior.size() ; i++)
-          {
-                  m_projections_interior [i].clear() ;//clear the contents of hash table
-          }
-          //clear the contents of vector
-          m_projections_interior.clear() ;
-          //empty the vector.
-          vector<hash_table>().swap(m_projections_interior) ;
+    int two_to_the_d = 1 << N_RANK ;
+    /*
+    for (int i = 0 ; i < two_to_the_d ; i++)
+    {
+      vector<hash_table> & p = m_projections_interior [i] ; 
+      for (int i = 0 ; i < p.size() ; i++)
+      {
+              p [i].clear() ;	//clear the contents of hash table
+      }
+      p.clear() ; //clear the contents of vector
+      //empty the vector.
+      vector<hash_table>().swap(p) ; 
+    }*/
+    for (int i = 0 ; i < m_projections_interior.size() ; i++)
+    {
+      m_projections_interior [i].clear() ;//clear the contents of hash table
+    }
+    //clear the contents of vector
+    m_projections_interior.clear() ;
+    //empty the vector.
+    vector<hash_table>().swap(m_projections_interior) ;
 
-          /*for (int i = 0 ; i < m_projections_boundary.size() ; i++)
-          {
-                  m_projections_boundary [i].clear() ;//clear the projections
-          }
-          m_projections_boundary.clear() ;
-          //empty the projections vector.
-          vector<hash_table>().swap(m_projections_boundary) ; */
-          for (int k = 0 ; k < two_to_the_d ; k++)
-          {
-                  vector <two_level_hash_table> & v = m_projections_boundary [k] ;
-                  for (int i = 0 ; i < v.size() ; i++)
-                  {
-                          two_level_hash_table & th = v [i] ;
-                          for (two_level_hash_table_iterator start = th.begin() ; 
-                                                  start != th.end() ; start++)
-                          {
-                                  hash_table & h = start->second ;
-                                  h.clear() ; //clear the contents of hash table
-                          }
-                          th.clear() ; //clear the contents of 2 level hash table.
-                  }
-                  v.clear() ;
-                  //empty the vector.
-                  vector<two_level_hash_table>().swap(v) ;
-          }
+    /*for (int i = 0 ; i < m_projections_boundary.size() ; i++)
+    {
+      m_projections_boundary [i].clear() ;//clear the projections
+    }
+    m_projections_boundary.clear() ;
+    //empty the projections vector.
+    vector<hash_table>().swap(m_projections_boundary) ; */
+    for (int k = 0 ; k < two_to_the_d ; k++)
+    {
+      vector <two_level_hash_table> & v = m_projections_boundary [k] ;
+      for (int i = 0 ; i < v.size() ; i++)
+      {
+        two_level_hash_table & th = v [i] ;
+        for (two_level_hash_table_iterator start = th.begin() ; 
+              start != th.end() ; start++)
+        {
+          hash_table & h = start->second ;
+          h.clear() ; //clear the contents of hash table
+        }
+        th.clear() ; //clear the contents of 2 level hash table.
+      }
+      v.clear() ;
+      //empty the vector.
+      vector<two_level_hash_table>().swap(v) ;
+    }
   }
 
 
@@ -81490,32 +81431,33 @@ inline void build_auto_tune_dag_trap(int t0, int t1,
     free (m_array) ;
   }
   
-/* m_projections_boundary is 2-d array of "two level hash tables".
-The 1st dimension of the array is a "type" of zoid and the 2nd 
-dimension is the height of the zoid.
-There are 2^d different ways that a zoid may touch boundary in
-a d-dimensional grid.
-Accordingly zoids are classified into 2^d different "types" based
-on whether they touch boundary in the d-dimensions.
-There are atmost \Theta(lg h) different heights that we store.
+  /* m_projections_boundary is 2-d array of "two level hash tables".
+  The 1st dimension of the array is a "type" of zoid, and the 2nd 
+  dimension is the height of the zoid.
+  There are 2^d different ways that a zoid may touch boundary in
+  a d-dimensional grid.
+  Accordingly zoids are classified into 2^d different "types" based
+  on whether they touch boundary in the d-dimensions.
+  There are atmost \Theta(lg h) different heights that we store.
 
-Given a zoid, we look up the m_projections_boundary structure
-with its type and height. This lookup gives us a two level hash table.
-The two level hash table stores <centroid, hashtable> pair,
-where the key is the centroid and value is a hashtable.
-The hashtable stores <hash of zoid, index> pair where the key is  
-a hash of the zoid and the value is an index into the m_zoids array.	
+  Given a zoid, we look up the m_projections_boundary structure
+  with its type and height. This lookup gives us a two level hash table.
+  The two level hash table stores <centroid, hashtable> pair,
+  where the key is the centroid and value is a hashtable.
+  The hashtable stores <hash of zoid, index> pair where the key is  
+  a hash of the zoid and the value is an index into the m_zoids array.	
 
-The centroid is calculated based on the dimensions in which the
-zoid touches the boundary. 
-The ref_point is a reference point of the zoid, typically its
-"absolute centroid".
-*/
+  The centroid is calculated based on the dimensions in which the
+  zoid touches the boundary. 
+  The ref_point is a reference point of the zoid, typically its
+  "absolute centroid".
+  */
 inline bool check_and_create_time_invariant_replica(
     unsigned long const key, int const height, int const centroid, 
     int const ref_point, unsigned long & index, 
     grid_info <N_RANK> const & grid, int dim_key)
 {
+  (static_cast<void> (0)) ;
   (static_cast<void> (0)) ;
   vector <two_level_hash_table> & projections_boundary = 
                                      m_projections_boundary [dim_key] ;
@@ -81567,9 +81509,9 @@ inline bool check_and_create_time_invariant_replica(
       two_to_the_k = 1 << k ;
       if (height == (h2 + two_to_the_k - 1) / two_to_the_k)
       {
-              (static_cast<void> (0)) ;
-              found = true ;
-              k = 2 * k + 1 + offset ;
+        (static_cast<void> (0)) ;
+        found = true ;
+        k = 2 * k + 1 + offset ;
       }
     }
   }
@@ -81580,7 +81522,6 @@ inline bool check_and_create_time_invariant_replica(
   }
   
   two_level_hash_table & th = projections_boundary [k] ;
-//#ifndef NDEBUG
   std::pair<two_level_hash_table_iterator, 
         two_level_hash_table_iterator> p = th.equal_range (centroid) ;
   
@@ -81590,10 +81531,8 @@ inline bool check_and_create_time_invariant_replica(
   {
     (static_cast<void> (0)) ;
     hash_table & h = start->second ;
-    std::pair<hash_table_iterator, hash_table_iterator> p1 = 
-                                    h.equal_range (key) ;
-    for (hash_table_iterator start1 = p1.first ; 
-                                    start1 != p1.second ; start1++)
+    std::pair<hash_table_iterator, hash_table_iterator> p1 =h.equal_range (key);
+    for (hash_table_iterator start1 = p1.first ;start1 != p1.second ; start1++)
     {
       (static_cast<void> (0)) ;
       (static_cast<void> (0)) ;
@@ -81634,7 +81573,7 @@ inline bool check_and_create_time_invariant_replica(
      Given a zoid, we look up the m_projections_interior array
      with its height. This lookup gives us a hash table.
      The hashtable stores <hash of zoid, index> pair where the key is  
-     a hash of the zoid and the value is an index into the m_zoids array.	
+     a hash of the zoid, and the value is an index into the m_zoids array.	
 
      The centroid is a reference point of the zoid, typically its
      "absolute centroid".
@@ -81652,80 +81591,79 @@ inline bool check_and_create_space_time_invariant_replica(
   int two_to_the_k = 1 << k ; 
   if (height == h1 / two_to_the_k)
   {
-  //height = floor (h1/2^k)
-  //k is the level of the tree
-  (static_cast<void> (0)) ;
-  found = true ;
-  k = 2 * k ; //index
-  }
-  else
-  {
-  //height may be ceil (h1/2^k)
-  k = ceil(log2((double) h1 / height)) ;
-  two_to_the_k = 1 << k ;
-  //cout << "k " << k << " 2^k " << two_to_the_k << endl ;
-  //cout << "h1 " << h1 << endl ;
-  //cout << "(h1 + 2^k - 1) / 2^k " << (h1 + two_to_the_k - 1) / two_to_the_k << endl ;
-  if (height == (h1 + two_to_the_k - 1) / two_to_the_k)
-  {
-    (static_cast<void> (0)) ;
-    found = true ;
-    k = 2 * k + 1 ;
-  }
-  }
-  if (! found && ! m_height_bucket [1].empty())
-  {
-  //try checking the 2nd bucket
-  int h2 = m_height_bucket [1][0] ;
-  k = log2((double) h2 / height) ;
-  two_to_the_k = 1 << k ; //k = 2^floor(log2 (h / h_k))
-  int offset = 2 * (log2(h1) + 1) ;
-  if (height == h2 / two_to_the_k)
-  {
-    //height = floor (h2/2^k)
+    //height = floor (h1/2^k)
     //k is the level of the tree
     (static_cast<void> (0)) ;
     found = true ;
-    k = 2 * k + offset ;
+    k = 2 * k ; //index
   }
   else
   {
-    //height may be ceil (h2/2^k)
-    k = ceil(log2((double) h2 / height)) ;
+    //height may be ceil (h1/2^k)
+    k = ceil(log2((double) h1 / height)) ;
     two_to_the_k = 1 << k ;
-    if (height == (h2 + two_to_the_k - 1) / two_to_the_k)
+    //cout << "k " << k << " 2^k " << two_to_the_k << endl ;
+    //cout << "h1 " << h1 << endl ;
+    //cout << "(h1 + 2^k - 1) / 2^k " << (h1 + two_to_the_k - 1) / two_to_the_k << endl ;
+    if (height == (h1 + two_to_the_k - 1) / two_to_the_k)
     {
       (static_cast<void> (0)) ;
       found = true ;
-      k = 2 * k + 1 + offset ;
+      k = 2 * k + 1 ;
     }
   }
+  if (! found && ! m_height_bucket [1].empty())
+  {
+    //try checking the 2nd bucket
+    int h2 = m_height_bucket [1][0] ;
+    k = log2((double) h2 / height) ;
+    two_to_the_k = 1 << k ; //k = 2^floor(log2 (h / h_k))
+    int offset = 2 * (log2(h1) + 1) ;
+    if (height == h2 / two_to_the_k)
+    {
+      //height = floor (h2/2^k)
+      //k is the level of the tree
+      (static_cast<void> (0)) ;
+      found = true ;
+      k = 2 * k + offset ;
+    }
+    else
+    {
+      //height may be ceil (h2/2^k)
+      k = ceil(log2((double) h2 / height)) ;
+      two_to_the_k = 1 << k ;
+      if (height == (h2 + two_to_the_k - 1) / two_to_the_k)
+      {
+        (static_cast<void> (0)) ;
+        found = true ;
+        k = 2 * k + 1 + offset ;
+      }
+    }
   }
   if (! found)
   {
-  cout << "error in hash function. Height " << height << " not found "
-          << endl ;
-  (static_cast<void> (0)) ;
+    cout << "error in hash function. Height " << height << " not found "
+            << endl ;
+    (static_cast<void> (0)) ;
   }
 
   hash_table & h = projections_interior [k] ;
-  std::pair<hash_table_iterator, hash_table_iterator> p = 
-                                                                                        h.equal_range (key) ;
-
+  std::pair<hash_table_iterator, hash_table_iterator> p = h.equal_range (key) ;
   //hash_table iterator has two elements, first and second.
   for (hash_table_iterator start = p.first ; start != p.second ; start++)
   {
-        (static_cast<void> (0)) ;
-        (static_cast<void> (0)) ;
-        zoid_type * z = &(m_zoids [start->second]) ;
-        {
-                index = start->second ;
-                return true ;
-        }
+    (static_cast<void> (0)) ;
+    (static_cast<void> (0)) ;
+    zoid_type * z = &(m_zoids [start->second]) ;
+    {
+      index = start->second ;
+      return true ;
+    }
   }
   if (m_num_vertices > m_zoids.capacity())
   {
-        cout << "# nodes of DAG " << m_num_vertices << " exceeds capacity " 				<< m_zoids.capacity() << endl ;
+    cout << "# nodes of DAG " << m_num_vertices << " exceeds capacity " << 
+          m_zoids.capacity() << endl ;
   }
   m_zoids.push_back(zoid_type ()) ;
   zoid_type & z = m_zoids [m_num_vertices] ;
@@ -81737,89 +81675,80 @@ inline bool check_and_create_space_time_invariant_replica(
   return false ;
 }
 
-  void dfs(unsigned long node, vector <zoid_type> & temp_zoids,
-                   vector<unsigned long> & color, unsigned long & num_vertices)
-  {
-          color [node] = num_vertices ; //color node gray
-          zoid_type & z = m_zoids [node] ;
-          //if leaf do not recurse further
-          if (z.decision == (decision_type) 1 << (zoid_type::NUM_BITS_DECISION - 2) || 
-                  z.decision == (decision_type) 3 << (zoid_type::NUM_BITS_DECISION - 2))
-          {
-                  //do not store node's children
-                  temp_zoids.push_back(zoid_type()) ;
-                  temp_zoids [num_vertices].shallow_copy(z) ;
-                  temp_zoids [num_vertices].resize_children(0) ;
-                  num_vertices++ ;
-                  (static_cast<void> (0)) ;
-          }
-          else
-          {
-                  temp_zoids.push_back(z) ; //copy the zoid z
-                  unsigned long index = num_vertices ; //index into the vector
-                  num_vertices++ ;
-                  (static_cast<void> (0)) ;
-                  (static_cast<void> (0)) ;
-                  for (int i = 0 ; i < z.num_children ; i++)
-                  {
-                          zoid_type & z1 = temp_zoids [index] ;	
-                          (static_cast<void> (0)) ;
-                          if (color [z.children [i]] == 0xffffffffffffffffUL) //node is white
-                          {
-                                  z1.children [i] = num_vertices ;
-                                  dfs(z.children [i], temp_zoids, color, num_vertices) ;
-                          }
-                          else
-                          {
-                                  //node is already visited.
-                                  (static_cast<void> (0)) ;
-                                  //assign the child's index 
-                                  z1.children [i] = color [z.children [i]] ;
-                          }
-                  }
-          }
+void dfs(unsigned long node, vector <zoid_type> & temp_zoids,
+         vector<unsigned long> & color, unsigned long & num_vertices) {
+  color [node] = num_vertices ; //color node gray
+  zoid_type & z = m_zoids [node] ;
+  //if leaf do not recurse further
+  if (z.decision == (decision_type) 1 << (zoid_type::NUM_BITS_DECISION - 2) ||
+    z.decision == (decision_type) 3 << (zoid_type::NUM_BITS_DECISION - 2)) {
+    //do not store node's children
+    temp_zoids.push_back(zoid_type()) ;
+    temp_zoids [num_vertices].shallow_copy(z) ;
+    temp_zoids [num_vertices].resize_children(0) ;
+    num_vertices++ ;
+    (static_cast<void> (0)) ;
   }
-
-  //compress array by removing nodes that are not part of the final DAG
-  void compress_dag()
-  {
-    vector <unsigned long> color ;
-    color.reserve(m_num_vertices) ;
-    color.resize(m_num_vertices) ;
-
-    vector<zoid_type> temp_zoids ;
-    vector<unsigned long> head ;
-    unsigned long num_vertices = 0 ;
-    for (unsigned long j = 0 ; j < m_num_vertices ; j++)
-    {
-      color [j] = 0xffffffffffffffffUL ; //color node white
-    }
-    //set color [0] = 0
-    //m_zoids [0] is a dummy node.
-    //a child of a zoid may also have index 0 if the
-    //number of children was over allocated.
-    //To avoid dfs into the dummy node, we set color [0] = 0.
-    color [0] = 0 ;
-    for (int j = 0 ; j < m_head.size() ; j++)
-    {
+  else {
+    temp_zoids.push_back(z) ; //copy the zoid z
+    unsigned long index = num_vertices ; //index into the vector
+    num_vertices++ ;
+    (static_cast<void> (0)) ;
+    (static_cast<void> (0)) ;
+    for (int i = 0 ; i < z.num_children ; i++) {
       (static_cast<void> (0)) ;
-      if (color [m_head [j]] == 0xffffffffffffffffUL)
-      {
-        head.push_back(num_vertices) ;
-        dfs(m_head [j], temp_zoids, color, num_vertices) ;
+      if (color [z.children [i]] == 0xffffffffffffffffUL) {
+        //node is white
+        dfs(z.children [i], temp_zoids, color, num_vertices) ;
       }
-      else
-      {
-        //node m_head [j] was already visited.
+      else {
+        //node is already visited.
         (static_cast<void> (0)) ;
-        head.push_back(color [m_head [j]]) ;
       }
+      temp_zoids [index].children [i] = color [z.children [i]] ;
     }
-    //swap the DAG and compressed DAG
-    m_zoids.swap(temp_zoids) ;
-    m_head.swap(head) ;
-    m_num_vertices = num_vertices ;
   }
+}
+
+//compress array by removing nodes that are not part of the final DAG
+void compress_dag()
+{
+  vector <unsigned long> color ;
+  color.reserve(m_num_vertices) ;
+  color.resize(m_num_vertices) ;
+
+  vector<zoid_type> temp_zoids ;
+  vector<unsigned long> head ;
+  unsigned long num_vertices = 0 ;
+  for (unsigned long j = 0 ; j < m_num_vertices ; j++)
+  {
+    color [j] = 0xffffffffffffffffUL ; //color node white
+  }
+  //set color [0] = 0
+  //m_zoids [0] is a dummy node.
+  //a child of a zoid may also have index 0 if the
+  //number of children was over allocated.
+  //To avoid dfs into the dummy node, we set color [0] = 0.
+  color [0] = 0 ;
+  for (int j = 0 ; j < m_head.size() ; j++)
+  {
+    (static_cast<void> (0)) ;
+    if (color [m_head [j]] == 0xffffffffffffffffUL)
+    {
+      dfs(m_head [j], temp_zoids, color, num_vertices) ;
+    }
+    else
+    {
+      //node m_head [j] was already visited.
+      (static_cast<void> (0)) ;
+    }
+    head.push_back(color [m_head [j]]) ;
+  }
+  //swap the DAG and compressed DAG
+  m_zoids.swap(temp_zoids) ;
+  m_head.swap(head) ;
+  m_num_vertices = num_vertices ;
+}
 
 bool read_dag_from_file(grid_info<N_RANK> const & grid, int T, int h1,
                   time_type & time)
@@ -81846,7 +81775,7 @@ bool read_dag_from_file(grid_info<N_RANK> const & grid, int T, int h1,
     dag.close() ;
     return false ;
   }
-  cout << " using dag file " << name << endl ;
+  //cout << " using dag file " << name << endl ;
   int h = 0 ;
   //read height
   dag >> h ;
@@ -81929,58 +81858,58 @@ bool read_dag_from_file(grid_info<N_RANK> const & grid, int T, int h1,
   return true ;
 }
 
-  void write_dag_to_file(grid_info<N_RANK> const & grid, int T)
+void write_dag_to_file(grid_info<N_RANK> const & grid, int T)
+{
+  if (m_problem_name.size() == 0)
   {
-    if (m_problem_name.size() == 0)
-    {
-      cout << "auto tune : writing dag to file. problem name unspecified "
-                    << endl ;
-      m_problem_name = "auto_tune_dag" ;
-    }
-    char tmp [100] ;
-    for (int i = 0 ; i < N_RANK ; i++)
-    {
-      sprintf(tmp, "_%d", grid.x1[i] - grid.x0[i]) ;
-      m_problem_name += tmp ;
-    }
-    sprintf(tmp, "_%d", T) ;
-    m_problem_name += tmp ;
-    m_problem_name += "_trap" ;
-    ofstream dag ;
-    dag.open(m_problem_name.c_str()) ;
-    //write height
-    dag << T << " " ;
-    for (int i = 0 ; i < N_RANK ; i++)
-    {
-            //write grid size
-            dag << grid.x1[i] - grid.x0[i] << " " ;
-    }
-    dag << endl ;
-    dag << "# of head nodes " << m_head.size() << endl ;
-    dag << "head nodes" << endl ;
-    for (int i = 0 ; i < m_head.size() ; i++)
-    {
-            dag << m_head [i] << " " << m_zoids [m_head [i]].time << endl ;
-    }
-    dag << "# nodes " << m_zoids.size() << endl ;
-    dag << "nodes" << endl ;
-    for (int i = 0 ; i < m_zoids.size() ; i++)
-    {
-            zoid_type & z = m_zoids [i] ;
-            //dag << (int) z.decision << " " << z.height << " " << 
-            dag << (int) z.decision << " " << 
-                    (int) z.num_children << " " ;
-            //cout << "z.num_children " << z.num_children << endl ; 
-            for (int j = 0 ; j < z.num_children ; j++)
-            {
-                    dag << z.children [j] << " " ;
-            }
-            //write time
-            dag << z.time << " " ;
-            dag << endl ;
-    }
-    dag.close() ;
+    cout << "auto tune : writing dag to file. problem name unspecified "
+                  << endl ;
+    m_problem_name = "auto_tune_dag" ;
   }
+  char tmp [100] ;
+  for (int i = 0 ; i < N_RANK ; i++)
+  {
+    sprintf(tmp, "_%d", grid.x1[i] - grid.x0[i]) ;
+    m_problem_name += tmp ;
+  }
+  sprintf(tmp, "_%d", T) ;
+  m_problem_name += tmp ;
+  m_problem_name += "_trap" ;
+  ofstream dag ;
+  dag.open(m_problem_name.c_str()) ;
+  //write height
+  dag << T << " " ;
+  for (int i = 0 ; i < N_RANK ; i++)
+  {
+    //write grid size
+    dag << grid.x1[i] - grid.x0[i] << " " ;
+  }
+  dag << endl ;
+  dag << "# of head nodes " << m_head.size() << endl ;
+  dag << "head nodes" << endl ;
+  for (int i = 0 ; i < m_head.size() ; i++)
+  {
+          dag << m_head [i] << " " << m_zoids [m_head [i]].time << endl ;
+  }
+  dag << "# nodes " << m_zoids.size() << endl ;
+  dag << "nodes" << endl ;
+  for (int i = 0 ; i < m_zoids.size() ; i++)
+  {
+    zoid_type & z = m_zoids [i] ;
+    //dag << (int) z.decision << " " << z.height << " " << 
+    dag << (int) z.decision << " " << 
+      (int) z.num_children << " " ;
+    //cout << "z.num_children " << z.num_children << endl ; 
+    for (int j = 0 ; j < z.num_children ; j++)
+    {
+      dag << z.children [j] << " " ;
+    }
+    //write time
+    dag << z.time << " " ;
+    dag << endl ;
+  }
+  dag.close() ;
+}
 
 void write_zoid_dimensions(grid_info<N_RANK> const & grid, int T)
 {
@@ -82222,7 +82151,7 @@ void write_zoid_dimensions(grid_info<N_RANK> const & grid, int T)
   time_type m_actual_time  ; //time to lookup dag
 
   vector<int> m_height_bucket [2] ; //array of vectors of height buckets.
-  const int DIVIDE_COUNTER = 1 ;
+  const int DIVIDE_COUNTER = 2 ;
 
   inline void sawzoid_space_cut_interior_core
           (int const, int const, int const, int const, 
@@ -82254,7 +82183,6 @@ auto_tune(Algorithm<N_RANK> & alg, grid_info<N_RANK> const & grid,
 {
   stopwatches_setup() ;
   stopwatch_init(&m_stopwatch) ;
-  //cout << "DIVIDE_COUNTER " << DIVIDE_COUNTER << endl ;
   if (name != 0)
   {
     m_problem_name = name ;
@@ -82505,13 +82433,14 @@ grid_info<N_RANK> const & grid, F const & f, BF const & bf,
   { (static_cast<void> (0)); (static_cast<void> (0)); dag_time = stopwatch_ptr->elapsed_time; } ;
   if (read_dag)
   {
-    cout << "read dag from file " << endl ;
+    /*cout << "read dag from file " << endl ;
     cout << "# vertices " << m_num_vertices << endl ;
     cout << "DAG capacity " << m_zoids.capacity() << endl ;
     std::cout << "DAG look up took :" ;
     stopwatch_print_elapsed_time(dag_time) ;
     cout << "Predicted " ;
     stopwatch_print_elapsed_time(expected_run_time) ;
+    */
   }
   else
   {
@@ -82601,8 +82530,17 @@ grid_info<N_RANK> const & grid, F const & f, BF const & bf,
     }
     { clock_gettime(1, &(stopwatch_ptr->end)); stopwatch_ptr->elapsed_time = (long long)(stopwatch_ptr->end . tv_sec - stopwatch_ptr->start . tv_sec) * 1000000000ll + stopwatch_ptr->end . tv_nsec - stopwatch_ptr->start . tv_nsec; } ;
     { (static_cast<void> (0)); (static_cast<void> (0)); m_actual_time = stopwatch_ptr->elapsed_time; } ;
+    cout << "read dag from file " << endl ;
+    cout << "# vertices " << m_num_vertices << endl ;
+    cout << "DAG capacity " << m_zoids.capacity() << endl ;
+    std::cout << "DAG look up took :" ;
+    stopwatch_print_elapsed_time(dag_time) ;
+    cout << "Predicted " ;
+    stopwatch_print_elapsed_time(expected_run_time) ;
     cout << "Actual :" ;
     stopwatch_print_elapsed_time(m_actual_time) ;
+    cout << " interior fuzz " << zoid_type::INTERIOR_FUZZ << 
+          " boundary fuzz " << zoid_type::BOUNDARY_FUZZ << endl ;
   }
 
   //cout << "DAG lookup took : " ; 
@@ -82686,8 +82624,8 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
     int thres ;
     lb = (grid.x1[i] - grid.x0[i]);
     tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-          centroid = ((grid . x0[i] + (lb >> 1)) - ((m_algo . phys_length_ [i]) & -((grid . x0[i] + (lb >> 1))>=(m_algo . phys_length_ [i])))) * width + 
-                                  centroid ;
+    centroid = ((grid . x0[i] + (lb >> 1)) - ((m_algo . phys_length_ [i]) & -((grid . x0[i] + (lb >> 1))>=(m_algo . phys_length_ [i])))) * width + 
+                centroid ;
     /*cout << " x0 [" << i << "] " << grid.x0 [i] 
            << " x1 [" << i << "] " << grid.x1 [i] 
           << " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
@@ -82711,10 +82649,10 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
     {
       key |= 2 ;
     }
-    else
+    /*else
     {
       key |= 0 ; //this is a no-op
-    }
+    }*/
     key <<= 2 ; //shift by 2 bits
           
     int dx1 = grid.dx1[i] ;
@@ -82726,10 +82664,10 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
     {
       key |= 2 ;
     }
-    else
+    /*else
     {
       key |= 0 ; //this is a no-op
-    }
+    }*/
           
     thres = m_algo . slope_[i] * lt ;
     unsigned long short_side = min(lb, tb) ;
@@ -82765,11 +82703,11 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
     { clock_gettime(1, &(ptr->start)); } ;
     return ;
   }
-  if (empty_zoid)
+  /*if (empty_zoid)
   {
     space_cut = false ;
     space_cut_dims.clear() ;
-  }
+  }*/
   bool time_cut = false ;
   bool divide_and_conquer = false ;
   time_type time_cut_elapsed_time = 0, space_cut_elapsed_time = 0x7fffffffffffffffL ; 
@@ -82921,26 +82859,9 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
   }
 
   bool force_divide = false ;
-  bool child_divides = false ;
-  for (int i = 0 ; i < m_zoids [index].num_children ; i++)
-  {
-    unsigned long child_index = m_zoids [index].children [i] ;
-    decision_type d = m_zoids [child_index].decision ;
-    if (d & m_space_cut_mask || d & 1)
-    {
-      child_divides = true ;
-      //test if grand child divided
-      if ((int) m_zoids [child_index].num_level_divide >= 1) 
-      {
-        force_divide = true ;
-        m_zoids [index].num_level_divide = 
-                  m_zoids [child_index].num_level_divide ;
-      }
-    }
-  }
 
-  if (num_grid_points < 500 || empty_zoid || 
-        divide_and_conquer_time < ptr->measure_time)
+  //if (empty_zoid || divide_and_conquer_time < ptr->measure_time)
+  if (empty_zoid || num_grid_points < 500)
   {
     force_divide = false ;
   }
@@ -82963,7 +82884,6 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
   else if (! divide_and_conquer)
   {
     //determine the looping time on the zoid
-    {
     time_type t1_, t2_ ;
     { clock_gettime(1, &(ptr->start)); } ;
     f(t0, t1, grid);
@@ -82976,7 +82896,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
     { (static_cast<void> (0)); (static_cast<void> (0)); t2_ = ptr->elapsed_time; } ;
     loop_time = min (t1_, t2_) ;
     (static_cast<void> (0)) ;
-    }
+    
     //set a flag to indicate that we looped on z.
     m_zoids [index].decision = (decision_type) 1 << 
                               (zoid_type::NUM_BITS_DECISION - 2) ;
@@ -82989,16 +82909,11 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
     //bound_loop_time of z is its loop time.
     bound_loop_time = loop_time ;
     //compare divide and conquer time with loop_time 
-    if(divide_and_conquer_time < zoid_type::FUZZ * loop_time)
+    if(divide_and_conquer_time < loop_time)
     {
       //choose divide and conquer
       m_zoids [index].decision = decision ;
       m_zoids [index].time = divide_and_conquer_time ;
-      if (child_divides)
-      {
-        m_zoids [index].num_level_divide = 
-                (int) m_zoids [index].num_level_divide + 1 ;
-      }
     }
     else
     {
@@ -83049,8 +82964,8 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
   //measure time to adjust boundaries of zoid
   { clock_gettime(1, &(ptr->start)); } ;
   for (int i = N_RANK-1; i >= 0; --i) {
-  bool l_touch_boundary = m_algo . touch_boundary(i, lt, l_father_grid);
-  call_boundary |= l_touch_boundary;
+    bool l_touch_boundary = m_algo . touch_boundary(i, lt, l_father_grid);
+    call_boundary |= l_touch_boundary;
   }
   { clock_gettime(1, &(ptr->end)); ptr->elapsed_time = (long long)(ptr->end . tv_sec - ptr->start . tv_sec) * 1000000000ll + ptr->end . tv_nsec - ptr->start . tv_nsec; } ;
   { (static_cast<void> (0)); (static_cast<void> (0)); t = ptr->elapsed_time; } ;
@@ -83071,7 +82986,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
              << " x1 [" << i << "] " << grid.x1 [i] 
             << " x2 [" << i << "] " << grid.x0[i] + grid.dx0[i] * lt
             << " x3 [" << i << "] " << grid.x1[i] + grid.dx1[i] * lt
-            << " lt " << lt << endl ; */
+            << " lt " << lt << endl ;*/
     thres = m_algo . slope_[i] * lt ;
     if (l_touch_boundary)
     {
@@ -83104,10 +83019,10 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
     {
       key |= 2 ;
     }
-    else
+    /*else
     {
       key |= 0 ; //this is a no-op
-    }
+    }*/
     key <<= 2 ; //shift by 2 bits
             
     int dx1 = grid.dx1[i] ;
@@ -83119,10 +83034,10 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
     {
       key |= 2 ;
     }
-    else
+    /*else
     {
       key |= 0 ; //this is a no-op
-    }
+    }*/
 
     num_grid_points *= ((lb + tb) / 2) ;
     if (lb == 0 && lt == 1)
@@ -83144,17 +83059,17 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
   bool projection_exists = false ;
   if (call_boundary)
   {
-          //space-time invariance at boundary
-          //you can use space invariance in some dimension
-          projection_exists = check_and_create_time_invariant_replica (key, 
-               lt, centroid_dim_touching_bdry, centroid, index, l_father_grid, 
-               dim_touching_bdry) ;
+    //space-time invariance at boundary
+    //you can use space invariance in some dimension
+    projection_exists = check_and_create_time_invariant_replica (key, 
+         lt, centroid_dim_touching_bdry, centroid, index, l_father_grid, 
+         dim_touching_bdry) ;
   }
   else
   {
-          //space-time invariance at interior
-          projection_exists = check_and_create_space_time_invariant_replica (
-                                          key, lt, centroid, index, l_father_grid) ;
+    //space-time invariance at interior
+    projection_exists = check_and_create_space_time_invariant_replica (
+                        key, lt, centroid, index, l_father_grid) ;
   }
   zoid_type & z = m_zoids [index] ;
   zoid_type & parent = m_zoids [parent_index] ;
@@ -83172,11 +83087,11 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
   }
   //if empty internal zoid, do not divide any further
   //if (empty_zoid && ! call_boundary)
-  if (empty_zoid)
+  /*if (empty_zoid)
   {
     space_cut = false ;
     space_cut_dims.clear() ;
-  }
+  }*/
   bool divide_and_conquer = false ;
   bool time_cut = false ;
   time_type time_cut_elapsed_time = 0, space_cut_elapsed_time = 0x7fffffffffffffffL ;
@@ -83228,14 +83143,14 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
   zoid_type bak ;
   if (space_cut)
   {
-          divide_and_conquer = true ;
-          if (time_cut)
-          {
-                  //back up the time cut children data
-                  bak = m_zoids [index] ;
-                  (static_cast<void> (0)) ;
-          }
-          m_zoids [index].set_capacity(num_subzoids) ;
+    divide_and_conquer = true ;
+    if (time_cut)
+    {
+      //back up the time cut children data
+      bak = m_zoids [index] ;
+      (static_cast<void> (0)) ;
+    }
+    m_zoids [index].set_capacity(num_subzoids) ;
   }
 
   zoid_type bak2 ;
@@ -83248,52 +83163,52 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
     if (grid.x1[i] - grid.x0[i] == m_algo . phys_length_[i] && 
             grid.dx0[i] == 0 && grid.dx1[i] == 0)
     {
-            m_zoids [index].resize_children(2) ;
+      m_zoids [index].resize_children(2) ;
     }
     else
     {
-            m_zoids [index].resize_children(3) ;
+      m_zoids [index].resize_children(3) ;
     }
 
     //measure the divide time
     { clock_gettime(1, &(ptr->start)); } ;
-  unsigned long lb, tb;
-  int thres ;
-  lb = (grid.x1[i] - grid.x0[i]);
-  tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-  thres = m_algo . slope_[i] * lt ;
-  bool cut_lb = (lb < tb);
-  if (cut_lb) {
-    (static_cast<void> (0));
-    const int mid = lb/2;
-    l_son_grid = l_father_grid;
-    const int l_start = l_father_grid.x0[i];
-    const int l_end = l_father_grid.x1[i];
-    //process the middle gray zoid
-    l_son_grid . x0[i] = l_start + mid - thres; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_start + mid + thres ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 0, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 0, ltime, ctime, f, best_time) ; } ; ;
-    l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = l_father_grid . dx0[i]; l_son_grid . x1[i] = l_start + mid - thres ; l_son_grid . dx1[i] = m_algo . slope_[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 1, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 1, ltime, ctime, f, best_time) ; } ; ;
-    l_son_grid . x0[i] = l_start + mid + thres; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = l_father_grid . dx1[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 2, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 2, ltime, ctime, f, best_time) ; } ; ;
-  } // end if (cut_lb) 
-  else { // cut_tb 
-    if (lb == m_algo . phys_length_[i] && grid.dx0[i] == 0 && grid.dx1[i] == 0) {
-      /* initial cut on the dimension */
-      const int mid = tb/2;
+    unsigned long lb, tb;
+    int thres ;
+    lb = (grid.x1[i] - grid.x0[i]);
+    tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+    thres = m_algo . slope_[i] * lt ;
+    bool cut_lb = (lb < tb);
+    if (cut_lb) {
+      (static_cast<void> (0));
+      const int mid = lb/2;
       l_son_grid = l_father_grid;
       const int l_start = l_father_grid.x0[i];
       const int l_end = l_father_grid.x1[i];
-      l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 0, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 0, ltime, ctime, f, best_time) ; } ;;
-      l_son_grid . x0[i] = l_end; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = m_algo . slope_[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 1, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 1, ltime, ctime, f, best_time) ; } ;;
-    } else { /* NOT the initial cut! */
-      const int mid = tb/2;
-      l_son_grid = l_father_grid;
-      const int l_start = l_father_grid.x0[i];
-      const int l_end = l_father_grid.x1[i];
-      const int ul_start = l_father_grid.x0[i] + l_father_grid.dx0[i] * lt;
-      l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = l_father_grid . dx0[i]; l_son_grid . x1[i] = ul_start + mid ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 0, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 0, ltime, ctime, f, best_time) ; } ; ;
-      l_son_grid . x0[i] = ul_start + mid; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = l_father_grid . dx1[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 1, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 1, ltime, ctime, f, best_time) ; } ; ;
-      l_son_grid . x0[i] = ul_start + mid; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = ul_start + mid ; l_son_grid . dx1[i] = m_algo . slope_[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 2, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 2, ltime, ctime, f, best_time) ; } ; ;
-    }
-  } // end if (cut_tb) 
+      //process the middle gray zoid
+      l_son_grid . x0[i] = l_start + mid - thres; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_start + mid + thres ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 0, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 0, ltime, ctime, f, best_time) ; } ; ;
+      l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = l_father_grid . dx0[i]; l_son_grid . x1[i] = l_start + mid - thres ; l_son_grid . dx1[i] = m_algo . slope_[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 1, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 1, ltime, ctime, f, best_time) ; } ; ;
+      l_son_grid . x0[i] = l_start + mid + thres; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = l_father_grid . dx1[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 2, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 2, ltime, ctime, f, best_time) ; } ; ;
+    } // end if (cut_lb) 
+    else { // cut_tb 
+      if (lb == m_algo . phys_length_[i] && grid.dx0[i] == 0 && grid.dx1[i] == 0) {
+        /* initial cut on the dimension */
+        const int mid = tb/2;
+        l_son_grid = l_father_grid;
+        const int l_start = l_father_grid.x0[i];
+        const int l_end = l_father_grid.x1[i];
+        l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 0, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 0, ltime, ctime, f, best_time) ; } ;;
+        l_son_grid . x0[i] = l_end; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = m_algo . slope_[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 1, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 1, ltime, ctime, f, best_time) ; } ;;
+      } else { /* NOT the initial cut! */
+        const int mid = tb/2;
+        l_son_grid = l_father_grid;
+        const int l_start = l_father_grid.x0[i];
+        const int l_end = l_father_grid.x1[i];
+        const int ul_start = l_father_grid.x0[i] + l_father_grid.dx0[i] * lt;
+        l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = l_father_grid . dx0[i]; l_son_grid . x1[i] = ul_start + mid ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 0, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 0, ltime, ctime, f, best_time) ; } ; ;
+        l_son_grid . x0[i] = ul_start + mid; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = l_father_grid . dx1[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 1, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 1, ltime, ctime, f, best_time) ; } ; ;
+        l_son_grid . x0[i] = ul_start + mid; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = ul_start + mid ; l_son_grid . dx1[i] = m_algo . slope_[i] ; if (call_boundary) { symbolic_trap_space_time_cut_boundary(t0, t1, l_son_grid, index, 2, ltime, ctime, f, bf, best_time) ; } else { symbolic_trap_space_time_cut_interior(t0, t1, l_son_grid, index, 2, ltime, ctime, f, best_time) ; } ; ;
+      }
+    } // end if (cut_tb) 
     { clock_gettime(1, &(ptr->end)); ptr->elapsed_time = (long long)(ptr->end . tv_sec - ptr->start . tv_sec) * 1000000000ll + ptr->end . tv_nsec - ptr->start . tv_nsec; } ;
     { (static_cast<void> (0)); (static_cast<void> (0)); t = ptr->elapsed_time; } ;
     elapsed_time += t ;
@@ -83310,7 +83225,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
             bak2 = m_zoids [index] ;
             best_time = min(best_time, elapsed_time) ;
     }
-    
+
     (static_cast<void> (0)) ;
 
   }
@@ -83329,60 +83244,43 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
   {
     if (space_cut_elapsed_time < time_cut_elapsed_time)
     {
-            //space cut is better
-            divide_and_conquer_time = space_cut_elapsed_time ;
-            //decision is already set for space cut.
+      //space cut is better
+      divide_and_conquer_time = space_cut_elapsed_time ;
+      //decision is already set for space cut.
     }
     else
     {
-            //time cut is better
-            divide_and_conquer_time = time_cut_elapsed_time ;
-            decision = 1 ;
-            m_zoids [index] = bak ; //restore the backup
-            (static_cast<void> (0)) ;
+      //time cut is better
+      divide_and_conquer_time = time_cut_elapsed_time ;
+      decision = 1 ;
+      m_zoids [index] = bak ; //restore the backup
+      (static_cast<void> (0)) ;
     }
   }
   else if (time_cut)
   {
-          //time cut is the only choice
-          divide_and_conquer_time = time_cut_elapsed_time ;
-          decision = 1 ;
-          (static_cast<void> (0)) ;
+    //time cut is the only choice
+    divide_and_conquer_time = time_cut_elapsed_time ;
+    decision = 1 ;
+    (static_cast<void> (0)) ;
   }
   else if (space_cut)
   {
-          //space cut is the only choice
-          divide_and_conquer_time = space_cut_elapsed_time ;
-          //decision is already set for space cut.
+    //space cut is the only choice
+    divide_and_conquer_time = space_cut_elapsed_time ;
+    //decision is already set for space cut.
   }
   divide_and_conquer_time += bdry_time ;
 
   bool force_divide = false ;
-  bool child_divides = false ;
-  for (int i = 0 ; i < m_zoids [index].num_children ; i++)
+
+  //if (empty_zoid || divide_and_conquer_time < ptr->measure_time)
+  if (empty_zoid || num_grid_points < 500)
   {
-    unsigned long child_index = m_zoids [index].children [i] ;
-    decision_type d = m_zoids [child_index].decision ;
-    if (d & m_space_cut_mask || d & 1)
-    {
-            child_divides = true ;
-            //test if grand child divided
-            if ((int) m_zoids [child_index].num_level_divide >= 1) 
-            {
-                    force_divide = true ;
-                    m_zoids [index].num_level_divide = 
-                                            m_zoids [child_index].num_level_divide ;
-            }
-    }
+    force_divide = false ;
   }
 
-  if (num_grid_points < 500 || empty_zoid || 
-          divide_and_conquer_time < ptr->measure_time)
-  {
-          force_divide = false ;
-  }
-
-  // base case
+  //base case
   //The subsumption in time works as follows.
   //suppose loop_time(z) >= loop_time(z'), z' \in tree(z)
   //if divide_and_conquer_time(z) < max_{z' \in tree(z)} loop_time(z')
@@ -83444,24 +83342,19 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
     //bound_loop_time of z is its loop time.
     bound_loop_time = loop_time ;
     //compare divide and conquer time with loop_time 
-    if(divide_and_conquer_time < zoid_type::FUZZ * loop_time)
+    if(divide_and_conquer_time < loop_time)
     {
-            //choose divide and conquer
-            m_zoids [index].decision = decision ;
-            m_zoids [index].time = divide_and_conquer_time ;
-            if (child_divides)
-            {
-                    m_zoids [index].num_level_divide = 
-                            (int) m_zoids [index].num_level_divide + 1 ;
-            }
+      //choose divide and conquer
+      m_zoids [index].decision = decision ;
+      m_zoids [index].time = divide_and_conquer_time ;
     }
     else
     {
-            //choose loop.
-            //set the decision to loop.
-            m_zoids [index].decision = (decision_type) 1 << 
-                              (zoid_type::NUM_BITS_DECISION - 2) ;
-            m_zoids [index].time = loop_time ;
+      //choose loop.
+      //set the decision to loop.
+      m_zoids [index].decision = (decision_type) 1 << 
+                        (zoid_type::NUM_BITS_DECISION - 2) ;
+      m_zoids [index].time = loop_time ;
     }
     m_zoids [index].decision |= (decision_type) call_boundary << 
                                       (zoid_type::NUM_BITS_DECISION - 1) ;
@@ -83475,8 +83368,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
 
 template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::
-trap_space_time_cut_interior(int t0,
-			int t1, grid_info<N_RANK> const & grid, 
+trap_space_time_cut_interior(int t0, int t1, grid_info<N_RANK> const & grid, 
 			unsigned long zoid_index, F const & f)
 {
   const int lt = t1 - t0;
@@ -83485,61 +83377,61 @@ trap_space_time_cut_interior(int t0,
   (static_cast<void> (0)) ;
   if (projection_zoid->decision & m_space_cut_mask) 
   {
-  /* cut into space */
+    /* cut into space */
     decision_type dim_to_cut = projection_zoid->decision & m_space_cut_mask;
     (static_cast<void> (0)) ;
     int i = __builtin_ctz((int) dim_to_cut) - 1 ;
     (static_cast<void> (0)) ;
-  int lb, thres, tb;
-  lb = (grid.x1[i] - grid.x0[i]);
-  tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-  bool cut_lb = (lb < tb);
-  thres = (m_algo . slope_[i] * lt);
+    int lb, thres, tb;
+    lb = (grid.x1[i] - grid.x0[i]);
+    tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+    bool cut_lb = (lb < tb);
+    thres = (m_algo . slope_[i] * lt);
 
     if (cut_lb) {
-            // if cutting lb, there's no initial cut! 
-            (static_cast<void> (0));
-            const int mid = lb/2;
-            l_son_grid = grid;
-            const int l_start = grid.x0[i];
-            const int l_end = grid.x1[i];
+      // if cutting lb, there's no initial cut! 
+      (static_cast<void> (0));
+      const int mid = lb/2;
+      l_son_grid = grid;
+      const int l_start = grid.x0[i];
+      const int l_end = grid.x1[i];
 
-            //process the middle gray zoid
-            { l_son_grid . x0[i] = l_start + mid - thres; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_start + mid + thres ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [0], f); } ;
-            { l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = grid . dx0[i]; l_son_grid . x1[i] = l_start + mid - thres ; l_son_grid . dx1[i] = m_algo . slope_[i] ; trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [1], f); } ;
-            { l_son_grid . x0[i] = l_start + mid + thres; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = grid . dx1[i] ; trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [2], f); } ;
+      //process the middle gray zoid
+      { l_son_grid . x0[i] = l_start + mid - thres; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_start + mid + thres ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [0], f); } ;
+      { l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = grid . dx0[i]; l_son_grid . x1[i] = l_start + mid - thres ; l_son_grid . dx1[i] = m_algo . slope_[i] ; trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [1], f); } ;
+      { l_son_grid . x0[i] = l_start + mid + thres; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = grid . dx1[i] ; trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [2], f); } ;
     } // end if (cut_lb) 
     else { // cut_tb 
-            const int mid = tb/2;
-            l_son_grid = grid;
+      const int mid = tb/2;
+      l_son_grid = grid;
 
-            const int l_start = (grid.x0[i]);
-            const int l_end = (grid.x1[i]);
-            const int ul_start = (grid.x0[i] + grid.dx0[i] * lt);
-            { l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = grid . dx0[i]; l_son_grid . x1[i] = ul_start + mid ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [0], f); } ;
-            { l_son_grid . x0[i] = ul_start + mid; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = grid . dx1[i] ; trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [1], f); } ;
-            { l_son_grid . x0[i] = ul_start + mid; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = ul_start + mid ; l_son_grid . dx1[i] = m_algo . slope_[i] ; trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [2], f); } ;
+      const int l_start = (grid.x0[i]);
+      const int l_end = (grid.x1[i]);
+      const int ul_start = (grid.x0[i] + grid.dx0[i] * lt);
+      { l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = grid . dx0[i]; l_son_grid . x1[i] = ul_start + mid ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [0], f); } ;
+      { l_son_grid . x0[i] = ul_start + mid; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = grid . dx1[i] ; trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [1], f); } ;
+      { l_son_grid . x0[i] = ul_start + mid; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = ul_start + mid ; l_son_grid . dx1[i] = m_algo . slope_[i] ; trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [2], f); } ;
     } // end if (cut_tb) 
   }
   else if (projection_zoid->decision & 1)
   {
     (static_cast<void> (0)) ;
-  /* cut into time */
+    /* cut into time */
     (static_cast<void> (0)) ;
     (static_cast<void> (0)) ;
-  int halflt = lt / 2;
-  l_son_grid = grid;
+    int halflt = lt / 2;
+    l_son_grid = grid;
     unsigned long index = projection_zoid->children [0] ;
-  trap_space_time_cut_interior(t0, t0+halflt, l_son_grid, index, f);
+    trap_space_time_cut_interior(t0, t0+halflt, l_son_grid, index, f);
 
-  for (int i = 0; i < N_RANK; ++i) {
-  l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
-  l_son_grid.dx0[i] = grid.dx0[i];
-  l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
-  l_son_grid.dx1[i] = grid.dx1[i];
-  }
+    for (int i = 0; i < N_RANK; ++i) {
+      l_son_grid.x0[i] = grid.x0[i] + grid.dx0[i] * halflt;
+      l_son_grid.dx0[i] = grid.dx0[i];
+      l_son_grid.x1[i] = grid.x1[i] + grid.dx1[i] * halflt;
+      l_son_grid.dx1[i] = grid.dx1[i];
+    }
     index = projection_zoid->children [1] ;
-  trap_space_time_cut_interior(t0+halflt, t1, l_son_grid, index, f);
+    trap_space_time_cut_interior(t0+halflt, t1, l_son_grid, index, f);
   }
   else
   {
@@ -83568,78 +83460,77 @@ inline void auto_tune<N_RANK>::trap_space_time_cut_boundary(int t0, int t1,
 
   if (projection_zoid->decision & m_space_cut_mask)
   {
-  decision_type dim_to_cut = projection_zoid->decision & m_space_cut_mask;
-  (static_cast<void> (0)) ;
-  int i = __builtin_ctz((int) dim_to_cut) - 1 ;
-  (static_cast<void> (0)) ;
-  int lb, thres, tb;
-  lb = (grid.x1[i] - grid.x0[i]);
-  tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-  thres = (m_algo . slope_[i] * lt);
-  bool cut_lb = (lb < tb);
-
-  // can_cut 
-  if (cut_lb) {
-    // if cutting lb, there's no initial cut! 
-    (static_cast<void> (0));
-    const int mid = lb/2;
-    l_son_grid = l_father_grid;
-    const int l_start = l_father_grid.x0[i];
-    const int l_end = l_father_grid.x1[i];
-    //process the middle gray zoid
-    l_son_grid . x0[i] = l_start + mid - thres; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_start + mid + thres ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [0], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [0], f); } ;
-    l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = l_father_grid . dx0[i]; l_son_grid . x1[i] = l_start + mid - thres ; l_son_grid . dx1[i] = m_algo . slope_[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [1], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [1], f); } ;
-    l_son_grid . x0[i] = l_start + mid + thres; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = l_father_grid . dx1[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [2], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [2], f); } ;
-  } // end if (cut_lb) 
-  else { // cut_tb 
-    if (lb == m_algo . phys_length_[i] && l_father_grid.dx0[i] == 0 && l_father_grid.dx1[i] == 0) {
-       /* initial cut on the dimension */
-            const int mid = tb/2;
-            l_son_grid = l_father_grid;
-            const int l_start = l_father_grid.x0[i];
-            const int l_end = l_father_grid.x1[i];
-            l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [0], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [0], f); };
-            l_son_grid . x0[i] = l_end; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = m_algo . slope_[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [1], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [1], f); };
-    } else { /* NOT the initial cut! */
-            const int mid = tb/2;
-            l_son_grid = l_father_grid;
-            const int l_start = l_father_grid.x0[i];
-            const int l_end = l_father_grid.x1[i];
-            const int ul_start = l_father_grid.x0[i] + l_father_grid.dx0[i] * lt;
-            l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = l_father_grid . dx0[i]; l_son_grid . x1[i] = ul_start + mid ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [0], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [0], f); } ;
-            l_son_grid . x0[i] = ul_start + mid; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = l_father_grid . dx1[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [1], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [1], f); } ;
-            l_son_grid . x0[i] = ul_start + mid; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = ul_start + mid ; l_son_grid . dx1[i] = m_algo . slope_[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [2], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [2], f); } ;
-    }
-  } // end if (cut_tb) 
+    decision_type dim_to_cut = projection_zoid->decision & m_space_cut_mask;
+    (static_cast<void> (0)) ;
+    int i = __builtin_ctz((int) dim_to_cut) - 1 ;
+    (static_cast<void> (0)) ;
+    int lb, thres, tb;
+    lb = (grid.x1[i] - grid.x0[i]);
+    tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+    thres = (m_algo . slope_[i] * lt);
+    bool cut_lb = (lb < tb);
+    // can_cut 
+    if (cut_lb) {
+      // if cutting lb, there's no initial cut! 
+      (static_cast<void> (0));
+      const int mid = lb/2;
+      l_son_grid = l_father_grid;
+      const int l_start = l_father_grid.x0[i];
+      const int l_end = l_father_grid.x1[i];
+      //process the middle gray zoid
+      l_son_grid . x0[i] = l_start + mid - thres; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_start + mid + thres ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [0], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [0], f); } ;
+      l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = l_father_grid . dx0[i]; l_son_grid . x1[i] = l_start + mid - thres ; l_son_grid . dx1[i] = m_algo . slope_[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [1], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [1], f); } ;
+      l_son_grid . x0[i] = l_start + mid + thres; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = l_father_grid . dx1[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [2], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [2], f); } ;
+    } // end if (cut_lb) 
+    else { // cut_tb 
+      if (lb == m_algo . phys_length_[i] && l_father_grid.dx0[i] == 0 && l_father_grid.dx1[i] == 0) {
+         /* initial cut on the dimension */
+              const int mid = tb/2;
+              l_son_grid = l_father_grid;
+              const int l_start = l_father_grid.x0[i];
+              const int l_end = l_father_grid.x1[i];
+              l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [0], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [0], f); };
+              l_son_grid . x0[i] = l_end; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = m_algo . slope_[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [1], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [1], f); };
+      } else { /* NOT the initial cut! */
+              const int mid = tb/2;
+              l_son_grid = l_father_grid;
+              const int l_start = l_father_grid.x0[i];
+              const int l_end = l_father_grid.x1[i];
+              const int ul_start = l_father_grid.x0[i] + l_father_grid.dx0[i] * lt;
+              l_son_grid . x0[i] = l_start; l_son_grid . dx0[i] = l_father_grid . dx0[i]; l_son_grid . x1[i] = ul_start + mid ; l_son_grid . dx1[i] = -m_algo . slope_[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [0], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [0], f); } ;
+              l_son_grid . x0[i] = ul_start + mid; l_son_grid . dx0[i] = m_algo . slope_[i]; l_son_grid . x1[i] = l_end ; l_son_grid . dx1[i] = l_father_grid . dx1[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [1], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [1], f); } ;
+              l_son_grid . x0[i] = ul_start + mid; l_son_grid . dx0[i] = -m_algo . slope_[i]; l_son_grid . x1[i] = ul_start + mid ; l_son_grid . dx1[i] = m_algo . slope_[i] ; if (call_boundary) { trap_space_time_cut_boundary(t0, t1, l_son_grid, projection_zoid->children [2], f, bf); } else { trap_space_time_cut_interior(t0, t1, l_son_grid, projection_zoid->children [2], f); } ;
+      }
+    } // end if (cut_tb) 
   }
   else if (projection_zoid->decision & 1)
   {
-  (static_cast<void> (0)) ;
-  // cut into time 
-  (static_cast<void> (0)) ;
-  (static_cast<void> (0)) ;
+    (static_cast<void> (0)) ;
+    // cut into time 
+    (static_cast<void> (0)) ;
+    (static_cast<void> (0)) ;
 
-  int halflt = lt / 2;
-  l_son_grid = l_father_grid;
-  unsigned long index = projection_zoid->children [0] ;
-  if (call_boundary) {
-    trap_space_time_cut_boundary(t0, t0+halflt, l_son_grid, index,f,bf);
-  } else {
-    trap_space_time_cut_interior(t0, t0+halflt, l_son_grid, index, f);
-  }
+    int halflt = lt / 2;
+    l_son_grid = l_father_grid;
+    unsigned long index = projection_zoid->children [0] ;
+    if (call_boundary) {
+      trap_space_time_cut_boundary(t0, t0+halflt, l_son_grid, index,f,bf);
+    } else {
+      trap_space_time_cut_interior(t0, t0+halflt, l_son_grid, index, f);
+    }
 
-  for (int i = 0; i < N_RANK; ++i) {
-    l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
-    l_son_grid.dx0[i] = l_father_grid.dx0[i];
-    l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
-    l_son_grid.dx1[i] = l_father_grid.dx1[i];
-  }
-  index = projection_zoid->children [1] ;
-  if (call_boundary) {
-    trap_space_time_cut_boundary(t0+halflt, t1, l_son_grid, index,f,bf);
-  } else {
-    trap_space_time_cut_interior(t0+halflt, t1, l_son_grid, index, f);
-  }
+    for (int i = 0; i < N_RANK; ++i) {
+      l_son_grid.x0[i] = l_father_grid.x0[i] + l_father_grid.dx0[i] * halflt;
+      l_son_grid.dx0[i] = l_father_grid.dx0[i];
+      l_son_grid.x1[i] = l_father_grid.x1[i] + l_father_grid.dx1[i] * halflt;
+      l_son_grid.dx1[i] = l_father_grid.dx1[i];
+    }
+    index = projection_zoid->children [1] ;
+    if (call_boundary) {
+      trap_space_time_cut_boundary(t0+halflt, t1, l_son_grid, index,f,bf);
+    } else {
+      trap_space_time_cut_interior(t0+halflt, t1, l_son_grid, index, f);
+    }
   }
   else
   {
@@ -84063,10 +83954,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
       
   cout << "coarsen base case wrt bottom side " << endl ;
 
-  cout << "default space cut " << endl ;
-  cout << "default time cut " << endl ;
-  //algor.set_thres_auto_tuning() ;
-
+  algor.shorter_duo_sim_obase_bicut_p(time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 
 #pragma isat marker M2_end
 }
@@ -84080,7 +83968,10 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf,
   algor.set_thres(arr_type_size_);
   timestep_ = timestep;
   checkFlags();
-  //    fprintf(stderr, "Call sim_obase_bicut_P\n");
+  /*for (int i = N_RANK - 1 ; i >= 0 ; i--)
+  {
+    cout << i << "  " << phys_grid_.x1 [i] - phys_grid_.x0 [i] << endl ;
+  }*/
 #pragma isat marker M2_begin
   algor.set_time_step(timestep_);
   algor.set_time_shift(time_shift_) ;
@@ -84118,7 +84009,6 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf,
   cout << "sequential space cut" << endl ;
 
 
-  cout << "subsumption in space " << endl ;
 
 
 

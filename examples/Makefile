@@ -9,18 +9,27 @@ else
 	OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
 endif
 
+#AMD opteron flags
+#OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -fno-alias -fno-fnalias -fp-model precise -std=c++0x -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
+
 #options without vectorization
 #OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -fno-alias -fno-fnalias -fp-model precise -std=c++0x -no-vec -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
 
 #more options for lanka cluster
-OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -march=corei7-avx -mtune=corei7x-avx -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
+ifeq ($(LANKA),1)
+  ifeq ($(DEBUG),1)
+    OPT_FLAGS = -O0 -g -Wall -Werror -std=c++0x -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
+  else
+    OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -march=corei7-avx -mtune=corei7x-avx -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
+  endif
+endif
 #use -vec-report for generating vectorization report
 
 #O0 option for lanka
 #OPT_FLAGS = -O0 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -march=corei7-avx -mtune=corei7x-avx -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
 
 #O0 option for cloud
-#OPT_FLAGS = -O0 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
+#OPT_FLAGS = -O0 -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
 POCHOIR_DEBUG_FLAGS = -O0 -g3 -DDEBUG -debug -Wall -Werror -std=c++0x
 #ICC_DEBUG_FLAGS = -O0 -g3 -DDEBUG -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h  
 ICC_DEBUG_FLAGS = -O3 -Wall -Werror -std=c++0x -I${INTEL_CILK_HEADER} -include cilk_stub.h  

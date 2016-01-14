@@ -41,7 +41,7 @@
 
 static inline double tdiff (struct timeval *a, struct timeval *b)
 {
-	    return a->tv_sec - b->tv_sec + 1e-6 * (a->tv_usec - b->tv_usec);
+  return a->tv_sec - b->tv_sec + 1e-6 * (a->tv_usec - b->tv_usec);
 }
 
 static inline long long tdiff2 (struct timespec *end, struct timespec *start)
@@ -84,11 +84,12 @@ static inline int StrToInt(const std::string& s)
 //#define GENEITY_TEST
 //#define KERNEL_SELECTION
 
-#define USE_PROJECTION
+//#define USE_PROJECTION
 #define AUTO_TUNE
-//#define FIXED_SPACE_CUT 
+#define FIXED_SPACE_CUT 
 #define SUBSUMPTION_SPACE
 //#define LOOP_TWICE
+//#define FIXED_TIME_CUT
 
 //#define WRITE_DAG
 //#define STOP_TUNING_EARLY
@@ -98,7 +99,6 @@ static inline int StrToInt(const std::string& s)
 
 //#define TIME_INVARIANCE_INTERIOR
 //#define TIME_INVARIANCE_BOUNDARY
-//#define FIXED_TIME_CUT
 //#define SUBSUMPTION_TIME
 //#define CHECK_CACHE_ALIGNMENT
 //#define WRITE_ZOID_DIMENSIONS

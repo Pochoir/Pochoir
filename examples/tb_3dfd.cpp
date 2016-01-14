@@ -508,6 +508,7 @@ int main(int argc, char *argv[])
   gettimeofday(&start, 0);
   fd_3D.Run(T, fd_3D_fn);
   gettimeofday(&end, 0);
+  std::cout << "Pochoir ET: consumed time :" << 1.0e3 * tdiff(&end, &start) << "ms" << std::endl;
   //print_summary("Pochoir", tdiff(&end, &start));
 
   printf("Order-%d 3D-Stencil (%d points) with space %dx%dx%d and time %d\n", 

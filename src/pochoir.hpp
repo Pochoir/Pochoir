@@ -538,9 +538,6 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
   Run_Obase(timestep, f, bf, f) ;
 #endif
       
-#ifdef COUNT_PROJECTIONS
-  //    algor.compute_projections(0+time_shift_, timestep+time_shift_, logic_grid_) ;
-#endif
 #ifdef COARSEN_BASE_CASE_WRT_BOTTOM_SIDE
   cout << "coarsen base case wrt bottom side " << endl ;
 #else
@@ -553,17 +550,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
   cout << "geneity testing" << endl ;
 #endif
 
-#ifdef FS
-  cout << "FS " << endl ;
-#endif
-#ifdef DEFAULT_SPACE_CUT
-  cout << "default space cut " << endl ;
-#else
-  cout << "modified space cut " << endl ;
-#endif
 #ifdef TRAP
-  cout << "default time cut " << endl ;
-  //algor.set_thres_auto_tuning() ;
 #ifndef USE_PROJECTION
   algor.shorter_duo_sim_obase_bicut_p(time_shift_, timestep+time_shift_, logic_grid_, f, bf);
 #else
@@ -597,7 +584,6 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf) {
 #endif
 #else
   cout << "pow2 time cut " << endl ;
-  //algor.set_thres_auto_tuning() ;
 #ifndef USE_PROJECTION
   struct timespec start, end;
   clock_gettime(CLOCK_MONOTONIC, &start);
@@ -663,19 +649,16 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf,
   timestep_ = timestep;
   checkFlags();
 #if BICUT
-#if 0
-  fprintf(stderr, "Call obase_bicut_boundary_P\n");
-#pragma isat marker M2_begin
-  algor.obase_bicut_boundary_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
-#pragma isat marker M2_end
-#else
-  //    fprintf(stderr, "Call sim_obase_bicut_P\n");
+  /*for (int i = N_RANK - 1 ; i >= 0 ; i--)
+  {
+    cout << i << "  " << phys_grid_.x1 [i] - phys_grid_.x0 [i] << endl ;
+  }*/
 #pragma isat marker M2_begin
 #if 1
   algor.set_time_step(timestep_);
   algor.set_time_shift(time_shift_) ;
-  algor.set_thres_auto_tuning() ;
 #ifdef AUTO_TUNE
+  algor.set_thres_auto_tuning() ;
   auto_tune<N_RANK> at(algor, phys_grid_, 1, problem_name_, timestep_,
                                            arr_type_size_) ;
 #ifdef TRAP
@@ -712,6 +695,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf,
     cout << "slope_ [i] " << slope_ [i] << endl ;
   }
   */
+#ifdef AUTO_TUNE
 #ifdef DEFAULT_TIME_CUT
   cout << "default time cut " << endl ;
 #else
@@ -786,6 +770,7 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf,
 #ifdef LOOP_TWICE
   cout << "looping twice" << endl ;
 #endif
+#endif
 #else
   printf("stevenj_p!\n");
   algor.stevenj_p(0+time_shift_, timestep+time_shift_, logic_grid_, f, bf);
@@ -795,7 +780,6 @@ void Pochoir<N_RANK>::Run_Obase(int timestep, F const & f, BF const & bf,
   for (int i = 1; i < SUPPORT_RANK; ++i) {
       fprintf(stderr, "sim_count_cut[%d] = %ld\n", i, algor.sim_count_cut[i].get_value());
   }
-#endif
 #endif
 #else
 #pragma isat marker M2_begin

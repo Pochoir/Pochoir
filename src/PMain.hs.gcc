@@ -111,7 +111,8 @@ getObjFile dir fname = ["-o"] ++ [dir++name]
 pInitState = ParserState { pMode = PCaching, pState = Unrelated, pMacro = Map.empty, pArray = Map.empty, pStencil = Map.empty, pShape = Map.empty, pRange = Map.empty, pKernel = Map.empty}
 
 --icc = "/home/maryammehri/Documents/projections/kxing/gcc-cilk/bin/g++"
-icc = "/scratch/kxing/gcc_cilkplus/gcc-cilk/bin/g++"
+--icc = "/scratch/kxing/gcc_cilkplus/gcc-cilk/bin/g++"
+icc = "g++"
 --icc = "gcc-cilk"
 --icc = "icpc"
 

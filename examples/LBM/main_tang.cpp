@@ -70,6 +70,9 @@ int main( int nArgs, char* arg[] ) {
 #if !defined(SPEC_CPU)
 	MAIN_startClock( &time );
 #endif
+	char name [100] ;
+	sprintf(name, "lbm") ;
+	lbm.set_problem_name(name) ;
 #if 0
     if (param.simType == CHANNEL) {
         printf("CHANNEL\n");
@@ -104,9 +107,6 @@ int main( int nArgs, char* arg[] ) {
         }
     }
 #else
-	char name [100] ;
-	sprintf(name, "lbm") ;
-	lbm.set_problem_name(name) ;
 
     t = param.nTimeSteps;
     if (param.simType == CHANNEL) {

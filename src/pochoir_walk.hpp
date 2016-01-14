@@ -489,25 +489,25 @@ struct Algorithm {
 	}
     
     /* constructor */
-    Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1) {
-//#if 0
-#ifndef TRAP
-		struct rlimit rl;
-    	int result = getrlimit(RLIMIT_STACK, &rl);
-		static bool increase_stack_size = true ;
-    	if (increase_stack_size && result == 0)
-        {
-          cout << "stack current limit " << rl.rlim_cur << endl ;
-          cout << "stack max limit " << rl.rlim_max << endl ;
-          rl.rlim_cur *= 100 ;
-          result = setrlimit(RLIMIT_STACK, &rl);
-          if (result != 0)
-          {
-          fprintf(stderr, "setrlimit returned result = %d\n", result);
-          }
-          increase_stack_size = false ;
+#ifdef OPENTUNER
+  /*Opentuner  P[N_RANK * 2 + 2] 
+   *  P[0] = dt  P[N_RANK + 1] = dtb
+   *  P[1] to P[N_RANK] == dx0 to dx.. 
+   *  P[N_RANK+2] to P[N_RANK* 2 + 1] == dx0b to dx1b.. 
+   */
+    Algorithm (int const _slope[]) : dt_recursive_boundary_(opentuner_p [N_RANK+1]), r_t(1) {
+        for (int i = 0; i < N_RANK; ++i) {
+            slope_[i] = _slope[i];
+            dx_recursive_boundary_[i] = opentuner_p [N_RANK+2+i] ;
+            ulb_boundary[i] = uub_boundary[i] = lub_boundary[i] = 0;
         }
-#endif
+        Z = 10000;
+        boundarySet = false;
+        physGridSet = false;
+        slopeSet = true;
+    }
+#else
+    Algorithm (int const _slope[]) : dt_recursive_boundary_(1), r_t(1) {
         for (int i = 0; i < N_RANK; ++i) {
             slope_[i] = _slope[i];
             dx_recursive_boundary_[i] = _slope[i];
@@ -519,10 +519,6 @@ struct Algorithm {
         boundarySet = false;
         physGridSet = false;
         slopeSet = true;
-		//stack_depth = 0 ;
-		//max_stack_depth = 0 ;
-        /* ALGOR_QUEUE_SIZE = 3^N_RANK */
-        // ALGOR_QUEUE_SIZE = power<N_RANK>::value;
 #define ALGOR_QUEUE_SIZE (power<N_RANK>::value)
 #if STAT
 //        for (int i = 0; i < SUPPORT_RANK; ++i) {
@@ -531,9 +527,8 @@ struct Algorithm {
 #else
         N_CORES = __cilkrts_get_nworkers();
 #endif
-//        cout << " N_CORES = " << N_CORES << endl;
-
     }
+#endif
 
     ~Algorithm() 
 	{
@@ -541,250 +536,250 @@ struct Algorithm {
 	//cout << "max stack depth " << max_stack_depth << endl ;
 #if 0
 #ifdef COUNT_PROJECTIONS
-		unsigned long total_projections = 0 ;
-		int W = 0 ;  //max_width among all dimensions
-		int slope ;
-    	for (int i = 0 ; i < N_RANK ; i++)
-		{
-			cout << "dim " << i << " length " << phys_length_ [i] 
-				 << " slope " << slope_ [i] << endl ;
-			if (phys_length_ [i] > W)
-			{
-				W = phys_length_ [i] ;
-				slope = slope_ [i] ;
-			}
-		}
-		int Wn = W / (2 * slope) ;
-		if (N_RANK == 1)
-		{ 
-			int lgT = 8 * sizeof(int) - __builtin_clz(num_time_steps) - 1 ;
-			cout << "lg T " << lgT << endl ;
-			const int h = 1 * lgT ;
-			
-			if (m_1d [0].size() > 0)
-			{
-				cout << "zoid 0 " << endl ;
-				int count = 0 ;
-				for (int i = 0 ; i < m_1d [0].size() ; i++)
-				{
-					set <int> & s = m_1d [0] [i] ;
-					if (s.size() > h)
-					{
-					count++ ;
-					cout << "# of projs at i " << i << " = " << s.size() << endl ;
-					for (set <int> ::iterator it = s.begin() ; it != s.end() ; 
-																++it)
-					{
-						cout << i << "," << *it << endl ;
-					}
-					cout << endl ;
-					map <int, int> & m = m_1d_map [i] ;
-					for (map <int,int> ::iterator it = m.begin() ; 
-						 it != m.end() ; ++it)
-					{
-						cout << i << ", h " << it->second << " w " << it->first 
-							<< endl ;
-					}
-					
-					}
-				}
-				cout << "# of midpoints with proj > " << h << " " << count 
-					 << endl ;
-				/*
-				cout << "length , # of diff projs of length " << endl ;
-				for (int i = 0 ; i < m_1d_proj_length.size() ; i++)
-				{
-					if (m_1d_proj_length [i] > 0)
-					{
-						cout << i << "," << m_1d_proj_length [i] << endl ;
-					}
-				}
-				cout << "length, start indices for each length " << endl ;
-				for (int i = 0 ;  i < m_1d_index_by_length.size() ; i++)
-				{
-					set <int> & s = m_1d_index_by_length [i] ;
-					if (s.size() > 0)
-					{
-						cout << endl << " length " << i 
-						<< " # of cells " << s.size() << endl ;
-					}
-					for (set <int> ::iterator it = s.begin() ; it != s.end() ; 
-																++it)
-					{
-						cout << *it << "," ;
-					}
-				}
-			}*/
-			/*if (m_1d [1].size() > 0)
-			{
-				cout << "zoid 1 " << endl ;
-				for (int i = 0 ; i < m_1d [1].size() ; i++)
-				{
-					set <int> & s = m_1d [1] [i] ;
-					cout << "# of projs at i " << i << " = " << s.size() << endl ;
-					for (set <int> ::iterator it = s.begin() ; it != s.end() ; 
-																++it)
-					{
-						cout << i << "," << *it << endl ;
-					}
-				}
-			}*/
-			//cout << "(N, T, Wn, # of projections, " <<
-			//		"T % Wn, # of projections, Total) " 
-			cout << "(N, T, Wn, # of projections in upright triangle, " <<
-					"# of projections in inverted zoid, Total) " 
-			 << " (" << phys_length_ [0] << ","
-			 << num_time_steps << ","
-			 <<  Wn << "," 
-			 << num_projections_1d [0] << ","
-			 //<< num_time_steps % Wn << ","
-			 << num_projections_1d [1] << ","
-			 << num_projections_1d [0] + num_projections_1d [1] <<
-			") " << endl ;
-			/*
-			if (m_1d [2].size() > 0)
-			{
-				cout << "zoid 2 " << endl ;
-				cout << "(N, T, # of projections) " 
-				 << " (" << phys_length_ [0] << "," << num_time_steps << "," <<
-					 m_1d [2].size() << ") " << endl ;
-				multimap<unsigned long, unsigned long>::iterator pos = 
-							m_1d [2].begin();
-				cout << "slope " << slope_ [0] << endl ;
-				cout << "smallest length " << pos->first << endl ;
-				for (pos = m_1d [2].begin() ; pos != m_1d [2].end() ; pos++)
-				{
-					cout << pos->first << "," << pos->second << endl ;
-				}
-			}*/
-		}
-		else if (N_RANK == 2) 
-		{
-			cout << "(N1, N2, T, Wn, # rectangles, # octagons, Total, T % Wn,"<<
-				 "# rectangles, # octagons, Total, Grand total ) " 
-			<< " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
-			<< num_time_steps << "," 
-			<< Wn << "," 
-			<< num_projections_2d_r [0] << "," 
-			<< num_projections_2d_o [0] << ","
-			<< num_projections_2d_r [0] + num_projections_2d_o [0] << ","
-			<< num_time_steps % Wn << ","
-			<< num_projections_2d_r [1] << "," 
-			<< num_projections_2d_o [1] << ","
-			<< num_projections_2d_r [1] + num_projections_2d_o [1] << ","
-			<< num_projections_2d_r [0] + num_projections_2d_o [0] +
-				num_projections_2d_r [1] + num_projections_2d_o [1]
-			<< " ) " << endl ;
+  unsigned long total_projections = 0 ;
+  int W = 0 ;  //max_width among all dimensions
+  int slope ;
+  for (int i = 0 ; i < N_RANK ; i++)
+  {
+    cout << "dim " << i << " length " << phys_length_ [i] 
+             << " slope " << slope_ [i] << endl ;
+    if (phys_length_ [i] > W)
+    {
+            W = phys_length_ [i] ;
+            slope = slope_ [i] ;
+    }
+  }
+  int Wn = W / (2 * slope) ;
+  if (N_RANK == 1)
+  { 
+    int lgT = 8 * sizeof(int) - __builtin_clz(num_time_steps) - 1 ;
+    cout << "lg T " << lgT << endl ;
+    const int h = 1 * lgT ;
+    
+    if (m_1d [0].size() > 0)
+    {
+            cout << "zoid 0 " << endl ;
+            int count = 0 ;
+            for (int i = 0 ; i < m_1d [0].size() ; i++)
+            {
+                    set <int> & s = m_1d [0] [i] ;
+                    if (s.size() > h)
+                    {
+                    count++ ;
+                    cout << "# of projs at i " << i << " = " << s.size() << endl ;
+                    for (set <int> ::iterator it = s.begin() ; it != s.end() ; 
+                                                                                                            ++it)
+                    {
+                            cout << i << "," << *it << endl ;
+                    }
+                    cout << endl ;
+                    map <int, int> & m = m_1d_map [i] ;
+                    for (map <int,int> ::iterator it = m.begin() ; 
+                             it != m.end() ; ++it)
+                    {
+                            cout << i << ", h " << it->second << " w " << it->first 
+                                    << endl ;
+                    }
+                    
+                    }
+            }
+            cout << "# of midpoints with proj > " << h << " " << count 
+                     << endl ;
+            /*
+            cout << "length , # of diff projs of length " << endl ;
+            for (int i = 0 ; i < m_1d_proj_length.size() ; i++)
+            {
+                    if (m_1d_proj_length [i] > 0)
+                    {
+                            cout << i << "," << m_1d_proj_length [i] << endl ;
+                    }
+            }
+            cout << "length, start indices for each length " << endl ;
+            for (int i = 0 ;  i < m_1d_index_by_length.size() ; i++)
+            {
+                    set <int> & s = m_1d_index_by_length [i] ;
+                    if (s.size() > 0)
+                    {
+                            cout << endl << " length " << i 
+                            << " # of cells " << s.size() << endl ;
+                    }
+                    for (set <int> ::iterator it = s.begin() ; it != s.end() ; 
+                                                                                                            ++it)
+                    {
+                            cout << *it << "," ;
+                    }
+            }
+    }*/
+    /*if (m_1d [1].size() > 0)
+    {
+            cout << "zoid 1 " << endl ;
+            for (int i = 0 ; i < m_1d [1].size() ; i++)
+            {
+                    set <int> & s = m_1d [1] [i] ;
+                    cout << "# of projs at i " << i << " = " << s.size() << endl ;
+                    for (set <int> ::iterator it = s.begin() ; it != s.end() ; 
+                                                                                                            ++it)
+                    {
+                            cout << i << "," << *it << endl ;
+                    }
+            }
+    }*/
+    //cout << "(N, T, Wn, # of projections, " <<
+    //		"T % Wn, # of projections, Total) " 
+    cout << "(N, T, Wn, # of projections in upright triangle, " <<
+                    "# of projections in inverted zoid, Total) " 
+     << " (" << phys_length_ [0] << ","
+     << num_time_steps << ","
+     <<  Wn << "," 
+     << num_projections_1d [0] << ","
+     //<< num_time_steps % Wn << ","
+     << num_projections_1d [1] << ","
+     << num_projections_1d [0] + num_projections_1d [1] <<
+    ") " << endl ;
+    /*
+    if (m_1d [2].size() > 0)
+    {
+            cout << "zoid 2 " << endl ;
+            cout << "(N, T, # of projections) " 
+             << " (" << phys_length_ [0] << "," << num_time_steps << "," <<
+                     m_1d [2].size() << ") " << endl ;
+            multimap<unsigned long, unsigned long>::iterator pos = 
+                                    m_1d [2].begin();
+            cout << "slope " << slope_ [0] << endl ;
+            cout << "smallest length " << pos->first << endl ;
+            for (pos = m_1d [2].begin() ; pos != m_1d [2].end() ; pos++)
+            {
+                    cout << pos->first << "," << pos->second << endl ;
+            }
+    }*/
+  }
+  else if (N_RANK == 2) 
+  {
+    cout << "(N1, N2, T, Wn, # rectangles, # octagons, Total, T % Wn,"<<
+             "# rectangles, # octagons, Total, Grand total ) " 
+    << " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
+    << num_time_steps << "," 
+    << Wn << "," 
+    << num_projections_2d_r [0] << "," 
+    << num_projections_2d_o [0] << ","
+    << num_projections_2d_r [0] + num_projections_2d_o [0] << ","
+    << num_time_steps % Wn << ","
+    << num_projections_2d_r [1] << "," 
+    << num_projections_2d_o [1] << ","
+    << num_projections_2d_r [1] + num_projections_2d_o [1] << ","
+    << num_projections_2d_r [0] + num_projections_2d_o [0] +
+            num_projections_2d_r [1] + num_projections_2d_o [1]
+    << " ) " << endl ;
 
-			/*
-			{
-			cout << "(N1, N2, T, # of projections) " 
-			     << " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
-				<< num_time_steps << "," <<
-				 map_2d.size() << ") " << endl ;
-			cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
-				<< endl ;
-			//cout << "# of projections " << map_2d.size() << endl ;
+    /*
+    {
+    cout << "(N1, N2, T, # of projections) " 
+         << " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
+            << num_time_steps << "," <<
+             map_2d.size() << ") " << endl ;
+    cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
+            << endl ;
+    //cout << "# of projections " << map_2d.size() << endl ;
 
-			typename multimap <unsigned long, projection_2d *>::iterator pos =  
-			//multimap <unsigned long, unsigned long>::iterator pos =  
-															map_2d.begin() ;
-			cout << "smallest area " << pos->first << endl ; 
-			for (pos = map_2d.begin() ; pos != map_2d.end() ; pos++)
-			{
-				//projection_2d & p = pos->second ;
-				projection_2d * p = pos->second ;
-				*/
-				/*cout << "Area " << p->area << " type " << p->type << 
-				" (x0, x1) " << "(" << p->x [0] << "," << p->x [1] << ") " <<
-				" (x2, x3) " << "(" << p->x [2] << "," << p->x [3] << ") " <<
-				" (y0, y1) " << "(" << p->y [0] << "," << p->y [1] << ") " <<
-				" (y2, y3) " << "(" << p->y [2] << "," << p->y [3] << ") " <<
-				 endl ;*/
-				/*
-				delete p ;
-				pos->second = 0 ;
-			}
-			}
-			*/
-			/*if (m_2d [0].size() > 0)
-			{
-			cout << "zoid 0" <<endl ;
-				 //m_2d [0].size() << ") " << endl ;
-			cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
-				<< endl ;
+    typename multimap <unsigned long, projection_2d *>::iterator pos =  
+    //multimap <unsigned long, unsigned long>::iterator pos =  
+                                                                                                    map_2d.begin() ;
+    cout << "smallest area " << pos->first << endl ; 
+    for (pos = map_2d.begin() ; pos != map_2d.end() ; pos++)
+    {
+            //projection_2d & p = pos->second ;
+            projection_2d * p = pos->second ;
+            */
+            /*cout << "Area " << p->area << " type " << p->type << 
+            " (x0, x1) " << "(" << p->x [0] << "," << p->x [1] << ") " <<
+            " (x2, x3) " << "(" << p->x [2] << "," << p->x [3] << ") " <<
+            " (y0, y1) " << "(" << p->y [0] << "," << p->y [1] << ") " <<
+            " (y2, y3) " << "(" << p->y [2] << "," << p->y [3] << ") " <<
+             endl ;*/
+            /*
+            delete p ;
+            pos->second = 0 ;
+    }
+    }
+    */
+    /*if (m_2d [0].size() > 0)
+    {
+    cout << "zoid 0" <<endl ;
+             //m_2d [0].size() << ") " << endl ;
+    cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
+            << endl ;
 
-			//typename multimap <unsigned long, proj_2d *>::iterator pos =  
-			//													m_2d [0].begin() ;
-			//for (; pos != m_2d [0].end() ; pos++)
-			
-			int max_length = 0 ;
-			for (int i = 0 ; i < m_2d[0].size() ; i++)
-			{
-				vector <proj_2d> & v = m_2d [0][i] ;
-				if (v.size() > max_length)
-				{
-					max_length = v.size() ;
-				}
-				if (v.size() > 0)
-				{
-					cout << i << " " << (m_2d [0]) [i].size() << endl ;
-				}
-				for (int j = 0 ; j < v.size() ; j++)
-				{
-					proj_2d & p = v [j] ;
-					cout << " type " << p.type << 
-				" (x0, x1) " << "(" << p.x [0] << "," << p.x [1] << ") " <<
-				" (x2, x3) " << "(" << p.x [2] << "," << p.x [3] << ") " <<
-				" (y0, y1) " << "(" << p.y [0] << "," << p.y [1] << ") " <<
-				" (y2, y3) " << "(" << p.y [2] << "," << p.y [3] << ") " <<
-					 endl ;
-				}
-			}
-			cout <<  " max_length " <<  max_length << endl ; 
+    //typename multimap <unsigned long, proj_2d *>::iterator pos =  
+    //													m_2d [0].begin() ;
+    //for (; pos != m_2d [0].end() ; pos++)
+    
+    int max_length = 0 ;
+    for (int i = 0 ; i < m_2d[0].size() ; i++)
+    {
+            vector <proj_2d> & v = m_2d [0][i] ;
+            if (v.size() > max_length)
+            {
+                    max_length = v.size() ;
+            }
+            if (v.size() > 0)
+            {
+                    cout << i << " " << (m_2d [0]) [i].size() << endl ;
+            }
+            for (int j = 0 ; j < v.size() ; j++)
+            {
+                    proj_2d & p = v [j] ;
+                    cout << " type " << p.type << 
+            " (x0, x1) " << "(" << p.x [0] << "," << p.x [1] << ") " <<
+            " (x2, x3) " << "(" << p.x [2] << "," << p.x [3] << ") " <<
+            " (y0, y1) " << "(" << p.y [0] << "," << p.y [1] << ") " <<
+            " (y2, y3) " << "(" << p.y [2] << "," << p.y [3] << ") " <<
+                     endl ;
+            }
+    }
+    cout <<  " max_length " <<  max_length << endl ; 
 
-			}*/
-			/*
-			if (m_2d [1].size() > 0)
-			{
-			cout << "zoid 1" <<endl ;
-			cout << "(N1, N2, T, # of projections) " 
-			     << " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
-				<< num_time_steps << "," <<
-				 m_2d [1].size() << ") " << endl ;
-			cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
-				<< endl ;
+    }*/
+    /*
+    if (m_2d [1].size() > 0)
+    {
+    cout << "zoid 1" <<endl ;
+    cout << "(N1, N2, T, # of projections) " 
+         << " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
+            << num_time_steps << "," <<
+             m_2d [1].size() << ") " << endl ;
+    cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
+            << endl ;
 
-			typename multimap <unsigned long, proj_2d *>::iterator pos =  
-															m_2d [1].begin() ;
-			for (; pos != m_2d [1].end() ; pos++)
-			{
-				proj_2d * p = pos->second ;
-				delete p ;
-				pos->second = 0 ;
-			}
-			}
-			if (m_2d [2].size() > 0)
-			{
-			cout << "zoid 2" <<endl ;
-			cout << "(N1, N2, T, # of projections) " 
-			     << " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
-				<< num_time_steps << "," <<
-				 m_2d [2].size() << ") " << endl ;
-			cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
-				<< endl ;
+    typename multimap <unsigned long, proj_2d *>::iterator pos =  
+                                                                                                    m_2d [1].begin() ;
+    for (; pos != m_2d [1].end() ; pos++)
+    {
+            proj_2d * p = pos->second ;
+            delete p ;
+            pos->second = 0 ;
+    }
+    }
+    if (m_2d [2].size() > 0)
+    {
+    cout << "zoid 2" <<endl ;
+    cout << "(N1, N2, T, # of projections) " 
+         << " (" << phys_length_ [0] << "," <<  phys_length_ [1] << "," 
+            << num_time_steps << "," <<
+             m_2d [2].size() << ") " << endl ;
+    cout << "slope [0, 1] " << slope_ [0] << "," << slope_ [1] 
+            << endl ;
 
-			typename multimap <unsigned long, proj_2d *>::iterator pos =  
-															m_2d [2].begin() ;
-			for (; pos != m_2d [2].end() ; pos++)
-			{
-				proj_2d * p = pos->second ;
-				delete p ;
-				pos->second = 0 ;
-			}
-			}
-			*/
-		}
+    typename multimap <unsigned long, proj_2d *>::iterator pos =  
+                                                                                                    m_2d [2].begin() ;
+    for (; pos != m_2d [2].end() ; pos++)
+    {
+            proj_2d * p = pos->second ;
+            delete p ;
+            pos->second = 0 ;
+    }
+    }
+    */
+  }
 #endif
 #endif
     }
@@ -805,6 +800,14 @@ struct Algorithm {
      * - walk_ncores_hybrid
      * - walk_ncores_boundary
      */
+#ifdef OPENTUNER
+    inline void set_thres(int arr_type_size) {
+      dt_recursive_ = opentuner_p [0] ;
+      for (int i = N_RANK-1; i >= 0; --i) {
+        dx_recursive_[i] = opentuner_p [i + 1] ;
+      }
+    }
+#else
     inline void set_thres(int arr_type_size) {
 #ifdef DEFAULT_TIME_CUT 
       dt_recursive_ = (N_RANK == 1) ? 20 : ((N_RANK == 2) ? 40 : 5);
@@ -846,6 +849,7 @@ struct Algorithm {
       printf("dx_thres[%d] = %d\n", 0, dx_recursive_[0]);
 #endif
     }
+#endif
 
 	void set_time_shift(int time_shift) 
 	{ 

@@ -107,9 +107,9 @@ int main(int argc, char * argv[])
 	heat_2D.set_problem_name(name) ;
 
     for (int times = 0; times < TIMES; ++times) {
-	    gettimeofday(&start, 0);
+        gettimeofday(&start, 0);
         heat_2D.Run(T_SIZE, heat_2D_fn);
-	    gettimeofday(&end, 0);
+        gettimeofday(&end, 0);
         min_tdiff = min(min_tdiff, (1.0e3 * tdiff(&end, &start)));
     }
 	std::cout << "Pochoir ET: consumed time :" << min_tdiff << "ms" << std::endl;

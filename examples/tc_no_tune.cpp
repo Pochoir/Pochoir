@@ -39,7 +39,7 @@ int main(int argc, char * argv[])
 	//simulate each of the test cases for TRAP
 	for (int i = 0 ; i < 2 ; i ++)
 	{
-#if 0	
+#if 1	
 	sprintf(suffix, "_trap_%d_core", NCORES) ; 
 	strcpy(file, dir) ;
 	strcat(file, "/heat_2D_NP") ;
@@ -81,7 +81,7 @@ int main(int argc, char * argv[])
 	cout << cmd << endl ;
 	system(cmd) ;
 
-#if 0
+#if 1
 	sprintf(suffix, "_trap_%d_core", NCORES) ;
 	strcpy(file, dir) ;
 	strcat(file, "/apop") ;
