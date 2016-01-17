@@ -150,7 +150,7 @@ int main(int argc, char * argv[])
   printf("N1 = %d, N2 = %d, T_SIZE = %d\n", N1, N2, T_SIZE);
   cout << "a(T+1, J, I) = 0.125 * (a(T, J+1, I) - 2.0 * a(T, J, I) + a(T, J-1, I)) + 0.125 * (a(T, J, I+1) - 2.0 * a(T, J, I) + a(T, J, I-1)) + a(T, J, I)" << endl;
 #ifdef CHECK_RESULT
-  /* 
+   
   clock_gettime(CLOCK_MONOTONIC, &start) ;
   for (int times = 0; times < TIMES; ++times) {
     for (int t = 0; t < T_SIZE; ++t) {
@@ -171,7 +171,7 @@ int main(int argc, char * argv[])
       check_result(t, i, j, a.interior(t, i, j), b.interior(t, i, j));
     } 
   }
-  */
+  
   
   int _M=N1-1 ;
   int _N=N2-1 ;

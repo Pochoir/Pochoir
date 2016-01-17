@@ -102,7 +102,8 @@ lbm_xo_novec.exe: $(INCLUDE) $(XO_SRC)
 	$(ICC) $(DEFAULT_OPTIONS) $(NOVEC_OPTIONS) -DNDEBUG -std=c++0x -Wall -Werror -o BIN/$@ main_xo.cpp lbm_xo_pochoir.cpp >& COMPILE_LOG/$@.report
 
 lbm_tang: $(INCLUDE_TANG) $(POCHOIR_SRC)
-	${CC} ${POFLAGS} ${DEFAULT_OPTIONS} ${NOVEC_OPTIONS} -DNDEBUG -Wall -Werror -o BIN/$@ ${POCHOIR_SRC}
+	${CC} ${POFLAGS} ${DEFAULT_OPTIONS} ${NOVEC_OPTIONS} -DNDEBUG -Wall -o BIN/$@ ${POCHOIR_SRC}
+	#${CC} ${POFLAGS} ${DEFAULT_OPTIONS} ${NOVEC_OPTIONS} -DNDEBUG -Wall -Werror -o BIN/$@ ${POCHOIR_SRC}
 #	${CC} ${POFLAGS} ${DEFAULT_OPTIONS} ${NOVEC_OPTIONS} -DNDEBUG -Wall -Werror -o BIN/$@ ${POCHOIR_SRC} $(POCHOIR_LIB_PATH)/stopwatch.c
 #	${CC} ${DEBUGFLAGS} ${NOVEC_OPTIONS} -Wall -Werror -o BIN/$@ ${POCHOIR_SRC}
 #	${ICC} ${POFLAGS} ${DEFAULT_OPTIONS} ${NOVEC_OPTIONS} -I${POCHOIR_LIB_PATH} -DNDEBUG -Wall -Werror -o BIN/$@ ${POCHOIR_SRC}

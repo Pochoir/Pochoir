@@ -407,7 +407,7 @@ struct Algorithm {
         int dx_recursive_[N_RANK];
         int dx_recursive_boundary_[N_RANK];
         int dt_recursive_;
-        const int dt_recursive_boundary_;
+        int dt_recursive_boundary_;
         int Z;
         const int r_t; /* # of pieces cut in time dimension */
         int N_CORES;
