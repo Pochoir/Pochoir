@@ -129,6 +129,53 @@ inline void auto_tune<N_RANK>::loop_boundary(int t0, INT_TYPE t1,
   assert (loop_time >= 0) ;
 }
 
+template <int N_RANK> 
+inline grid_info<N_RANK> auto_tune<N_RANK>::displace_grid(
+                           grid_info<N_RANK> const grid, bool & power_of_two) {
+  assert (phys_length_ [i] > 0) ;
+  power_of_two = false ;
+  for (int i = 0 ; i < N_RANK ; i++) {
+    if (phys_length_ [i] & (phys_length_ [i] - 1) == 0) {
+      power_of_two = true ;
+    }
+  }
+  if (! power_of_two) {
+    return grid ; //do not displace the grid.
+  }
+  grid_info<N_RANK> grid_copy = grid ;
+  srand (time(NULL)) ;
+  for (int i = 0 ; i < N_RANK ; i++) {
+      bool l_touch_boundary = touch_boundary(i, lt, grid_copy);
+      if (l_touch_boundary) {
+        continue ; //do not displace if the dimension touches boundary
+      }
+    unsigned long lb, tb;
+    lb = (grid.x1[i] - grid.x0[i]);
+    tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+    int length = max(lb, tb) ;
+    //fit a grid with length 2 more than the actual grid, so that the
+    //displaced grid lies in the interior
+    //(phys_length_ [i] - length - 2*slope) gives the remaining length of
+    //the physical grid to place the new grid.
+    //The extra 1 at the end is due to the fact that a length l has l + 1 
+    //grid points to place the left end of the grid 
+    int offset = phys_length_ [i] - length - 2 * slope_[i] + 1 ;
+    if (offset > 0) {
+      grid_copy.x0 [i] = rand() % offset ;
+      if (lb > tb) {
+        grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i]) ;
+      }
+      else {
+        grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i] +slope_ [i] * lt);
+      }
+      grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
+    }
+    assert(grid_copy.x0 [i] > 0) ;
+    assert(grid_copy.x1 [i] < phys_length_ [i]) ;
+  }
+  return grid_copy ;
+}
+
 template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	int t0, int t1, grid_info<N_RANK> const & grid, 
@@ -585,47 +632,21 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
   }
   else if (! divide_and_conquer)
   {
-    grid_info<N_RANK> grid_copy = grid ;
-    srand (time(NULL)) ;
-    for (int i = 0 ; i < N_RANK ; i++) {
-      unsigned long lb, tb;
-      lb = (grid.x1[i] - grid.x0[i]);
-      tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-      int length = max(lb, tb) ;
-      //fit a grid with length 2 more than the actual grid, so that the
-      //displaced grid lies in the interior
-      //(phys_length_ [i] - length - 2) gives the remaining length of
-      //the physical grid to place the new grid.
-      //The extra 1 at the end if due to the fact that a length l has l + 1 
-      //grid points to place the left end of the grid 
-      grid_copy.x0 [i] = rand() % (phys_length_ [i] - length - 2 * slope_[i]+1);
-      if (lb > tb) {
-        //continue from here
-        grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i]) ;
-      }
-      else {
-        grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i] + slope_ [i] * lt) ;
-      }
-      grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
-      assert(grid_copy.x0 [i] > 0) ;
-      assert(grid_copy.x1 [i] < phys_length_ [i]) ;
+    bool pow_of_two = false ;
+    int times = 2 ;
+    grid_info<N_RANK> grid_copy = displace_grid(grid, pow_of_two) ;
+    if (pow_of_two) {
+      times = 1 ;
     }
-    
     //determine the looping time on the zoid
-    time_type t1_, t2_ ;
-    stopwatch_start(ptr) ;
-    f(t0, t1, grid_copy);
-    //f(t0, t1, grid);
-    stopwatch_stop(ptr) ;
-    stopwatch_get_elapsed_time(ptr, t1_) ;
-    loop_time = t1_ ;
-    /*
-    stopwatch_start(ptr) ;
-    f(t0, t1, grid);
-    stopwatch_stop(ptr) ;
-    stopwatch_get_elapsed_time(ptr, t2_) ;
-    loop_time = min (t1_, t2_) ;
-    */
+    for (int i = 0 ; i < times ; i++) {
+      time_type t1_ ;
+      stopwatch_start(ptr) ;
+      f(t0, t1, grid_copy);
+      stopwatch_stop(ptr) ;
+      stopwatch_get_elapsed_time(ptr, t1_) ;
+      loop_time = min (t1_, loop_time) ;
+    }
     assert (loop_time >= 0) ;
     
 #ifdef MEASURE_COLD_MISS
@@ -642,33 +663,8 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
   else 
   {
     //determine the looping time on the zoid
-    grid_info<N_RANK> grid_copy = grid ;
-    srand (time(NULL)) ;
-    cout << "h " << lt << endl ;
-    for (int i = 0 ; i < N_RANK ; i++) {
-      unsigned long lb, tb;
-      lb = (grid.x1[i] - grid.x0[i]);
-      tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-      int length = max(lb, tb) ;
-      //fit a grid with length 2 more than the actual grid, so that the
-      //displaced grid lies in the interior
-      //(phys_length_ [i] - length - 2) gives the remaining length of
-      //the physical grid to place the new grid.
-      //The extra 1 at the end if due to the fact that a length l has l + 1 
-      //grid points to place the left end of the grid 
-      grid_copy.x0 [i] = rand() % (phys_length_ [i] - length - 2 + 1) ;
-      if (lb > tb) {
-        grid_copy.x0 [i] += 1 ;
-      }
-      else {
-        grid_copy.x0 [i] += (1 + slope_[i] * lt) ;
-      }
-      grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
-      cout << i << " " << grid.x0[i] << " " << grid.x1[i] << " " << grid.x0[i] + grid.dx0[i] * lt << " " << grid.x1[i] + grid.dx1[i] * lt << endl ;
-      cout << i << " " << grid_copy.x0 [i] << " " << grid_copy.x1 [i] << " " << grid_copy.x0 [i] + grid_copy.dx0[i] * lt << " " << grid_copy.x1 [i] + grid_copy.dx1[i] * lt << endl ;
-      assert(grid_copy.x0 [i] > 0) ;
-      assert(grid_copy.x1 [i] < phys_length_ [i]) ;
-    }
+    bool pow_of_two ;
+    grid_info<N_RANK> grid_copy = displace_grid(grid, pow_of_two) ;
     LOOP_INTERIOR ;
 #ifndef NDEBUG
     m_zoids [index].ltime = loop_time ;
@@ -1315,6 +1311,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
   }
   else if (! divide_and_conquer)
   {
+    /*
     grid_info<N_RANK> grid_copy = l_father_grid ;
     srand (time(NULL)) ;
     for (int i = 0 ; i < N_RANK ; i++) {
@@ -1332,28 +1329,31 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
       //the physical grid to place the new grid.
       //The extra 1 at the end if due to the fact that a length l has l + 1 
       //grid points to place the left end of the grid 
-      grid_copy.x0 [i] = rand() % (phys_length_ [i] - length - 2 + 1) ;
-      if (lb > tb) {
-        grid_copy.x0 [i] += 1 ;
+      int offset = phys_length_ [i] - length - 2 * slope_[i] + 1 ;
+      if (offset > 0) {
+        grid_copy.x0 [i] = rand() % offset ;
+        if (lb > tb) {
+          grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i]) ;
+        }
+        else {
+          grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i] +slope_ [i] * lt);
+        }
+        grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
       }
-      else {
-        grid_copy.x0 [i] += (1 + slope_[i] * lt) ;
-      }
-      grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
       assert(grid_copy.x0 [i] > 0) ;
       assert(grid_copy.x1 [i] < phys_length_ [i]) ;
     }
-  
+    */ 
     //determine the looping time on the zoid
     time_type t1_, t2_ ;
     stopwatch_start(ptr) ;
     if (call_boundary) {
-      //base_case_kernel_boundary(t0, t1, l_father_grid, bf) ;
-      base_case_kernel_boundary(t0, t1, grid_copy, bf) ;
-    } 
+      base_case_kernel_boundary(t0, t1, l_father_grid, bf) ;
+      //base_case_kernel_boundary(t0, t1, grid_copy, bf) ;
+    }
     else { 
-      //f(t0, t1, l_father_grid) ;
-      f(t0, t1, grid_copy) ;
+      f(t0, t1, l_father_grid) ;
+      //f(t0, t1, grid_copy) ;
     }
     stopwatch_stop(ptr) ;
     stopwatch_get_elapsed_time(ptr, t1_) ;
@@ -1407,14 +1407,17 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
       //the physical grid to place the new grid.
       //The extra 1 at the end if due to the fact that a length l has l + 1 
       //grid points to place the left end of the grid 
-      grid_copy.x0 [i] = rand() % (phys_length_ [i] - length - 2 + 1) ;
-      if (lb > tb) {
-        grid_copy.x0 [i] += 1 ;
+      int offset = phys_length_ [i] - length - 2 * slope_[i] + 1 ;
+      if (offset > 0) {
+        grid_copy.x0 [i] = rand() % offset ;
+        if (lb > tb) {
+          grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i]) ;
+        }
+        else {
+          grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i] +slope_ [i] * lt);
+        }
+        grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
       }
-      else {
-        grid_copy.x0 [i] += (1 + slope_[i] * lt) ;
-      }
-      grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
       assert(grid_copy.x0 [i] > 0) ;
       assert(grid_copy.x1 [i] < phys_length_ [i]) ;
     }

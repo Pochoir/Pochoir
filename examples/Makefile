@@ -20,7 +20,8 @@ ifeq ($(LANKA),1)
   ifeq ($(DEBUG),1)
     OPT_FLAGS = -O0 -g -Wall -Werror -std=c++0x -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
   else
-    OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -march=corei7-avx -mtune=corei7x-avx -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
+    OPT_FLAGS = -O3 -DNDEBUG -Wall -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -march=corei7-avx -mtune=corei7x-avx -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
+    #OPT_FLAGS = -O3 -DNDEBUG -Wall -Werror -funroll-loops -xHOST -fno-alias -fno-fnalias -fp-model precise -std=c++0x -march=corei7-avx -mtune=corei7x-avx -lrt -lpfm -L./ -I$(POCHOIR_LIB_PATH)
   endif
 endif
 #use -vec-report for generating vectorization report
