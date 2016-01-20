@@ -1801,6 +1801,9 @@ void print_dag()
 #define INT_TYPE int
 #endif
 
+  inline void displace_grid(grid_info<N_RANK> const, grid_info<N_RANK> &, 
+                            bool &, int) ;
+
   template <typename F>
   inline void loop_interior(int t0, INT_TYPE t1, 
           grid_info<N_RANK> const & grid, F const & f, time_type & loop_time) ;

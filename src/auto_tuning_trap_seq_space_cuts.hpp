@@ -41,9 +41,9 @@ if (elapsed_time + ltime + ctime < best_time) \
 	elapsed_time += t ; \
 }
 
-#define LOOP_INTERIOR \
+#define LOOP_INTERIOR(t0, t1, g, f, loop_time) \
 { \
-	cilk_spawn loop_interior(t0, t1, grid_copy, f, loop_time) ; \
+	cilk_spawn loop_interior(t0, t1, g, f, loop_time) ; \
 	timespec ts ; \
 	ts.tv_nsec = best_time ; \
 	ts.tv_sec = 0 ; \
@@ -65,7 +65,7 @@ if (elapsed_time + ltime + ctime < best_time) \
 			index, k_, ltime, ctime, f, best_time) ; \
 }
 
-#define LOOP_INTERIOR loop_interior(t0, t1, grid_copy, f, loop_time)
+#define LOOP_INTERIOR(t0, t1, g, f, l) loop_interior(t0, t1, g, f, l)
 #endif
 
 template <int N_RANK> template <typename F>
@@ -130,19 +130,22 @@ inline void auto_tune<N_RANK>::loop_boundary(int t0, INT_TYPE t1,
 }
 
 template <int N_RANK> 
-inline grid_info<N_RANK> auto_tune<N_RANK>::displace_grid(
-                           grid_info<N_RANK> const grid, bool & power_of_two) {
+inline void auto_tune<N_RANK>::displace_grid(grid_info<N_RANK> const grid, 
+                 grid_info<N_RANK> & grid_copy, bool & power_of_two, int lt) {
   assert (phys_length_ [i] > 0) ;
+  grid_copy = grid ;
   power_of_two = false ;
+
   for (int i = 0 ; i < N_RANK ; i++) {
-    if (phys_length_ [i] & (phys_length_ [i] - 1) == 0) {
+    if ((phys_length_ [i] & phys_length_ [i] - 1) == 0) {
       power_of_two = true ;
     }
   }
+  
   if (! power_of_two) {
-    return grid ; //do not displace the grid.
+    return ; //do not displace the grid.
   }
-  grid_info<N_RANK> grid_copy = grid ;
+
   srand (time(NULL)) ;
   for (int i = 0 ; i < N_RANK ; i++) {
       bool l_touch_boundary = touch_boundary(i, lt, grid_copy);
@@ -166,14 +169,13 @@ inline grid_info<N_RANK> auto_tune<N_RANK>::displace_grid(
         grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i]) ;
       }
       else {
-        grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i] +slope_ [i] * lt);
+        grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i] + slope_ [i] * lt) ;
       }
       grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
     }
     assert(grid_copy.x0 [i] > 0) ;
     assert(grid_copy.x1 [i] < phys_length_ [i]) ;
   }
-  return grid_copy ;
 }
 
 template <int N_RANK> template <typename F>
@@ -633,19 +635,20 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
   else if (! divide_and_conquer)
   {
     bool pow_of_two = false ;
-    int times = 2 ;
-    grid_info<N_RANK> grid_copy = displace_grid(grid, pow_of_two) ;
-    if (pow_of_two) {
-      times = 1 ;
+    int times = 1 ;
+    grid_info<N_RANK> grid_copy = grid ;
+    displace_grid(grid, grid_copy, pow_of_two, lt) ;
+    if (! pow_of_two) {
+      times = 2 ; //take min of 2 loops
     }
     //determine the looping time on the zoid
     for (int i = 0 ; i < times ; i++) {
-      time_type t1_ ;
+      time_type t_ ;
       stopwatch_start(ptr) ;
       f(t0, t1, grid_copy);
       stopwatch_stop(ptr) ;
-      stopwatch_get_elapsed_time(ptr, t1_) ;
-      loop_time = min (t1_, loop_time) ;
+      stopwatch_get_elapsed_time(ptr, t_) ;
+      loop_time = min (t_, loop_time) ;
     }
     assert (loop_time >= 0) ;
     
@@ -664,8 +667,21 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
   {
     //determine the looping time on the zoid
     bool pow_of_two ;
-    grid_info<N_RANK> grid_copy = displace_grid(grid, pow_of_two) ;
-    LOOP_INTERIOR ;
+    grid_info<N_RANK> grid_copy = grid ;
+    displace_grid(grid, grid_copy, pow_of_two, lt) ;
+    int times = 1 ;
+#ifdef LOOP_TWICE
+    times = 2 ;
+#endif
+    for (int i = 0 ; i < times ; i++) {
+      time_type t_ = 0 ;
+      stopwatch_start(ptr) ;
+      f(t0, t1, grid_copy) ;
+      stopwatch_stop(ptr) ;
+      stopwatch_get_elapsed_time(ptr, t_) ;
+      loop_time = min(t_, loop_time) ;
+    }
+    assert (loop_time >= 0) ;
 #ifndef NDEBUG
     m_zoids [index].ltime = loop_time ;
 #endif
@@ -735,9 +751,9 @@ if (elapsed_time + ltime + ctime < best_time) \
 	elapsed_time += t ; \
 }
 
-#define LOOP_BOUNDARY \
+#define LOOP_BOUNDARY(t0, t1, g, f, bf, loop_time, call_boundary) \
 { \
-	cilk_spawn loop_boundary(t0, t1, grid_copy, f, bf, loop_time, call_boundary) ; \
+	cilk_spawn loop_boundary(t0, t1, g, f, bf, loop_time, call_boundary) ; \
 	timespec ts ; \
 	ts.tv_nsec = best_time ; \
 	ts.tv_sec = 0 ; \
@@ -755,7 +771,8 @@ if (elapsed_time + ltime + ctime < best_time) \
 	l_son_grid.dx1[i] = dx1_ ; \
 	SPACE_CUT_BOUNDARY(k_) ; 
 
-#define LOOP_BOUNDARY loop_boundary(t0, t1, grid_copy, f, bf, loop_time, call_boundary)
+#define LOOP_BOUNDARY(t0, t1, g, f, bf, loop_time, call_boundary) \
+  loop_boundary(t0, t1, g, f, bf, loop_time, call_boundary)
 #endif
 
 template <int N_RANK> template <typename F, typename BF>
@@ -1311,67 +1328,28 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
   }
   else if (! divide_and_conquer)
   {
-    /*
+    int times = 1 ;
+    bool pow_of_two = false ;
     grid_info<N_RANK> grid_copy = l_father_grid ;
-    srand (time(NULL)) ;
-    for (int i = 0 ; i < N_RANK ; i++) {
-      bool l_touch_boundary = touch_boundary(i, lt, grid_copy);
-      if (l_touch_boundary) {
-        continue ; //do not displace if the dimension touches boundary
+    displace_grid(l_father_grid, grid_copy, pow_of_two, lt) ;
+    if (! pow_of_two) {
+      times = 2 ; //take min of 2 loops
+    }
+    for (int i = 0 ; i < times ; i++) {
+      //determine the looping time on the zoid
+      time_type t_ ;
+      stopwatch_start(ptr) ;
+      if (call_boundary) {
+        base_case_kernel_boundary(t0, t1, grid_copy, bf) ;
       }
-      unsigned long lb, tb;
-      lb = (grid.x1[i] - grid.x0[i]);
-      tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-      int length = max(lb, tb) ;
-      //fit a grid with length 2 more than the actual grid, so that the
-      //displaced grid lies in the interior
-      //(phys_length_ [i] - length - 2) gives the remaining length of
-      //the physical grid to place the new grid.
-      //The extra 1 at the end if due to the fact that a length l has l + 1 
-      //grid points to place the left end of the grid 
-      int offset = phys_length_ [i] - length - 2 * slope_[i] + 1 ;
-      if (offset > 0) {
-        grid_copy.x0 [i] = rand() % offset ;
-        if (lb > tb) {
-          grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i]) ;
-        }
-        else {
-          grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i] +slope_ [i] * lt);
-        }
-        grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
+      else { 
+        f(t0, t1, grid_copy) ;
       }
-      assert(grid_copy.x0 [i] > 0) ;
-      assert(grid_copy.x1 [i] < phys_length_ [i]) ;
+      stopwatch_stop(ptr) ;
+      stopwatch_get_elapsed_time(ptr, t_) ;
+      loop_time = min (t_, loop_time) ;
     }
-    */ 
-    //determine the looping time on the zoid
-    time_type t1_, t2_ ;
-    stopwatch_start(ptr) ;
-    if (call_boundary) {
-      base_case_kernel_boundary(t0, t1, l_father_grid, bf) ;
-      //base_case_kernel_boundary(t0, t1, grid_copy, bf) ;
-    }
-    else { 
-      f(t0, t1, l_father_grid) ;
-      //f(t0, t1, grid_copy) ;
-    }
-    stopwatch_stop(ptr) ;
-    stopwatch_get_elapsed_time(ptr, t1_) ;
-    loop_time = t1_ + bdry_time ;
-    /*
-    stopwatch_start(ptr) ;
-    if (call_boundary)
-    {
-      base_case_kernel_boundary(t0, t1, l_father_grid, bf) ;
-    } 
-    else 
-    { 
-      f(t0, t1, l_father_grid) ;
-    }
-    stopwatch_stop(ptr) ;
-    stopwatch_get_elapsed_time(ptr, t2_) ;
-    loop_time = min (t1_, t2_) + bdry_time ;
-    */
+    loop_time += bdry_time ;
 
 #ifdef MEASURE_COLD_MISS
     m_zoids [index].cache_penalty_time = max(t1_ - t2_, (time_type) 0) ;
@@ -1390,40 +1368,29 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
   }
   else 
   {
+    bool pow_of_two ;
     grid_info<N_RANK> grid_copy = l_father_grid ;
-    srand (time(NULL)) ;
-    for (int i = 0 ; i < N_RANK ; i++) {
-      bool l_touch_boundary = touch_boundary(i, lt, grid_copy);
-      if (l_touch_boundary) {
-        continue ; //do not displace if the dimension touches boundary
-      }
-      unsigned long lb, tb;
-      lb = (grid.x1[i] - grid.x0[i]);
-      tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-      int length = max(lb, tb) ;
-      //fit a grid with length 2 more than the actual grid, so that the
-      //displaced grid lies in the interior
-      //(phys_length_ [i] - length - 2) gives the remaining length of
-      //the physical grid to place the new grid.
-      //The extra 1 at the end if due to the fact that a length l has l + 1 
-      //grid points to place the left end of the grid 
-      int offset = phys_length_ [i] - length - 2 * slope_[i] + 1 ;
-      if (offset > 0) {
-        grid_copy.x0 [i] = rand() % offset ;
-        if (lb > tb) {
-          grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i]) ;
-        }
-        else {
-          grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i] +slope_ [i] * lt);
-        }
-        grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
-      }
-      assert(grid_copy.x0 [i] > 0) ;
-      assert(grid_copy.x1 [i] < phys_length_ [i]) ;
-    }
+    displace_grid(l_father_grid, grid_copy, pow_of_two, lt) ;
     //determine the looping time on the zoid
-    LOOP_BOUNDARY ;
+    int times = 1 ;
+#ifdef LOOP_TWICE
+    times = 2 ;
+#endif
+    for (int i = 0 ; i < times ; i++) {
+      time_type t_ = 0 ;
+      stopwatch_start(ptr) ;
+      if (call_boundary) {
+        base_case_kernel_boundary(t0, t1, grid_copy, bf);
+      } 
+      else {
+        f(t0, t1, grid_copy);
+      }
+      stopwatch_stop(ptr) ;
+      stopwatch_get_elapsed_time(ptr, t_) ;
+      loop_time = min(t_, loop_time) ;
+    }
     loop_time += bdry_time ;
+    assert (loop_time >= 0) ;
 #ifndef NDEBUG
     m_zoids [index].ltime = loop_time ;
 #endif

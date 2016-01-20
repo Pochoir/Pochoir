@@ -81970,6 +81970,9 @@ void write_zoid_dimensions(grid_info<N_RANK> const & grid, int T)
 }
 
 
+  inline void displace_grid(grid_info<N_RANK> const, grid_info<N_RANK> &, 
+                            bool &, int) ;
+
   template <typename F>
   inline void loop_interior(int t0, int t1, 
           grid_info<N_RANK> const & grid, F const & f, time_type & loop_time) ;
@@ -82593,6 +82596,55 @@ inline void auto_tune<N_RANK>::loop_boundary(int t0, int t1,
   (static_cast<void> (0)) ;
 }
 
+template <int N_RANK> 
+inline void auto_tune<N_RANK>::displace_grid(grid_info<N_RANK> const grid, 
+                 grid_info<N_RANK> & grid_copy, bool & power_of_two, int lt) {
+  (static_cast<void> (0)) ;
+  grid_copy = grid ;
+  power_of_two = false ;
+
+  for (int i = 0 ; i < N_RANK ; i++) {
+    if ((m_algo . phys_length_ [i] & m_algo . phys_length_ [i] - 1) == 0) {
+      power_of_two = true ;
+    }
+  }
+  
+  if (! power_of_two) {
+    return ; //do not displace the grid.
+  }
+
+  srand (time(__null)) ;
+  for (int i = 0 ; i < N_RANK ; i++) {
+      bool l_touch_boundary = m_algo . touch_boundary(i, lt, grid_copy);
+      if (l_touch_boundary) {
+        continue ; //do not displace if the dimension touches boundary
+      }
+    unsigned long lb, tb;
+    lb = (grid.x1[i] - grid.x0[i]);
+    tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+    int length = max(lb, tb) ;
+    //fit a grid with length 2 more than the actual grid, so that the
+    //displaced grid lies in the interior
+    //(phys_length_ [i] - length - 2*slope) gives the remaining length of
+    //the physical grid to place the new grid.
+    //The extra 1 at the end is due to the fact that a length l has l + 1 
+    //grid points to place the left end of the grid 
+    int offset = m_algo . phys_length_ [i] - length - 2 * m_algo . slope_[i] + 1 ;
+    if (offset > 0) {
+      grid_copy.x0 [i] = rand() % offset ;
+      if (lb > tb) {
+        grid_copy.x0 [i] = max(grid_copy.x0 [i], m_algo . slope_ [i]) ;
+      }
+      else {
+        grid_copy.x0 [i] = max(grid_copy.x0 [i], m_algo . slope_ [i] + m_algo . slope_ [i] * lt) ;
+      }
+      grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
+    }
+    (static_cast<void> (0)) ;
+    (static_cast<void> (0)) ;
+  }
+}
+
 template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
 	int t0, int t1, grid_info<N_RANK> const & grid, 
@@ -82895,51 +82947,22 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
   }
   else if (! divide_and_conquer)
   {
-    /*
+    bool pow_of_two = false ;
+    int times = 1 ;
     grid_info<N_RANK> grid_copy = grid ;
-    srand (time(NULL)) ;
-    for (int i = 0 ; i < N_RANK ; i++) {
-      unsigned long lb, tb;
-      lb = (grid.x1[i] - grid.x0[i]);
-      tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-      int length = max(lb, tb) ;
-      //fit a grid with length 2 more than the actual grid, so that the
-      //displaced grid lies in the interior
-      //(phys_length_ [i] - length - 2*slope) gives the remaining length of
-      //the physical grid to place the new grid.
-      //The extra 1 at the end is due to the fact that a length l has l + 1 
-      //grid points to place the left end of the grid 
-      int offset = phys_length_ [i] - length - 2 * slope_[i] + 1 ;
-      if (offset > 0) {
-        grid_copy.x0 [i] = rand() % offset ;
-        if (lb > tb) {
-          grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i]) ;
-        }
-        else {
-          grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i] +slope_ [i] * lt);
-        }
-        grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
-      }
-      assert(grid_copy.x0 [i] > 0) ;
-      assert(grid_copy.x1 [i] < phys_length_ [i]) ;
+    displace_grid(grid, grid_copy, pow_of_two, lt) ;
+    if (! pow_of_two) {
+      //times = 2 ; //take min of 2 loops
     }
-    */
-    
     //determine the looping time on the zoid
-    time_type t1_, t2_ ;
-    { clock_gettime(1, &(ptr->start)); } ;
-    //f(t0, t1, grid_copy);
-    f(t0, t1, grid);
-    { clock_gettime(1, &(ptr->end)); ptr->elapsed_time = (long long)(ptr->end . tv_sec - ptr->start . tv_sec) * 1000000000ll + ptr->end . tv_nsec - ptr->start . tv_nsec; } ;
-    { (static_cast<void> (0)); (static_cast<void> (0)); t1_ = ptr->elapsed_time; } ;
-    loop_time = t1_ ;
-    /*
-    stopwatch_start(ptr) ;
-    f(t0, t1, grid);
-    stopwatch_stop(ptr) ;
-    stopwatch_get_elapsed_time(ptr, t2_) ;
-    loop_time = min (t1_, t2_) ;
-    */
+    for (int i = 0 ; i < times ; i++) {
+      time_type t_ ;
+      { clock_gettime(1, &(ptr->start)); } ;
+      f(t0, t1, grid_copy);
+      { clock_gettime(1, &(ptr->end)); ptr->elapsed_time = (long long)(ptr->end . tv_sec - ptr->start . tv_sec) * 1000000000ll + ptr->end . tv_nsec - ptr->start . tv_nsec; } ;
+      { (static_cast<void> (0)); (static_cast<void> (0)); t_ = ptr->elapsed_time; } ;
+      loop_time = min (t_, loop_time) ;
+    }
     (static_cast<void> (0)) ;
     
     //set a flag to indicate that we looped on z.
@@ -82950,34 +82973,19 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
   else 
   {
     //determine the looping time on the zoid
+    bool pow_of_two ;
     grid_info<N_RANK> grid_copy = grid ;
-    srand (time(__null)) ;
-    for (int i = 0 ; i < N_RANK ; i++) {
-      unsigned long lb, tb;
-      lb = (grid.x1[i] - grid.x0[i]);
-      tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-      int length = max(lb, tb) ;
-      //fit a grid with length 2 more than the actual grid, so that the
-      //displaced grid lies in the interior
-      //(phys_length_ [i] - length - 2) gives the remaining length of
-      //the physical grid to place the new grid.
-      //The extra 1 at the end if due to the fact that a length l has l + 1 
-      //grid points to place the left end of the grid 
-      int offset = m_algo . phys_length_ [i] - length - 2 * m_algo . slope_[i] + 1 ;
-      if (offset > 0) {
-        grid_copy.x0 [i] = rand() % offset ;
-        if (lb > tb) {
-          grid_copy.x0 [i] = max(grid_copy.x0 [i], m_algo . slope_ [i]) ;
-        }
-        else {
-          grid_copy.x0 [i] = max(grid_copy.x0 [i], m_algo . slope_ [i] +m_algo . slope_ [i] * lt);
-        }
-        grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
-      }
-      (static_cast<void> (0)) ;
-      (static_cast<void> (0)) ;
+    displace_grid(grid, grid_copy, pow_of_two, lt) ;
+    int times = 1 ;
+    for (int i = 0 ; i < times ; i++) {
+      time_type t_ = 0 ;
+      { clock_gettime(1, &(ptr->start)); } ;
+      f(t0, t1, grid_copy) ;
+      { clock_gettime(1, &(ptr->end)); ptr->elapsed_time = (long long)(ptr->end . tv_sec - ptr->start . tv_sec) * 1000000000ll + ptr->end . tv_nsec - ptr->start . tv_nsec; } ;
+      { (static_cast<void> (0)); (static_cast<void> (0)); t_ = ptr->elapsed_time; } ;
+      loop_time = min(t_, loop_time) ;
     }
-    loop_interior(t0, t1, grid_copy, f, loop_time) ;
+    (static_cast<void> (0)) ;
     //bound_loop_time of z is its loop time.
     bound_loop_time = loop_time ;
     //compare divide and conquer time with loop_time 
@@ -83394,67 +83402,28 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
   }
   else if (! divide_and_conquer)
   {
-    /*
+    int times = 1 ;
+    bool pow_of_two = false ;
     grid_info<N_RANK> grid_copy = l_father_grid ;
-    srand (time(NULL)) ;
-    for (int i = 0 ; i < N_RANK ; i++) {
-      bool l_touch_boundary = touch_boundary(i, lt, grid_copy);
-      if (l_touch_boundary) {
-        continue ; //do not displace if the dimension touches boundary
+    displace_grid(l_father_grid, grid_copy, pow_of_two, lt) ;
+    if (! pow_of_two) {
+    //  times = 2 ; //take min of 2 loops
+    }
+    for (int i = 0 ; i < times ; i++) {
+      //determine the looping time on the zoid
+      time_type t_ ;
+      { clock_gettime(1, &(ptr->start)); } ;
+      if (call_boundary) {
+        m_algo . base_case_kernel_boundary(t0, t1, grid_copy, bf) ;
       }
-      unsigned long lb, tb;
-      lb = (grid.x1[i] - grid.x0[i]);
-      tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-      int length = max(lb, tb) ;
-      //fit a grid with length 2 more than the actual grid, so that the
-      //displaced grid lies in the interior
-      //(phys_length_ [i] - length - 2) gives the remaining length of
-      //the physical grid to place the new grid.
-      //The extra 1 at the end if due to the fact that a length l has l + 1 
-      //grid points to place the left end of the grid 
-      int offset = phys_length_ [i] - length - 2 * slope_[i] + 1 ;
-      if (offset > 0) {
-        grid_copy.x0 [i] = rand() % offset ;
-        if (lb > tb) {
-          grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i]) ;
-        }
-        else {
-          grid_copy.x0 [i] = max(grid_copy.x0 [i], slope_ [i] +slope_ [i] * lt);
-        }
-        grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
+      else { 
+        f(t0, t1, grid_copy) ;
       }
-      assert(grid_copy.x0 [i] > 0) ;
-      assert(grid_copy.x1 [i] < phys_length_ [i]) ;
+      { clock_gettime(1, &(ptr->end)); ptr->elapsed_time = (long long)(ptr->end . tv_sec - ptr->start . tv_sec) * 1000000000ll + ptr->end . tv_nsec - ptr->start . tv_nsec; } ;
+      { (static_cast<void> (0)); (static_cast<void> (0)); t_ = ptr->elapsed_time; } ;
+      loop_time = min (t_, loop_time) ;
     }
-    */ 
-    //determine the looping time on the zoid
-    time_type t1_, t2_ ;
-    { clock_gettime(1, &(ptr->start)); } ;
-    if (call_boundary) {
-      m_algo . base_case_kernel_boundary(t0, t1, l_father_grid, bf) ;
-      //base_case_kernel_boundary(t0, t1, grid_copy, bf) ;
-    }
-    else { 
-      f(t0, t1, l_father_grid) ;
-      //f(t0, t1, grid_copy) ;
-    }
-    { clock_gettime(1, &(ptr->end)); ptr->elapsed_time = (long long)(ptr->end . tv_sec - ptr->start . tv_sec) * 1000000000ll + ptr->end . tv_nsec - ptr->start . tv_nsec; } ;
-    { (static_cast<void> (0)); (static_cast<void> (0)); t1_ = ptr->elapsed_time; } ;
-    loop_time = t1_ + bdry_time ;
-    /*
-    stopwatch_start(ptr) ;
-    if (call_boundary)
-    {
-      base_case_kernel_boundary(t0, t1, l_father_grid, bf) ;
-    } 
-    else 
-    { 
-      f(t0, t1, l_father_grid) ;
-    }
-    stopwatch_stop(ptr) ;
-    stopwatch_get_elapsed_time(ptr, t2_) ;
-    loop_time = min (t1_, t2_) + bdry_time ;
-    */
+    loop_time += bdry_time ;
 
 
     (static_cast<void> (0)) ;
@@ -83467,40 +83436,26 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
   }
   else 
   {
+    bool pow_of_two ;
     grid_info<N_RANK> grid_copy = l_father_grid ;
-    srand (time(__null)) ;
-    for (int i = 0 ; i < N_RANK ; i++) {
-      bool l_touch_boundary = m_algo . touch_boundary(i, lt, grid_copy);
-      if (l_touch_boundary) {
-        continue ; //do not displace if the dimension touches boundary
-      }
-      unsigned long lb, tb;
-      lb = (grid.x1[i] - grid.x0[i]);
-      tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
-      int length = max(lb, tb) ;
-      //fit a grid with length 2 more than the actual grid, so that the
-      //displaced grid lies in the interior
-      //(phys_length_ [i] - length - 2) gives the remaining length of
-      //the physical grid to place the new grid.
-      //The extra 1 at the end if due to the fact that a length l has l + 1 
-      //grid points to place the left end of the grid 
-      int offset = m_algo . phys_length_ [i] - length - 2 * m_algo . slope_[i] + 1 ;
-      if (offset > 0) {
-        grid_copy.x0 [i] = rand() % offset ;
-        if (lb > tb) {
-          grid_copy.x0 [i] = max(grid_copy.x0 [i], m_algo . slope_ [i]) ;
-        }
-        else {
-          grid_copy.x0 [i] = max(grid_copy.x0 [i], m_algo . slope_ [i] +m_algo . slope_ [i] * lt);
-        }
-        grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
-      }
-      (static_cast<void> (0)) ;
-      (static_cast<void> (0)) ;
-    }
+    displace_grid(l_father_grid, grid_copy, pow_of_two, lt) ;
     //determine the looping time on the zoid
-    loop_boundary(t0, t1, grid_copy, f, bf, loop_time, call_boundary) ;
+    int times = 1 ;
+    for (int i = 0 ; i < times ; i++) {
+      time_type t_ = 0 ;
+      { clock_gettime(1, &(ptr->start)); } ;
+      if (call_boundary) {
+        m_algo . base_case_kernel_boundary(t0, t1, grid_copy, bf);
+      } 
+      else {
+        f(t0, t1, grid_copy);
+      }
+      { clock_gettime(1, &(ptr->end)); ptr->elapsed_time = (long long)(ptr->end . tv_sec - ptr->start . tv_sec) * 1000000000ll + ptr->end . tv_nsec - ptr->start . tv_nsec; } ;
+      { (static_cast<void> (0)); (static_cast<void> (0)); t_ = ptr->elapsed_time; } ;
+      loop_time = min(t_, loop_time) ;
+    }
     loop_time += bdry_time ;
+    (static_cast<void> (0)) ;
     //bound_loop_time of z is its loop time.
     bound_loop_time = loop_time ;
     //compare divide and conquer time with loop_time 

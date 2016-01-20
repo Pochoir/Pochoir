@@ -3,10 +3,10 @@ SHELL = /bin/bash
 CC = ../../pochoir
 ICC = icc
 
-CFLAGS = -restrict -unroll-aggressive -funroll-loops -scalar-rep -ipo -xHOST -fno-alias -O3 -no-prec-div -std=c++0x -lrt -lpfm -L../ -I$(POCHOIR_LIB_PATH)
+CFLAGS = -restrict -unroll-aggressive -funroll-loops -scalar-rep -ipo -xHOST -fno-alias -O3 -no-prec-div -std=c++0x -lrt -L../ -I$(POCHOIR_LIB_PATH)
 #more options for lanka cluster
 ifeq ($(LANKA),1)
-CFLAGS = -restrict -unroll-aggressive -funroll-loops -scalar-rep -ipo -xHOST -fno-alias -O3 -no-prec-div -std=c++0x -march=corei7-avx -mtune=corei7x-avx -lrt -lpfm -L../ -I$(POCHOIR_LIB_PATH)
+CFLAGS = -restrict -unroll-aggressive -funroll-loops -scalar-rep -ipo -xHOST -fno-alias -O3 -no-prec-div -std=c++0x -march=corei7-avx -mtune=corei7x-avx -lrt -L../ -I$(POCHOIR_LIB_PATH)
 endif
 # CFLAGS = -restrict -no-prec-div 
 #debugging
@@ -16,7 +16,7 @@ POFLAGS = -O3 -unroll-aggressive -funroll-loops -scalar-rep -ipo -xHOST -fno-ali
 
 #AMD opteron flags
 ifeq ($(AMD_OPT),1)
-CFLAGS = -restrict -unroll-aggressive -funroll-loops -scalar-rep -ipo -fno-alias -O3 -no-prec-div -std=c++0x -lrt -lpfm -L../ -I$(POCHOIR_LIB_PATH)
+CFLAGS = -restrict -unroll-aggressive -funroll-loops -scalar-rep -ipo -fno-alias -O3 -no-prec-div -std=c++0x -lrt -L../ -I$(POCHOIR_LIB_PATH)
 POFLAGS = -O3 -unroll-aggressive -funroll-loops -scalar-rep -ipo -fno-alias -restrict -std=c++0x
 endif
 
