@@ -132,6 +132,75 @@ inline void auto_tune<N_RANK>::loop_boundary(int t0, INT_TYPE t1,
 template <int N_RANK> 
 inline void auto_tune<N_RANK>::displace_grid(grid_info<N_RANK> const grid, 
                  grid_info<N_RANK> & grid_copy, bool & power_of_two, int lt) {
+  grid_copy = grid ;
+  power_of_two = false ;
+  assert (m_type_size > 0) ;
+  int size_cacheline = 64 / m_type_size ; //the # of elements in a cache line
+  //displace the grid along the unit stride dimension.
+  for (int i = 0 ; i < 1 ; i++) {
+    assert (phys_length_ [i] > 0) ;
+    bool l_touch_boundary = touch_boundary(i, lt, grid_copy);
+    if (l_touch_boundary) {
+      continue ; //do not displace if the dimension touches boundary
+    }
+    unsigned long lb, tb;
+    lb = (grid.x1[i] - grid.x0[i]);
+    tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
+    int length = max(lb, tb) ;
+    //fit a grid with length 2 * slope more than the actual grid, so that the
+    //displaced grid lies in the interior
+    //(phys_length_ [i] - length - 2*slope + 1) gives the number of grid points
+    //to place the left most grid point of the grid.
+    int num_grid_points = phys_length_ [i] - length - 2 * slope_[i] + 1 ;
+    if (num_grid_points > 0) {
+      int num_cache_lines = (num_grid_points + size_cacheline - 1) / size_cacheline ;
+      
+      int offset = 0 ;
+      if (lb > tb) {
+        offset = (grid.x0 [i] - slope_ [i]) % size_cacheline ;
+      } else {
+        offset = (grid.x0[i] + grid.dx0[i] * lt - slope_ [i]) % size_cacheline ;
+      }
+      if (num_grid_points < num_cache_lines * size_cacheline && 
+          offset > ((num_grid_points - 1) % size_cacheline)) {
+        num_cache_lines -= 1 ; // the last cache line is not long enough.
+      }
+      srand (time(NULL)) ;
+      int l = rand() % num_cache_lines ; //choose a cache line at random
+      cout << "size_cacheline " << size_cacheline << " num_cache_lines " <<
+        num_cache_lines << " slope " << slope_ [i] << endl ;
+      if (lb > tb) {
+        /*int k = (grid.x0 [i] - slope_ [i]) % size_cacheline ;
+        if (l * size_cacheline + k + slope_ [i] > num_grid_points) {
+          //the last cache line doesn't have sufficient size for the grid point
+          l -= 1 ;
+        }
+        grid_copy.x0 [i] = l * size_cacheline + k + slope_ [i] ;*/
+        grid_copy.x0 [i] = l * size_cacheline + offset + slope_ [i] ;
+      }
+      else {
+        /*int k = (grid.x0[i] + grid.dx0[i] * lt - slope_ [i]) % size_cacheline ;
+        if (l * size_cacheline + k + slope_ [i] > num_grid_points) {
+          //the last cache line doesn't have sufficient size for the grid point
+          l -= 1 ;
+        }
+        grid_copy.x0 [i] = l * size_cacheline + k + slope_ [i] - grid.dx0[i] * lt ;*/
+        grid_copy.x0 [i] = l * size_cacheline + offset + slope_ [i] - grid.dx0[i] * lt ;
+      }
+      grid_copy.x1 [i] = grid_copy.x0 [i] + lb ;
+    }
+    cout << grid.x0 [i] << " " << grid.x1 [i] << " " << grid_copy.x0 [i] << " " << grid_copy.x1 [i] << endl ;
+    cout << grid.x0[i] + grid.dx0[i] * lt << " " << grid.x1[i] + grid.dx1[i] * lt << endl ;
+    assert(grid_copy.x0 [i] > 0) ;
+    assert(grid_copy.x1 [i] < phys_length_ [i]) ;
+    assert(grid.x0[i] % size_cacheline == grid_copy.x0 [i] % size_cacheline) ;
+  }
+}
+
+/*
+template <int N_RANK> 
+inline void auto_tune<N_RANK>::displace_grid(grid_info<N_RANK> const grid, 
+                 grid_info<N_RANK> & grid_copy, bool & power_of_two, int lt) {
   assert (phys_length_ [i] > 0) ;
   grid_copy = grid ;
   power_of_two = false ;
@@ -148,10 +217,10 @@ inline void auto_tune<N_RANK>::displace_grid(grid_info<N_RANK> const grid,
 
   srand (time(NULL)) ;
   for (int i = 0 ; i < N_RANK ; i++) {
-      bool l_touch_boundary = touch_boundary(i, lt, grid_copy);
-      if (l_touch_boundary) {
-        continue ; //do not displace if the dimension touches boundary
-      }
+    bool l_touch_boundary = touch_boundary(i, lt, grid_copy);
+    if (l_touch_boundary) {
+      continue ; //do not displace if the dimension touches boundary
+    }
     unsigned long lb, tb;
     lb = (grid.x1[i] - grid.x0[i]);
     tb = (grid.x1[i] + grid.dx1[i] * lt - grid.x0[i] - grid.dx0[i] * lt);
@@ -177,6 +246,7 @@ inline void auto_tune<N_RANK>::displace_grid(grid_info<N_RANK> const grid,
     assert(grid_copy.x1 [i] < phys_length_ [i]) ;
   }
 }
+*/
 
 template <int N_RANK> template <typename F>
 inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
@@ -638,9 +708,11 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
     int times = 1 ;
     grid_info<N_RANK> grid_copy = grid ;
     displace_grid(grid, grid_copy, pow_of_two, lt) ;
+    /*
     if (! pow_of_two) {
       times = 2 ; //take min of 2 loops
     }
+    */
     //determine the looping time on the zoid
     for (int i = 0 ; i < times ; i++) {
       time_type t_ ;
@@ -671,7 +743,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_interior(
     displace_grid(grid, grid_copy, pow_of_two, lt) ;
     int times = 1 ;
 #ifdef LOOP_TWICE
-    times = 2 ;
+    //times = 2 ;
 #endif
     for (int i = 0 ; i < times ; i++) {
       time_type t_ = 0 ;
@@ -1332,9 +1404,9 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
     bool pow_of_two = false ;
     grid_info<N_RANK> grid_copy = l_father_grid ;
     displace_grid(l_father_grid, grid_copy, pow_of_two, lt) ;
-    if (! pow_of_two) {
+    /*if (! pow_of_two) {
       times = 2 ; //take min of 2 loops
-    }
+    }*/
     for (int i = 0 ; i < times ; i++) {
       //determine the looping time on the zoid
       time_type t_ ;
@@ -1374,7 +1446,7 @@ inline void auto_tune<N_RANK>::symbolic_trap_space_time_cut_boundary(
     //determine the looping time on the zoid
     int times = 1 ;
 #ifdef LOOP_TWICE
-    times = 2 ;
+    //times = 2 ;
 #endif
     for (int i = 0 ; i < times ; i++) {
       time_type t_ = 0 ;
